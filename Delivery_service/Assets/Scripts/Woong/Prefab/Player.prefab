@@ -246,7 +246,7 @@ MonoBehaviour:
   interactRange: 3
   motorcycleLayer:
     serializedVersion: 2
-    m_Bits: 4096
+    m_Bits: 0
 --- !u!114 &1570568828013816917
 MonoBehaviour:
   m_ObjectHideFlags: 0
