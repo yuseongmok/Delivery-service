@@ -6,6 +6,9 @@ public class PizzaPickUpZone : MonoBehaviour, IInteractable
     [Header("포장된 피자가 쌓일 위치")]
     [SerializeField] private Transform placePoint;
 
+    [Header("포장 용기")]
+    [SerializeField] private GameObject packagedPizzaPrefab;
+
     [Header("피자 사이 높이")]
     [SerializeField] private float stackHeight = 0.05f;
 
@@ -16,19 +19,22 @@ public class PizzaPickUpZone : MonoBehaviour, IInteractable
         if (pizza == null)
             return;
 
-        PizzaPackage package = pizza.GetComponent<PizzaPackage>();
+        Destroy(pizza);
 
-        if (package == null || !package.IsPackaged)
+        if (packagedPizzaPrefab == null)
             return;
 
-        pizza.transform.SetParent(placePoint);
+        GameObject newPizza = Instantiate(packagedPizzaPrefab, placePoint);
+        newPizza.transform.localPosition = new Vector3(0f, stackHeight * packagedPizzas.Count, 0f);
+        newPizza.transform.localRotation = Quaternion.identity;
+        PizzaPackage package = newPizza.GetComponent<PizzaPackage>();
 
-        pizza.transform.localPosition = new Vector3(0f, stackHeight * packagedPizzas.Count, 0f);
-        pizza.transform.localRotation = Quaternion.identity;
+        if (package != null)
+            package.SetPackaged(true);
 
-        packagedPizzas.Add(pizza);
+        packagedPizzas.Add(newPizza);
 
-        Debug.Log($"포장된 피자 추가! 현재 개수 : {packagedPizzas.Count}");
+        Debug.Log($"포장된 피자 추가 현재 개수 : {packagedPizzas.Count}");
     }
 
     public void Interact(ToppingInventory inventory)
