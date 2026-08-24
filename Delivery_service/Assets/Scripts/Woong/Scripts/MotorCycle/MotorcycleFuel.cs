@@ -6,8 +6,8 @@ public class MotorcycleFuel : MonoBehaviour
     [Header("Fuel System")]
     public float maxFuel = 100f;
     public float currentFuel;
-    public float fuelConsumptionRate = 5f; // 초당 소모량
-    public Image fuelGaugeUI; // 기름 UI  
+    public float fuelConsumptionRate = 5f;
+    public Image fuelGaugeUI;
 
     private void Start()
     {
@@ -22,7 +22,13 @@ public class MotorcycleFuel : MonoBehaviour
         UpdateUI();
     }
 
-    private void UpdateUI()
+    public void AddFuel(float amount)
+    {
+        currentFuel += amount;
+        currentFuel = Mathf.Clamp(currentFuel, 0, maxFuel);
+        UpdateUI();
+    }
+    public void UpdateUI()
     {
         if (fuelGaugeUI != null)
             fuelGaugeUI.fillAmount = currentFuel / maxFuel;
