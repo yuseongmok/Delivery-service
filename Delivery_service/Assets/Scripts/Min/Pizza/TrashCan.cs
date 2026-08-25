@@ -16,7 +16,7 @@ public class TrashCan : MonoBehaviour, IInteractable
             return;
         }
 
-        if (!inventory.HasItem())
+        if (inventory.HasItem())
         {
             PizzaToppingData item = inventory.RemoveItem();
             Debug.Log($"{item.toppingName}을 버렸습니다.");

@@ -4,7 +4,7 @@ using UnityEngine.AI;
 public class NPCManager : MonoBehaviour
 {
     [Header("NPC 설정")]
-    [SerializeField] private GameObject npcPrefab;
+    [SerializeField] private GameObject[] npcPrefabs;
     [SerializeField] private int maxNPCCount = 30;
 
     [Header("스폰 범위 설정")]
@@ -27,27 +27,32 @@ public class NPCManager : MonoBehaviour
     {
         if (spawnArea == null) return;
 
+        if (npcPrefabs == null || npcPrefabs.Length == 0)
+            return;
+
         for (int i = 0; i < maxNPCCount; i++)
-        {
             SpawnNPC();
-        }
     }
 
     private void SpawnNPC()
     {
-        // 바닥에 NavMesh가 있는지
+        if (npcPrefabs == null || npcPrefabs.Length == 0) return;
+
+        int randomIndex = Random.Range(0, npcPrefabs.Length);
+        GameObject selectedPrefab = npcPrefabs[randomIndex];
+
         Vector3 spawnPosition = GetRandomNavMeshPosition();
 
-        GameObject newNPC = Instantiate(npcPrefab, spawnPosition, Quaternion.identity, npcParent);
+        GameObject newNPC = Instantiate(selectedPrefab, spawnPosition, Quaternion.identity, npcParent);
 
-        NPCWander wanderScript = newNPC.GetComponent<NPCWander>();
+        NPCControl wanderScript = newNPC.GetComponent<NPCControl>();
         if (wanderScript != null)
         {
             wanderScript.OnNPCDeath += HandleNPCDeath;
         }
     }
 
-    private void HandleNPCDeath(NPCWander npc)
+    private void HandleNPCDeath(NPCControl npc)
     {
         npc.OnNPCDeath -= HandleNPCDeath;
         SpawnNPC();     // 인원수 맞추기 위해 바로 스폰
