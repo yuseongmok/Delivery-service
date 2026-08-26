@@ -12,15 +12,17 @@ public class CameraMove : MonoBehaviour
     [SerializeField] private float maxLookAngle = 80f;
 
     private float xRotation;
+    public bool isControllable = true;
 
     private void Start()
     {
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        SetControl(true);
     }
 
     private void Update()
     {
+        if (!isControllable) return;
+
         Look();
     }
 
@@ -33,5 +35,12 @@ public class CameraMove : MonoBehaviour
         xRotation = Mathf.Clamp(xRotation, minLookAngle, maxLookAngle);
         transform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
         player.Rotate(Vector3.up * mouseX);
+    }
+
+    public void SetControl(bool enable)
+    {
+        isControllable = enable;
+        Cursor.lockState = enable ? CursorLockMode.Locked : CursorLockMode.None;
+        Cursor.visible = !enable;
     }
 }

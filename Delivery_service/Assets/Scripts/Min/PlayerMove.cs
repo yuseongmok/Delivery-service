@@ -15,6 +15,8 @@ public class PlayerMove : MonoBehaviour
 
     private float verticalVelocity;
 
+    public bool isControllable = true;
+
     private void Awake()
     {
         controller = GetComponent<CharacterController>();
@@ -22,7 +24,24 @@ public class PlayerMove : MonoBehaviour
 
     private void Update()
     {
+        if (!isControllable)
+        {
+            ApplyGravityOnly();
+            return;
+        }
+
         Move();
+    }
+
+    private void ApplyGravityOnly()
+    {
+        if (controller.isGrounded && verticalVelocity < 0)
+        {
+            verticalVelocity = -2f;
+        }
+
+        verticalVelocity += gravity * Time.deltaTime;
+        controller.Move(new Vector3(0f, verticalVelocity, 0f) * Time.deltaTime);
     }
 
     private void Move()
