@@ -29,16 +29,26 @@ public class PizzaMaker : MonoBehaviour, IInteractable
             // 손에 재료가 있으면
             if (inventory.HasTopping())
             {
-                PizzaToppingData item = inventory.RemoveItem();
+                PizzaToppingData item = inventory.CurrentItem;
 
                 if (item.toppingType != ToppingType.Dough)
                 {
                     Debug.Log("여기에는 도우만 놓을 수 있습니다.");
-                    inventory.AddItem(item);
                     return;
                 }
 
-                PlaceDough(item);
+                // 프리팹 할당 검사
+                if (item.toppingPrefab == null)
+                {
+                    Debug.LogError($"[PizzaMaker] {item.toppingName} 데이터에 toppingPrefab이 할당되지 않았습니다!");
+                    return;
+                }
+
+                // 도우 생성이 성공하면 인벤토리에서 아이템 제거
+                if (PlaceDough(item))
+                {
+                    inventory.RemoveItem();
+                }
                 return;
             }
 
@@ -46,15 +56,12 @@ public class PizzaMaker : MonoBehaviour, IInteractable
         }
 
         // 제작대에 피자가 있는 경우
-
-        // 손에 토핑이 있으면 토핑 추가
         if (inventory.HasTopping())
         {
             currentPizza.Interact(inventory);
             return;
         }
 
-        // 손이 비어있으면 피자를 들기
         if (!inventory.HasItem())
         {
             TakePizza(inventory);
@@ -62,11 +69,8 @@ public class PizzaMaker : MonoBehaviour, IInteractable
         }
     }
 
-    private void PlaceDough(PizzaToppingData dough)
+    private bool PlaceDough(PizzaToppingData dough)
     {
-        if (dough.toppingPrefab == null)
-            return;
-
         GameObject doughObject = Instantiate(
             dough.toppingPrefab,
             doughPlacePoint.position,
@@ -82,12 +86,12 @@ public class PizzaMaker : MonoBehaviour, IInteractable
         if (currentPizza == null)
         {
             Destroy(doughObject);
-            return;
+            return false;
         }
 
         currentPizza.SetPlaced(true);
-
         Debug.Log("도우를 제작대에 놓았습니다.");
+        return true;
     }
 
     private void PlacePizza(ToppingInventory inventory)

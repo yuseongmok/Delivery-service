@@ -6,14 +6,20 @@ using UnityEngine.UI;
 public class CurrentOrderUI : MonoBehaviour
 {
     [SerializeField] private Text currrentOrderText;
+    [SerializeField] private Text locationText;
 
     private void Awake()
     {
         ClearOrder();
     }
 
-    public void DisplayOrders(List<PizzaOrder> orders)
+    public void DisplayOrders(List<PizzaOrder> orders, string targetLocation = "")
     {
+        if (locationText != null)
+        {
+            locationText.text = $"배달지: {targetLocation}";
+        }
+
         if (currrentOrderText == null) return;
 
         StringBuilder sb = new StringBuilder();
@@ -29,6 +35,11 @@ public class CurrentOrderUI : MonoBehaviour
 
     public void ClearOrder()
     {
+        if (locationText != null)
+        {
+            locationText.text = "";
+        }
+
         if (currrentOrderText != null)
         {
             currrentOrderText.text = "<b>[현재 진행 중인 주문]</b>\n없음";

@@ -1,5 +1,10 @@
 using UnityEngine;
 
+public interface IInteractable
+{
+    void Interact(ToppingInventory inventory);
+}
+
 public class Topping : MonoBehaviour, IInteractable
 {
     [SerializeField] private PizzaToppingData toppingData;

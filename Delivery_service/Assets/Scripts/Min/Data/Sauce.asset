@@ -14,5 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ToppingData
   toppingName: "\uC18C\uC2A4"
   icon: {fileID: 0}
-  toppingPrefab: {fileID: 1029941939408685940, guid: a041bcbf7a25c2f4ea09009d3ffed0a6, type: 3}
+  toppingPrefab: {fileID: 2724038606004776190, guid: a041bcbf7a25c2f4ea09009d3ffed0a6, type: 3}
+  spawnCount: 1
   toppingType: 1

@@ -16,20 +16,24 @@ public class PizzaPacking : MonoBehaviour, IInteractable
             return;
         }
 
-        GameObject pizza = inventory.RemovePizza();
+        GameObject pizzaObj = inventory.RemovePizza();
 
-        if (pizza == null)
+        if (pizzaObj == null)
             return;
 
-        PizzaPackage package = pizza.GetComponent<PizzaPackage>();
+        Pizza pizzaScript = pizzaObj.GetComponent<Pizza>();
 
-        if (package == null)
-            package = pizza.AddComponent<PizzaPackage>();
+        if (pizzaScript != null)
+        {
+            // 구움 여부 상관없이 데이터를 추출해 전달
+            PizzaData data = pizzaScript.ToData();
 
-        package.SetPackaged(true);
+            Destroy(pizzaObj);
 
-        Debug.Log("피자를 포장했습니다.");
+            Debug.Log("피자를 포장했습니다.");
 
-        pickupZone.AddPackagedPizza(pizza);
+            // 픽업존에 데이터 전달
+            pickupZone.AddPackagedPizzaData(data);
+        }
     }
 }

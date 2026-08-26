@@ -11,7 +11,7 @@ public class PizzaOrder
 
 public class OrderGenerator : MonoBehaviour
 {
-    private readonly string[] allToppings = { "치즈", "고추", "페퍼로니", "초콜릿", "젤리", "파인애플" };
+    private readonly string[] allToppings = { "고추", "페퍼로니", "초콜릿", "젤리", "파인애플" };
 
     public List<PizzaOrder> GenerateMultipleOrders()
     {

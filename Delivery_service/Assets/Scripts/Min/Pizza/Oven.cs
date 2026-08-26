@@ -109,6 +109,11 @@ public class Oven : MonoBehaviour, IInteractable
         isBaking = false;
         isFinished = true;
 
+        if (currentPizza != null)
+        {
+            currentPizza.SetBaked(true);
+        }
+
         Debug.Log("피자가 구워졌습니다");
     }
 }
