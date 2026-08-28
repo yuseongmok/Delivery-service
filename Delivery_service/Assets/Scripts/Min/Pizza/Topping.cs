@@ -16,7 +16,7 @@ public class Topping : MonoBehaviour, IInteractable
             Debug.Log("손에 이미 아이템이 있습니다.");
             return;
         }
-
+        MoneyManager.Instance.SpendMoney(toppingData.cost); // 박진웅 추가
         inventory.AddItem(toppingData);
 
         Debug.Log($"{toppingData.toppingName} 획득");
