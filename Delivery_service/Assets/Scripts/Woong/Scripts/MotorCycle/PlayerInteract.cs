@@ -4,9 +4,7 @@ public class PlayerInteract : MonoBehaviour
 {
     public float interactRange = 3f;
     public LayerMask motorcycleLayer;
-
     public Transform playerCameraTransform;
-    private FuelNozzle heldNozzle;
 
     private void Update()
     {
@@ -24,19 +22,27 @@ public class PlayerInteract : MonoBehaviour
         RaycastHit hit;
 
         Debug.DrawRay(origin, direction * interactRange, Color.red, 2f);
-
+        FuelNozzle heldNozzle = null;
+        FuelNozzle[] allNozzles = FindObjectsOfType<FuelNozzle>();
+        foreach (FuelNozzle n in allNozzles)
+        {
+            if (n.currentState == FuelNozzle.NozzleState.InHand)
+            {
+                heldNozzle = n;
+                break;
+            }
+        }
         if (Physics.Raycast(ray, out hit, interactRange, motorcycleLayer))
         {
             GameObject target = hit.collider.gameObject;
 
-            // 노즐  
+            // 노즐 클릭 
             FuelNozzle nozzle = target.GetComponent<FuelNozzle>();
             if (nozzle != null)
             {
                 if (heldNozzle == null)
                 {
                     nozzle.PickUpNozzle();
-                    heldNozzle = nozzle;
                 }
                 return;
             }
@@ -48,22 +54,21 @@ public class PlayerInteract : MonoBehaviour
                 if (heldNozzle != null)
                 {
                     heldNozzle.AttachToBike(cap);
-                    heldNozzle = null;
                 }
                 return;
             }
 
-            // 주유기계 클릭  
+            // 주유기계 클릭 
             if (target.CompareTag("GasPump"))
             {
                 if (heldNozzle != null)
                 {
                     heldNozzle.ReturnPump();
-                    heldNozzle = null;
                 }
                 return;
             }
 
+            // 오토바이 탑승 
             MotorcycleController bike = hit.collider.GetComponentInParent<MotorcycleController>();
             if (bike != null && heldNozzle == null && !bike.isRefueling)
             {

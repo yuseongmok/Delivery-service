@@ -11,6 +11,7 @@ public class MoneyManager : MonoBehaviour
 
     public event Action<int> OnMoneyChanged;
     private string saveFilePath;
+    private int lastCheckedMoney;
 
     private void Awake()
     {
@@ -21,12 +22,25 @@ public class MoneyManager : MonoBehaviour
             DontDestroyOnLoad(gameObject); // 씬이 넘어가도 파괴되지 않음
             saveFilePath = Path.Combine(Application.persistentDataPath, "economySave.json");
             LoadMoney();
+            lastCheckedMoney = currentMoney;
         }
         else
         {
             Destroy(gameObject);
         }
     }
+#if UNITY_EDITOR
+    private void Update()
+    {
+        // 게임 실행 중 인스펙터에서 숫자를 직접 수정했을 때를 감지
+        if (currentMoney != lastCheckedMoney)
+        {
+            lastCheckedMoney = currentMoney;
+            SaveMoney();
+            OnMoneyChanged?.Invoke(currentMoney);
+        }
+    }
+#endif
 
     // 돈 쓰기 
     public bool SpendMoney(int amount)
@@ -34,6 +48,7 @@ public class MoneyManager : MonoBehaviour
         if (currentMoney >= amount)
         {
             currentMoney -= amount;
+            lastCheckedMoney = currentMoney;
             Debug.Log($"-{amount}원 소모. 남은 돈: {currentMoney}원");
             SaveMoney(); // 돈이 바뀔 때마다 자동 저장
             OnMoneyChanged?.Invoke(currentMoney);
@@ -48,6 +63,7 @@ public class MoneyManager : MonoBehaviour
     {
         OnMoneyChanged?.Invoke(currentMoney);
         currentMoney += amount;
+        lastCheckedMoney = currentMoney;
         Debug.Log($"+{amount}원 획득. 남은 돈: {currentMoney}원");
         SaveMoney();
         OnMoneyChanged?.Invoke(currentMoney);
