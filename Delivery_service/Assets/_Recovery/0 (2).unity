@@ -12154,7 +12154,6 @@ GameObject:
   - component: {fileID: 66465469}
   - component: {fileID: 65522163}
   - component: {fileID: 65763920550125261}
-  - component: {fileID: 65763920550125262}
   m_Layer: 0
   m_Name: SM_Env_Bridge_Underside_35
   m_TagString: Untagged
@@ -22201,7 +22200,6 @@ GameObject:
   - component: {fileID: 105946816}
   - component: {fileID: 104954254}
   - component: {fileID: 65763920606654128}
-  - component: {fileID: 65763920606654129}
   m_Layer: 0
   m_Name: SM_Env_Bridge_Underside_14
   m_TagString: Untagged
@@ -27621,7 +27619,6 @@ GameObject:
   - component: {fileID: 65532264573633743}
   - component: {fileID: 65532264573633744}
   - component: {fileID: 65532264573633745}
-  - component: {fileID: 65532264573633746}
   m_Layer: 0
   m_Name: SM_Env_Road_Crossing_22
   m_TagString: Untagged
@@ -34227,8 +34224,8 @@ GameObject:
   - component: {fileID: 167073486}
   - component: {fileID: 165914428}
   - component: {fileID: 65532264604716378}
+  - component: {fileID: 65532264604716379}
   - component: {fileID: 65532264604716380}
-  - component: {fileID: 65532264604716381}
   m_Layer: 0
   m_Name: SM_Env_Road_Crossing_40
   m_TagString: Untagged
@@ -41185,7 +41182,6 @@ GameObject:
   - component: {fileID: 200393163}
   - component: {fileID: 199239301}
   - component: {fileID: 65763920684167611}
-  - component: {fileID: 65763920684167612}
   m_Layer: 0
   m_Name: SM_Env_Bridge_Underside_11
   m_TagString: Untagged
@@ -42743,7 +42739,6 @@ GameObject:
   - component: {fileID: 203961327}
   - component: {fileID: 205116577}
   - component: {fileID: 65763920705700767}
-  - component: {fileID: 65763920705700768}
   m_Layer: 0
   m_Name: SM_Env_Bridge_Underside_36
   m_TagString: Untagged
@@ -47076,7 +47071,6 @@ GameObject:
   - component: {fileID: 65532264682259084}
   - component: {fileID: 65532264682259085}
   - component: {fileID: 65532264682259086}
-  - component: {fileID: 65532264682259087}
   m_Layer: 0
   m_Name: SM_Env_Road_Crossing_16
   m_TagString: Untagged
@@ -51274,8 +51268,8 @@ GameObject:
   - component: {fileID: 251538567}
   - component: {fileID: 250142069}
   - component: {fileID: 65532264688924435}
+  - component: {fileID: 65532264688924436}
   - component: {fileID: 65532264688924437}
-  - component: {fileID: 65532264688924438}
   m_Layer: 0
   m_Name: SM_Env_Road_Crossing_05
   m_TagString: Untagged
@@ -51575,7 +51569,6 @@ GameObject:
   - component: {fileID: 248977662}
   - component: {fileID: 247922608}
   - component: {fileID: 65763920732514446}
-  - component: {fileID: 65763920732514447}
   m_Layer: 0
   m_Name: SM_Env_Bridge_Underside_07
   m_TagString: Untagged
@@ -55825,7 +55818,6 @@ GameObject:
   - component: {fileID: 267102787}
   - component: {fileID: 268061965}
   - component: {fileID: 65763920751680051}
-  - component: {fileID: 65763920751680052}
   m_Layer: 0
   m_Name: SM_Env_Bridge_Underside_42
   m_TagString: Untagged
@@ -68308,7 +68300,6 @@ GameObject:
   - component: {fileID: 65532264246595132}
   - component: {fileID: 65532264246595133}
   - component: {fileID: 65532264246595134}
-  - component: {fileID: 65532264246595135}
   m_Layer: 0
   m_Name: SM_Env_Road_Crossing_28
   m_TagString: Untagged
@@ -69977,7 +69968,6 @@ GameObject:
   - component: {fileID: 333647573}
   - component: {fileID: 334686619}
   - component: {fileID: 65763920282418853}
-  - component: {fileID: 65763920282418854}
   m_Layer: 0
   m_Name: SM_Env_Bridge_Underside_04
   m_TagString: Untagged
@@ -70229,7 +70219,6 @@ GameObject:
   - component: {fileID: 65532264264943392}
   - component: {fileID: 65532264264943393}
   - component: {fileID: 65532264264943394}
-  - component: {fileID: 65532264264943395}
   m_Layer: 0
   m_Name: SM_Env_Road_Crossing_43
   m_TagString: Untagged
@@ -72789,8 +72778,8 @@ GameObject:
   - component: {fileID: 344545747}
   - component: {fileID: 346007585}
   - component: {fileID: 65532264257897031}
+  - component: {fileID: 65532264257897032}
   - component: {fileID: 65532264257897033}
-  - component: {fileID: 65532264257897034}
   m_Layer: 0
   m_Name: SM_Env_Road_Crossing_15
   m_TagString: Untagged
@@ -74134,7 +74123,6 @@ GameObject:
   - component: {fileID: 356412680}
   - component: {fileID: 355437126}
   - component: {fileID: 65763920318897528}
-  - component: {fileID: 65763920318897529}
   m_Layer: 0
   m_Name: SM_Env_Bridge_Underside_45
   m_TagString: Untagged
@@ -75225,7 +75213,6 @@ GameObject:
   - component: {fileID: 359372930}
   - component: {fileID: 360349644}
   - component: {fileID: 65763920323864818}
-  - component: {fileID: 65763920323864819}
   m_Layer: 0
   m_Name: SM_Env_Bridge_Underside_05
   m_TagString: Untagged
@@ -77655,7 +77642,6 @@ GameObject:
   - component: {fileID: 65532264269793515}
   - component: {fileID: 65532264269793516}
   - component: {fileID: 65532264269793517}
-  - component: {fileID: 65532264269793518}
   m_Layer: 0
   m_Name: SM_Env_Road_Crossing_31
   m_TagString: Untagged
@@ -82071,7 +82057,6 @@ GameObject:
   - component: {fileID: 387578144}
   - component: {fileID: 386408046}
   - component: {fileID: 65763920350185808}
-  - component: {fileID: 65763920350185809}
   m_Layer: 0
   m_Name: SM_Env_Bridge_Underside_09
   m_TagString: Untagged
@@ -82317,7 +82302,6 @@ GameObject:
   - component: {fileID: 65532264316545210}
   - component: {fileID: 65532264316545211}
   - component: {fileID: 65532264316545212}
-  - component: {fileID: 65532264316545213}
   m_Layer: 0
   m_Name: SM_Env_Road_Crossing_29
   m_TagString: Untagged
@@ -97919,7 +97903,6 @@ GameObject:
   - component: {fileID: 65532264353118651}
   - component: {fileID: 65532264353118652}
   - component: {fileID: 65532264353118653}
-  - component: {fileID: 65532264353118654}
   m_Layer: 0
   m_Name: SM_Env_Road_Crossing_23
   m_TagString: Untagged
@@ -101842,7 +101825,6 @@ GameObject:
   - component: {fileID: 65532264372186622}
   - component: {fileID: 65532264372186623}
   - component: {fileID: 65532264372186624}
-  - component: {fileID: 65532264372186625}
   m_Layer: 0
   m_Name: SM_Env_Road_Crossing_19
   m_TagString: Untagged
@@ -111112,7 +111094,6 @@ GameObject:
   - component: {fileID: 495376075}
   - component: {fileID: 496447877}
   - component: {fileID: 65763920444237499}
-  - component: {fileID: 65763920444237500}
   m_Layer: 0
   m_Name: SM_Env_Bridge_Underside_43
   m_TagString: Untagged
@@ -112809,7 +112790,6 @@ GameObject:
   - component: {fileID: 510198560}
   - component: {fileID: 511239278}
   - component: {fileID: 65763920474960720}
-  - component: {fileID: 65763920474960721}
   m_Layer: 0
   m_Name: SM_Env_Bridge_Underside_10
   m_TagString: Untagged
@@ -114882,7 +114862,6 @@ GameObject:
   - component: {fileID: 65532264422557779}
   - component: {fileID: 65532264422557780}
   - component: {fileID: 65532264422557781}
-  - component: {fileID: 65532264422557782}
   m_Layer: 0
   m_Name: SM_Env_Road_Crossing_06
   m_TagString: Untagged
@@ -117589,8 +117568,8 @@ GameObject:
   - component: {fileID: 536665747}
   - component: {fileID: 535441249}
   - component: {fileID: 65532264437433607}
+  - component: {fileID: 65532264437433608}
   - component: {fileID: 65532264437433609}
-  - component: {fileID: 65532264437433610}
   m_Layer: 0
   m_Name: SM_Env_Road_Crossing_32
   m_TagString: Untagged
@@ -118074,7 +118053,6 @@ GameObject:
   - component: {fileID: 65532264439104493}
   - component: {fileID: 65532264439104494}
   - component: {fileID: 65532264439104495}
-  - component: {fileID: 65532264439104496}
   m_Layer: 0
   m_Name: SM_Env_Road_Crossing_08
   m_TagString: Untagged
@@ -128568,7 +128546,6 @@ GameObject:
   - component: {fileID: 584475520}
   - component: {fileID: 583501006}
   - component: {fileID: 65763919994360816}
-  - component: {fileID: 65763919994360817}
   m_Layer: 0
   m_Name: SM_Env_Bridge_Underside_08
   m_TagString: Untagged
@@ -132743,8 +132720,8 @@ GameObject:
   - component: {fileID: 605392961}
   - component: {fileID: 604201395}
   - component: {fileID: 65532265072397269}
+  - component: {fileID: 65532265072397270}
   - component: {fileID: 65532265072397271}
-  - component: {fileID: 65532265072397272}
   m_Layer: 0
   m_Name: SM_Env_Road_Crossing_18
   m_TagString: Untagged
@@ -138870,7 +138847,6 @@ GameObject:
   - component: {fileID: 635770996}
   - component: {fileID: 636813114}
   - component: {fileID: 65763920047925252}
-  - component: {fileID: 65763920047925253}
   m_Layer: 0
   m_Name: SM_Env_Bridge_Underside_02
   m_TagString: Untagged
@@ -143105,6 +143081,7 @@ GameObject:
   - component: {fileID: 653325080}
   - component: {fileID: 652608234}
   - component: {fileID: 65532265090967692}
+  - component: {fileID: 65532265090967693}
   - component: {fileID: 65532265090967694}
   m_Layer: 0
   m_Name: SM_Env_Road_Crossing_07
@@ -161131,8 +161108,8 @@ GameObject:
   - component: {fileID: 730760168}
   - component: {fileID: 731410970}
   - component: {fileID: 65532265180731516}
+  - component: {fileID: 65532265180731517}
   - component: {fileID: 65532265180731518}
-  - component: {fileID: 65532265180731519}
   m_Layer: 0
   m_Name: SM_Env_Road_Crossing_34
   m_TagString: Untagged
@@ -181062,8 +181039,8 @@ GameObject:
   - component: {fileID: 819524113}
   - component: {fileID: 818807779}
   - component: {fileID: 65532264724490629}
+  - component: {fileID: 65532264724490630}
   - component: {fileID: 65532264724490631}
-  - component: {fileID: 65532264724490632}
   m_Layer: 0
   m_Name: SM_Env_Road_Crossing_11
   m_TagString: Untagged
@@ -181873,7 +181850,6 @@ GameObject:
   - component: {fileID: 825048152}
   - component: {fileID: 826071830}
   - component: {fileID: 65763919716043816}
-  - component: {fileID: 65763919716043817}
   m_Layer: 0
   m_Name: SM_Env_Bridge_Underside_44
   m_TagString: Untagged
@@ -185391,7 +185367,6 @@ GameObject:
   - component: {fileID: 65532264770674558}
   - component: {fileID: 65532264770674559}
   - component: {fileID: 65532264770674560}
-  - component: {fileID: 65532264770674561}
   m_Layer: 0
   m_Name: SM_Env_Road_Crossing_26
   m_TagString: Untagged
@@ -185462,7 +185437,6 @@ GameObject:
   - component: {fileID: 65532264770468754}
   - component: {fileID: 65532264770468755}
   - component: {fileID: 65532264770468756}
-  - component: {fileID: 65532264770468757}
   m_Layer: 0
   m_Name: SM_Env_Road_Crossing_41
   m_TagString: Untagged
@@ -200324,7 +200298,6 @@ GameObject:
   - component: {fileID: 65532264807901034}
   - component: {fileID: 65532264807901035}
   - component: {fileID: 65532264807901036}
-  - component: {fileID: 65532264807901037}
   m_Layer: 0
   m_Name: SM_Env_Road_Crossing_17
   m_TagString: Untagged
@@ -204553,8 +204526,8 @@ GameObject:
   - component: {fileID: 920708707}
   - component: {fileID: 922097553}
   - component: {fileID: 65532264821489143}
+  - component: {fileID: 65532264821489144}
   - component: {fileID: 65532264821489145}
-  - component: {fileID: 65532264821489146}
   m_Layer: 0
   m_Name: SM_Env_Road_Crossing_38
   m_TagString: Untagged
@@ -217415,7 +217388,6 @@ GameObject:
   - component: {fileID: 65532264893035893}
   - component: {fileID: 65532264893035894}
   - component: {fileID: 65532264893035895}
-  - component: {fileID: 65532264893035896}
   m_Layer: 0
   m_Name: SM_Env_Road_Crossing_09
   m_TagString: Untagged
@@ -238571,7 +238543,6 @@ GameObject:
   - component: {fileID: 1091791006}
   - component: {fileID: 1090686928}
   - component: {fileID: 65763919444580590}
-  - component: {fileID: 65763919444580591}
   m_Layer: 0
   m_Name: SM_Env_Bridge_Underside_06
   m_TagString: Untagged
@@ -247146,8 +247117,8 @@ GameObject:
   - component: {fileID: 1129583369}
   - component: {fileID: 1128456955}
   - component: {fileID: 65532263440713885}
+  - component: {fileID: 65532263440713886}
   - component: {fileID: 65532263440713887}
-  - component: {fileID: 65532263440713888}
   m_Layer: 0
   m_Name: SM_Env_Road_Crossing_42
   m_TagString: Untagged
@@ -248255,7 +248226,6 @@ GameObject:
   - component: {fileID: 65532263433726644}
   - component: {fileID: 65532263433726645}
   - component: {fileID: 65532263433726646}
-  - component: {fileID: 65532263433726647}
   m_Layer: 0
   m_Name: SM_Env_Road_Crossing_12
   m_TagString: Untagged
@@ -249903,7 +249873,6 @@ GameObject:
   - component: {fileID: 1139189643}
   - component: {fileID: 1140277445}
   - component: {fileID: 65763919477463035}
-  - component: {fileID: 65763919477463036}
   m_Layer: 0
   m_Name: SM_Env_Bridge_Underside_38
   m_TagString: Untagged
@@ -250699,7 +250668,6 @@ GameObject:
   - component: {fileID: 65532263458930496}
   - component: {fileID: 65532263458930497}
   - component: {fileID: 65532263458930498}
-  - component: {fileID: 65532263458930499}
   m_Layer: 0
   m_Name: SM_Env_Road_Crossing_33
   m_TagString: Untagged
@@ -256753,39 +256721,6 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!1 &1173421988
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1173421989}
-  m_Layer: 0
-  m_Name: Cars
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1173421989
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1173421988}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -16.00306, y: 0.30475, z: -15.98947}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 4144714684397695478}
-  - {fileID: 1598181871}
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &1173613721
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -269161,7 +269096,6 @@ GameObject:
   - component: {fileID: 1240884360}
   - component: {fileID: 1239909318}
   - component: {fileID: 65763919577027832}
-  - component: {fileID: 65763919577027833}
   m_Layer: 0
   m_Name: SM_Env_Bridge_Underside_40
   m_TagString: Untagged
@@ -272964,7 +272898,6 @@ GameObject:
   - component: {fileID: 65532263552826292}
   - component: {fileID: 65532263552826293}
   - component: {fileID: 65532263552826294}
-  - component: {fileID: 65532263552826295}
   m_Layer: 0
   m_Name: SM_Env_Road_Crossing_37
   m_TagString: Untagged
@@ -275932,8 +275865,8 @@ GameObject:
   - component: {fileID: 1267859243}
   - component: {fileID: 1267142361}
   - component: {fileID: 65532263570597055}
+  - component: {fileID: 65532263570597056}
   - component: {fileID: 65532263570597057}
-  - component: {fileID: 65532263570597058}
   m_Layer: 0
   m_Name: SM_Env_Road_Crossing_25
   m_TagString: Untagged
@@ -292001,7 +291934,6 @@ GameObject:
   - component: {fileID: 65532263633582969}
   - component: {fileID: 65532263633582970}
   - component: {fileID: 65532263633582971}
-  - component: {fileID: 65532263633582972}
   m_Layer: 0
   m_Name: SM_Env_Road_Crossing_01
   m_TagString: Untagged
@@ -293107,7 +293039,6 @@ GameObject:
   - component: {fileID: 1343131196}
   - component: {fileID: 1344235890}
   - component: {fileID: 65763919160278604}
-  - component: {fileID: 65763919160278605}
   m_Layer: 0
   m_Name: SM_Env_Bridge_Underside_13
   m_TagString: Untagged
@@ -293885,8 +293816,8 @@ GameObject:
   - component: {fileID: 1348428677}
   - component: {fileID: 1346998903}
   - component: {fileID: 65532263122434065}
+  - component: {fileID: 65532263122434066}
   - component: {fileID: 65532263122434067}
-  - component: {fileID: 65532263122434068}
   m_Layer: 0
   m_Name: SM_Env_Road_Crossing_21
   m_TagString: Untagged
@@ -297311,7 +297242,6 @@ GameObject:
   - component: {fileID: 65532263137714560}
   - component: {fileID: 65532263137714561}
   - component: {fileID: 65532263137714562}
-  - component: {fileID: 65532263137714563}
   m_Layer: 0
   m_Name: SM_Env_Road_Crossing_39
   m_TagString: Untagged
@@ -300150,8 +300080,8 @@ GameObject:
   - component: {fileID: 1376171091}
   - component: {fileID: 1376798113}
   - component: {fileID: 65532263158558663}
+  - component: {fileID: 65532263158558664}
   - component: {fileID: 65532263158558665}
-  - component: {fileID: 65532263158558666}
   m_Layer: 0
   m_Name: SM_Env_Road_Crossing_24
   m_TagString: Untagged
@@ -312321,7 +312251,6 @@ GameObject:
   - component: {fileID: 65532263205520214}
   - component: {fileID: 65532263205520215}
   - component: {fileID: 65532263205520216}
-  - component: {fileID: 65532263205520217}
   m_Layer: 0
   m_Name: SM_Env_Road_Crossing_04
   m_TagString: Untagged
@@ -322947,8 +322876,8 @@ GameObject:
   - component: {fileID: 1484411849}
   - component: {fileID: 1483514427}
   - component: {fileID: 65532263254214749}
+  - component: {fileID: 65532263254214750}
   - component: {fileID: 65532263254214751}
-  - component: {fileID: 65532263254214752}
   m_Layer: 0
   m_Name: SM_Env_Road_Crossing_02
   m_TagString: Untagged
@@ -331761,7 +331690,6 @@ GameObject:
   - component: {fileID: 1521906025}
   - component: {fileID: 1520932391}
   - component: {fileID: 65763919321170201}
-  - component: {fileID: 65763919321170202}
   m_Layer: 0
   m_Name: SM_Env_Bridge_Underside_01
   m_TagString: Untagged
@@ -337120,8 +337048,8 @@ GameObject:
   - component: {fileID: 1545759083}
   - component: {fileID: 1546950809}
   - component: {fileID: 65532263323955967}
+  - component: {fileID: 65532263323955968}
   - component: {fileID: 65532263323955969}
-  - component: {fileID: 65532263323955970}
   m_Layer: 0
   m_Name: SM_Env_Road_Crossing_35
   m_TagString: Untagged
@@ -337842,7 +337770,6 @@ GameObject:
   - component: {fileID: 1544230705}
   - component: {fileID: 1545269375}
   - component: {fileID: 65763919361238849}
-  - component: {fileID: 65763919361238850}
   m_Layer: 0
   m_Name: SM_Env_Bridge_Underside_12
   m_TagString: Untagged
@@ -346893,7 +346820,6 @@ GameObject:
   - component: {fileID: 1585325053}
   - component: {fileID: 1584383155}
   - component: {fileID: 65763919400358797}
-  - component: {fileID: 65763919400358798}
   m_Layer: 0
   m_Name: SM_Env_Bridge_Underside_37
   m_TagString: Untagged
@@ -350666,9 +350592,9 @@ MonoBehaviour:
   obstacleLayer:
     serializedVersion: 2
     m_Bits: 65536
-  detectionDistance: 2.18
-  detectionRadius: 2.46
-  rayOffset: {x: 0, y: 1.09, z: 3.18}
+  detectionDistance: 4
+  detectionRadius: 1.5
+  rayOffset: {x: 0, y: 0.96, z: 1.54}
 --- !u!64 &1598181868
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -350756,8 +350682,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1598181866}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: 1, z: -0, w: 0}
-  m_LocalPosition: {x: 114.38306, y: -0.36475, z: 13.569469}
+  m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
+  m_LocalPosition: {x: 98.38, y: -0.06, z: -2.42}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children:
@@ -350770,7 +350696,7 @@ Transform:
   - {fileID: 974055609}
   - {fileID: 1486704164}
   - {fileID: 1699209740}
-  m_Father: {fileID: 1173421989}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
 --- !u!1 &1598223249
 GameObject:
@@ -354806,8 +354732,8 @@ GameObject:
   - component: {fileID: 1621416600}
   - component: {fileID: 1622289258}
   - component: {fileID: 65532263919960332}
+  - component: {fileID: 65532263919960333}
   - component: {fileID: 65532263919960334}
-  - component: {fileID: 65532263919960335}
   m_Layer: 0
   m_Name: SM_Env_Road_Crossing_03
   m_TagString: Untagged
@@ -383968,8 +383894,8 @@ GameObject:
   - component: {fileID: 1744262208}
   - component: {fileID: 1742841266}
   - component: {fileID: 65532264034160596}
+  - component: {fileID: 65532264034160597}
   - component: {fileID: 65532264034160598}
-  - component: {fileID: 65532264034160599}
   m_Layer: 0
   m_Name: SM_Env_Road_Crossing_13
   m_TagString: Untagged
@@ -386248,7 +386174,6 @@ GameObject:
   - component: {fileID: 1752621618}
   - component: {fileID: 1751582076}
   - component: {fileID: 65763919031800386}
-  - component: {fileID: 65763919031800387}
   m_Layer: 0
   m_Name: SM_Env_Bridge_Underside_03
   m_TagString: Untagged
@@ -396344,7 +396269,6 @@ GameObject:
   - component: {fileID: 1791396460}
   - component: {fileID: 1792503074}
   - component: {fileID: 65763919055944220}
-  - component: {fileID: 65763919055944221}
   m_Layer: 0
   m_Name: SM_Env_Bridge_Underside_39
   m_TagString: Untagged
@@ -423192,8 +423116,8 @@ GameObject:
   - component: {fileID: 1918332180}
   - component: {fileID: 1916902630}
   - component: {fileID: 65532263692334720}
+  - component: {fileID: 65532263692334721}
   - component: {fileID: 65532263692334722}
-  - component: {fileID: 65532263692334723}
   m_Layer: 0
   m_Name: SM_Env_Road_Crossing_30
   m_TagString: Untagged
@@ -441999,8 +441923,8 @@ GameObject:
   - component: {fileID: 2007176531}
   - component: {fileID: 2008409249}
   - component: {fileID: 65532263768592071}
+  - component: {fileID: 65532263768592072}
   - component: {fileID: 65532263768592073}
-  - component: {fileID: 65532263768592074}
   m_Layer: 0
   m_Name: SM_Env_Road_Crossing_10
   m_TagString: Untagged
@@ -446522,8 +446446,8 @@ GameObject:
   - component: {fileID: 2029099026}
   - component: {fileID: 2028431840}
   - component: {fileID: 65532263782384518}
+  - component: {fileID: 65532263782384519}
   - component: {fileID: 65532263782384520}
-  - component: {fileID: 65532263782384521}
   m_Layer: 0
   m_Name: SM_Env_Road_Crossing_20
   m_TagString: Untagged
@@ -451840,7 +451764,6 @@ GameObject:
   - component: {fileID: 2048916439}
   - component: {fileID: 2047745177}
   - component: {fileID: 65763918790036391}
-  - component: {fileID: 65763918790036392}
   m_Layer: 0
   m_Name: SM_Env_Bridge_Underside_46
   m_TagString: Untagged
@@ -453497,7 +453420,6 @@ GameObject:
   - component: {fileID: 65532263820303577}
   - component: {fileID: 65532263820303578}
   - component: {fileID: 65532263820303579}
-  - component: {fileID: 65532263820303580}
   m_Layer: 0
   m_Name: SM_Env_Road_Crossing_36
   m_TagString: Untagged
@@ -459344,7 +459266,6 @@ GameObject:
   - component: {fileID: 2080153725}
   - component: {fileID: 2079147827}
   - component: {fileID: 65763918804930573}
-  - component: {fileID: 65763918804930574}
   m_Layer: 0
   m_Name: SM_Env_Bridge_Underside_41
   m_TagString: Untagged
@@ -466144,7 +466065,6 @@ GameObject:
   - component: {fileID: 65532263868274557}
   - component: {fileID: 65532263868274558}
   - component: {fileID: 65532263868274559}
-  - component: {fileID: 65532263868274560}
   m_Layer: 0
   m_Name: SM_Env_Road_Crossing_14
   m_TagString: Untagged
@@ -473106,8 +473026,8 @@ GameObject:
   - component: {fileID: 2146982495}
   - component: {fileID: 2146347949}
   - component: {fileID: 65532263900266955}
+  - component: {fileID: 65532263900266956}
   - component: {fileID: 65532263900266957}
-  - component: {fileID: 65532263900266958}
   m_Layer: 0
   m_Name: SM_Env_Road_Crossing_27
   m_TagString: Untagged
@@ -613285,6 +613205,27 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 5, y: 0.1640916, z: 5}
   m_Center: {x: -2.5, y: -0.082045786, z: -2.5}
+--- !u!65 &65532263122434066
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1349493473}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 5, y: 2.13, z: 5}
+  m_Center: {x: -2.5, y: -0.0820457, z: -2.5}
 --- !u!114 &65532263122434067
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -613297,33 +613238,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79e46e93fd2f7604f8ad74c60b3009b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CrosswalkZone
---- !u!54 &65532263122434068
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1349493473}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 126
-  m_CollisionDetection: 0
 --- !u!65 &65532263137714560
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -613364,8 +613278,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 5, y: 2.13, z: 10.088626}
-  m_Center: {x: -2.5, y: -0.082045674, z: -5.044313}
+  m_Size: {x: 5, y: 2.13, z: 5}
+  m_Center: {x: -2.5, y: -0.0820457, z: -2.5}
 --- !u!114 &65532263137714562
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -613378,33 +613292,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79e46e93fd2f7604f8ad74c60b3009b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CrosswalkZone
---- !u!54 &65532263137714563
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1366588272}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 126
-  m_CollisionDetection: 0
 --- !u!65 &65532263158558663
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -613426,6 +613313,27 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 5, y: 0.1640916, z: 5}
   m_Center: {x: -2.5, y: -0.082045786, z: -2.5}
+--- !u!65 &65532263158558664
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1379300663}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 5, y: 2.13, z: 5}
+  m_Center: {x: -2.5, y: -0.0820457, z: -2.5}
 --- !u!114 &65532263158558665
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -613438,33 +613346,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79e46e93fd2f7604f8ad74c60b3009b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CrosswalkZone
---- !u!54 &65532263158558666
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1379300663}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 126
-  m_CollisionDetection: 0
 --- !u!65 &65532263205520214
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -613505,8 +613386,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 5, y: 2.13, z: 10.239563}
-  m_Center: {x: -2.5, y: -0.082045674, z: 0.11978173}
+  m_Size: {x: 5, y: 2.13, z: 5}
+  m_Center: {x: -2.5, y: -0.0820457, z: -2.5}
 --- !u!114 &65532263205520216
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -613519,33 +613400,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79e46e93fd2f7604f8ad74c60b3009b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CrosswalkZone
---- !u!54 &65532263205520217
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1432590758}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 126
-  m_CollisionDetection: 0
 --- !u!65 &65532263254214749
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -613567,6 +613421,27 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 5, y: 0.1640916, z: 5}
   m_Center: {x: -2.5, y: -0.082045786, z: -2.5}
+--- !u!65 &65532263254214750
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1481282221}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 5, y: 2.13, z: 5}
+  m_Center: {x: -2.5, y: -0.0820457, z: -2.5}
 --- !u!114 &65532263254214751
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -613579,33 +613454,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79e46e93fd2f7604f8ad74c60b3009b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CrosswalkZone
---- !u!54 &65532263254214752
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1481282221}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 126
-  m_CollisionDetection: 0
 --- !u!65 &65532263323955967
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -613627,6 +613475,27 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 5, y: 0.1640916, z: 5}
   m_Center: {x: -2.5, y: -0.082045786, z: -2.5}
+--- !u!65 &65532263323955968
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1544726543}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 5, y: 2.13, z: 5}
+  m_Center: {x: -2.5, y: -0.0820457, z: -2.5}
 --- !u!114 &65532263323955969
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -613639,33 +613508,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79e46e93fd2f7604f8ad74c60b3009b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CrosswalkZone
---- !u!54 &65532263323955970
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1544726543}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 126
-  m_CollisionDetection: 0
 --- !u!65 &65532263433726644
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -613706,8 +613548,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 5, y: 2.13, z: 10.247743}
-  m_Center: {x: -2.5, y: -0.082045674, z: 0.12387133}
+  m_Size: {x: 5, y: 2.13, z: 5}
+  m_Center: {x: -2.5, y: -0.0820457, z: -2.5}
 --- !u!114 &65532263433726646
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -613720,33 +613562,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79e46e93fd2f7604f8ad74c60b3009b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CrosswalkZone
---- !u!54 &65532263433726647
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1134145604}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 126
-  m_CollisionDetection: 0
 --- !u!65 &65532263440713885
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -613768,6 +613583,27 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 5, y: 0.1640916, z: 5}
   m_Center: {x: -2.5, y: -0.082045786, z: -2.5}
+--- !u!65 &65532263440713886
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1130680941}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 5, y: 2.13, z: 5}
+  m_Center: {x: -2.5, y: -0.0820457, z: -2.5}
 --- !u!114 &65532263440713887
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -613780,33 +613616,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79e46e93fd2f7604f8ad74c60b3009b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CrosswalkZone
---- !u!54 &65532263440713888
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1130680941}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 126
-  m_CollisionDetection: 0
 --- !u!65 &65532263458930496
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -613847,8 +613656,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 5, y: 2.13, z: 10.195894}
-  m_Center: {x: -2.5, y: -0.082045674, z: 0.09794712}
+  m_Size: {x: 5, y: 2.13, z: 5}
+  m_Center: {x: -2.5, y: -0.0820457, z: -2.5}
 --- !u!114 &65532263458930498
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -613861,33 +613670,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79e46e93fd2f7604f8ad74c60b3009b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CrosswalkZone
---- !u!54 &65532263458930499
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1142498736}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 126
-  m_CollisionDetection: 0
 --- !u!65 &65532263552826292
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -613928,8 +613710,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 5, y: 2.13, z: 10.380416}
-  m_Center: {x: -2.5, y: -0.082045674, z: -5.190208}
+  m_Size: {x: 5, y: 2.13, z: 5}
+  m_Center: {x: -2.5, y: -0.0820457, z: -2.5}
 --- !u!114 &65532263552826294
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -613942,33 +613724,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79e46e93fd2f7604f8ad74c60b3009b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CrosswalkZone
---- !u!54 &65532263552826295
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1253466436}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 126
-  m_CollisionDetection: 0
 --- !u!65 &65532263570597055
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -613990,6 +613745,27 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 5, y: 0.1640916, z: 5}
   m_Center: {x: -2.5, y: -0.082045786, z: -2.5}
+--- !u!65 &65532263570597056
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1268858447}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 5, y: 2.13, z: 5}
+  m_Center: {x: -2.5, y: -0.0820457, z: -2.5}
 --- !u!114 &65532263570597057
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -614002,33 +613778,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79e46e93fd2f7604f8ad74c60b3009b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CrosswalkZone
---- !u!54 &65532263570597058
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1268858447}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 126
-  m_CollisionDetection: 0
 --- !u!65 &65532263633582969
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -614069,8 +613818,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 5, y: 2.13, z: 9.968924}
-  m_Center: {x: -2.5, y: -0.082045674, z: -0.015538454}
+  m_Size: {x: 5, y: 2.13, z: 5}
+  m_Center: {x: -2.5, y: -0.0820457, z: -2.5}
 --- !u!114 &65532263633582971
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -614083,33 +613832,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79e46e93fd2f7604f8ad74c60b3009b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CrosswalkZone
---- !u!54 &65532263633582972
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1340481929}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 126
-  m_CollisionDetection: 0
 --- !u!65 &65532263692334720
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -614131,6 +613853,27 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 5, y: 0.1640916, z: 5}
   m_Center: {x: -2.5, y: -0.082045786, z: -2.5}
+--- !u!65 &65532263692334721
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1919396976}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 5, y: 2.13, z: 5}
+  m_Center: {x: -2.5, y: -0.0820457, z: -2.5}
 --- !u!114 &65532263692334722
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -614143,33 +613886,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79e46e93fd2f7604f8ad74c60b3009b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CrosswalkZone
---- !u!54 &65532263692334723
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1919396976}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 126
-  m_CollisionDetection: 0
 --- !u!65 &65532263768592071
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -614191,6 +613907,27 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 5, y: 0.1640916, z: 5}
   m_Center: {x: -2.5, y: -0.082045786, z: -2.5}
+--- !u!65 &65532263768592072
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2006176823}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 5, y: 2.13, z: 5}
+  m_Center: {x: -2.5, y: -0.0820457, z: -2.5}
 --- !u!114 &65532263768592073
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -614203,33 +613940,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79e46e93fd2f7604f8ad74c60b3009b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CrosswalkZone
---- !u!54 &65532263768592074
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2006176823}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 126
-  m_CollisionDetection: 0
 --- !u!65 &65532263782384518
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -614251,6 +613961,27 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 5, y: 0.1640916, z: 5}
   m_Center: {x: -2.5, y: -0.082045786, z: -2.5}
+--- !u!65 &65532263782384519
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2025937270}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 5, y: 2.13, z: 5}
+  m_Center: {x: -2.5, y: -0.0820457, z: -2.5}
 --- !u!114 &65532263782384520
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -614263,33 +613994,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79e46e93fd2f7604f8ad74c60b3009b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CrosswalkZone
---- !u!54 &65532263782384521
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2025937270}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 126
-  m_CollisionDetection: 0
 --- !u!65 &65532263820303577
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -614330,8 +614034,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 5, y: 2.13, z: 10.33158}
-  m_Center: {x: -2.5, y: -0.082045674, z: 0.16579008}
+  m_Size: {x: 5, y: 2.13, z: 5}
+  m_Center: {x: -2.5, y: -0.0820457, z: -2.5}
 --- !u!114 &65532263820303579
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -614344,33 +614048,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79e46e93fd2f7604f8ad74c60b3009b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CrosswalkZone
---- !u!54 &65532263820303580
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2055521833}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 126
-  m_CollisionDetection: 0
 --- !u!65 &65532263868274557
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -614411,8 +614088,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 5, y: 2.13, z: 10.534309}
-  m_Center: {x: -2.5, y: -0.082045674, z: 0.2671547}
+  m_Size: {x: 5, y: 2.13, z: 5}
+  m_Center: {x: -2.5, y: -0.0820457, z: -2.5}
 --- !u!114 &65532263868274559
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -614425,33 +614102,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79e46e93fd2f7604f8ad74c60b3009b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CrosswalkZone
---- !u!54 &65532263868274560
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2111884685}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 126
-  m_CollisionDetection: 0
 --- !u!65 &65532263900266955
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -614473,6 +614123,27 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 5, y: 0.1640916, z: 5}
   m_Center: {x: -2.5, y: -0.082045786, z: -2.5}
+--- !u!65 &65532263900266956
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2143853371}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 5, y: 2.13, z: 5}
+  m_Center: {x: -2.5, y: -0.0820457, z: -2.5}
 --- !u!114 &65532263900266957
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -614485,33 +614156,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79e46e93fd2f7604f8ad74c60b3009b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CrosswalkZone
---- !u!54 &65532263900266958
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2143853371}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 126
-  m_CollisionDetection: 0
 --- !u!65 &65532263919960332
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -614533,6 +614177,27 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 5, y: 0.1640916, z: 5}
   m_Center: {x: -2.5, y: -0.082045786, z: -2.5}
+--- !u!65 &65532263919960333
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1620319228}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 5, y: 2.13, z: 5}
+  m_Center: {x: -2.5, y: -0.0820457, z: -2.5}
 --- !u!114 &65532263919960334
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -614545,33 +614210,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79e46e93fd2f7604f8ad74c60b3009b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CrosswalkZone
---- !u!54 &65532263919960335
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1620319228}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 126
-  m_CollisionDetection: 0
 --- !u!65 &65532264034160596
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -614593,6 +614231,27 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 5, y: 0.1640916, z: 5}
   m_Center: {x: -2.5, y: -0.082045786, z: -2.5}
+--- !u!65 &65532264034160597
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1741133092}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 5, y: 2.13, z: 5}
+  m_Center: {x: -2.5, y: -0.0820457, z: -2.5}
 --- !u!114 &65532264034160598
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -614605,33 +614264,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79e46e93fd2f7604f8ad74c60b3009b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CrosswalkZone
---- !u!54 &65532264034160599
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1741133092}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 126
-  m_CollisionDetection: 0
 --- !u!65 &65532264246595132
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -614672,8 +614304,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 5, y: 2.13, z: 10.277222}
-  m_Center: {x: -2.5, y: -0.082045674, z: -5.138611}
+  m_Size: {x: 5, y: 2.13, z: 5}
+  m_Center: {x: -2.5, y: -0.0820457, z: -2.5}
 --- !u!114 &65532264246595134
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -614686,33 +614318,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79e46e93fd2f7604f8ad74c60b3009b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CrosswalkZone
---- !u!54 &65532264246595135
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 325850316}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 126
-  m_CollisionDetection: 0
 --- !u!65 &65532264257897031
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -614734,6 +614339,27 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 5, y: 0.1640916, z: 5}
   m_Center: {x: -2.5, y: -0.082045786, z: -2.5}
+--- !u!65 &65532264257897032
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 347707575}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 5, y: 2.13, z: 5}
+  m_Center: {x: -2.5, y: -0.0820457, z: -2.5}
 --- !u!114 &65532264257897033
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -614746,33 +614372,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79e46e93fd2f7604f8ad74c60b3009b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CrosswalkZone
---- !u!54 &65532264257897034
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 347707575}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 126
-  m_CollisionDetection: 0
 --- !u!65 &65532264264943392
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -614827,33 +614426,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79e46e93fd2f7604f8ad74c60b3009b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CrosswalkZone
---- !u!54 &65532264264943395
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 335814096}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 126
-  m_CollisionDetection: 0
 --- !u!65 &65532264269793515
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -614894,8 +614466,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 5, y: 2.13, z: 10.191599}
-  m_Center: {x: -2.5, y: -0.082045674, z: 0.09579921}
+  m_Size: {x: 5, y: 2.13, z: 5}
+  m_Center: {x: -2.5, y: -0.0820457, z: -2.5}
 --- !u!114 &65532264269793517
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -614908,33 +614480,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79e46e93fd2f7604f8ad74c60b3009b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CrosswalkZone
---- !u!54 &65532264269793518
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 368185883}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 126
-  m_CollisionDetection: 0
 --- !u!65 &65532264316545210
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -614975,8 +614520,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 5, y: 2.13, z: 10.344963}
-  m_Center: {x: -2.5, y: -0.082045674, z: 0.17248154}
+  m_Size: {x: 5, y: 2.13, z: 5}
+  m_Center: {x: -2.5, y: -0.0820457, z: -2.5}
 --- !u!114 &65532264316545212
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -614989,33 +614534,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79e46e93fd2f7604f8ad74c60b3009b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CrosswalkZone
---- !u!54 &65532264316545213
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 389608010}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 126
-  m_CollisionDetection: 0
 --- !u!65 &65532264353118651
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -615056,8 +614574,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 5, y: 2.13, z: 10.143799}
-  m_Center: {x: -2.5, y: -0.082045674, z: 0.071899414}
+  m_Size: {x: 5, y: 2.13, z: 5}
+  m_Center: {x: -2.5, y: -0.0820457, z: -2.5}
 --- !u!114 &65532264353118653
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -615070,33 +614588,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79e46e93fd2f7604f8ad74c60b3009b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CrosswalkZone
---- !u!54 &65532264353118654
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 449504075}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 126
-  m_CollisionDetection: 0
 --- !u!65 &65532264372186622
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -615137,8 +614628,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 5, y: 2.13, z: 10.170812}
-  m_Center: {x: -2.5, y: -0.082045674, z: -5.085406}
+  m_Size: {x: 5, y: 2.13, z: 5}
+  m_Center: {x: -2.5, y: -0.0820457, z: -2.5}
 --- !u!114 &65532264372186624
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -615151,33 +614642,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79e46e93fd2f7604f8ad74c60b3009b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CrosswalkZone
---- !u!54 &65532264372186625
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 468317966}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 126
-  m_CollisionDetection: 0
 --- !u!65 &65532264422557779
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -615218,8 +614682,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 5, y: 2.13, z: 10.110892}
-  m_Center: {x: -2.5000134, y: -0.082045674, z: 0.05544496}
+  m_Size: {x: 5, y: 2.13, z: 5}
+  m_Center: {x: -2.5, y: -0.0820457, z: -2.5}
 --- !u!114 &65532264422557781
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -615232,33 +614696,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79e46e93fd2f7604f8ad74c60b3009b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CrosswalkZone
---- !u!54 &65532264422557782
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 518591139}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 126
-  m_CollisionDetection: 0
 --- !u!65 &65532264437433607
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -615280,6 +614717,27 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 5, y: 0.1640916, z: 5}
   m_Center: {x: -2.5, y: -0.082045786, z: -2.5}
+--- !u!65 &65532264437433608
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 533471223}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 5, y: 2.13, z: 5}
+  m_Center: {x: -2.5, y: -0.0820457, z: -2.5}
 --- !u!114 &65532264437433609
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -615292,33 +614750,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79e46e93fd2f7604f8ad74c60b3009b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CrosswalkZone
---- !u!54 &65532264437433610
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 533471223}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 126
-  m_CollisionDetection: 0
 --- !u!65 &65532264439104493
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -615359,8 +614790,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 5, y: 2.13, z: 10.094814}
-  m_Center: {x: -2.5, y: -0.082045674, z: 0.04740715}
+  m_Size: {x: 5, y: 2.13, z: 5}
+  m_Center: {x: -2.5, y: -0.0820457, z: -2.5}
 --- !u!114 &65532264439104495
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -615373,33 +614804,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79e46e93fd2f7604f8ad74c60b3009b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CrosswalkZone
---- !u!54 &65532264439104496
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 535468317}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 126
-  m_CollisionDetection: 0
 --- !u!65 &65532264573633743
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -615440,8 +614844,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 5, y: 2.13, z: 10.352997}
-  m_Center: {x: -2.5, y: -0.082045674, z: 0.17649841}
+  m_Size: {x: 5, y: 2.13, z: 5}
+  m_Center: {x: -2.5, y: -0.0820457, z: -2.5}
 --- !u!114 &65532264573633745
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -615454,33 +614858,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79e46e93fd2f7604f8ad74c60b3009b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CrosswalkZone
---- !u!54 &65532264573633746
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 133160511}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 126
-  m_CollisionDetection: 0
 --- !u!65 &65532264604716378
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -615502,6 +614879,27 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 5, y: 0.1640916, z: 5}
   m_Center: {x: -2.5, y: -0.082045786, z: -2.5}
+--- !u!65 &65532264604716379
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 163944362}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 5, y: 2.13, z: 5}
+  m_Center: {x: -2.5, y: -0.0820457, z: -2.5}
 --- !u!114 &65532264604716380
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -615514,33 +614912,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79e46e93fd2f7604f8ad74c60b3009b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CrosswalkZone
---- !u!54 &65532264604716381
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 163944362}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 126
-  m_CollisionDetection: 0
 --- !u!65 &65532264682259084
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -615581,8 +614952,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 5, y: 2.13, z: 10.351746}
-  m_Center: {x: -2.5, y: -0.082045674, z: 0.1758728}
+  m_Size: {x: 5, y: 2.13, z: 5}
+  m_Center: {x: -2.5, y: -0.0820457, z: -2.5}
 --- !u!114 &65532264682259086
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -615595,33 +614966,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79e46e93fd2f7604f8ad74c60b3009b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CrosswalkZone
---- !u!54 &65532264682259087
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 224680060}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 126
-  m_CollisionDetection: 0
 --- !u!65 &65532264688924435
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -615643,6 +614987,27 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 5, y: 0.1640916, z: 5}
   m_Center: {x: -2.5, y: -0.082045786, z: -2.5}
+--- !u!65 &65532264688924436
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 248442339}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 5, y: 2.13, z: 5}
+  m_Center: {x: -2.5, y: -0.0820457, z: -2.5}
 --- !u!114 &65532264688924437
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -615655,33 +615020,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79e46e93fd2f7604f8ad74c60b3009b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CrosswalkZone
---- !u!54 &65532264688924438
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 248442339}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 126
-  m_CollisionDetection: 0
 --- !u!65 &65532264724490629
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -615703,6 +615041,27 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 5, y: 0.1640916, z: 5}
   m_Center: {x: -2.5, y: -0.082045786, z: -2.5}
+--- !u!65 &65532264724490630
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 820523893}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 5, y: 2.13, z: 5}
+  m_Center: {x: -2.5, y: -0.0820457, z: -2.5}
 --- !u!114 &65532264724490631
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -615715,33 +615074,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79e46e93fd2f7604f8ad74c60b3009b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CrosswalkZone
---- !u!54 &65532264724490632
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 820523893}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 126
-  m_CollisionDetection: 0
 --- !u!65 &65532264770468754
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -615782,8 +615114,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 5, y: 2.13, z: 10.113411}
-  m_Center: {x: -2.5, y: -0.082045674, z: 0.056705475}
+  m_Size: {x: 5, y: 2.13, z: 5}
+  m_Center: {x: -2.5, y: -0.0820457, z: -2.5}
 --- !u!114 &65532264770468756
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -615796,33 +615128,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79e46e93fd2f7604f8ad74c60b3009b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CrosswalkZone
---- !u!54 &65532264770468757
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 841654626}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 126
-  m_CollisionDetection: 0
 --- !u!65 &65532264770674558
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -615863,8 +615168,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 5, y: 2.13, z: 10.144562}
-  m_Center: {x: -2.5, y: -0.082045674, z: 0.072280884}
+  m_Size: {x: 5, y: 2.13, z: 5}
+  m_Center: {x: -2.5, y: -0.0820457, z: -2.5}
 --- !u!114 &65532264770674560
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -615877,33 +615182,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79e46e93fd2f7604f8ad74c60b3009b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CrosswalkZone
---- !u!54 &65532264770674561
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 841565582}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 126
-  m_CollisionDetection: 0
 --- !u!65 &65532264807901034
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -615944,8 +615222,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 5, y: 2.13, z: 10.410551}
-  m_Center: {x: -2.5, y: -0.082045674, z: -5.2052755}
+  m_Size: {x: 5, y: 2.13, z: 5}
+  m_Center: {x: -2.5, y: -0.0820457, z: -2.5}
 --- !u!114 &65532264807901036
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -615958,33 +615236,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79e46e93fd2f7604f8ad74c60b3009b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CrosswalkZone
---- !u!54 &65532264807901037
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 903970202}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 126
-  m_CollisionDetection: 0
 --- !u!65 &65532264821489143
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -616006,6 +615257,27 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 5, y: 0.1640916, z: 5}
   m_Center: {x: -2.5, y: -0.082045786, z: -2.5}
+--- !u!65 &65532264821489144
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 919611143}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 5, y: 2.13, z: 5}
+  m_Center: {x: -2.5, y: -0.0820457, z: -2.5}
 --- !u!114 &65532264821489145
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -616018,33 +615290,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79e46e93fd2f7604f8ad74c60b3009b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CrosswalkZone
---- !u!54 &65532264821489146
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 919611143}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 126
-  m_CollisionDetection: 0
 --- !u!65 &65532264893035893
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -616085,8 +615330,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 5, y: 2.13, z: 10.16563}
-  m_Center: {x: -2.5, y: -0.082045674, z: -5.082815}
+  m_Size: {x: 5, y: 2.13, z: 5}
+  m_Center: {x: -2.5, y: -0.0820457, z: -2.5}
 --- !u!114 &65532264893035895
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -616099,33 +615344,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79e46e93fd2f7604f8ad74c60b3009b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CrosswalkZone
---- !u!54 &65532264893035896
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 982806405}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 126
-  m_CollisionDetection: 0
 --- !u!65 &65532265072397269
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -616147,6 +615365,27 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 5, y: 0.1640916, z: 5}
   m_Center: {x: -2.5, y: -0.082045786, z: -2.5}
+--- !u!65 &65532265072397270
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 606425381}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 5, y: 2.13, z: 5}
+  m_Center: {x: -2.5, y: -0.0820457, z: -2.5}
 --- !u!114 &65532265072397271
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -616159,33 +615398,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79e46e93fd2f7604f8ad74c60b3009b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CrosswalkZone
---- !u!54 &65532265072397272
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 606425381}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 126
-  m_CollisionDetection: 0
 --- !u!65 &65532265090967692
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -616207,6 +615419,27 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 5, y: 0.1640916, z: 5}
   m_Center: {x: -2.5, y: -0.082045786, z: -2.5}
+--- !u!65 &65532265090967693
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 650130044}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 5, y: 2.13, z: 5}
+  m_Center: {x: -2.5, y: -0.0820457, z: -2.5}
 --- !u!114 &65532265090967694
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -616240,6 +615473,27 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 5, y: 0.1640916, z: 5}
   m_Center: {x: -2.5, y: -0.082045786, z: -2.5}
+--- !u!65 &65532265180731517
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 733889164}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 5, y: 2.13, z: 5}
+  m_Center: {x: -2.5, y: -0.0820457, z: -2.5}
 --- !u!114 &65532265180731518
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -616252,33 +615506,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79e46e93fd2f7604f8ad74c60b3009b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CrosswalkZone
---- !u!54 &65532265180731519
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 733889164}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 126
-  m_CollisionDetection: 0
 --- !u!65 &65540266782710277
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -641570,22 +640797,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 4.9999914, y: 0.65024346, z: 5}
   m_Center: {x: 2.4999957, y: -1.2029461, z: -2.5}
---- !u!208 &65763918790036392
-NavMeshObstacle:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2049925955}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Shape: 1
-  m_Extents: {x: 2.5, y: 0.32500002, z: 2.5}
-  m_MoveThreshold: 0.1
-  m_Carve: 0
-  m_CarveOnlyStationary: 1
-  m_Center: {x: 2.5, y: -1.2030001, z: -2.5}
-  m_TimeToStationary: 0.5
 --- !u!65 &65763918804930573
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -641607,22 +640818,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 4.9999914, y: 0.65024346, z: 5}
   m_Center: {x: 2.4999957, y: -1.2029461, z: -2.5}
---- !u!208 &65763918804930574
-NavMeshObstacle:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2076981481}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Shape: 1
-  m_Extents: {x: 2.5, y: 0.32500002, z: 2.5}
-  m_MoveThreshold: 0.1
-  m_Carve: 0
-  m_CarveOnlyStationary: 1
-  m_Center: {x: 2.5, y: -1.2030001, z: -2.5}
-  m_TimeToStationary: 0.5
 --- !u!65 &65763918917288980
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -641718,22 +640913,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 4.9999914, y: 0.65024346, z: 5}
   m_Center: {x: 2.4999957, y: -1.2029461, z: -2.5}
---- !u!208 &65763919031800387
-NavMeshObstacle:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1749449382}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Shape: 1
-  m_Extents: {x: 2.5, y: 0.32500002, z: 2.5}
-  m_MoveThreshold: 0.1
-  m_Carve: 0
-  m_CarveOnlyStationary: 1
-  m_Center: {x: 2.5, y: -1.2030001, z: -2.5}
-  m_TimeToStationary: 0.5
 --- !u!65 &65763919055944220
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -641755,22 +640934,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 4.9999914, y: 0.65024346, z: 5}
   m_Center: {x: 2.4999957, y: -1.2029461, z: -2.5}
---- !u!208 &65763919055944221
-NavMeshObstacle:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1794511608}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Shape: 1
-  m_Extents: {x: 2.5, y: 0.32500002, z: 2.5}
-  m_MoveThreshold: 0.1
-  m_Carve: 0
-  m_CarveOnlyStationary: 1
-  m_Center: {x: 2.5, y: -1.2030001, z: -2.5}
-  m_TimeToStationary: 0.5
 --- !u!65 &65763919102961580
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -641829,22 +640992,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 4.9999914, y: 0.65024346, z: 5}
   m_Center: {x: 2.4999957, y: -1.2029461, z: -2.5}
---- !u!208 &65763919160278605
-NavMeshObstacle:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1346246312}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Shape: 1
-  m_Extents: {x: 2.5, y: 0.32500002, z: 2.5}
-  m_MoveThreshold: 0.1
-  m_Carve: 0
-  m_CarveOnlyStationary: 1
-  m_Center: {x: 2.5, y: -1.2030001, z: -2.5}
-  m_TimeToStationary: 0.5
 --- !u!65 &65763919321170201
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -641866,22 +641013,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 4.9999914, y: 0.65024346, z: 5}
   m_Center: {x: 2.4999957, y: -1.2029461, z: -2.5}
---- !u!208 &65763919321170202
-NavMeshObstacle:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1518791165}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Shape: 1
-  m_Extents: {x: 2.5, y: 0.32500002, z: 2.5}
-  m_MoveThreshold: 0.1
-  m_Carve: 0
-  m_CarveOnlyStationary: 1
-  m_Center: {x: 2.5, y: -1.2030001, z: -2.5}
-  m_TimeToStationary: 0.5
 --- !u!65 &65763919361238849
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -641903,22 +641034,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 4.9999914, y: 0.65024346, z: 5}
   m_Center: {x: 2.4999957, y: -1.2029461, z: -2.5}
---- !u!208 &65763919361238850
-NavMeshObstacle:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1547407269}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Shape: 1
-  m_Extents: {x: 2.5, y: 0.32500002, z: 2.5}
-  m_MoveThreshold: 0.1
-  m_Carve: 0
-  m_CarveOnlyStationary: 1
-  m_Center: {x: 2.5, y: -1.2030001, z: -2.5}
-  m_TimeToStationary: 0.5
 --- !u!65 &65763919400358797
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -641940,22 +641055,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 4.9999914, y: 0.65024346, z: 5}
   m_Center: {x: 2.4999957, y: -1.2029461, z: -2.5}
---- !u!208 &65763919400358798
-NavMeshObstacle:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1582218089}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Shape: 1
-  m_Extents: {x: 2.5, y: 0.32500002, z: 2.5}
-  m_MoveThreshold: 0.1
-  m_Carve: 0
-  m_CarveOnlyStationary: 1
-  m_Center: {x: 2.5, y: -1.2030001, z: -2.5}
-  m_TimeToStationary: 0.5
 --- !u!65 &65763919444580590
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -641977,22 +641076,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 4.9999914, y: 0.65024346, z: 5}
   m_Center: {x: 2.4999957, y: -1.2029461, z: -2.5}
---- !u!208 &65763919444580591
-NavMeshObstacle:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1092874250}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Shape: 1
-  m_Extents: {x: 2.5, y: 0.32500002, z: 2.5}
-  m_MoveThreshold: 0.1
-  m_Carve: 0
-  m_CarveOnlyStationary: 1
-  m_Center: {x: 2.5, y: -1.2030001, z: -2.5}
-  m_TimeToStationary: 0.5
 --- !u!65 &65763919477463035
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -642014,22 +641097,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 4.9999914, y: 0.65024346, z: 5}
   m_Center: {x: 2.4999957, y: -1.2029461, z: -2.5}
---- !u!208 &65763919477463036
-NavMeshObstacle:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1138114335}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Shape: 1
-  m_Extents: {x: 2.5, y: 0.32500002, z: 2.5}
-  m_MoveThreshold: 0.1
-  m_Carve: 0
-  m_CarveOnlyStationary: 1
-  m_Center: {x: 2.5, y: -1.2030001, z: -2.5}
-  m_TimeToStationary: 0.5
 --- !u!65 &65763919528124862
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -642162,22 +641229,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 4.9999914, y: 0.65024346, z: 5}
   m_Center: {x: 2.4999957, y: -1.2029461, z: -2.5}
---- !u!208 &65763919577027833
-NavMeshObstacle:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1237777436}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Shape: 1
-  m_Extents: {x: 2.5, y: 0.32500002, z: 2.5}
-  m_MoveThreshold: 0.1
-  m_Carve: 0
-  m_CarveOnlyStationary: 1
-  m_Center: {x: 2.5, y: -1.2030001, z: -2.5}
-  m_TimeToStationary: 0.5
 --- !u!65 &65763919617996953
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -642273,22 +641324,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 4.9999914, y: 0.65024346, z: 5}
   m_Center: {x: 2.4999957, y: -1.2029461, z: -2.5}
---- !u!208 &65763919716043817
-NavMeshObstacle:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 824026316}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Shape: 1
-  m_Extents: {x: 2.5, y: 0.32500002, z: 2.5}
-  m_MoveThreshold: 0.1
-  m_Carve: 0
-  m_CarveOnlyStationary: 1
-  m_Center: {x: 2.5, y: -1.2030001, z: -2.5}
-  m_TimeToStationary: 0.5
 --- !u!65 &65763919912548548
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -642384,22 +641419,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 4.9999914, y: 0.65024346, z: 5}
   m_Center: {x: 2.4999957, y: -1.2029461, z: -2.5}
---- !u!208 &65763919994360817
-NavMeshObstacle:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 585562900}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Shape: 1
-  m_Extents: {x: 2.5, y: 0.32500002, z: 2.5}
-  m_MoveThreshold: 0.1
-  m_Carve: 0
-  m_CarveOnlyStationary: 1
-  m_Center: {x: 2.5, y: -1.2030001, z: -2.5}
-  m_TimeToStationary: 0.5
 --- !u!65 &65763920047925252
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -642421,22 +641440,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 4.9999914, y: 0.65024346, z: 5}
   m_Center: {x: 2.4999957, y: -1.2029461, z: -2.5}
---- !u!208 &65763920047925253
-NavMeshObstacle:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 634749152}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Shape: 1
-  m_Extents: {x: 2.5, y: 0.32500002, z: 2.5}
-  m_MoveThreshold: 0.1
-  m_Carve: 0
-  m_CarveOnlyStationary: 1
-  m_Center: {x: 2.5, y: -1.2030001, z: -2.5}
-  m_TimeToStationary: 0.5
 --- !u!65 &65763920086049005
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -642606,22 +641609,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 4.9999914, y: 0.65024346, z: 5}
   m_Center: {x: 2.4999957, y: -1.2029461, z: -2.5}
---- !u!208 &65763920282418854
-NavMeshObstacle:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 332633665}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Shape: 1
-  m_Extents: {x: 2.5, y: 0.32500002, z: 2.5}
-  m_MoveThreshold: 0.1
-  m_Carve: 0
-  m_CarveOnlyStationary: 1
-  m_Center: {x: 2.5, y: -1.2030001, z: -2.5}
-  m_TimeToStationary: 0.5
 --- !u!65 &65763920289206338
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -642680,22 +641667,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 4.9999914, y: 0.65024346, z: 5}
   m_Center: {x: 2.4999957, y: -1.2029461, z: -2.5}
---- !u!208 &65763920318897529
-NavMeshObstacle:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 353301916}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Shape: 1
-  m_Extents: {x: 2.5, y: 0.32500002, z: 2.5}
-  m_MoveThreshold: 0.1
-  m_Carve: 0
-  m_CarveOnlyStationary: 1
-  m_Center: {x: 2.5, y: -1.2030001, z: -2.5}
-  m_TimeToStationary: 0.5
 --- !u!65 &65763920323711092
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -642754,22 +641725,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 4.9999914, y: 0.65024346, z: 5}
   m_Center: {x: 2.4999957, y: -1.2029461, z: -2.5}
---- !u!208 &65763920323864819
-NavMeshObstacle:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 358285334}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Shape: 1
-  m_Extents: {x: 2.5, y: 0.32500002, z: 2.5}
-  m_MoveThreshold: 0.1
-  m_Carve: 0
-  m_CarveOnlyStationary: 1
-  m_Center: {x: 2.5, y: -1.2030001, z: -2.5}
-  m_TimeToStationary: 0.5
 --- !u!65 &65763920350185808
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -642791,22 +641746,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 4.9999914, y: 0.65024346, z: 5}
   m_Center: {x: 2.4999957, y: -1.2029461, z: -2.5}
---- !u!208 &65763920350185809
-NavMeshObstacle:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 388587956}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Shape: 1
-  m_Extents: {x: 2.5, y: 0.32500002, z: 2.5}
-  m_MoveThreshold: 0.1
-  m_Carve: 0
-  m_CarveOnlyStationary: 1
-  m_Center: {x: 2.5, y: -1.2030001, z: -2.5}
-  m_TimeToStationary: 0.5
 --- !u!65 &65763920444237499
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -642828,22 +641767,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 4.9999914, y: 0.65024346, z: 5}
   m_Center: {x: 2.4999957, y: -1.2029461, z: -2.5}
---- !u!208 &65763920444237500
-NavMeshObstacle:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 498486879}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Shape: 1
-  m_Extents: {x: 2.5, y: 0.32500002, z: 2.5}
-  m_MoveThreshold: 0.1
-  m_Carve: 0
-  m_CarveOnlyStationary: 1
-  m_Center: {x: 2.5, y: -1.2030001, z: -2.5}
-  m_TimeToStationary: 0.5
 --- !u!65 &65763920474960720
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -642865,22 +641788,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 4.9999914, y: 0.65024346, z: 5}
   m_Center: {x: 2.4999957, y: -1.2029461, z: -2.5}
---- !u!208 &65763920474960721
-NavMeshObstacle:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 509189044}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Shape: 1
-  m_Extents: {x: 2.5, y: 0.32500002, z: 2.5}
-  m_MoveThreshold: 0.1
-  m_Carve: 0
-  m_CarveOnlyStationary: 1
-  m_Center: {x: 2.5, y: -1.2030001, z: -2.5}
-  m_TimeToStationary: 0.5
 --- !u!65 &65763920530745974
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -642939,22 +641846,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 4.9999914, y: 0.65024346, z: 5}
   m_Center: {x: 2.4999957, y: -1.2029461, z: -2.5}
---- !u!208 &65763920550125262
-NavMeshObstacle:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 63354409}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Shape: 1
-  m_Extents: {x: 2.5, y: 0.32500002, z: 2.5}
-  m_MoveThreshold: 0.1
-  m_Carve: 0
-  m_CarveOnlyStationary: 1
-  m_Center: {x: 2.5, y: -1.2030001, z: -2.5}
-  m_TimeToStationary: 0.5
 --- !u!65 &65763920553996193
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -643013,22 +641904,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 4.9999914, y: 0.65024346, z: 5}
   m_Center: {x: 2.4999957, y: -1.2029461, z: -2.5}
---- !u!208 &65763920606654129
-NavMeshObstacle:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 106956372}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Shape: 1
-  m_Extents: {x: 2.5, y: 0.32500002, z: 2.5}
-  m_MoveThreshold: 0.1
-  m_Carve: 0
-  m_CarveOnlyStationary: 1
-  m_Center: {x: 2.5, y: -1.2030001, z: -2.5}
-  m_TimeToStationary: 0.5
 --- !u!65 &65763920624271435
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -643087,22 +641962,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 4.9999914, y: 0.65024346, z: 5}
   m_Center: {x: 2.4999957, y: -1.2029461, z: -2.5}
---- !u!208 &65763920684167612
-NavMeshObstacle:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 197220703}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Shape: 1
-  m_Extents: {x: 2.5, y: 0.32500002, z: 2.5}
-  m_MoveThreshold: 0.1
-  m_Carve: 0
-  m_CarveOnlyStationary: 1
-  m_Center: {x: 2.5, y: -1.2030001, z: -2.5}
-  m_TimeToStationary: 0.5
 --- !u!65 &65763920705700767
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -643124,22 +641983,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 4.9999914, y: 0.65024346, z: 5}
   m_Center: {x: 2.4999957, y: -1.2029461, z: -2.5}
---- !u!208 &65763920705700768
-NavMeshObstacle:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 202943355}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Shape: 1
-  m_Extents: {x: 2.5, y: 0.32500002, z: 2.5}
-  m_MoveThreshold: 0.1
-  m_Carve: 0
-  m_CarveOnlyStationary: 1
-  m_Center: {x: 2.5, y: -1.2030001, z: -2.5}
-  m_TimeToStationary: 0.5
 --- !u!65 &65763920732514446
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -643161,22 +642004,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 4.9999914, y: 0.65024346, z: 5}
   m_Center: {x: 2.4999957, y: -1.2029461, z: -2.5}
---- !u!208 &65763920732514447
-NavMeshObstacle:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 250052714}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Shape: 1
-  m_Extents: {x: 2.5, y: 0.32500002, z: 2.5}
-  m_MoveThreshold: 0.1
-  m_Carve: 0
-  m_CarveOnlyStationary: 1
-  m_Center: {x: 2.5, y: -1.2030001, z: -2.5}
-  m_TimeToStationary: 0.5
 --- !u!65 &65763920751680051
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -643198,22 +642025,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 4.9999914, y: 0.65024346, z: 5}
   m_Center: {x: 2.4999957, y: -1.2029461, z: -2.5}
---- !u!208 &65763920751680052
-NavMeshObstacle:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 266023639}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Shape: 1
-  m_Extents: {x: 2.5, y: 0.32500002, z: 2.5}
-  m_MoveThreshold: 0.1
-  m_Carve: 0
-  m_CarveOnlyStationary: 1
-  m_Center: {x: 2.5, y: -1.2030001, z: -2.5}
-  m_TimeToStationary: 0.5
 --- !u!65 &65768657368940217
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -664435,8 +663246,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4144714684397265914}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: 1, z: -0, w: 0}
-  m_LocalPosition: {x: -56.82435, y: -0.36475, z: 8.758869}
+  m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
+  m_LocalPosition: {x: -72.82741, y: -0.06, z: -7.2306}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children:
@@ -664449,7 +663260,7 @@ Transform:
   - {fileID: 4144714684397702610}
   - {fileID: 4144714684397776050}
   - {fileID: 4144714684397707318}
-  m_Father: {fileID: 1173421989}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
 --- !u!4 &4144714684397697264
 Transform:
@@ -665293,9 +664104,9 @@ MonoBehaviour:
   obstacleLayer:
     serializedVersion: 2
     m_Bits: 65536
-  detectionDistance: 2.18
-  detectionRadius: 2.46
-  rayOffset: {x: 0, y: 1.09, z: 3.18}
+  detectionDistance: 4
+  detectionRadius: 1.5
+  rayOffset: {x: 0, y: 0.96, z: 1.54}
 --- !u!33 &5721346327511783099
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -667032,4 +665843,5 @@ SceneRoots:
   - {fileID: 934858646}
   - {fileID: 379537851}
   - {fileID: 917070270}
-  - {fileID: 1173421989}
+  - {fileID: 4144714684397695478}
+  - {fileID: 1598181871}

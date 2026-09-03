@@ -832,7 +832,7 @@ GameObject:
   - component: {fileID: 4415654292193749310}
   - component: {fileID: 6162700960697679882}
   - component: {fileID: 5940189326391210770}
-  m_Layer: 0
+  m_Layer: 16
   m_Name: Male_Adult_NPC_3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -849,7 +849,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -71.33, y: 1.0047501, z: 1.2534814}
-  m_LocalScale: {x: 1.3, y: 1.3, z: 1.3}
+  m_LocalScale: {x: 1.1, y: 1.1, z: 1.1}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 1359840421923748610}
@@ -918,6 +918,7 @@ MonoBehaviour:
   wanderRadius: 100
   minWaitTime: 0.5
   maxWaitTime: 3
+  isCrossing: 0
 --- !u!136 &5940189326391210770
 CapsuleCollider:
   m_ObjectHideFlags: 0

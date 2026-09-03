@@ -430,7 +430,7 @@ GameObject:
   - component: {fileID: 2448492177072637230}
   - component: {fileID: 8405861891823577594}
   - component: {fileID: 5402933574365686449}
-  m_Layer: 0
+  m_Layer: 16
   m_Name: Male_Elder_NPC_4
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -447,7 +447,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -16.72, y: 1.0047501, z: -11.78}
-  m_LocalScale: {x: 1.2, y: 1.2, z: 1.2}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 4880345990479126198}
@@ -511,11 +511,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NPCControl
   minSpeed: 0.5
-  maxSpeed: 0.8
-  baseSpeedForAnim: 1
+  maxSpeed: 0.7
+  baseSpeedForAnim: 0.8
   wanderRadius: 100
   minWaitTime: 0.5
   maxWaitTime: 3
+  isCrossing: 0
 --- !u!136 &5402933574365686449
 CapsuleCollider:
   m_ObjectHideFlags: 0

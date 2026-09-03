@@ -14,6 +14,7 @@ public class NPCControl : MonoBehaviour
     [SerializeField] private float wanderRadius = 15f;
     [SerializeField] private float minWaitTime = 1f;
     [SerializeField] private float maxWaitTime = 3f;
+    public bool isCrossing = false;
 
     private NavMeshAgent agent;
     private Animator anim;
@@ -27,6 +28,7 @@ public class NPCControl : MonoBehaviour
     {
         agent = GetComponent<NavMeshAgent>();
         anim = GetComponent<Animator>();
+        agent.stoppingDistance = 0.5f;
     }
 
     private void Start()
@@ -38,13 +40,16 @@ public class NPCControl : MonoBehaviour
     {
         UpdateAnimation();
 
-        if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
+        if (!agent.pathPending)
         {
-            timer += Time.deltaTime;
-            if (timer >= currentWaitTime)
+            if (agent.remainingDistance <= agent.stoppingDistance)
             {
-                SetNewRandomDestination();
-                timer = 0f;
+                timer += Time.deltaTime;
+                if (timer >= currentWaitTime)
+                {
+                    SetNewRandomDestination();
+                    timer = 0f;
+                }
             }
         }
     }

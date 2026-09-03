@@ -463,7 +463,7 @@ GameObject:
   - component: {fileID: 6332411766911926600}
   - component: {fileID: 6756926420672223936}
   - component: {fileID: 8887359250709622853}
-  m_Layer: 0
+  m_Layer: 16
   m_Name: Female_Adult_NPC_2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -480,7 +480,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -70.72, y: 1.00475, z: -0.58023745}
-  m_LocalScale: {x: 1.3, y: 1.3, z: 1.3}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 6121977105035818366}
@@ -549,6 +549,7 @@ MonoBehaviour:
   wanderRadius: 100
   minWaitTime: 0.5
   maxWaitTime: 3
+  isCrossing: 0
 --- !u!136 &8887359250709622853
 CapsuleCollider:
   m_ObjectHideFlags: 0
