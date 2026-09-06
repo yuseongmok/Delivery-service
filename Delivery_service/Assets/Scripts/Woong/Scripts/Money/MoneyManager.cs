@@ -2,6 +2,9 @@ using UnityEngine;
 using System.IO;
 using System;
 
+// ?? 지출 카테고리 정의
+public enum ExpenseType { None, PizzaTopping, Fuel }
+
 public class MoneyManager : MonoBehaviour
 {
     public static MoneyManager Instance { get; private set; }
@@ -9,17 +12,22 @@ public class MoneyManager : MonoBehaviour
     [Header("현재 재화")]
     public int currentMoney = 1000;
 
+    [Header("오늘의 정산 데이터")]
+    public int dailyIncome = 0;
+    public int dailyTotalExpense = 0;
+    public int expensePizza = 0;
+    public int expenseFuel = 0;
+
     public event Action<int> OnMoneyChanged;
     private string saveFilePath;
     private int lastCheckedMoney;
 
     private void Awake()
     {
-        // 싱글톤 패턴: 어디서든 접근 가능하게 만듦
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject); // 씬이 넘어가도 파괴되지 않음
+            DontDestroyOnLoad(gameObject);
             saveFilePath = Path.Combine(Application.persistentDataPath, "economySave.json");
             LoadMoney();
             lastCheckedMoney = currentMoney;
@@ -29,10 +37,10 @@ public class MoneyManager : MonoBehaviour
             Destroy(gameObject);
         }
     }
+
 #if UNITY_EDITOR
     private void Update()
     {
-        // 게임 실행 중 인스펙터에서 숫자를 직접 수정했을 때를 감지
         if (currentMoney != lastCheckedMoney)
         {
             lastCheckedMoney = currentMoney;
@@ -42,34 +50,46 @@ public class MoneyManager : MonoBehaviour
     }
 #endif
 
-    // 돈 쓰기 
-    public bool SpendMoney(int amount)
+    // ?? 돈 쓰기 (어디에 썼는지 카테고리 추가)
+    public bool SpendMoney(int amount, ExpenseType expenseType = ExpenseType.None)
     {
         if (currentMoney >= amount)
         {
             currentMoney -= amount;
             lastCheckedMoney = currentMoney;
-            Debug.Log($"-{amount}원 소모. 남은 돈: {currentMoney}원");
-            SaveMoney(); // 돈이 바뀔 때마다 자동 저장
+
+            // 정산용 지출 누적
+            dailyTotalExpense += amount;
+            if (expenseType == ExpenseType.PizzaTopping) expensePizza += amount;
+            else if (expenseType == ExpenseType.Fuel) expenseFuel += amount;
+
+            SaveMoney();
             OnMoneyChanged?.Invoke(currentMoney);
             return true;
         }
-        Debug.Log("잔액이 부족합니다.");
         return false;
     }
 
-    // 돈 벌기
+    // ?? 돈 벌기 (수익 누적)
     public void AddMoney(int amount)
     {
-        OnMoneyChanged?.Invoke(currentMoney);
         currentMoney += amount;
         lastCheckedMoney = currentMoney;
-        Debug.Log($"+{amount}원 획득. 남은 돈: {currentMoney}원");
+        dailyIncome += amount; // 정산용 수익 누적
+
         SaveMoney();
         OnMoneyChanged?.Invoke(currentMoney);
     }
 
-    // JSON 저장하기
+    // ?? 정산 완료 후 하루 데이터 초기화
+    public void ResetDailyStats()
+    {
+        dailyIncome = 0;
+        dailyTotalExpense = 0;
+        expensePizza = 0;
+        expenseFuel = 0;
+    }
+
     private void SaveMoney()
     {
         EconomySaveData data = new EconomySaveData { savedMoney = currentMoney };
@@ -77,7 +97,6 @@ public class MoneyManager : MonoBehaviour
         File.WriteAllText(saveFilePath, json);
     }
 
-    // JSON 불러오기
     private void LoadMoney()
     {
         if (File.Exists(saveFilePath))
