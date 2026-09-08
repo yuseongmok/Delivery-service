@@ -118,4 +118,17 @@ public class CarMov : MonoBehaviour
         Gizmos.DrawRay(origin, direction * detectionDistance);
         Gizmos.DrawWireSphere(origin + direction * detectionDistance, detectionRadius);
     }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        NPCControl npc = other.GetComponentInParent<NPCControl>();
+        if (npc != null)
+        {
+            // ºÎµúÈù Ãæ°Ý·® °è»ê
+            Vector3 hitDirection = transform.forward;
+            float hitForce = speed * 2.5f;
+
+            npc.Die(hitDirection, Mathf.Clamp(hitForce, 15f, 50f));
+        }
+    }
 }

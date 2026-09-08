@@ -33,6 +33,7 @@ public class MotorcycleController : MonoBehaviour
     public bool isRefueling = false;
 
     private float currentSpeed = 0f;
+    public float CurrentSpeed => currentSpeed;  // 현재 움직이는중이다 를 외부로 보내기 위함
     private float currentSteerAngle = 0f;
     private float smoothedSteerInput = 0f;
 
