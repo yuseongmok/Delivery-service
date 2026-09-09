@@ -1,0 +1,705 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9368ff969bee4de9aa111cc9fec38125, type: 3}
+  m_Name: SoundLibrary
+  m_EditorClassIdentifier: Assembly-CSharp::DeliveryService.Yun.Audio.SoundLibrary
+  entries:
+  - id: 100
+    category: 1
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 0.92, y: 1.08}
+    loop: 0
+    spatialMode: 1
+    minDistance: 1
+    maxDistance: 25
+  - id: 101
+    category: 1
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 0.92, y: 1.08}
+    loop: 0
+    spatialMode: 1
+    minDistance: 1
+    maxDistance: 25
+  - id: 102
+    category: 1
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 0
+    spatialMode: 1
+    minDistance: 1
+    maxDistance: 25
+  - id: 103
+    category: 1
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 0
+    spatialMode: 1
+    minDistance: 1
+    maxDistance: 25
+  - id: 200
+    category: 2
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 0
+    spatialMode: 0
+    minDistance: 1
+    maxDistance: 25
+  - id: 201
+    category: 2
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 0
+    spatialMode: 0
+    minDistance: 1
+    maxDistance: 25
+  - id: 202
+    category: 2
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 0
+    spatialMode: 0
+    minDistance: 1
+    maxDistance: 25
+  - id: 203
+    category: 2
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 0
+    spatialMode: 0
+    minDistance: 1
+    maxDistance: 25
+  - id: 204
+    category: 2
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 0
+    spatialMode: 0
+    minDistance: 1
+    maxDistance: 25
+  - id: 205
+    category: 2
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 0
+    spatialMode: 0
+    minDistance: 1
+    maxDistance: 25
+  - id: 206
+    category: 2
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 0
+    spatialMode: 0
+    minDistance: 1
+    maxDistance: 25
+  - id: 207
+    category: 2
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 0
+    spatialMode: 0
+    minDistance: 1
+    maxDistance: 25
+  - id: 208
+    category: 2
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 0
+    spatialMode: 0
+    minDistance: 1
+    maxDistance: 25
+  - id: 300
+    category: 1
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 0
+    spatialMode: 1
+    minDistance: 1
+    maxDistance: 25
+  - id: 301
+    category: 1
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 0
+    spatialMode: 1
+    minDistance: 1
+    maxDistance: 25
+  - id: 302
+    category: 1
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 0
+    spatialMode: 1
+    minDistance: 1
+    maxDistance: 25
+  - id: 303
+    category: 1
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 0
+    spatialMode: 1
+    minDistance: 1
+    maxDistance: 25
+  - id: 304
+    category: 1
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 0
+    spatialMode: 1
+    minDistance: 1
+    maxDistance: 25
+  - id: 305
+    category: 1
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 0
+    spatialMode: 1
+    minDistance: 1
+    maxDistance: 25
+  - id: 306
+    category: 1
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 1
+    spatialMode: 1
+    minDistance: 1
+    maxDistance: 25
+  - id: 307
+    category: 1
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 0
+    spatialMode: 1
+    minDistance: 1
+    maxDistance: 25
+  - id: 308
+    category: 1
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 0
+    spatialMode: 1
+    minDistance: 1
+    maxDistance: 25
+  - id: 309
+    category: 1
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 0
+    spatialMode: 1
+    minDistance: 1
+    maxDistance: 25
+  - id: 310
+    category: 1
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 0
+    spatialMode: 1
+    minDistance: 1
+    maxDistance: 25
+  - id: 311
+    category: 1
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 0
+    spatialMode: 1
+    minDistance: 1
+    maxDistance: 25
+  - id: 400
+    category: 1
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 0
+    spatialMode: 1
+    minDistance: 1
+    maxDistance: 25
+  - id: 401
+    category: 1
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 0
+    spatialMode: 1
+    minDistance: 1
+    maxDistance: 25
+  - id: 402
+    category: 1
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 0
+    spatialMode: 1
+    minDistance: 1
+    maxDistance: 25
+  - id: 403
+    category: 1
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 1
+    spatialMode: 1
+    minDistance: 1
+    maxDistance: 25
+  - id: 404
+    category: 1
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 1
+    spatialMode: 1
+    minDistance: 1
+    maxDistance: 25
+  - id: 405
+    category: 1
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 0
+    spatialMode: 1
+    minDistance: 1
+    maxDistance: 25
+  - id: 406
+    category: 1
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 0
+    spatialMode: 1
+    minDistance: 1
+    maxDistance: 25
+  - id: 407
+    category: 1
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 0
+    spatialMode: 1
+    minDistance: 1
+    maxDistance: 25
+  - id: 408
+    category: 1
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 1
+    spatialMode: 1
+    minDistance: 1
+    maxDistance: 25
+  - id: 409
+    category: 1
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 0
+    spatialMode: 1
+    minDistance: 1
+    maxDistance: 25
+  - id: 500
+    category: 1
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 0
+    spatialMode: 1
+    minDistance: 1
+    maxDistance: 25
+  - id: 501
+    category: 1
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 0
+    spatialMode: 1
+    minDistance: 1
+    maxDistance: 25
+  - id: 502
+    category: 1
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 1
+    spatialMode: 1
+    minDistance: 1
+    maxDistance: 25
+  - id: 503
+    category: 1
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 0
+    spatialMode: 1
+    minDistance: 1
+    maxDistance: 25
+  - id: 504
+    category: 1
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 0
+    spatialMode: 1
+    minDistance: 1
+    maxDistance: 25
+  - id: 505
+    category: 1
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 0
+    spatialMode: 1
+    minDistance: 1
+    maxDistance: 25
+  - id: 600
+    category: 1
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 0.92, y: 1.08}
+    loop: 0
+    spatialMode: 1
+    minDistance: 1
+    maxDistance: 25
+  - id: 601
+    category: 1
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 0
+    spatialMode: 1
+    minDistance: 1
+    maxDistance: 25
+  - id: 602
+    category: 1
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 1
+    spatialMode: 1
+    minDistance: 1
+    maxDistance: 25
+  - id: 603
+    category: 1
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 1
+    spatialMode: 1
+    minDistance: 1
+    maxDistance: 25
+  - id: 604
+    category: 3
+    clips:
+    - {fileID: 0}
+    volume: 0.4
+    pitchRange: {x: 1, y: 1}
+    loop: 1
+    spatialMode: 0
+    minDistance: 1
+    maxDistance: 25
+  - id: 605
+    category: 3
+    clips:
+    - {fileID: 0}
+    volume: 0.4
+    pitchRange: {x: 1, y: 1}
+    loop: 1
+    spatialMode: 0
+    minDistance: 1
+    maxDistance: 25
+  - id: 606
+    category: 3
+    clips:
+    - {fileID: 0}
+    volume: 0.4
+    pitchRange: {x: 1, y: 1}
+    loop: 1
+    spatialMode: 0
+    minDistance: 1
+    maxDistance: 25
+  - id: 700
+    category: 2
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 0
+    spatialMode: 0
+    minDistance: 1
+    maxDistance: 25
+  - id: 701
+    category: 2
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 0
+    spatialMode: 0
+    minDistance: 1
+    maxDistance: 25
+  - id: 702
+    category: 2
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 0
+    spatialMode: 0
+    minDistance: 1
+    maxDistance: 25
+  - id: 703
+    category: 2
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 0
+    spatialMode: 0
+    minDistance: 1
+    maxDistance: 25
+  - id: 800
+    category: 0
+    clips:
+    - {fileID: 0}
+    volume: 0.5
+    pitchRange: {x: 1, y: 1}
+    loop: 1
+    spatialMode: 0
+    minDistance: 1
+    maxDistance: 25
+  - id: 900
+    category: 2
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 0
+    spatialMode: 0
+    minDistance: 1
+    maxDistance: 25
+  - id: 901
+    category: 2
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 0
+    spatialMode: 0
+    minDistance: 1
+    maxDistance: 25
+  - id: 902
+    category: 2
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 0
+    spatialMode: 0
+    minDistance: 1
+    maxDistance: 25
+  - id: 903
+    category: 2
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 0
+    spatialMode: 0
+    minDistance: 1
+    maxDistance: 25
+  - id: 904
+    category: 2
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 0
+    spatialMode: 0
+    minDistance: 1
+    maxDistance: 25
+  - id: 905
+    category: 2
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 0
+    spatialMode: 0
+    minDistance: 1
+    maxDistance: 25
+  - id: 906
+    category: 2
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 0
+    spatialMode: 0
+    minDistance: 1
+    maxDistance: 25
+  - id: 907
+    category: 1
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 1
+    spatialMode: 1
+    minDistance: 1
+    maxDistance: 25
+  - id: 908
+    category: 1
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 0
+    spatialMode: 1
+    minDistance: 1
+    maxDistance: 25
+  - id: 909
+    category: 2
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 0
+    spatialMode: 0
+    minDistance: 1
+    maxDistance: 25
+  - id: 910
+    category: 2
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 0
+    spatialMode: 0
+    minDistance: 1
+    maxDistance: 25
+  - id: 911
+    category: 1
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 0
+    spatialMode: 1
+    minDistance: 1
+    maxDistance: 25
+  - id: 912
+    category: 1
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 0
+    spatialMode: 1
+    minDistance: 1
+    maxDistance: 25
+  - id: 913
+    category: 1
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 1
+    spatialMode: 1
+    minDistance: 1
+    maxDistance: 60
+  - id: 914
+    category: 2
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 0
+    spatialMode: 0
+    minDistance: 1
+    maxDistance: 25
+  - id: 915
+    category: 2
+    clips:
+    - {fileID: 0}
+    volume: 1
+    pitchRange: {x: 1, y: 1}
+    loop: 0
+    spatialMode: 0
+    minDistance: 1
+    maxDistance: 25
