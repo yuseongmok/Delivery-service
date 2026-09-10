@@ -6,21 +6,14 @@ public class MotorcycleController : MonoBehaviour
     public Rigidbody sphereRB;
     public Rigidbody bikeBody;
     public Collider sphereCollider;
-    public Collider bodyCollider;
-
+    public Collider bodyCollider;  
     [Header(" 속도 및 가속 )")]
-    [Tooltip("오토바이의 최대 속도")]
     public float maxSpeed = 30f;
     public float reverseSpeed = 10f;
-
-    [Tooltip("기본 가속도")]
     public float acceleration = 15f;
-    [Tooltip("Shift 키 풀악셀 ")]
     public float shiftAccelMultiplier = 3f;
     public float deceleration = 15f;
-    [Tooltip(" 브레이크 강도")]
     public float brakePower = 40f;
-
     public float steerStrength = 80f;
 
     [Header("Camera and View")]
@@ -33,8 +26,8 @@ public class MotorcycleController : MonoBehaviour
     public bool isRefueling = false;
 
     private float currentSpeed = 0f;
-    public float CurrentSpeed => currentSpeed;  // 현재 움직이는중이다 를 외부로 보내기 위함
-    private float currentSteerAngle = 0f;
+    public float CurrentSpeed => currentSpeed;//이거 민기쟝이 작성한거임
+    private float currentSteerAngle = 0f; 
     private float smoothedSteerInput = 0f;
 
     private float xRotation = 0f;
@@ -45,19 +38,42 @@ public class MotorcycleController : MonoBehaviour
     private bool isShiftPressed = false;
 
     public bool isDriven = false;
+    private bool isControllable = true;
     private GameObject rider;
     private float enterTime = 0f;
-    private Vector3 bodyOffset;
+
+    private Vector3 localOffset;
 
     private MotorcycleFuel fuelSystem;
     public MotorcycleDurability durabilitySystem;
 
     private void Start()
     {
-        if (sphereCollider != null && bodyCollider != null) Physics.IgnoreCollision(sphereCollider, bodyCollider);
-        if (bikeBody != null && sphereRB != null) bodyOffset = bikeBody.transform.position - sphereRB.transform.position;
-        if (sphereRB != null) sphereRB.transform.parent = null;
-        if (bikeBody != null) bikeBody.transform.parent = null;
+        if (sphereCollider != null)
+        {
+            Collider[] allBikeColliders = GetComponentsInChildren<Collider>();
+            foreach (Collider col in allBikeColliders)
+            {
+                if (col != sphereCollider)
+                {
+                    Physics.IgnoreCollision(sphereCollider, col);
+                }
+            }
+        }
+
+        if (sphereRB != null)
+        {
+            localOffset = Quaternion.Inverse(transform.rotation) * (transform.position - sphereRB.transform.position);
+
+            sphereRB.transform.parent = null;
+            sphereRB.interpolation = RigidbodyInterpolation.Interpolate;
+        }
+
+        if (bikeBody != null)
+        {
+            bikeBody.isKinematic = true;
+            bikeBody.interpolation = RigidbodyInterpolation.None;
+        }
 
         fuelSystem = GetComponent<MotorcycleFuel>();
         if (bikeCamera != null) bikeCamera.SetActive(false);
@@ -67,7 +83,7 @@ public class MotorcycleController : MonoBehaviour
 
     private void Update()
     {
-        if (isDriven)
+        if (isDriven && isControllable)
         {
             HandleCameraLook();
             if (Time.time - enterTime > 0.2f && Input.GetKeyDown(KeyCode.E)) ExitBike();
@@ -78,6 +94,7 @@ public class MotorcycleController : MonoBehaviour
             isShiftPressed = Input.GetKey(KeyCode.LeftShift);
 
             smoothedSteerInput = Mathf.Lerp(smoothedSteerInput, steerInput, Time.deltaTime * 15f);
+            RotationPhysics();
         }
         else
         {
@@ -95,7 +112,6 @@ public class MotorcycleController : MonoBehaviour
         if (durabilitySystem != null && durabilitySystem.currentDurability <= 0) moveInput = 0f;
 
         Movement();
-        RotationPhysics();
 
         if (isDriven && Mathf.Abs(moveInput) > 0.1f && fuelSystem != null)
         {
@@ -105,14 +121,18 @@ public class MotorcycleController : MonoBehaviour
 
     private void LateUpdate()
     {
-        if (sphereRB != null && bikeBody != null)
+        if (sphereRB != null)
         {
-            transform.position = sphereRB.transform.position;
-            bikeBody.position = sphereRB.transform.position + bodyOffset;
+            transform.position = sphereRB.transform.position + (transform.rotation * localOffset);
+        }
+
+        if (bikeBody != null)
+        {
             float speedFactor = Mathf.Clamp01(Mathf.Abs(currentSpeed) / maxSpeed);
             float targetLeanAngle = -smoothedSteerInput * maxLeanAngle * speedFactor;
-            Quaternion targetRotation = Quaternion.Euler(0f, transform.eulerAngles.y, targetLeanAngle);
-            bikeBody.rotation = Quaternion.Slerp(bikeBody.rotation, targetRotation, Time.deltaTime * 8f);
+
+            Quaternion targetRotation = Quaternion.Euler(0f, 0f, targetLeanAngle);
+            bikeBody.transform.localRotation = Quaternion.Slerp(bikeBody.transform.localRotation, targetRotation, Time.deltaTime * 15f);
         }
     }
 
@@ -124,36 +144,21 @@ public class MotorcycleController : MonoBehaviour
         {
             currentSpeed = Mathf.Lerp(currentSpeed, 0f, Time.fixedDeltaTime * (brakePower / 10f));
         }
-        else if (moveInput > 0.1f)  
+        else if (moveInput > 0.1f)
         {
-            if (currentSpeed < -0.1f)
-            {
-                currentSpeed = Mathf.Lerp(currentSpeed, 0f, Time.fixedDeltaTime * (brakePower / 10f));
-            }
-            else
-            {
-                currentSpeed = Mathf.Lerp(currentSpeed, maxSpeed, Time.fixedDeltaTime * (currentAccel / 10f));
-            }
+            if (currentSpeed < -0.1f) currentSpeed = Mathf.Lerp(currentSpeed, 0f, Time.fixedDeltaTime * (brakePower / 10f));
+            else currentSpeed = Mathf.Lerp(currentSpeed, maxSpeed, Time.fixedDeltaTime * (currentAccel / 10f));
         }
-        else if (moveInput < -0.1f) 
+        else if (moveInput < -0.1f)
         {
-            if (currentSpeed > 0.1f)
-            {
-                currentSpeed = Mathf.Lerp(currentSpeed, 0f, Time.fixedDeltaTime * (brakePower / 10f));
-            }
-            else
-            {
-                currentSpeed = Mathf.Lerp(currentSpeed, -reverseSpeed, Time.fixedDeltaTime * (currentAccel / 10f));
-            }
+            if (currentSpeed > 0.1f) currentSpeed = Mathf.Lerp(currentSpeed, 0f, Time.fixedDeltaTime * (brakePower / 10f));
+            else currentSpeed = Mathf.Lerp(currentSpeed, -reverseSpeed, Time.fixedDeltaTime * (currentAccel / 10f));
         }
-        else  
+        else
         {
             currentSpeed = Mathf.Lerp(currentSpeed, 0f, Time.fixedDeltaTime * (deceleration / 10f));
         }
-        if (Mathf.Abs(currentSpeed) < 0.1f && moveInput == 0f && !isBraking)
-        {
-            currentSpeed = 0f;
-        }
+        if (Mathf.Abs(currentSpeed) < 0.1f && moveInput == 0f && !isBraking) currentSpeed = 0f;
 
         Vector3 targetVelocity = transform.forward * currentSpeed;
         targetVelocity.y = sphereRB.linearVelocity.y;
@@ -164,7 +169,8 @@ public class MotorcycleController : MonoBehaviour
     {
         float speedFactor = Mathf.Clamp(Mathf.Abs(currentSpeed) / maxSpeed, 0.5f, 1f);
         if (Mathf.Abs(currentSpeed) < 0.1f) speedFactor = 0f;
-        float rotationAmount = smoothedSteerInput * steerStrength * speedFactor * Time.fixedDeltaTime;
+        float reverseMultiplier = (currentSpeed < -0.1f) ? -1f : 1f;
+        float rotationAmount = smoothedSteerInput * steerStrength * speedFactor * reverseMultiplier * Time.deltaTime;
         transform.Rotate(0, rotationAmount, 0, Space.World);
     }
 
@@ -182,10 +188,7 @@ public class MotorcycleController : MonoBehaviour
 
     public void UpdateUIVisibility()
     {
-        if (bikeUIPanel != null)
-        {
-            bikeUIPanel.SetActive(isDriven || isRefueling);
-        }
+        if (bikeUIPanel != null) bikeUIPanel.SetActive(isDriven || isRefueling);
     }
 
     public void EnterBike(GameObject playerObject)
@@ -217,5 +220,29 @@ public class MotorcycleController : MonoBehaviour
         }
         if (bikeCamera != null) bikeCamera.SetActive(false);
         UpdateUIVisibility();
+    }
+    // 사고 났을 때 오토바이 속도 대폭 감소
+    public void ApplyImpactDeceleration(float ratio = 0.2f)
+    {
+        currentSpeed *= ratio;
+
+        if (sphereRB != null)
+        {
+            Vector3 targetVelocity = transform.forward * currentSpeed;
+            targetVelocity.y = sphereRB.linearVelocity.y;
+            sphereRB.linearVelocity = targetVelocity;
+        }
+    }
+
+    public void SetControllable(bool controllable)
+    {
+        isControllable = controllable;
+
+        if (!isControllable)
+        {
+            moveInput = 0f;
+            steerInput = 0f;
+            currentSpeed = Mathf.Lerp(currentSpeed, 0f, 0.5f);
+        }
     }
 }

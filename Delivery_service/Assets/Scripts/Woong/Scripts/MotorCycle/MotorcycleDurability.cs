@@ -23,14 +23,10 @@ public class MotorcycleDurability : MonoBehaviour
     {
         currentDurability -= damage;
         currentDurability = Mathf.Clamp(currentDurability, 0, maxDurability);  
-
-        // 이펙트 생성
         if (collisionEffectPrefab != null)
         {
             Instantiate(collisionEffectPrefab, hitPoint, Quaternion.identity); 
         }
-
-        // 연기 효과
         if (currentDurability <= smokeWarningThreshold && smokeEffectObject != null) 
         {
             smokeEffectObject.SetActive(true);  

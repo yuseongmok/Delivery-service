@@ -616,6 +616,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MoneyManager
   currentMoney: 10
+  dailyIncome: 0
+  dailyTotalExpense: 0
+  expensePizza: 0
+  expenseFuel: 0
 --- !u!4 &1589671105
 Transform:
   m_ObjectHideFlags: 0
@@ -1079,6 +1083,22 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 98864841453384867, guid: 1f88a9a8729892945958c2fb932d780d, type: 3}
+      propertyPath: m_Constraints
+      value: 112
+      objectReference: {fileID: 0}
+    - target: {fileID: 367892989136576873, guid: 1f88a9a8729892945958c2fb932d780d, type: 3}
+      propertyPath: m_Constraints
+      value: 112
+      objectReference: {fileID: 0}
+    - target: {fileID: 367892989136576873, guid: 1f88a9a8729892945958c2fb932d780d, type: 3}
+      propertyPath: m_Interpolate
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 367892989136576873, guid: 1f88a9a8729892945958c2fb932d780d, type: 3}
+      propertyPath: m_IsKinematic
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1646449339529452068, guid: 1f88a9a8729892945958c2fb932d780d, type: 3}
       propertyPath: m_LocalPosition.x
       value: 6.88243
@@ -1123,14 +1143,34 @@ PrefabInstance:
       propertyPath: durabilityGaugeUI
       value: 
       objectReference: {fileID: 790812026}
+    - target: {fileID: 4116400160598714098, guid: 1f88a9a8729892945958c2fb932d780d, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5737753650178764292, guid: 1f88a9a8729892945958c2fb932d780d, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 1.325
+      objectReference: {fileID: 0}
     - target: {fileID: 5817904115907149233, guid: 1f88a9a8729892945958c2fb932d780d, type: 3}
       propertyPath: bikeUIPanel
       value: 
       objectReference: {fileID: 83964888}
+    - target: {fileID: 5817904115907149233, guid: 1f88a9a8729892945958c2fb932d780d, type: 3}
+      propertyPath: reverseSpeed
+      value: 7
+      objectReference: {fileID: 0}
     - target: {fileID: 7069812365409104724, guid: 1f88a9a8729892945958c2fb932d780d, type: 3}
       propertyPath: fuelGaugeUI
       value: 
       objectReference: {fileID: 1277517575}
+    - target: {fileID: 8875691682824726451, guid: 1f88a9a8729892945958c2fb932d780d, type: 3}
+      propertyPath: collisionDamage
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 8875691682824726451, guid: 1f88a9a8729892945958c2fb932d780d, type: 3}
+      propertyPath: minimumCollisionSpeed
+      value: 20
+      objectReference: {fileID: 0}
     - target: {fileID: 9042388167991725923, guid: 1f88a9a8729892945958c2fb932d780d, type: 3}
       propertyPath: m_Name
       value: Bike
