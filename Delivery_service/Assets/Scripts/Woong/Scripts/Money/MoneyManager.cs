@@ -90,6 +90,16 @@ public class MoneyManager : MonoBehaviour
         expenseFuel = 0;
     }
 
+    public void AccidentMoney(int amount)
+    {
+        currentMoney -= amount;
+        lastCheckedMoney = currentMoney;
+        dailyIncome -= amount;
+
+        SaveMoney();
+        OnMoneyChanged?.Invoke(currentMoney);
+    }
+
     private void SaveMoney()
     {
         EconomySaveData data = new EconomySaveData { savedMoney = currentMoney };
