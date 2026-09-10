@@ -45,6 +45,7 @@ public class MotorcycleController : MonoBehaviour
     private bool isShiftPressed = false;
 
     public bool isDriven = false;
+    private bool isControllable = true;
     private GameObject rider;
     private float enterTime = 0f;
     private Vector3 bodyOffset;
@@ -67,7 +68,7 @@ public class MotorcycleController : MonoBehaviour
 
     private void Update()
     {
-        if (isDriven)
+        if (isDriven && isControllable)
         {
             HandleCameraLook();
             if (Time.time - enterTime > 0.2f && Input.GetKeyDown(KeyCode.E)) ExitBike();
@@ -217,5 +218,30 @@ public class MotorcycleController : MonoBehaviour
         }
         if (bikeCamera != null) bikeCamera.SetActive(false);
         UpdateUIVisibility();
+    }
+
+    // 사고 났을 때 오토바이 속도 대폭 감소
+    public void ApplyImpactDeceleration(float ratio = 0.2f)
+    {
+        currentSpeed *= ratio;
+
+        if (sphereRB != null)
+        {
+            Vector3 targetVelocity = transform.forward * currentSpeed;
+            targetVelocity.y = sphereRB.linearVelocity.y;
+            sphereRB.linearVelocity = targetVelocity;
+        }
+    }
+
+    public void SetControllable(bool controllable)
+    {
+        isControllable = controllable;
+
+        if (!isControllable)
+        {
+            moveInput = 0f;
+            steerInput = 0f;
+            currentSpeed = Mathf.Lerp(currentSpeed, 0f, 0.5f);
+        }
     }
 }
