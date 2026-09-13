@@ -1,17 +1,31 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Oven : MonoBehaviour, IInteractable
 {
     [Header("피자가 들어갈 위치")]
     [SerializeField] private Transform ovenPlacePoint;
+    [SerializeField] private Vector3 ovenPizzaScale = Vector3.one;
 
     [Header("굽는 시간")]
     [SerializeField] private float bakingTime = 5f;
+    [SerializeField] private GameObject timerCanvasObj;
+    [SerializeField] private Image timerFillImage;
+
 
     private Pizza currentPizza;
     private float bakingTimer;
     private bool isBaking;
     private bool isFinished;
+    private Vector3 originalPizzaScale = Vector3.one;
+
+    private void Start()
+    {
+        if (timerCanvasObj != null)
+        {
+            timerCanvasObj.SetActive(false);
+        }
+    }
 
     public void Interact(ToppingInventory inventory)
     {
@@ -46,10 +60,12 @@ public class Oven : MonoBehaviour, IInteractable
         if (pizzaObject == null)
             return;
 
-        pizzaObject.transform.SetParent(ovenPlacePoint);
+        originalPizzaScale = pizzaObject.transform.localScale;
 
+        pizzaObject.transform.SetParent(ovenPlacePoint);
         pizzaObject.transform.localPosition = Vector3.zero;
         pizzaObject.transform.localRotation = Quaternion.identity;
+        pizzaObject.transform.localScale = ovenPizzaScale;
 
         currentPizza = pizzaObject.GetComponent<Pizza>();
 
@@ -62,6 +78,12 @@ public class Oven : MonoBehaviour, IInteractable
         isBaking = true;
         isFinished = false;
         bakingTimer = bakingTime;
+
+        if (timerCanvasObj != null && timerFillImage != null)
+        {
+            timerFillImage.fillAmount = 1f;
+            timerCanvasObj.SetActive(true);
+        }
 
         Debug.Log("피자를 오븐에 넣었습니다.");
         Debug.Log("굽기 시작");
@@ -83,10 +105,12 @@ public class Oven : MonoBehaviour, IInteractable
         pizzaObject.transform.SetParent(inventory.HoldPoint);
         pizzaObject.transform.localPosition = Vector3.zero;
         pizzaObject.transform.localRotation = Quaternion.identity;
+        pizzaObject.transform.localScale = originalPizzaScale;
 
         inventory.AddPizza(pizzaObject);
 
         currentPizza = null;
+        isFinished = false;
 
         Debug.Log("피자를 들었습니다.");
     }
@@ -97,6 +121,11 @@ public class Oven : MonoBehaviour, IInteractable
             return;
 
         bakingTimer -= Time.deltaTime;
+
+        if (timerFillImage != null)
+        {
+            timerFillImage.fillAmount = bakingTimer / bakingTime;
+        }
 
         if (bakingTimer <= 0f)
         {
@@ -112,6 +141,10 @@ public class Oven : MonoBehaviour, IInteractable
         if (currentPizza != null)
         {
             currentPizza.SetBaked(true);
+        }
+        if (timerCanvasObj != null)
+        {
+            timerCanvasObj.SetActive(false);
         }
 
         Debug.Log("피자가 구워졌습니다");

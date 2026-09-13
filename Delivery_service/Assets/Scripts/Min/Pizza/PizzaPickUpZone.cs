@@ -30,14 +30,16 @@ public class PizzaPickUpZone : MonoBehaviour, IInteractable
             visualBoxes.Add(newBox);
         }
 
-        Debug.Log($"픽업존 피자 현재 수량: {packagedDataList.Count}");
+        Debug.Log($"[{gameObject.name}_ID:{GetInstanceID()}] 픽업존 피자 현재 수량: {packagedDataList.Count}");
     }
 
     public void Interact(ToppingInventory inventory)
     {
+        Debug.Log($"[{gameObject.name}_ID:{GetInstanceID()}] Interact 호출됨. 현재 수량: {packagedDataList.Count}");
+
         if (packagedDataList.Count == 0)
         {
-            Debug.Log("가져갈 포장된 피자가 없습니다.");
+            Debug.Log($"[{gameObject.name}_ID:{GetInstanceID()}] 가져갈 포장된 피자가 없습니다.");
             return;
         }
 

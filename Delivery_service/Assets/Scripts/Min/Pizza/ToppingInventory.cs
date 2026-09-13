@@ -1,9 +1,12 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+using static UnityEditor.Progress;
 
 public class ToppingInventory : MonoBehaviour
 {
     [SerializeField] private Transform holdPoint;
+    [SerializeField] private Text currentTopping;
     public Transform HoldPoint => holdPoint;
 
     public PizzaToppingData CurrentItem { get; private set; }
@@ -19,6 +22,33 @@ public class ToppingInventory : MonoBehaviour
 
     public List<PizzaData> GetHeldPackagedPizzas() => heldPackagedPizzas;
 
+    private void Start()
+    {
+        UpdateUI();
+    }
+
+    private void UpdateUI()
+    {
+        if (currentTopping == null) return;
+
+        if (CurrentItem != null)
+        {
+            currentTopping.text = $"들고있는 토핑 : {CurrentItem.toppingName}";
+        }
+        else if (HeldPizza != null)
+        {
+            currentTopping.text = " ";
+        }
+        else if (HasPackagedPizzas())
+        {
+            currentTopping.text = $"포장된 피자 : {heldPackagedPizzas.Count}개";
+        }
+        else
+        {
+            currentTopping.text = "들고있는 토핑 : 없음";
+        }
+    }
+
     public void AddItem(PizzaToppingData item)
     {
         if (item == null) return;
@@ -26,12 +56,14 @@ public class ToppingInventory : MonoBehaviour
 
         CurrentItem = item;
         Debug.Log($"획득 : {item.toppingName}");
+        UpdateUI();
     }
 
     public PizzaToppingData RemoveItem()
     {
         PizzaToppingData item = CurrentItem;
         CurrentItem = null;
+        UpdateUI();
         return item;
     }
 
@@ -42,12 +74,14 @@ public class ToppingInventory : MonoBehaviour
 
         HeldPizza = pizza;
         Debug.Log("피자를 들었습니다.");
+        UpdateUI();
     }
 
     public GameObject RemovePizza()
     {
         GameObject pizza = HeldPizza;
         HeldPizza = null;
+        UpdateUI();
         return pizza;
     }
 
@@ -58,12 +92,14 @@ public class ToppingInventory : MonoBehaviour
 
         heldPackagedPizzas = dataList;
         Debug.Log($"포장된 피자 {heldPackagedPizzas.Count}개 소지");
+        UpdateUI();
     }
 
     public List<PizzaData> ClearPackagedPizzas()
     {
         List<PizzaData> list = new List<PizzaData>(heldPackagedPizzas);
         heldPackagedPizzas.Clear();
+        UpdateUI();
         return list;
     }
 }
