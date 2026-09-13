@@ -16,13 +16,23 @@ public class DayNightCycle : MonoBehaviour
     public AnimationCurve sunIntensity;
     public AnimationCurve moonIntensity;
 
+    [Header("Skydome (Mesh) Settings")]
+    public MeshRenderer skydomeRenderer;
+    public Color daySkyColor = Color.white;
+    public Color nightSkyColor = new Color(0.05f, 0.05f, 0.1f);
+
     private float defaultSunIntensity;
     private float defaultMoonIntensity;
+    private Material skydomeMaterial;
 
     private void Start()
     {
         if (sun != null) defaultSunIntensity = sun.intensity;
         if (moon != null) defaultMoonIntensity = moon.intensity;
+        if (skydomeRenderer != null)
+        {
+            skydomeMaterial = skydomeRenderer.material;
+        }
     }
 
     private void Update()
@@ -40,6 +50,7 @@ public class DayNightCycle : MonoBehaviour
     private void UpdateLighting()
     {
         float sunRotation = ((currentTime / 24f) * 360f) - 90f;
+        float currentSunEval = sunIntensity.Evaluate(currentTime / 24f);
 
         if (sun != null)
         {
@@ -57,6 +68,22 @@ public class DayNightCycle : MonoBehaviour
         if (sun != null && defaultSunIntensity > 0)
         {
             RenderSettings.ambientIntensity = sun.intensity / defaultSunIntensity;
+        }
+        if (skydomeMaterial != null)
+        {
+            Color currentColor = Color.Lerp(nightSkyColor, daySkyColor, currentSunEval);
+
+            if (skydomeMaterial.HasProperty("_Color"))
+                skydomeMaterial.color = currentColor;
+
+            if (skydomeMaterial.HasProperty("_BaseColor"))
+                skydomeMaterial.SetColor("_BaseColor", currentColor);
+
+            if (skydomeMaterial.HasProperty("_TintColor"))
+                skydomeMaterial.SetColor("_TintColor", currentColor);
+
+            if (skydomeMaterial.HasProperty("_EmissionColor"))
+                skydomeMaterial.SetColor("_EmissionColor", currentColor);
         }
     }
 }
