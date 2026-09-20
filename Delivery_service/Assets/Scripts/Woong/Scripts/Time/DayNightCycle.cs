@@ -22,7 +22,8 @@ public class DayNightCycle : MonoBehaviour
     public GameObject summaryPanel;
     public Text summaryIncomeText;
     public Text summaryExpenseText;
-    public Text dayText;
+    public Text dayText;// 이거 날짜임
+    public Text timeText; // 시간 
 
     [Header("Fade Effect")]
     public Image fadeScreen;             
@@ -75,6 +76,17 @@ public class DayNightCycle : MonoBehaviour
         }
 
         UpdateLighting();
+        UpdateTimeUI();
+    }
+
+    private void UpdateTimeUI()
+    {
+        if (timeText != null)
+        {
+            int hours = Mathf.FloorToInt(currentTime);
+            int minutes = Mathf.FloorToInt((currentTime - hours) * 60f);
+            timeText.text = string.Format("{0:00}:{1:00}", hours, minutes);
+        }
     }
     public void OnClick_OpenShop()
     {
@@ -95,8 +107,11 @@ public class DayNightCycle : MonoBehaviour
         pcUIPanel.SetActive(false);
         summaryPanel.SetActive(true);
 
-        if (summaryIncomeText != null) summaryIncomeText.text = $"오늘의 수익: {dailyIncome}원";
-        if (summaryExpenseText != null) summaryExpenseText.text = $"오늘의 지출: {dailyExpense}원";
+        if (MoneyManager.Instance != null)
+        {
+            if (summaryIncomeText != null) summaryIncomeText.text = $"오늘의 수익: {MoneyManager.Instance.dailyIncome}원";
+            if (summaryExpenseText != null) summaryExpenseText.text = $"오늘의 지출: {MoneyManager.Instance.dailyTotalExpense}원";
+        }
     }
 
     public void OnClick_ConfirmClose()

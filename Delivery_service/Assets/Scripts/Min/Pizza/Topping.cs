@@ -57,8 +57,12 @@ public class Topping : MonoBehaviour, IInteractable
             return;
         }
 
-        // 해금된 상태라면 집을 때마다 돈을 쓰지 않고 바로 집기
-        inventory.AddItem(toppingData);
+        if (MoneyManager.Instance != null && MoneyManager.Instance.SpendMoney(toppingData.cost, ExpenseType.PizzaTopping))// 피자 토핑 사용해도 돈이 차감이 안되길래 제가 추가했습니다 // 웅
+        {
+            // 해금된 상태라면 집을 때마다 돈을 쓰지 않고 바로 집기 
+            inventory.AddItem(toppingData);  // 
+        }
+           
     }
 
     // 재료 최초 해금 함수

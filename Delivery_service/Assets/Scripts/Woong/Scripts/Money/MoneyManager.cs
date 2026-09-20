@@ -1,8 +1,6 @@
 using UnityEngine;
 using System.IO;
 using System;
-
-// ?? 지출 카테고리 정의
 public enum ExpenseType { None, PizzaTopping, Fuel }
 
 public class MoneyManager : MonoBehaviour
@@ -49,8 +47,6 @@ public class MoneyManager : MonoBehaviour
         }
     }
 #endif
-
-    // ?? 돈 쓰기 (어디에 썼는지 카테고리 추가)
     public bool SpendMoney(int amount, ExpenseType expenseType = ExpenseType.None)
     {
         if (currentMoney >= amount)
@@ -70,7 +66,6 @@ public class MoneyManager : MonoBehaviour
         return false;
     }
 
-    // ?? 돈 벌기 (수익 누적)
     public void AddMoney(int amount)
     {
         currentMoney += amount;
@@ -81,7 +76,6 @@ public class MoneyManager : MonoBehaviour
         OnMoneyChanged?.Invoke(currentMoney);
     }
 
-    // ?? 정산 완료 후 하루 데이터 초기화
     public void ResetDailyStats()
     {
         dailyIncome = 0;

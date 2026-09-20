@@ -5511,19 +5511,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 21935460}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1230112709}
-        m_TargetAssemblyTypeName: DayNightCycle, Assembly-CSharp
-        m_MethodName: OnClick_ConfirmClose
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!114 &21935460
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -100451,85 +100439,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 451389543}
   m_Mesh: {fileID: 4300000, guid: 099ca36ee26636c4594f1f502ff193b5, type: 3}
---- !u!1 &450268728
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 450268729}
-  - component: {fileID: 450268731}
-  - component: {fileID: 450268730}
-  m_Layer: 5
-  m_Name: Time
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!224 &450268729
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 450268728}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1222372842}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 805, y: 394}
-  m_SizeDelta: {x: 160, y: 30}
-  m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &450268730
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 450268728}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5f7201a12d95ffc409449d95f23cf332, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Text
-  m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
-  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  m_Maskable: 1
-  m_OnCullStateChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  m_FontData:
-    m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
-    m_FontSize: 43
-    m_FontStyle: 0
-    m_BestFit: 0
-    m_MinSize: 10
-    m_MaxSize: 218
-    m_Alignment: 0
-    m_AlignByGeometry: 0
-    m_RichText: 1
-    m_HorizontalOverflow: 1
-    m_VerticalOverflow: 1
-    m_LineSpacing: 1
-  m_Text: New Text
---- !u!222 &450268731
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 450268728}
-  m_CullTransparentMesh: 1
 --- !u!1001 &450275004
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -199663,7 +199572,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba7c65f5e5c1370449ba573ebc410c8d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MoneyManager
-  currentMoney: 1500
+  currentMoney: 1000
   dailyIncome: 0
   dailyTotalExpense: 0
   expensePizza: 0
@@ -200085,7 +199994,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 805, y: 488}
+  m_AnchoredPosition: {x: -844, y: 368.44}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &879775443
@@ -274925,7 +274834,6 @@ RectTransform:
   - {fileID: 2016899993}
   - {fileID: 119817004}
   - {fileID: 879775442}
-  - {fileID: 450268729}
   - {fileID: 1944324869}
   - {fileID: 1516432855}
   m_Father: {fileID: 1608874538}
@@ -276527,7 +276435,7 @@ MonoBehaviour:
   dailyIncome: 0
   dailyExpense: 0
   player: {fileID: 1608874529}
-  spawnPoint: {fileID: 2022777313}
+  spawnPoint: {fileID: 0}
   pcUIPanel: {fileID: 700276027}
   openShopButton: {fileID: 1865261094}
   closeShopButton: {fileID: 1963952757}
@@ -276535,7 +276443,6 @@ MonoBehaviour:
   summaryIncomeText: {fileID: 174021633}
   summaryExpenseText: {fileID: 1114491937}
   dayText: {fileID: 879775443}
-  timeText: {fileID: 450268730}
   fadeScreen: {fileID: 0}
   fadeDuration: 1.5
   currentTime: 12
@@ -347122,7 +347029,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Counter
   orderGenerator: {fileID: 806972806}
   orderManager: {fileID: 806972804}
-  dayNightCycle: {fileID: 1230112709}
 --- !u!65 &1543268179
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -354465,19 +354371,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1570744981}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1230112709}
-        m_TargetAssemblyTypeName: DayNightCycle, Assembly-CSharp
-        m_MethodName: OnClick_CancelClose
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!114 &1570744981
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -442060,7 +441954,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 569, y: 490}
+  m_AnchoredPosition: {x: 822, y: 490}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1944324870
@@ -446642,19 +446536,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1963952760}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1230112709}
-        m_TargetAssemblyTypeName: DayNightCycle, Assembly-CSharp
-        m_MethodName: OnClick_CloseShop
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!114 &1963952760
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -460046,37 +459928,6 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!1 &2022777312
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2022777313}
-  m_Layer: 11
-  m_Name: SpawnPosition
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &2022777313
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2022777312}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 140.617, y: 1, z: 59.846}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &2022915608
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -484511,7 +484362,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShopPC
   pcUIPanel: {fileID: 700276027}
-  interactRange: 1.5
+  interactRange: 5
   player: {fileID: 1608874538}
 --- !u!33 &2127938211
 MeshFilter:
@@ -715482,7 +715333,6 @@ SceneRoots:
   - {fileID: 1265596934}
   - {fileID: 420935091}
   - {fileID: 1929435103}
-  - {fileID: 2022777313}
   - {fileID: 1410882503}
   - {fileID: 563301685}
   - {fileID: 463732176}
