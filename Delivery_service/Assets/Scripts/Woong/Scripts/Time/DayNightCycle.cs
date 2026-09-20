@@ -1,22 +1,47 @@
+using System.Collections;  
 using UnityEngine;
+using UnityEngine.UI;
 
 public class DayNightCycle : MonoBehaviour
 {
+    [Header("Game System")]
+    public int currentDay = 1;
+    public bool isShopOpen = false;
+
+    public float dailyIncome = 0f;
+    public float dailyExpense = 0f;
+
+    [Header("Player Respawn")]
+    public GameObject player;
+    public Transform spawnPoint;
+
+    [Header("UI Elements")]
+    public GameObject pcUIPanel;         
+    public GameObject openShopButton;
+    public GameObject closeShopButton;
+    public GameObject summaryPanel;
+    public Text summaryIncomeText;
+    public Text summaryExpenseText;
+    public Text dayText;
+
+    [Header("Fade Effect")]
+    public Image fadeScreen;             
+    public float fadeDuration = 1.5f;    
+
     [Header("Time Settings")]
     [Range(0f, 24f)]
-    public float currentTime = 12f; // 현재 시간 
-    public float timeMultiplier = 1000f; // 시간 흐름 속도  
+    public float currentTime = 6f;
+    public float timeMultiplier = 1000f;
 
     [Header("Lights")]
     public Light sun;
-    public Light moon;  
+    public Light moon;
 
-    [Header("Intensity Curves (빛의 세기 조절)")]
-    [Tooltip("X축: 0~1 (0시~24시), Y축: 빛의 세기 배율")]
+    [Header("Intensity Curves")]
     public AnimationCurve sunIntensity;
     public AnimationCurve moonIntensity;
 
-    [Header("Skydome (Mesh) Settings")]
+    [Header("Skydome")]
     public MeshRenderer skydomeRenderer;
     public Color daySkyColor = Color.white;
     public Color nightSkyColor = new Color(0.05f, 0.05f, 0.1f);
@@ -25,28 +50,144 @@ public class DayNightCycle : MonoBehaviour
     private float defaultMoonIntensity;
     private Material skydomeMaterial;
 
+    private bool isTransitioning = false;
+
     private void Start()
     {
         if (sun != null) defaultSunIntensity = sun.intensity;
         if (moon != null) defaultMoonIntensity = moon.intensity;
-        if (skydomeRenderer != null)
-        {
-            skydomeMaterial = skydomeRenderer.material;
-        }
+        if (skydomeRenderer != null) skydomeMaterial = skydomeRenderer.material;
+
+        InitializeDay();
     }
 
     private void Update()
     {
-        // 시간 업데이트  
-        currentTime += (Time.deltaTime / 3600f) * timeMultiplier;
-        if (currentTime >= 24f)
+        if (isShopOpen)
         {
-            currentTime %= 24f; // 24시간이 넘어가면 다시 0시로 초기화
+            currentTime += (Time.deltaTime / 3600f) * timeMultiplier;
+
+            if (currentTime >= 24f && !isTransitioning)
+            {
+                isTransitioning = true;
+                StartCoroutine(TransitionToNextDay());
+            }
         }
 
         UpdateLighting();
     }
+    public void OnClick_OpenShop()
+    {
+        if (isShopOpen || isTransitioning) return;
 
+        isShopOpen = true;
+        openShopButton.SetActive(false);
+        closeShopButton.SetActive(true);
+        ClosePCMenu();
+    }
+
+    public void OnClick_CloseShop()
+    {
+        if (!isShopOpen || isTransitioning) return;
+
+        isShopOpen = false;
+        closeShopButton.SetActive(false);
+        pcUIPanel.SetActive(false);
+        summaryPanel.SetActive(true);
+
+        if (summaryIncomeText != null) summaryIncomeText.text = $"오늘의 수익: {dailyIncome}원";
+        if (summaryExpenseText != null) summaryExpenseText.text = $"오늘의 지출: {dailyExpense}원";
+    }
+
+    public void OnClick_ConfirmClose()
+    {
+        if (isTransitioning) return;
+
+        isTransitioning = true;
+        StartCoroutine(TransitionToNextDay());
+    }
+
+    public void OnClick_CancelClose()
+    {
+        summaryPanel.SetActive(false);
+        closeShopButton.SetActive(true);
+        pcUIPanel.SetActive(true);
+        isShopOpen = true;
+    }
+
+
+    private void ClosePCMenu()
+    {
+        if (pcUIPanel != null) pcUIPanel.SetActive(false);
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+    }
+
+    private IEnumerator TransitionToNextDay()
+    {
+        if (fadeScreen != null)
+        {
+            fadeScreen.gameObject.SetActive(true);
+            Color c = fadeScreen.color;
+            float t = 0f;
+            while (t < fadeDuration)
+            {
+                t += Time.deltaTime;
+                c.a = Mathf.Lerp(0f, 1f, t / fadeDuration);
+                fadeScreen.color = c;
+                yield return null;
+            }
+        }
+
+        currentDay++;
+        dailyIncome = 0f;
+        dailyExpense = 0f;
+        InitializeDay();
+
+        if (fadeScreen != null)
+        {
+            Color c = fadeScreen.color;
+            float t = 0f;
+            while (t < fadeDuration)
+            {
+                t += Time.deltaTime;
+                c.a = Mathf.Lerp(1f, 0f, t / fadeDuration);
+                fadeScreen.color = c;
+                yield return null;
+            }
+            fadeScreen.gameObject.SetActive(false);
+        }
+    }
+
+    private void InitializeDay()
+    {
+        currentTime = 6f;
+        isShopOpen = false;
+        isTransitioning = false;  
+
+        if (pcUIPanel != null) pcUIPanel.SetActive(false);
+        openShopButton.SetActive(true);
+        closeShopButton.SetActive(false);
+        summaryPanel.SetActive(false);
+
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+
+        if (dayText != null) dayText.text = $"DAY {currentDay}";
+
+        if (player != null && spawnPoint != null)
+        {
+            CharacterController cc = player.GetComponent<CharacterController>();
+            if (cc != null) cc.enabled = false;
+
+            player.transform.position = spawnPoint.position;
+            player.transform.rotation = spawnPoint.rotation;
+
+            if (cc != null) cc.enabled = true;
+        }
+
+        UpdateLighting();
+    }
     private void UpdateLighting()
     {
         float sunRotation = ((currentTime / 24f) * 360f) - 90f;
@@ -55,16 +196,13 @@ public class DayNightCycle : MonoBehaviour
         if (sun != null)
         {
             sun.transform.localRotation = Quaternion.Euler(sunRotation, 170f, 0f);
-            sun.intensity = defaultSunIntensity * sunIntensity.Evaluate(currentTime / 24f);
+            sun.intensity = defaultSunIntensity * currentSunEval;
         }
-
         if (moon != null)
         {
             moon.transform.localRotation = Quaternion.Euler(sunRotation - 180f, 170f, 0f);
             moon.intensity = defaultMoonIntensity * moonIntensity.Evaluate(currentTime / 24f);
         }
-
-        //태양빛이 줄어들면 맵 전체의 숨은 기본 밝기도 같이 줄어들게끔
         if (sun != null && defaultSunIntensity > 0)
         {
             RenderSettings.ambientIntensity = sun.intensity / defaultSunIntensity;
@@ -72,18 +210,10 @@ public class DayNightCycle : MonoBehaviour
         if (skydomeMaterial != null)
         {
             Color currentColor = Color.Lerp(nightSkyColor, daySkyColor, currentSunEval);
-
-            if (skydomeMaterial.HasProperty("_Color"))
-                skydomeMaterial.color = currentColor;
-
-            if (skydomeMaterial.HasProperty("_BaseColor"))
-                skydomeMaterial.SetColor("_BaseColor", currentColor);
-
-            if (skydomeMaterial.HasProperty("_TintColor"))
-                skydomeMaterial.SetColor("_TintColor", currentColor);
-
-            if (skydomeMaterial.HasProperty("_EmissionColor"))
-                skydomeMaterial.SetColor("_EmissionColor", currentColor);
+            if (skydomeMaterial.HasProperty("_Color")) skydomeMaterial.color = currentColor;
+            if (skydomeMaterial.HasProperty("_BaseColor")) skydomeMaterial.SetColor("_BaseColor", currentColor);
+            if (skydomeMaterial.HasProperty("_TintColor")) skydomeMaterial.SetColor("_TintColor", currentColor);
+            if (skydomeMaterial.HasProperty("_EmissionColor")) skydomeMaterial.SetColor("_EmissionColor", currentColor);
         }
     }
 }
