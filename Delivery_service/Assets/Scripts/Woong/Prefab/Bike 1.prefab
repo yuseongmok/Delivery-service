@@ -58,7 +58,7 @@ Transform:
   m_GameObject: {fileID: 1803395242563795397}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.47, z: -1.383}
+  m_LocalPosition: {x: 0, y: 0.47, z: -0.964}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -4936,6 +4936,78 @@ ParticleSystemRenderer:
   m_MeshWeighting1: 1
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
+--- !u!1 &4754411422311966809
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2950296944889215258}
+  - component: {fileID: 4546347347456707912}
+  - component: {fileID: 3542019312721715098}
+  m_Layer: 12
+  m_Name: PizzaBox
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2950296944889215258
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4754411422311966809}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.683, z: -0.964}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1646449339529452068}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &4546347347456707912
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4754411422311966809}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.312109, y: 0.14174962, z: 0.21717894}
+  m_Center: {x: 0.012835503, y: 0.06802714, z: 0.014688909}
+--- !u!114 &3542019312721715098
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4754411422311966809}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 749ac30b5d976cd4396f4afe681aceea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BikePizzaStorage
+  pizzaBoxVisual: {fileID: 1188770512249346245, guid: 3df66ec73eab15848bdd19493363ebc6, type: 3}
+  shakeGaugeUI: {fileID: 0}
+  currentShake: 0
+  maxShake: 100
+  safeSpeed: 10
+  bikeController: {fileID: 5817904115907149233}
 --- !u!1 &4911494194779983091
 GameObject:
   m_ObjectHideFlags: 0
@@ -5227,8 +5299,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BikeCollisionSensor
   durabilitySystem: {fileID: 2654118011898573613}
+  bikeController: {fileID: 0}
+  pizzaStorage: {fileID: 0}
   obstacleTag: Obstacle
   collisionDamage: 15
+  minimumCollisionSpeed: 3
+  ejectionSpeedThreshold: 25
 --- !u!1 &6019314270527857402
 GameObject:
   m_ObjectHideFlags: 0
@@ -5777,6 +5853,7 @@ Transform:
   - {fileID: 8404069655808987597}
   - {fileID: 8737994060523221609}
   - {fileID: 2018353662793287020}
+  - {fileID: 2950296944889215258}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &7069812365409104724

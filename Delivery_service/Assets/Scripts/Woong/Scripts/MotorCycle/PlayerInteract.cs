@@ -22,6 +22,13 @@ public class PlayerInteract : MonoBehaviour
         RaycastHit hit;
 
         Debug.DrawRay(origin, direction * interactRange, Color.red, 2f);
+        if (Physics.Raycast(ray, out RaycastHit interactHit, interactRange))
+        {
+            if (interactHit.collider.GetComponentInParent<IInteractable>() != null)
+            {
+                return;
+            }
+        }
         FuelNozzle heldNozzle = null;
         FuelNozzle[] allNozzles = FindObjectsOfType<FuelNozzle>();
         foreach (FuelNozzle n in allNozzles)

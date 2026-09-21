@@ -103423,6 +103423,22 @@ PrefabInstance:
       propertyPath: durabilityGaugeUI
       value: 
       objectReference: {fileID: 817450277}
+    - target: {fileID: 3542019312721715098, guid: 1f88a9a8729892945958c2fb932d780d, type: 3}
+      propertyPath: shakeGaugeUI
+      value: 
+      objectReference: {fileID: 1709418606}
+    - target: {fileID: 4546347347456707912, guid: 1f88a9a8729892945958c2fb932d780d, type: 3}
+      propertyPath: m_Size.y
+      value: 0.30448496
+      objectReference: {fileID: 0}
+    - target: {fileID: 4546347347456707912, guid: 1f88a9a8729892945958c2fb932d780d, type: 3}
+      propertyPath: m_Center.y
+      value: 0.14939481
+      objectReference: {fileID: 0}
+    - target: {fileID: 4754411422311966809, guid: 1f88a9a8729892945958c2fb932d780d, type: 3}
+      propertyPath: m_Layer
+      value: 13
+      objectReference: {fileID: 0}
     - target: {fileID: 5817904115907149233, guid: 1f88a9a8729892945958c2fb932d780d, type: 3}
       propertyPath: bikeUIPanel
       value: 
@@ -185423,6 +185439,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2310815248987523938, guid: 8de39f6de6cfaec41b8b82814be41b74, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -190.9
+      objectReference: {fileID: 0}
+    - target: {fileID: 5395828772078776202, guid: 8de39f6de6cfaec41b8b82814be41b74, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -209.83998
+      objectReference: {fileID: 0}
     - target: {fileID: 5896563731017503885, guid: 8de39f6de6cfaec41b8b82814be41b74, type: 3}
       propertyPath: m_Name
       value: Canvas
@@ -185433,6 +185457,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 1946678014609221137, guid: 8de39f6de6cfaec41b8b82814be41b74, type: 3}
       insertIndex: -1
       addedObject: {fileID: 628134599}
+    - targetCorrespondingSourceObject: {fileID: 1898817777155354849, guid: 8de39f6de6cfaec41b8b82814be41b74, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1709418605}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 8de39f6de6cfaec41b8b82814be41b74, type: 3}
 --- !u!224 &817450276 stripped
@@ -309234,6 +309261,11 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1501044974}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!224 &1376170192 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 1898817777155354849, guid: 8de39f6de6cfaec41b8b82814be41b74, type: 3}
+  m_PrefabInstance: {fileID: 817450275}
+  m_PrefabAsset: {fileID: 0}
 --- !u!33 &1376171091
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -388344,6 +388376,81 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1708184081}
   m_Mesh: {fileID: 4300000, guid: 629dbe9aacf49f846833785b60e31854, type: 3}
+--- !u!1 &1709418604
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1709418605}
+  - component: {fileID: 1709418607}
+  - component: {fileID: 1709418606}
+  m_Layer: 5
+  m_Name: PizzaGauge
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1709418605
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1709418604}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 0.5701722, y: 0.21847257, z: 0.25481418}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1376170192}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: -196, y: -171.09999}
+  m_SizeDelta: {x: 700, y: 70}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1709418606
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1709418604}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 0, b: 0, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 21300000, guid: c407af87226edda4bbc6560c9cea2556, type: 3}
+  m_Type: 3
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 0
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &1709418607
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1709418604}
+  m_CullTransparentMesh: 1
 --- !u!33 &1709427095
 MeshFilter:
   m_ObjectHideFlags: 0

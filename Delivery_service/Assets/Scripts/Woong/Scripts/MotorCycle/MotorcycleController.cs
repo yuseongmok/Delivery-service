@@ -245,4 +245,43 @@ public class MotorcycleController : MonoBehaviour
             currentSpeed = Mathf.Lerp(currentSpeed, 0f, 0.5f);
         }
     }
+    public void CrashAndEject()
+    {
+        if (!isDriven || rider == null) return;
+
+        GameObject flyingRider = rider;
+        float crashSpeed = Mathf.Abs(currentSpeed);
+
+        ExitBike();  
+        ApplyImpactDeceleration(0.1f);  
+
+        StartCoroutine(EjectPlayerRoutine(flyingRider, crashSpeed));
+    }
+
+    private System.Collections.IEnumerator EjectPlayerRoutine(GameObject playerToFly, float speed)
+    {
+        CharacterController cc = playerToFly.GetComponent<CharacterController>();
+        PlayerMovement pm = playerToFly.GetComponent<PlayerMovement>();
+
+        if (pm != null) pm.enabled = false;
+        if (cc != null) cc.enabled = false;
+
+        Rigidbody tempRb = playerToFly.GetComponent<Rigidbody>();
+        if (tempRb == null) tempRb = playerToFly.AddComponent<Rigidbody>();
+
+        tempRb.isKinematic = false;
+        tempRb.collisionDetectionMode = CollisionDetectionMode.Continuous;
+
+        Vector3 force = (transform.forward * speed * 1.5f) + (Vector3.up * 10f);
+        tempRb.AddForce(force, ForceMode.VelocityChange);
+
+        yield return new WaitForSeconds(2.5f);
+
+        if (tempRb != null) Destroy(tempRb);
+
+        playerToFly.transform.rotation = Quaternion.Euler(0, playerToFly.transform.rotation.eulerAngles.y, 0);
+
+        if (cc != null) cc.enabled = true;
+        if (pm != null) pm.enabled = true;
+    }
 }
