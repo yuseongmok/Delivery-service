@@ -1188,11 +1188,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8875691682824726451, guid: 1f88a9a8729892945958c2fb932d780d, type: 3}
       propertyPath: minimumCollisionSpeed
-      value: 20
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 8875691682824726451, guid: 1f88a9a8729892945958c2fb932d780d, type: 3}
       propertyPath: ejectionSpeedThreshold
-      value: 5
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 9042388167991725923, guid: 1f88a9a8729892945958c2fb932d780d, type: 3}
       propertyPath: m_Name

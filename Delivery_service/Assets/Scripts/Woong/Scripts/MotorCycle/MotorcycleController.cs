@@ -260,28 +260,42 @@ public class MotorcycleController : MonoBehaviour
 
     private System.Collections.IEnumerator EjectPlayerRoutine(GameObject playerToFly, float speed)
     {
+        playerToFly.transform.position = transform.position + (transform.forward * 0.5f) + (Vector3.up * 1.5f);
+        playerToFly.SetActive(true);
+
+        yield return new WaitForFixedUpdate();
+
         CharacterController cc = playerToFly.GetComponent<CharacterController>();
         PlayerMovement pm = playerToFly.GetComponent<PlayerMovement>();
 
         if (pm != null) pm.enabled = false;
         if (cc != null) cc.enabled = false;
+        CapsuleCollider tempCol = playerToFly.AddComponent<CapsuleCollider>();
+        tempCol.height = 2f;
+        tempCol.radius = 0.5f;
+        tempCol.material = new PhysicsMaterial { dynamicFriction = 0.6f, bounciness = 0.2f };
 
         Rigidbody tempRb = playerToFly.GetComponent<Rigidbody>();
         if (tempRb == null) tempRb = playerToFly.AddComponent<Rigidbody>();
 
         tempRb.isKinematic = false;
+        tempRb.useGravity = true;
         tempRb.collisionDetectionMode = CollisionDetectionMode.Continuous;
+        tempRb.linearVelocity = Vector3.zero;
 
-        Vector3 force = (transform.forward * speed * 1.5f) + (Vector3.up * 10f);
+        Vector3 force = (transform.forward * speed * 1.2f) + (Vector3.up * 8f);
         tempRb.AddForce(force, ForceMode.VelocityChange);
 
         yield return new WaitForSeconds(2.5f);
 
         if (tempRb != null) Destroy(tempRb);
+        if (tempCol != null) Destroy(tempCol);
 
         playerToFly.transform.rotation = Quaternion.Euler(0, playerToFly.transform.rotation.eulerAngles.y, 0);
 
         if (cc != null) cc.enabled = true;
         if (pm != null) pm.enabled = true;
+
+        rider = null;
     }
 }
