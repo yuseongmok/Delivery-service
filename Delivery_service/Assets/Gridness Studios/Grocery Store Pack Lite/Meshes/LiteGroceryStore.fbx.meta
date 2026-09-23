@@ -1,5 +1,12 @@
 fileFormatVersion: 2
 guid: 21bd281347300ca4ba2a46bf7aedc61c
+AssetOrigin:
+  serializedVersion: 1
+  productId: 378776
+  packageName: Lite Grocery Store Pack
+  packageVersion: 1.0
+  assetPath: Assets/Gridness Studios/Grocery Store Pack Lite/Meshes/LiteGroceryStore.fbx
+  uploadId: 912790
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
@@ -40,7 +47,7 @@ ModelImporter:
     extraExposedTransformPaths: []
     extraUserProperties: []
     clipAnimations: []
-    isReadable: 0
+    isReadable: 1
   meshes:
     lODScreenPercentages: []
     globalScale: 1
@@ -118,10 +125,3 @@ ModelImporter:
   userData: 
   assetBundleName: 
   assetBundleVariant: 
-AssetOrigin:
-  serializedVersion: 1
-  productId: 378776
-  packageName: Lite Grocery Store Pack
-  packageVersion: 1.0
-  assetPath: Assets/Gridness Studios/Grocery Store Pack Lite/Meshes/LiteGroceryStore.fbx
-  uploadId: 912790

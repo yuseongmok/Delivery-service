@@ -59095,6 +59095,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1265596935}
     m_Modifications:
+    - target: {fileID: 2913909718299840134, guid: 3f4da2bbbc1535848815280b98c93896, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 145afda6da8779143aa8c489c6f8679e, type: 2}
     - target: {fileID: 3706661519769841491, guid: 3f4da2bbbc1535848815280b98c93896, type: 3}
       propertyPath: m_Name
       value: PizzaMaker
@@ -317672,6 +317676,9 @@ PrefabInstance:
       addedObject: {fileID: 1775510985}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 8516736476279578188, guid: f6935f66a386ceb4ba2a2e035ee831c0, type: 3}
+      insertIndex: 3
+      addedObject: {fileID: 1608874544}
+    - targetCorrespondingSourceObject: {fileID: 8516736476279578188, guid: f6935f66a386ceb4ba2a2e035ee831c0, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1608874532}
     - targetCorrespondingSourceObject: {fileID: 8516736476279578188, guid: f6935f66a386ceb4ba2a2e035ee831c0, type: 3}
@@ -363602,6 +363609,25 @@ MonoBehaviour:
   gravity: -20
   jumpHeight: 1.2
   isControllable: 1
+--- !u!114 &1608874544
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1608874529}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5251ae1fd49cba4789981bee10224c0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InteractHoverManager
+  playerCamera: {fileID: 2136636696}
+  interactDistance: 3
+  interactLayers:
+    serializedVersion: 2
+    m_Bits: 65480
+  outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  outlineWidth: 10
 --- !u!23 &1609212435
 MeshRenderer:
   m_ObjectHideFlags: 0
