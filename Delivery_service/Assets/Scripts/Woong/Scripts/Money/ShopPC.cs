@@ -4,17 +4,19 @@ public class ShopPC : MonoBehaviour
 {
     public GameObject pcUIPanel;
     public float interactRange = 3f;
-    public Transform player;
+
+    [Header("1인칭 카메라 연결")]
+    public Transform playerCamera;  
 
     private void Update()
     {
-        if (player == null || pcUIPanel == null) return;
+        if (playerCamera == null || pcUIPanel == null) return;
 
-        float distance = Vector3.Distance(transform.position, player.position);
         bool isPanelOpen = pcUIPanel.activeSelf;
 
         if (isPanelOpen)
         {
+            float distance = Vector3.Distance(transform.position, playerCamera.position);
             if (distance > interactRange || Input.GetKeyDown(KeyCode.Escape) || Input.GetKeyDown(KeyCode.E))
             {
                 ClosePanel();
@@ -22,9 +24,18 @@ public class ShopPC : MonoBehaviour
         }
         else
         {
-            if (distance <= interactRange && Input.GetKeyDown(KeyCode.E))
+            if (Input.GetKeyDown(KeyCode.E))
             {
-                OpenPanel();
+                Ray ray = new Ray(playerCamera.position, playerCamera.forward);
+                RaycastHit hit;
+
+                if (Physics.Raycast(ray, out hit, interactRange))
+                {
+                    if (hit.collider.gameObject == this.gameObject)
+                    {
+                        OpenPanel();
+                    }
+                }
             }
         }
     }

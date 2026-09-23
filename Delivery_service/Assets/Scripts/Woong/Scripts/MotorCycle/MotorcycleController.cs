@@ -29,7 +29,7 @@ public class MotorcycleController : MonoBehaviour
     public float CurrentSpeed => currentSpeed;//이거 민기쟝이 작성한거임
     private float currentSteerAngle = 0f; 
     private float smoothedSteerInput = 0f;
-
+     
     private float xRotation = 0f;
     private float yRotation = 0f;
     private float moveInput = 0f;
