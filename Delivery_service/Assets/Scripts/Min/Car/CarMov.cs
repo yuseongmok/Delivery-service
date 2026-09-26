@@ -32,7 +32,6 @@ public class CarMov : MonoBehaviour
 
         // 목표 방향 계산
         Vector3 targetPosition = currentTarget.transform.position;
-        Vector3 direction = (targetPosition - transform.position).normalized;
 
         if (lockYPosition)
         {
@@ -42,6 +41,10 @@ public class CarMov : MonoBehaviour
         {
             targetPosition.y += heightOffset;
         }
+
+        Vector3 direction = (targetPosition - transform.position);
+        direction.y = 0f;
+        direction = direction.normalized;
 
         // 부드러운 회전
         if (direction != Vector3.zero)

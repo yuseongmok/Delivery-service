@@ -206,6 +206,13 @@ public class MotorcycleController : MonoBehaviour
             bikeCamera.transform.localRotation = Quaternion.Euler(0, 0, 0);
         }
         UpdateUIVisibility();
+
+        RobberAI[] robbers = FindObjectsOfType<RobberAI>();
+        Transform activeTarget = (bikeCamera != null) ? bikeCamera.transform : transform;
+        foreach (var robber in robbers)
+        {
+            robber.SetTarget(activeTarget);
+        }
     }
 
     public void ExitBike()
@@ -217,6 +224,12 @@ public class MotorcycleController : MonoBehaviour
         {
             rider.transform.position = exitPosition;
             rider.SetActive(true);
+
+            RobberAI[] robbers = FindObjectsOfType<RobberAI>();
+            foreach (var robber in robbers)
+            {
+                robber.SetTarget(rider.transform);
+            }
         }
         if (bikeCamera != null) bikeCamera.SetActive(false);
         UpdateUIVisibility();

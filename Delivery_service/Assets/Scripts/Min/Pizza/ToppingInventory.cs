@@ -101,4 +101,28 @@ public class ToppingInventory : MonoBehaviour
         UpdateUI();
         return list;
     }
+
+    // ÇÇÀÚ °­Å»
+    public bool TryStealAllPizzas()
+    {
+        bool hadPizza = false;
+
+        if (HasPizza())
+        {
+            GameObject pizzaObj = RemovePizza();
+            if (pizzaObj != null)
+            {
+                Destroy(pizzaObj);
+            }
+            hadPizza = true;
+        }
+
+        if (HasPackagedPizzas())
+        {
+            ClearPackagedPizzas();
+            hadPizza = true;
+        }
+
+        return hadPizza;
+    }
 }

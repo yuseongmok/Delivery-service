@@ -7,7 +7,6 @@ public class RobberyManager : MonoBehaviour
 
     [Header("설정")]
     [SerializeField] private GameObject robberPrefab;       // 강도 프리팹
-    [SerializeField] private Transform[] spawnPoints;       // 강도 스폰 위치들
     [SerializeField] private Transform playerTarget;        // 플레이어
     [SerializeField] private float despawnTime = 20f;       // 강도 유지 시간
 
@@ -72,12 +71,7 @@ public class RobberyManager : MonoBehaviour
 
         // 스폰 위치 선정
         Vector3 spawnPos = Vector3.zero;
-        if (spawnPoints != null && spawnPoints.Length > 0)
-        {
-            int randomIndex = Random.Range(0, spawnPoints.Length);
-            spawnPos = spawnPoints[randomIndex].position;
-        }
-        else if (playerTarget != null)
+        if (playerTarget != null)
         {
             // 스폰 포인트가 없을 경우 플레이어 근처 15m 지점에 생성
             spawnPos = playerTarget.position + (Random.onUnitSphere * 15f);
