@@ -19,7 +19,7 @@ public class BikePizzaStorage : MonoBehaviour, IInteractable
 
     private void Start()
     {
-        if (pizzaBoxVisual != null) pizzaBoxVisual.SetActive(false);
+        //if (pizzaBoxVisual != null) pizzaBoxVisual.SetActive(false);
         UpdateUI();
     }
 
@@ -83,7 +83,7 @@ public class BikePizzaStorage : MonoBehaviour, IInteractable
         {
             inventory.AddPackagedDataStack(new List<PizzaData>(storedPizzas));
             storedPizzas.Clear();
-            if (pizzaBoxVisual != null) pizzaBoxVisual.SetActive(false);
+           // if (pizzaBoxVisual != null) pizzaBoxVisual.SetActive(false);
             Debug.Log("오토바이에서 피자를 꺼냈습니다");
         }
     }
