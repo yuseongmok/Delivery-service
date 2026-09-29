@@ -7,6 +7,7 @@ public class DayNightCycle : MonoBehaviour
     [Header("Game System")]
     public int currentDay = 1;
     public bool isShopOpen = false;
+    public MonoBehaviour cameraLookScript;
 
     public float dailyIncome = 0f;
     public float dailyExpense = 0f;
@@ -136,6 +137,11 @@ public class DayNightCycle : MonoBehaviour
         if (pcUIPanel != null) pcUIPanel.SetActive(false);
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+
+        if (cameraLookScript != null)
+        {
+            cameraLookScript.enabled = true;
+        }
     }
 
     private IEnumerator TransitionToNextDay()
@@ -178,7 +184,9 @@ public class DayNightCycle : MonoBehaviour
     {
         currentTime = 6f;
         isShopOpen = false;
-        isTransitioning = false;  
+        isTransitioning = false;
+
+        ToppingStockManager.DeliverAllPendingStock();
 
         if (pcUIPanel != null) pcUIPanel.SetActive(false);
         openShopButton.SetActive(true);

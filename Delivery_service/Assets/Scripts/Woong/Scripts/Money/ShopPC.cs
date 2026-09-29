@@ -6,7 +6,8 @@ public class ShopPC : MonoBehaviour
     public float interactRange = 3f;
 
     [Header("1인칭 카메라 연결")]
-    public Transform playerCamera;  
+    public Transform playerCamera;
+    public MonoBehaviour cameraLookScript;
 
     private void Update()
     {
@@ -45,6 +46,11 @@ public class ShopPC : MonoBehaviour
         pcUIPanel.SetActive(true);
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
+
+        if (cameraLookScript != null)
+        {
+            cameraLookScript.enabled = false;
+        }
     }
 
     private void ClosePanel()
@@ -52,5 +58,10 @@ public class ShopPC : MonoBehaviour
         pcUIPanel.SetActive(false);
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+
+        if (cameraLookScript != null)
+        {
+            cameraLookScript.enabled = true;
+        }
     }
 }

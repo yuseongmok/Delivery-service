@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 public interface IInteractable
 {
@@ -8,102 +9,72 @@ public interface IInteractable
 public class Topping : MonoBehaviour, IInteractable
 {
     [SerializeField] private PizzaToppingData toppingData;
-    [SerializeField] private bool isUnlocked = false;
-    [SerializeField] private GameObject lockVisual;
-    [SerializeField] private Renderer targetRenderer;
-    [SerializeField] private Material lockedMaterial;           // 잠금 상태
-    [SerializeField] private Material unlockedMaterial;         // 해금 상태
-
-    private void Awake()
-    {
-        if (targetRenderer == null)
-        {
-            targetRenderer = GetComponent<Renderer>();
-        }
-    }
+    [SerializeField] private Text stockText;
 
     private void Start()
     {
-        if (toppingData == null) return;
-
-        if (toppingData.toppingType == ToppingType.Dough ||
-            toppingData.toppingType == ToppingType.Sauce ||
-            toppingData.toppingType == ToppingType.Cheese)
-        {
-            isUnlocked = true;
-        }
-        else
-        {
-            // 0 - 잠금, 1 - 해금
-            isUnlocked = PlayerPrefs.GetInt(toppingData.toppingName + "_Unlocked", 0) == 1;
-        }
-
         UpdateVisuals();
+    }
+
+    private void OnEnable()
+    {
+        ToppingStockManager.OnStockChanged += UpdateVisuals;
+        UpdateVisuals();
+    }
+
+    private void OnDisable()
+    {
+        ToppingStockManager.OnStockChanged -= UpdateVisuals;
     }
 
     public void Interact(ToppingInventory inventory)
     {
         if (toppingData == null) return;
+        if (inventory.HasItem()) return;
 
-        // 잠겨있으면 차단
-        if (!isUnlocked)
+        bool isBasicTopping = toppingData.toppingType == ToppingType.Dough ||
+                              toppingData.toppingType == ToppingType.Sauce ||
+                              toppingData.toppingType == ToppingType.Cheese;
+
+        if (isBasicTopping)
         {
-            return;
-        }
-
-        // 손에 아이템이 있으면 차단
-        if (inventory.HasItem())
-        {
-            return;
-        }
-
-        if (MoneyManager.Instance != null && MoneyManager.Instance.SpendMoney(toppingData.cost, ExpenseType.PizzaTopping))// 피자 토핑 사용해도 돈이 차감이 안되길래 제가 추가했습니다 // 웅
-        {
-            // 해금된 상태라면 집을 때마다 돈을 쓰지 않고 바로 집기 
-            inventory.AddItem(toppingData);  // 
-        }
-           
-    }
-
-    // 재료 최초 해금 함수
-    public bool TryUnlock()
-    {
-        if (isUnlocked) return true;
-
-        // MoneyManager를 통해 최초 1회만 해금 비용 차감
-        if (MoneyManager.Instance != null && MoneyManager.Instance.SpendMoney(toppingData.cost, ExpenseType.PizzaTopping))
-        {
-            MoneyManager.Instance.SpendMoney(toppingData.cost);
-
-            isUnlocked = true;
-            PlayerPrefs.SetInt(toppingData.toppingName + "_Unlocked", 1);
-            PlayerPrefs.Save();
-
-            UpdateVisuals();
-            Debug.Log($"{toppingData.toppingName} 해금");
-            return true;
-        }
-
-        Debug.Log("돈이 부족하여 해금할 수 없습니다.");
-        return false;
-    }
-
-    private void UpdateVisuals()
-    {
-        if (lockVisual != null)
-        {
-            lockVisual.SetActive(!isUnlocked);
-        }
-
-        if (targetRenderer != null)
-        {
-            if (isUnlocked && unlockedMaterial != null)
+            // 기본 재료 - cost 만 차감
+            if (toppingData.cost <= 0)
             {
-                targetRenderer.material = unlockedMaterial;
+                inventory.AddItem(toppingData);
             }
-            else if (!isUnlocked && lockedMaterial != null)
+            else if (MoneyManager.Instance != null && MoneyManager.Instance.SpendMoney(toppingData.cost, ExpenseType.PizzaTopping))
             {
-                targetRenderer.material = lockedMaterial;
+                inventory.AddItem(toppingData);
+            }
+        }
+        else
+        {
+            // 일반 토핑 - 재료 차감
+            int currentStock = ToppingStockManager.GetStock(toppingData.toppingName);
+            if (currentStock <= 0) return;
+
+            // 수량 1개 차감 후 인벤토리에 지급
+            ToppingStockManager.ConsumeStock(toppingData.toppingName, 1);
+            inventory.AddItem(toppingData);
+        }
+    }
+
+    public void UpdateVisuals()
+    {
+        if (toppingData == null) return;
+
+        bool isBasicTopping = toppingData.toppingType == ToppingType.Dough ||
+                              toppingData.toppingType == ToppingType.Sauce ||
+                              toppingData.toppingType == ToppingType.Cheese;
+
+        if (!isBasicTopping)
+        {
+            int currentStock = ToppingStockManager.GetStock(toppingData.toppingName);
+
+            if (stockText != null)
+            {
+                stockText.text = $"{currentStock}/100";
             }
         }
     }
