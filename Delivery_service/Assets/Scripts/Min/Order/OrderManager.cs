@@ -16,6 +16,17 @@ public class OrderManager : MonoBehaviour
     private string currentTargetDeliveryID;
 
     public string CurrentTargetDeliveryID => currentTargetDeliveryID;
+    //네비게이션 목적지 가져옴
+    public DeliveryPoint CurrentTargetDeliveryPoint
+    {
+        get
+        {
+            return deliveryPoints.Find(point =>
+            point.DeliveryPointID == currentTargetDeliveryID);
+        }
+
+    }
+
     // 아직 남은 주문이 있는지 확인
     public bool HasActiveOrder => currentOrders != null && currentOrders.Count > 0;
 
