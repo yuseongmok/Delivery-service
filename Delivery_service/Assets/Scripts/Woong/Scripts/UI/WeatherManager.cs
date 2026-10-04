@@ -7,10 +7,14 @@ public class WeatherManager : MonoBehaviour
     public bool isRaining = false;
     public int rainStartDay = 3;
 
-    [Header("시야 방해")]
+    [Header("시야 방해 (빗물 UI)")]
     public Image waterDropletUI;
     public float dropletFillRate = 0.5f;
     public float wipeSpeed = 5f;
+
+    [Header("주행할 때 빗물 제거")]
+    public float windClearThreshold = 15f;
+    public float windClearRate = 1.0f;
 
     [Header("비 이펙트 및 사운드")]
     public ParticleSystem rainParticle;
@@ -63,7 +67,8 @@ public class WeatherManager : MonoBehaviour
     {
         if (waterDropletUI == null) return;
 
-        bool isRiding = (motorcycle != null && motorcycle.isDriven);
+        bool isRiding = (motorcycle != null && motorcycle.isDriven); 
+        
         if (isRaining && isRiding)
         {
             if (!waterDropletUI.gameObject.activeSelf)
@@ -79,6 +84,8 @@ public class WeatherManager : MonoBehaviour
                 isWiping = true;
             }
 
+            float currentBikeSpeed = Mathf.Abs(motorcycle.CurrentSpeed); 
+
             if (isWiping)
             {
                 currentDropletAlpha = Mathf.MoveTowards(currentDropletAlpha, 0f, Time.deltaTime * wipeSpeed);
@@ -86,7 +93,14 @@ public class WeatherManager : MonoBehaviour
             }
             else if (isRaining)
             {
-                currentDropletAlpha = Mathf.MoveTowards(currentDropletAlpha, 0.95f, Time.deltaTime * dropletFillRate);
+                if (currentBikeSpeed >= windClearThreshold)
+                {
+                    currentDropletAlpha = Mathf.MoveTowards(currentDropletAlpha, 0f, Time.deltaTime * windClearRate);
+                }
+                else
+                {
+                    currentDropletAlpha = Mathf.MoveTowards(currentDropletAlpha, 0.95f, Time.deltaTime * dropletFillRate);
+                }
             }
             else
             {
@@ -103,7 +117,7 @@ public class WeatherManager : MonoBehaviour
         c.a = currentDropletAlpha;
         waterDropletUI.color = c;
 
-        waterDropletUI.rectTransform.localScale = new Vector3(1f, 1f, 1f);
+        waterDropletUI.rectTransform.localScale = new Vector3(1f, 1f, 1f);  
 
         if (currentDropletAlpha <= 0f && (!isRaining || !isRiding))
         {
