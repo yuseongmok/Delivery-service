@@ -10,6 +10,7 @@ using UnityEngine.InputSystem.UI;
 namespace DeliveryService.Yun.ShopUI
 {
     /// <summary>Presentation only: never calls ordering, money, stock or opening-hours APIs.</summary>
+    [DefaultExecutionOrder(10000)]
     public sealed class ShopPcUiView : MonoBehaviour
     {
         [Serializable]
@@ -43,7 +44,7 @@ namespace DeliveryService.Yun.ShopUI
         private static readonly Color Border = new Color32(216, 224, 231, 255);
         private readonly GameObject[] pages = new GameObject[3];
         private readonly Button[] tabs = new Button[3];
-        private readonly List<Behaviour> suspended = new List<Behaviour>();
+        private readonly ShopUiInputScope inputScope = new ShopUiInputScope();
         private readonly List<Text> quantityLabels = new List<Text>();
         private readonly List<Button> minusButtons = new List<Button>();
         private readonly List<Button> plusButtons = new List<Button>();
@@ -51,8 +52,6 @@ namespace DeliveryService.Yun.ShopUI
         private Font font;
         private bool ownsFont;
         private bool built;
-        private CursorLockMode priorLock;
-        private bool priorCursor;
         private Text feedback;
         private float feedbackUntil;
         private GameObject ownedEventSystem;
@@ -193,34 +192,15 @@ namespace DeliveryService.Yun.ShopUI
         {
             if (!built) return;
             EnsureEventSystem();
-            priorLock = Cursor.lockState;
-            priorCursor = Cursor.visible;
-            if (pc != null && pc.playerCamera != null)
-            {
-                // Limit suspension to this PC's player, not all players or NPCs in the scene.
-                Transform player = pc.playerCamera;
-                while (player.parent != null && player.GetComponent<CharacterController>() == null)
-                    player = player.parent;
-                foreach (Behaviour behaviour in player.GetComponentsInChildren<MonoBehaviour>(true))
-                {
-                    if (behaviour is PlayerMove || behaviour is PlayerMovement || behaviour is CameraMove
-                        || behaviour is PlayerInteraction || behaviour is PlayerInteract || behaviour == pc.cameraLookScript)
-                    {
-                        if (behaviour.enabled) { suspended.Add(behaviour); behaviour.enabled = false; }
-                    }
-                }
-            }
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
+            inputScope.Acquire(pc, false);
         }
+
+        private void LateUpdate() { inputScope.Maintain(); }
 
         private void OnDisable()
         {
-            foreach (Behaviour behaviour in suspended) if (behaviour != null) behaviour.enabled = true;
-            suspended.Clear();
+            inputScope.Release();
             if (!built) return;
-            Cursor.lockState = priorLock;
-            Cursor.visible = priorCursor;
             if (feedback != null) feedback.text = "";
         }
 

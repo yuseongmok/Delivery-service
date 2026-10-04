@@ -1,16 +1,13 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace DeliveryService.Yun.ShopUI
 {
     // The new PC view releases its input lock when closed. Keep the existing summary modal usable.
+    [DefaultExecutionOrder(10000)]
     public sealed class ShopSummaryInputGuard : MonoBehaviour
     {
-        private readonly List<Behaviour> suspended = new List<Behaviour>();
+        private readonly ShopUiInputScope inputScope = new ShopUiInputScope();
         private ShopPC pc;
-        private bool locked;
-        private CursorLockMode previousLock;
-        private bool previousVisible;
 
         public void Configure(ShopPC owner)
         {
@@ -19,45 +16,16 @@ namespace DeliveryService.Yun.ShopUI
         }
 
         private void OnEnable() { Acquire(); }
+        private void LateUpdate() { inputScope.Maintain(); }
 
         private void Acquire()
         {
-            if (locked || pc == null) return;
-            locked = true;
-            previousLock = Cursor.lockState;
-            previousVisible = Cursor.visible;
-            Suspend(pc);
-            if (pc.playerCamera != null)
-            {
-                Transform player = pc.playerCamera;
-                while (player.parent != null && player.GetComponent<CharacterController>() == null)
-                    player = player.parent;
-                foreach (MonoBehaviour behaviour in player.GetComponentsInChildren<MonoBehaviour>(true))
-                    if (behaviour is PlayerMove || behaviour is PlayerMovement || behaviour is CameraMove
-                        || behaviour is PlayerInteraction || behaviour is PlayerInteract || behaviour == pc.cameraLookScript)
-                        Suspend(behaviour);
-            }
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
-        }
-
-        private void Suspend(Behaviour target)
-        {
-            if (target != null && target.enabled)
-            {
-                suspended.Add(target);
-                target.enabled = false;
-            }
+            if (pc != null) inputScope.Acquire(pc, true);
         }
 
         private void OnDisable()
         {
-            if (!locked) return;
-            foreach (Behaviour target in suspended) if (target != null) target.enabled = true;
-            suspended.Clear();
-            Cursor.lockState = previousLock;
-            Cursor.visible = previousVisible;
-            locked = false;
+            inputScope.Release();
         }
     }
 }
