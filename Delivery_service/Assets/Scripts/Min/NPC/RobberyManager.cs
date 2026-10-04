@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class RobberyManager : MonoBehaviour
 {
@@ -23,6 +24,26 @@ public class RobberyManager : MonoBehaviour
         {
             dayNightCycle = FindObjectOfType<DayNightCycle>();
         }
+
+        FindPlayerTarget();
+    }
+
+    private void FindPlayerTarget()
+    {
+        PlayerMove playerMove = FindObjectOfType<PlayerMove>(true);
+        if (playerMove != null)
+        {
+            playerTarget = playerMove.transform;
+            Debug.Log($"[RobberyManager] PlayerMove 발견 : {playerTarget.name}");
+            return;
+        }
+
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        if (player != null)
+        {
+            playerTarget = player.transform;
+            Debug.Log($"[RobberyManager] 플레이어 발견 : {playerTarget.name}");
+        }
     }
 
     private void Update()
@@ -31,19 +52,16 @@ public class RobberyManager : MonoBehaviour
 
         float time = dayNightCycle.currentTime;
 
-        // 낮 시간대(0시 ~ 18시)가 되면 다음 날을 위해 체크 초기화
         if (time < 18f)
         {
             checkedFirstSlot = false;
             checkedSecondSlot = false;
         }
-        // 18시 ~ 21시 사이 체크
         else if (time >= 18f && time < 21f && !checkedFirstSlot)
         {
             checkedFirstSlot = true;
             TrySpawnRobber("18~21시");
         }
-        // 21시 ~ 24시 사이 체크
         else if (time >= 21f && time < 24f && !checkedSecondSlot)
         {
             checkedSecondSlot = true;
@@ -51,7 +69,6 @@ public class RobberyManager : MonoBehaviour
         }
     }
 
-    // 확률 계산 및 스폰 실행
     private void TrySpawnRobber(string timeSlotName)
     {
         float randomValue = Random.Range(0f, 100f);
@@ -64,30 +81,54 @@ public class RobberyManager : MonoBehaviour
 
     private void SpawnRobber()
     {
-        if (robberPrefab == null)
+        if (robberPrefab == null) return;
+
+        if (playerTarget == null)
         {
-            return;
+            FindPlayerTarget();
         }
 
-        // 스폰 위치 선정
-        Vector3 spawnPos = Vector3.zero;
-        if (playerTarget != null)
+        MotorcycleController bike = FindObjectOfType<MotorcycleController>(true);
+        Transform currentActiveTarget = playerTarget;
+
+        if (bike != null && bike.isDriven)
         {
-            // 스폰 포인트가 없을 경우 플레이어 근처 15m 지점에 생성
-            spawnPos = playerTarget.position + (Random.onUnitSphere * 15f);
-            spawnPos.y = playerTarget.position.y;
+            currentActiveTarget = bike.transform;
+        }
+
+        if (currentActiveTarget == null) return;
+
+        // 수평 원형 12m 지점 좌표 계산
+        Vector2 randomCircle = Random.insideUnitCircle.normalized * 12f;
+        Vector3 desiredSpawnPos = currentActiveTarget.position + new Vector3(randomCircle.x, 0f, randomCircle.y);
+
+        NavMeshHit hit;
+        Vector3 finalSpawnPos = desiredSpawnPos;
+
+        // NavMesh 상의 유효 좌표 탐색
+        if (NavMesh.SamplePosition(desiredSpawnPos, out hit, 15f, NavMesh.AllAreas))
+        {
+            finalSpawnPos = hit.position;
         }
 
         // 강도 생성
-        GameObject robberInstance = Instantiate(robberPrefab, spawnPos, Quaternion.identity);
+        GameObject robberInstance = Instantiate(robberPrefab, finalSpawnPos, Quaternion.identity);
 
-        RobberAI robberAI = robberInstance.GetComponent<RobberAI>();
-        if (robberAI != null && playerTarget != null)
+        // NavMeshAgent 초기화 및 좌표 강제 동기화
+        NavMeshAgent agent = robberInstance.GetComponent<NavMeshAgent>();
+        if (agent != null)
         {
-            robberAI.SetTarget(playerTarget);
+            agent.Warp(finalSpawnPos);
+            agent.isStopped = false;
         }
 
-        // 현실 시간 20초 후 제거
+        RobberAI robberAI = robberInstance.GetComponent<RobberAI>();
+        if (robberAI != null)
+        {
+            robberAI.SetTarget(currentActiveTarget);
+            Debug.Log($"[RobberyManager] 강도 스폰 완료! 위치: {finalSpawnPos}, 추적 대상: {currentActiveTarget.name}");
+        }
+
         StartCoroutine(DespawnRoutine(robberInstance, despawnTime));
     }
 

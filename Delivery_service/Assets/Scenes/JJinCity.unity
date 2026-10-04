@@ -319158,7 +319158,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8516736476279578188, guid: f6935f66a386ceb4ba2a2e035ee831c0, type: 3}
       propertyPath: m_TagString
-      value: Untagged
+      value: Player
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 1570568828013816917, guid: f6935f66a386ceb4ba2a2e035ee831c0, type: 3}
@@ -365146,6 +365146,8 @@ MonoBehaviour:
   waterDropletUI: {fileID: 1466632944}
   dropletFillRate: 0.1
   wipeSpeed: 1
+  windClearThreshold: 15
+  windClearRate: 1
   rainParticle: {fileID: 1306194055}
   rainAudioSource: {fileID: 0}
   dayNightCycle: {fileID: 1230112709}

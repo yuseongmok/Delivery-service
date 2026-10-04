@@ -279,7 +279,7 @@ public class MotorcycleController : MonoBehaviour
         yield return new WaitForFixedUpdate();
 
         CharacterController cc = playerToFly.GetComponent<CharacterController>();
-        PlayerMovement pm = playerToFly.GetComponent<PlayerMovement>();
+        PlayerMove pm = playerToFly.GetComponent<PlayerMove>();
 
         if (pm != null) pm.enabled = false;
         if (cc != null) cc.enabled = false;

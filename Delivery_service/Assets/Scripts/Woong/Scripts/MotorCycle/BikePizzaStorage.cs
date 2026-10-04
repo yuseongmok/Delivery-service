@@ -88,6 +88,21 @@ public class BikePizzaStorage : MonoBehaviour, IInteractable
         }
     }
 
+    // 적재 피자 스틸
+    public bool TryStealPizzas()
+    {
+        if (storedPizzas != null && storedPizzas.Count > 0)
+        {
+            storedPizzas.Clear();
+            currentShake = 0f;
+            //if (pizzaBoxVisual != null) pizzaBoxVisual.SetActive(false);
+            UpdateUI();
+            Debug.Log("강도가 적재된 피자를 훔쳐갔습니다");
+            return true;
+        }
+        return false;
+    }
+
     private void UpdateUI()
     {
         if (shakeGaugeUI != null)
