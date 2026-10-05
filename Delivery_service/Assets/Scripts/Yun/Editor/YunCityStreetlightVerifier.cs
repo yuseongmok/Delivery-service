@@ -23,11 +23,12 @@ namespace DeliveryService.Yun.Editor
         {
             byte[] original = File.ReadAllBytes(YunCityStreetlightSetup.SourceScene);
             EditorSceneManager.OpenScene(YunCityStreetlightSetup.TestScene);
-            var controller = UnityEngine.Object.FindFirstObjectByType<StreetlightTimeController>();
+            var controller = UnityEngine.Object.FindObjectsByType<StreetlightTimeController>(FindObjectsSortMode.None).Single(c => c.LampCount == 96);
             var clock = UnityEngine.Object.FindFirstObjectByType<DayNightCycle>();
             var lights = UnityEngine.Object.FindObjectsByType<Light>(FindObjectsSortMode.None)
                 .Where(l => l.name == "Yun Streetlight").ToArray();
             Require(controller != null && clock != null && controller.LampCount == 96 && lights.Length == 96, "Saved references and all 96 lights");
+            clock.isShopOpen = true;
             foreach (float hour in new[] { 6f, 15.999f, 16f, 20f, 23.99f, 6f, 16f })
             {
                 clock.currentTime = hour;
@@ -37,7 +38,9 @@ namespace DeliveryService.Yun.Editor
             }
             clock.isShopOpen = false;
             controller.Refresh();
-            Require(lights.All(l => l.enabled), "Closing before next-day reset keeps street lighting");
+            Require(lights.All(l => !l.enabled), "Closing immediately turns off street lighting");
+            clock.isShopOpen = true;
+            controller.Refresh();
             controller.enabled = false;
             controller.Refresh(); // Edit mode does not invoke normal MonoBehaviour lifecycle callbacks.
             Require(lights.All(l => !l.enabled), "Disable releases all lights");
@@ -79,7 +82,7 @@ namespace DeliveryService.Yun.Editor
             Debug.Log("YUNCITY_STREETLIGHT_VERIFICATION_PASSED: 96 saved lights, 15:59 off, 16:00 on, night, next-day reset, closed-shop state, disable/re-enable, original scene unchanged.");
         }
 
-        private static void Capture(Camera camera, string filename)
+        internal static void Capture(Camera camera, string filename)
         {
             var texture = new RenderTexture(1280, 900, 24, RenderTextureFormat.ARGBHalf);
             var previous = RenderTexture.active;
@@ -138,7 +141,7 @@ namespace DeliveryService.Yun.Editor
                 if (!EditorApplication.isPlaying || Time.frameCount < 5 || Time.frameCount == lastFrame) return;
                 lastFrame = Time.frameCount;
                 var clock = UnityEngine.Object.FindFirstObjectByType<DayNightCycle>();
-                var controller = UnityEngine.Object.FindFirstObjectByType<StreetlightTimeController>();
+                var controller = UnityEngine.Object.FindObjectsByType<StreetlightTimeController>(FindObjectsSortMode.None).Single(c => c.LampCount == 96);
                 var lamps = UnityEngine.Object.FindObjectsByType<Light>(FindObjectsSortMode.None)
                     .Where(l => l.name == "Yun Streetlight").ToArray();
                 Require(!clock.enabled, "Verification must not initialize real stock");
@@ -147,7 +150,7 @@ namespace DeliveryService.Yun.Editor
                     bool expected = phase <= Hours.Length ? Hours[phase - 1] >= 16 : true;
                     Require(lamps.Length == 96 && lamps.All(l => l.enabled == expected), "Runtime light state phase " + phase);
                 }
-                if (phase < Hours.Length) clock.currentTime = Hours[phase++];
+                if (phase < Hours.Length) { clock.isShopOpen = true; clock.currentTime = Hours[phase++]; }
                 else if (phase == Hours.Length)
                 {
                     controller.enabled = false;

@@ -29,8 +29,8 @@ namespace DeliveryService.Yun.Streetlights
         [ContextMenu("Refresh from game clock")]
         public void Refresh()
         {
-            // Closing the shop does not turn off the street: the clock resets to 06:00 next day.
-            bool shouldLight = isActiveAndEnabled && clock != null && clock.currentTime >= turnOnHour;
+            // Shared by streetlights and motorcycle headlights; closing/canceling follows business state.
+            bool shouldLight = isActiveAndEnabled && clock != null && clock.isShopOpen && clock.currentTime >= turnOnHour;
             if (!applied || shouldLight != IsLit) SetLit(shouldLight);
         }
 
