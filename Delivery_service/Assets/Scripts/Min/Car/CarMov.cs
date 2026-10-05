@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;// 코루틴
 
 public class CarMov : MonoBehaviour
 {
@@ -127,11 +128,78 @@ public class CarMov : MonoBehaviour
         NPCControl npc = other.GetComponentInParent<NPCControl>();
         if (npc != null)
         {
-            // 부딪힌 충격량 계산
             Vector3 hitDirection = transform.forward;
             float hitForce = speed * 2.5f;
-
             npc.Die(hitDirection, Mathf.Clamp(hitForce, 15f, 50f));
+            return;
+        }
+
+        MotorcycleController bike = other.GetComponentInParent<MotorcycleController>();
+        if (bike != null)
+        {
+            if (bike.isDriven)
+            {
+                bike.CrashAndEject(speed, transform.forward);
+            }
+
+            if (bike.sphereRB != null)
+            {
+                bike.sphereRB.AddForce(transform.forward * speed * 2f, ForceMode.VelocityChange);
+            }
+            return;
+        }
+
+        if (other.CompareTag("Player"))
+        {
+            StartCoroutine(KnockbackPlayerRoutine(other.gameObject));
         }
     }
+    private IEnumerator KnockbackPlayerRoutine(GameObject player)
+    {
+        CharacterController cc = player.GetComponent<CharacterController>();
+        PlayerMove pm = player.GetComponent<PlayerMove>();
+
+        if (pm != null) pm.enabled = false;
+        yield return null;
+        if (cc != null) cc.enabled = false;
+
+        // 플레이어에게 rifidbody 부여하여 날아가게 설정
+        Rigidbody tempRb = player.GetComponent<Rigidbody>();
+        if (tempRb == null) tempRb = player.AddComponent<Rigidbody>();
+
+        tempRb.isKinematic = false;
+        tempRb.useGravity = true;
+        tempRb.collisionDetectionMode = CollisionDetectionMode.Continuous;
+
+        // 콜라이더 확인 및 추가
+        CapsuleCollider tempCol = player.GetComponent<CapsuleCollider>();
+        bool addedCol = false;
+        if (tempCol == null)
+        {
+            tempCol = player.AddComponent<CapsuleCollider>();
+            tempCol.height = 2f;
+            tempCol.radius = 0.5f;
+            tempCol.material = new PhysicsMaterial { dynamicFriction = 0.6f, bounciness = 0.2f };
+            addedCol = true;
+        }
+
+        // 차량 진행 방향으로 날리기
+        Vector3 force = (transform.forward * speed * 1.5f) + (Vector3.up * 8f);
+        tempRb.linearVelocity = Vector3.zero;
+        tempRb.AddForce(force, ForceMode.VelocityChange);
+
+        // 날아가는 시간 대기
+        yield return new WaitForSeconds(2.5f);
+
+        // 임시 부여한 물리 컴포넌트들 제거
+        if (tempRb != null) Destroy(tempRb);
+        if (addedCol && tempCol != null) Destroy(tempCol);
+
+        player.transform.rotation = Quaternion.Euler(0, player.transform.rotation.eulerAngles.y, 0);
+
+        // 조작 원상복구
+        if (cc != null) cc.enabled = true;
+        if (pm != null) pm.enabled = true;
+    }
 }
+

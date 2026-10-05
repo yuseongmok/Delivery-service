@@ -6,8 +6,9 @@ public class MotorcycleController : MonoBehaviour
     public Rigidbody sphereRB;
     public Rigidbody bikeBody;
     public Collider sphereCollider;
-    public Collider bodyCollider;  
-    [Header(" 속도 및 가속 )")]
+    public Collider bodyCollider;
+
+    [Header("속도 및 가속")]
     public float maxSpeed = 30f;
     public float reverseSpeed = 10f;
     public float acceleration = 15f;
@@ -26,10 +27,10 @@ public class MotorcycleController : MonoBehaviour
     public bool isRefueling = false;
 
     private float currentSpeed = 0f;
-    public float CurrentSpeed => currentSpeed;//이거 민기쟝이 작성한거임
-    private float currentSteerAngle = 0f; 
+    public float CurrentSpeed => currentSpeed;
+    private float currentSteerAngle = 0f;
     private float smoothedSteerInput = 0f;
-     
+
     private float xRotation = 0f;
     private float yRotation = 0f;
     private float moveInput = 0f;
@@ -64,7 +65,6 @@ public class MotorcycleController : MonoBehaviour
         if (sphereRB != null)
         {
             localOffset = Quaternion.Inverse(transform.rotation) * (transform.position - sphereRB.transform.position);
-
             sphereRB.transform.parent = null;
             sphereRB.interpolation = RigidbodyInterpolation.Interpolate;
         }
@@ -234,7 +234,7 @@ public class MotorcycleController : MonoBehaviour
         if (bikeCamera != null) bikeCamera.SetActive(false);
         UpdateUIVisibility();
     }
-    // 사고 났을 때 오토바이 속도 대폭 감소
+
     public void ApplyImpactDeceleration(float ratio = 0.2f)
     {
         currentSpeed *= ratio;
@@ -258,20 +258,22 @@ public class MotorcycleController : MonoBehaviour
             currentSpeed = Mathf.Lerp(currentSpeed, 0f, 0.5f);
         }
     }
-    public void CrashAndEject()
+
+    public void CrashAndEject(float customSpeed = -1f, Vector3 customDirection = default)
     {
         if (!isDriven || rider == null) return;
 
         GameObject flyingRider = rider;
-        float crashSpeed = Mathf.Abs(currentSpeed);
 
-        ExitBike();  
-        ApplyImpactDeceleration(0.1f);  
+        float crashSpeed = customSpeed >= 0f ? customSpeed : Mathf.Abs(currentSpeed);
 
-        StartCoroutine(EjectPlayerRoutine(flyingRider, crashSpeed));
+        ExitBike();
+        ApplyImpactDeceleration(0.1f);
+
+        StartCoroutine(EjectPlayerRoutine(flyingRider, crashSpeed, customDirection));
     }
 
-    private System.Collections.IEnumerator EjectPlayerRoutine(GameObject playerToFly, float speed)
+    private System.Collections.IEnumerator EjectPlayerRoutine(GameObject playerToFly, float speed, Vector3 customDirection)
     {
         playerToFly.transform.position = transform.position + (transform.forward * 0.5f) + (Vector3.up * 1.5f);
         playerToFly.SetActive(true);
@@ -282,11 +284,19 @@ public class MotorcycleController : MonoBehaviour
         PlayerMove pm = playerToFly.GetComponent<PlayerMove>();
 
         if (pm != null) pm.enabled = false;
+        yield return null;
         if (cc != null) cc.enabled = false;
-        CapsuleCollider tempCol = playerToFly.AddComponent<CapsuleCollider>();
-        tempCol.height = 2f;
-        tempCol.radius = 0.5f;
-        tempCol.material = new PhysicsMaterial { dynamicFriction = 0.6f, bounciness = 0.2f };
+
+        CapsuleCollider tempCol = playerToFly.GetComponent<CapsuleCollider>();
+        bool addedCol = false;
+        if (tempCol == null)
+        {
+            tempCol = playerToFly.AddComponent<CapsuleCollider>();
+            tempCol.height = 2f;
+            tempCol.radius = 0.5f;
+            tempCol.material = new PhysicsMaterial { dynamicFriction = 0.6f, bounciness = 0.2f };
+            addedCol = true;
+        }
 
         Rigidbody tempRb = playerToFly.GetComponent<Rigidbody>();
         if (tempRb == null) tempRb = playerToFly.AddComponent<Rigidbody>();
@@ -296,13 +306,14 @@ public class MotorcycleController : MonoBehaviour
         tempRb.collisionDetectionMode = CollisionDetectionMode.Continuous;
         tempRb.linearVelocity = Vector3.zero;
 
-        Vector3 force = (transform.forward * speed * 1.2f) + (Vector3.up * 8f);
+        Vector3 flyDirection = customDirection == default ? transform.forward : customDirection.normalized;
+        Vector3 force = (flyDirection * speed * 1.2f) + (Vector3.up * 8f);
         tempRb.AddForce(force, ForceMode.VelocityChange);
 
         yield return new WaitForSeconds(2.5f);
 
         if (tempRb != null) Destroy(tempRb);
-        if (tempCol != null) Destroy(tempCol);
+        if (addedCol && tempCol != null) Destroy(tempCol);
 
         playerToFly.transform.rotation = Quaternion.Euler(0, playerToFly.transform.rotation.eulerAngles.y, 0);
 
