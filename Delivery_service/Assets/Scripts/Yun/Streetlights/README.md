@@ -1,0 +1,28 @@
+# YunCity 가로등 테스트
+
+- 테스트 씬: `Assets/Scenes/YunCity.unity` (JJinCity 복사본)
+- 제어 오브젝트: `Yun Streetlights (16h)`
+- 연결: 기존 `Time` 오브젝트의 `DayNightCycle.currentTime`을 읽습니다. 시간이나 영업 상태는 변경하지 않습니다.
+- 16:00 이상이면 켜지고, 다음 날 시간이 06:00으로 초기화되면 꺼집니다. 마감 정산창을 띄웠다는 이유만으로 가로등을 끄지는 않습니다.
+- 원본 JJinCity, 기존 스크립트, Synty 프리팹/머티리얼, 프로젝트 렌더링 설정은 수정하지 않았습니다. 다른 씬에 자동 설치하지 않습니다.
+
+## 구성
+
+프리팹 내부를 포함한 활성 가로등 91개에 조명 96개를 설치했습니다. 일반형 86개는 하향 Spot Light, 쌍등형 5개는 각각 Point Light 2개를 사용합니다. 등 표면에만 별도 발광 도형을 추가했으며 원래 공용 머티리얼은 유지합니다.
+
+조명은 따뜻한 색, 실시간 조명, 그림자 없음입니다. Spot 강도 65/범위 13, Point 강도 12/범위 9를 초기 테스트값으로 사용합니다. 모든 조명은 `Yun Streetlight` 이름의 자식 오브젝트이며 개별 Inspector에서 조정할 수 있습니다. 맵 전체의 실제 플레이 프레임 성능은 별도 측정하지 않았습니다.
+
+## 직접 확인
+
+1. YunCity를 열고 Play합니다.
+2. PC에서 영업을 시작합니다. 원래 게임 시간의 진행에 맞춰 16시에 자동 점등됩니다.
+3. 빠르게 확인하려면 Play 중 `Time > DayNightCycle > Current Time`을 15.99, 16, 6으로 변경합니다. 16에서 켜지고 6에서 꺼지는지 확인합니다. Play 진입 시 기존 코드가 시간을 06:00으로 초기화하므로 실행 후 변경해야 합니다.
+4. 밝기/범위 조정은 YunCity의 조명에서 합니다. 검토 후 원본 맵에 반영하는 작업은 별도입니다.
+
+## 검증 도구
+
+`YunCityStreetlightVerifier.RunBatch`: 저장된 조명/시간 참조, 16시 경계·밤·다음 날·비활성화 상태, 원본 씬 불변 검사 및 야간 점등 전후 렌더링. 그래픽을 켠 Unity 배치 에디터에서 실행합니다. 렌더링은 점등 차이를 보기 위해 주변광을 고정하며 변경값을 씬에 저장하지 않습니다.
+
+`YunCityStreetlightVerifier.RunPlayBatch`: 실제 Play Mode의 LateUpdate, OnEnable/OnDisable, 시간 초기화 후 재점등, 기존 영업 시간 Update의 16시 통과를 검사합니다. 사용자의 실제 발주 재고가 입고되는 부작용을 막기 위해 검사 중 DayNightCycle의 자동 Start/Update는 비활성화하고 시간 진행 함수만 수동 호출합니다. 테스트 씬을 다시 저장하지 않습니다.
+
+`YunCityStreetlightSetup.BuildBatch`는 최초 복사/배치 도구이며 기존 YunCity가 있으면 덮어쓰지 않고 중단합니다. `TuneBatch`는 YunCity의 추가 조명 밝기만 초기 테스트값으로 맞춥니다.
