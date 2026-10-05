@@ -113,8 +113,10 @@ namespace DeliveryService.Yun.Editor
                 buttons.Single(b => b.name == "Tab_2").onClick.Invoke();
                 Require(view.SelectedTab == 2, "Runtime tab switching");
                 int moneyBefore = MoneyManager.Instance != null ? MoneyManager.Instance.currentMoney : 0;
+                // A deliberately over-capacity order must not spend real saved money.
+                view.ChangeQuantity(0, int.MaxValue);
                 buttons.First(b => b.name == "Purchase").onClick.Invoke();
-                Require(MoneyManager.Instance == null || moneyBefore == MoneyManager.Instance.currentMoney, "Purchase does not spend money");
+                Require(MoneyManager.Instance == null || moneyBefore == MoneyManager.Instance.currentMoney, "Over-capacity purchase does not spend money");
                 buttons.Single(b => b.name == "CloseWindow").onClick.Invoke();
                 Require(!pc.pcUIPanel.activeSelf, "Close button works");
                 Require(pc.cameraLookScript == null || pc.cameraLookScript.enabled, "Look restored");

@@ -51,6 +51,7 @@ namespace DeliveryService.Yun.ShopUI
             pc.pcUIPanel = viewObject;
             var business = gameObject.AddComponent<ShopBusinessUiBridge>();
             business.Bind(pc, view, originalPanel);
+            gameObject.AddComponent<ShopSupplyUiBridge>().Bind(view);
         }
 
         private void OnDestroy()

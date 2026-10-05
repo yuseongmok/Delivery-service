@@ -27,7 +27,7 @@ namespace DeliveryService.Yun.ShopUI
             public IngredientRow(string name, int artworkKind) { this.name = name; this.artworkKind = artworkKind; }
         }
 
-        [Tooltip("화면 표시용 재료와 수량. 구매/재고 데이터와 연결하지 않습니다.")]
+        [Tooltip("수량은 10개 묶음 단위입니다. 구매는 ShopSupplyUiBridge가 처리합니다.")]
         public List<IngredientRow> ingredients = new List<IngredientRow>
         {
             new IngredientRow("페페로니", 3), new IngredientRow("초콜릿", 4),
@@ -38,6 +38,9 @@ namespace DeliveryService.Yun.ShopUI
         public string LastClickedAction { get; private set; }
         public int ClickCount { get; private set; }
         public event Action<string> ActionClicked;
+        public event Action<int> PurchaseRequested;
+        private readonly List<Text> purchaseLabels = new List<Text>();
+        private Text balanceLabel;
 
         private static readonly Color Navy = new Color32(25, 43, 66, 255);
         private static readonly Color Teal = new Color32(21, 143, 164, 255);
@@ -104,6 +107,7 @@ namespace DeliveryService.Yun.ShopUI
         {
             Transform page = pages[2].transform;
             Label("SupplyTitle", page, "재료 발주", 43, Navy, .04f, .88f, .96f, 1);
+            balanceLabel = Label("Balance", page, "", 23, Navy, .48f, .88f, .96f, 1, TextAnchor.MiddleRight);
             RectTransform scrollRect = Box("IngredientsScroll", page, Color.white, .035f, .01f, .965f, .88f);
             scrollRect.gameObject.AddComponent<RectMask2D>();
             var scroll = scrollRect.gameObject.AddComponent<ScrollRect>();
@@ -139,8 +143,9 @@ namespace DeliveryService.Yun.ShopUI
                 minusButtons.Add(ButtonAt("Minus", inner, "−", Pale, Navy, .55f, .16f, .61f, .84f, () => ChangeQuantity(index, -1), 29));
                 quantityLabels.Add(Label("Quantity", inner, data.quantity.ToString(), 26, Navy, .62f, .15f, .69f, .85f, TextAnchor.MiddleCenter));
                 plusButtons.Add(ButtonAt("Plus", inner, "+", Pale, Navy, .70f, .16f, .76f, .84f, () => ChangeQuantity(index, 1), 29));
-                ButtonAt("Purchase", inner, "구매하기", Teal, Color.white, .80f, .16f, .98f, .84f,
-                    () => Notify(ingredients[index].name + " " + ingredients[index].quantity + "묶음 (" + ingredients[index].TotalUnits + "개) 구매하기"), 25);
+                var purchase = ButtonAt("Purchase", inner, "구매하기", Teal, Color.white, .80f, .16f, .98f, .84f,
+                    () => RequestPurchase(index), 21);
+                purchaseLabels.Add(purchase.transform.Find("Label").GetComponent<Text>());
                 RefreshQuantity(i);
             }
         }
@@ -185,6 +190,25 @@ namespace DeliveryService.Yun.ShopUI
             feedback.text = action + " 선택됨";
             feedbackUntil = Time.unscaledTime + 1.8f;
             ActionClicked?.Invoke(action);
+        }
+
+        private void RequestPurchase(int index)
+        {
+            Notify(ingredients[index].name + " " + ingredients[index].quantity + "묶음 (" + ingredients[index].TotalUnits + "개) 구매하기");
+            if (PurchaseRequested != null) PurchaseRequested.Invoke(index);
+            else ShowFeedback("구매 기능이 연결되지 않았습니다.");
+        }
+
+        public void ShowFeedback(string message)
+        {
+            feedback.text = message;
+            feedbackUntil = Time.unscaledTime + 4f;
+        }
+
+        public void SetBalance(string message) { if (balanceLabel != null) balanceLabel.text = message; }
+        public void SetPurchasePrice(int index, string message)
+        {
+            if (index >= 0 && index < purchaseLabels.Count) purchaseLabels[index].text = message;
         }
 
         public void Close() { gameObject.SetActive(false); }
