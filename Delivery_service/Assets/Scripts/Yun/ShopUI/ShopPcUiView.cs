@@ -21,16 +21,17 @@ namespace DeliveryService.Yun.ShopUI
             public int minimum = 1;
             public int maximum = 999;
             public Sprite icon;
-            public IngredientRow(string name) { this.name = name; }
+            public int artworkKind;
+            public const int UnitsPerBundle = 10;
+            public long TotalUnits => (long)quantity * UnitsPerBundle;
+            public IngredientRow(string name, int artworkKind) { this.name = name; this.artworkKind = artworkKind; }
         }
 
         [Tooltip("화면 표시용 재료와 수량. 구매/재고 데이터와 연결하지 않습니다.")]
         public List<IngredientRow> ingredients = new List<IngredientRow>
         {
-            new IngredientRow("도우"), new IngredientRow("치즈"),
-            new IngredientRow("소스"), new IngredientRow("페페로니"),
-            new IngredientRow("초콜릿"), new IngredientRow("파인애플"),
-            new IngredientRow("젤리")
+            new IngredientRow("페페로니", 3), new IngredientRow("초콜릿", 4),
+            new IngredientRow("파인애플", 5), new IngredientRow("젤리", 6)
         };
 
         public int SelectedTab { get; private set; }
@@ -133,13 +134,13 @@ namespace DeliveryService.Yun.ShopUI
                     img.color = Color.white;
                     img.preserveAspect = true;
                 }
-                else Artwork(badge, i, .06f, .06f, .94f, .94f);
-                Label("IngredientName", inner, data.name, 28, Navy, .12f, .1f, .46f, .9f);
+                else Artwork(badge, data.artworkKind, .06f, .06f, .94f, .94f);
+                Label("IngredientName", inner, data.name + " ×" + IngredientRow.UnitsPerBundle, 28, Navy, .12f, .1f, .53f, .9f);
                 minusButtons.Add(ButtonAt("Minus", inner, "−", Pale, Navy, .55f, .16f, .61f, .84f, () => ChangeQuantity(index, -1), 29));
                 quantityLabels.Add(Label("Quantity", inner, data.quantity.ToString(), 26, Navy, .62f, .15f, .69f, .85f, TextAnchor.MiddleCenter));
                 plusButtons.Add(ButtonAt("Plus", inner, "+", Pale, Navy, .70f, .16f, .76f, .84f, () => ChangeQuantity(index, 1), 29));
                 ButtonAt("Purchase", inner, "구매하기", Teal, Color.white, .80f, .16f, .98f, .84f,
-                    () => Notify(ingredients[index].name + " " + ingredients[index].quantity + "개 구매하기"), 25);
+                    () => Notify(ingredients[index].name + " " + ingredients[index].quantity + "묶음 (" + ingredients[index].TotalUnits + "개) 구매하기"), 25);
                 RefreshQuantity(i);
             }
         }

@@ -22,7 +22,7 @@ namespace DeliveryService.Yun.Editor
                 var view = root.AddComponent<ShopPcUiView>();
                 view.Build(null);
                 var buttons = root.GetComponentsInChildren<Button>(true);
-                Require(buttons.Length == 29, "Expected 3 tabs, 4 actions, 21 ingredient controls, 1 close");
+                Require(buttons.Length == 20, "Expected 3 tabs, 4 actions, 12 ingredient controls, 1 close");
                 for (int i = 0; i < 3; i++)
                 {
                     buttons.Single(b => b.name == "Tab_" + i).onClick.Invoke();
@@ -35,6 +35,7 @@ namespace DeliveryService.Yun.Editor
                     var row = root.transform.Find("Background/Page_2/IngredientsScroll/Content/Ingredient_" + i);
                     row.Find("Card/Plus").GetComponent<Button>().onClick.Invoke();
                     Require(view.ingredients[i].quantity == 2, "Plus click");
+                    Require(view.ingredients[i].TotalUnits == 20, "Two bundles contain twenty ingredients");
                     row.Find("Card/Minus").GetComponent<Button>().onClick.Invoke();
                     Require(view.ingredients[i].quantity == 1, "Minus click");
                     view.ChangeQuantity(i, int.MinValue);
@@ -42,14 +43,14 @@ namespace DeliveryService.Yun.Editor
                     view.ChangeQuantity(i, int.MaxValue);
                     Require(view.ingredients[i].quantity == 999, "Maximum clamp and overflow protection");
                     row.Find("Card/Purchase").GetComponent<Button>().onClick.Invoke();
-                    Require(view.LastClickedAction.Contains("999"), "Purchase feedback uses current numeric value");
+                    Require(view.LastClickedAction.Contains("999묶음 (9990개)"), "Purchase feedback uses bundle count and total units");
                 }
                 foreach (string name in new[] { "Accept", "Reject", "CloseBusiness", "OpenBusiness" })
                     buttons.Single(b => b.name == name).onClick.Invoke();
-                Require(view.ClickCount == 11, "Seven purchase and four action callbacks");
+                Require(view.ClickCount == 8, "Four purchase and four action callbacks");
                 Require(root.GetComponentsInChildren<Text>(true).All(t => t.font != null), "Font available");
                 Require(root.GetComponent<Canvas>().renderMode == RenderMode.ScreenSpaceOverlay, "Overlay canvas");
-                Debug.Log("SHOP_UI_VERIFICATION_PASSED: 29 buttons, three tabs, seven quantity bounds, purchase and action callbacks, font and canvas.");
+                Debug.Log("SHOP_UI_VERIFICATION_PASSED: 20 buttons, three tabs, four quantity bounds, purchase and action callbacks, font and canvas.");
             }
             finally
             {

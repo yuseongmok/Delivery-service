@@ -83,7 +83,7 @@ namespace DeliveryService.Yun.Editor
                 var scroll = view.GetComponentInChildren<ScrollRect>();
                 // Force overflow independently of the batch editor's Game View aspect ratio.
                 Vector2 originalOffset = scroll.viewport.offsetMax;
-                scroll.viewport.offsetMax = originalOffset - new Vector2(0, 250);
+                scroll.viewport.offsetMax = originalOffset - new Vector2(0, Mathf.Max(0, scroll.viewport.rect.height - 200));
                 yield return null;
                 scroll.StopMovement();
                 scroll.verticalNormalizedPosition = 1;
