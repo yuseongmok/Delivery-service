@@ -26,6 +26,15 @@ public class MotorcycleController : MonoBehaviour
     public GameObject bikeUIPanel;
     public bool isRefueling = false;
 
+    [Header("Phone System")]
+    [Tooltip("플레이어가 사용하는 핸드폰 컨트롤러")]
+    public PhoneController phoneController;
+
+    [Header("Navigation System")]
+    [Tooltip("도보 / 오토바이 탑승 상태에 따라 내비게이션 추적 대상을 변경")]
+    public NavigationManager navigationManager;
+
+
     private float currentSpeed = 0f;
     public float CurrentSpeed => currentSpeed;
     private float currentSteerAngle = 0f;
@@ -195,7 +204,19 @@ public class MotorcycleController : MonoBehaviour
     {
         isDriven = true;
         rider = playerObject;
+        // 오토바이에 탑승하면
+        // 내비게이션의 현재 위치 기준을 Player에서 Motorcycle로 변경
+        if (navigationManager != null)
+        {
+            navigationManager.SetNavigationTarget(transform);
+        }
         enterTime = Time.time;
+        //탑승 전 폰 상태 초기화
+        if (phoneController != null)
+        {
+            phoneController.ClosePhone();
+        }
+
         rider.SetActive(false);
 
         if (bikeCamera != null)
@@ -224,6 +245,13 @@ public class MotorcycleController : MonoBehaviour
         {
             rider.transform.position = exitPosition;
             rider.SetActive(true);
+
+            // 오토바이에서 내렸으므로
+            // 내비게이션 추적 대상을 다시 Player로 변경
+            if (navigationManager != null)
+            {
+                  navigationManager.SetNavigationTarget(rider.transform);
+            }
 
             RobberAI[] robbers = FindObjectsOfType<RobberAI>();
             foreach (var robber in robbers)
