@@ -28,7 +28,10 @@ public class DayNightCycle : MonoBehaviour
 
     [Header("Fade Effect")]
     public Image fadeScreen;             
-    public float fadeDuration = 1.5f;    
+    public float fadeDuration = 1.5f;
+
+    [Header("Motorcycle System")]
+    public MotorcycleController motorcycle;
 
     [Header("Time Settings")]
     [Range(0f, 24f)]
@@ -197,6 +200,11 @@ public class DayNightCycle : MonoBehaviour
         Cursor.visible = false;
 
         if (dayText != null) dayText.text = $"DAY {currentDay}";
+        if (motorcycle != null && motorcycle.isDriven)
+        {
+            motorcycle.ExitBike();
+        }
+
 
         if (player != null && spawnPoint != null)
         {
