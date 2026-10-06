@@ -27,13 +27,10 @@ public class MotorcycleController : MonoBehaviour
     public bool isRefueling = false;
 
     [Header("Phone System")]
-    [Tooltip("플레이어가 사용하는 핸드폰 컨트롤러")]
     public PhoneController phoneController;
 
     [Header("Navigation System")]
-    [Tooltip("도보 / 오토바이 탑승 상태에 따라 내비게이션 추적 대상을 변경")]
     public NavigationManager navigationManager;
-
 
     private float currentSpeed = 0f;
     public float CurrentSpeed => currentSpeed;
@@ -95,7 +92,18 @@ public class MotorcycleController : MonoBehaviour
         if (isDriven && isControllable)
         {
             HandleCameraLook();
-            if (Time.time - enterTime > 0.2f && Input.GetKeyDown(KeyCode.E)) ExitBike();
+
+            if (Time.time - enterTime > 0.2f && Input.GetKeyDown(KeyCode.E))
+            {
+                if (Mathf.Abs(currentSpeed) >= 12f)
+                {
+                    BailOut();
+                }
+                else
+                {
+                    ExitBike();
+                }
+            }
 
             moveInput = Input.GetAxis("Vertical");
             steerInput = Input.GetAxis("Horizontal");
@@ -204,14 +212,11 @@ public class MotorcycleController : MonoBehaviour
     {
         isDriven = true;
         rider = playerObject;
-        // 오토바이에 탑승하면
-        // 내비게이션의 현재 위치 기준을 Player에서 Motorcycle로 변경
         if (navigationManager != null)
         {
             navigationManager.SetNavigationTarget(transform);
         }
         enterTime = Time.time;
-        //탑승 전 폰 상태 초기화
         if (phoneController != null)
         {
             phoneController.ClosePhone();
@@ -246,11 +251,9 @@ public class MotorcycleController : MonoBehaviour
             rider.transform.position = exitPosition;
             rider.SetActive(true);
 
-            // 오토바이에서 내렸으므로
-            // 내비게이션 추적 대상을 다시 Player로 변경
             if (navigationManager != null)
             {
-                  navigationManager.SetNavigationTarget(rider.transform);
+                navigationManager.SetNavigationTarget(rider.transform);
             }
 
             RobberAI[] robbers = FindObjectsOfType<RobberAI>();
@@ -292,11 +295,10 @@ public class MotorcycleController : MonoBehaviour
         if (!isDriven || rider == null) return;
 
         GameObject flyingRider = rider;
-
         float crashSpeed = customSpeed >= 0f ? customSpeed : Mathf.Abs(currentSpeed);
 
         ExitBike();
-        ApplyImpactDeceleration(0.1f);
+        ApplyImpactDeceleration(0.1f);  
 
         StartCoroutine(EjectPlayerRoutine(flyingRider, crashSpeed, customDirection));
     }
@@ -349,5 +351,91 @@ public class MotorcycleController : MonoBehaviour
         if (pm != null) pm.enabled = true;
 
         rider = null;
+    }
+
+    public void BailOut()
+    {
+        if (!isDriven || rider == null) return;
+
+        GameObject flyingRider = rider;
+        float bailSpeed = Mathf.Abs(currentSpeed);
+        Vector3 bailDirection = transform.forward * Mathf.Sign(currentSpeed);
+
+        ExitBike(); 
+        StartCoroutine(BailOutRoutine(flyingRider, bailSpeed, bailDirection));
+    }
+
+    private System.Collections.IEnumerator BailOutRoutine(GameObject playerToRoll, float speed, Vector3 direction)
+    {
+        yield return new WaitForFixedUpdate();
+
+        CharacterController cc = playerToRoll.GetComponent<CharacterController>();
+        PlayerMove pm = playerToRoll.GetComponent<PlayerMove>();
+
+        if (pm != null) pm.enabled = false;
+        yield return null;
+        if (cc != null) cc.enabled = false;
+
+        CapsuleCollider tempCol = playerToRoll.GetComponent<CapsuleCollider>();
+        bool addedCol = false;
+        if (tempCol == null)
+        {
+            tempCol = playerToRoll.AddComponent<CapsuleCollider>();
+            tempCol.height = 2f;
+            tempCol.radius = 0.5f;
+            tempCol.material = new PhysicsMaterial { dynamicFriction = 0.3f, bounciness = 0.1f };
+            addedCol = true;
+        }
+
+        Rigidbody tempRb = playerToRoll.GetComponent<Rigidbody>();
+        if (tempRb == null) tempRb = playerToRoll.AddComponent<Rigidbody>();
+
+        tempRb.isKinematic = false;
+        tempRb.useGravity = true;
+        tempRb.collisionDetectionMode = CollisionDetectionMode.Continuous;
+        tempRb.linearVelocity = direction * speed * 0.9f;
+
+        Vector3 rollTorque = playerToRoll.transform.right * speed * 1.5f + Random.insideUnitSphere * speed;
+        tempRb.AddTorque(rollTorque, ForceMode.VelocityChange);
+        yield return new WaitForSeconds(3.0f);
+
+        if (tempRb != null) Destroy(tempRb);
+        if (addedCol && tempCol != null) Destroy(tempCol);
+        playerToRoll.transform.rotation = Quaternion.Euler(0, playerToRoll.transform.rotation.eulerAngles.y, 0);
+
+        if (cc != null) cc.enabled = true;
+        if (pm != null) pm.enabled = true;
+
+        rider = null;
+    }
+
+    public void RespawnBike(Transform spawnTransform)
+    {
+        currentSpeed = 0f;
+        moveInput = 0f;
+        steerInput = 0f;
+
+        transform.rotation = spawnTransform.rotation;
+
+        if (sphereRB != null)
+        {
+            sphereRB.isKinematic = true;
+
+            sphereRB.linearVelocity = Vector3.zero;
+            sphereRB.angularVelocity = Vector3.zero;
+
+            Vector3 targetSpherePos = spawnTransform.position - (spawnTransform.rotation * localOffset);
+            sphereRB.position = targetSpherePos;
+            sphereRB.transform.position = targetSpherePos;
+
+            sphereRB.isKinematic = false;
+        }
+
+        transform.position = spawnTransform.position;
+
+        if (bikeBody != null)
+        {
+            bikeBody.transform.localRotation = Quaternion.identity;
+        }
     }
 }

@@ -32,6 +32,7 @@ public class DayNightCycle : MonoBehaviour
 
     [Header("Motorcycle System")]
     public MotorcycleController motorcycle;
+    public Transform bikeSpawnPoint;
 
     [Header("Time Settings")]
     [Range(0f, 24f)]
@@ -209,9 +210,16 @@ public class DayNightCycle : MonoBehaviour
         Cursor.visible = false;
 
         if (dayText != null) dayText.text = $"DAY {currentDay}";
-        if (motorcycle != null && motorcycle.isDriven)
+        if (motorcycle != null)
         {
-            motorcycle.ExitBike();
+            if (motorcycle.isDriven)
+            {
+                motorcycle.ExitBike();
+            }
+            if (bikeSpawnPoint != null)
+            {
+                motorcycle.RespawnBike(bikeSpawnPoint);
+            }
         }
 
 
