@@ -24,6 +24,14 @@ namespace DeliveryService.Yun.Editor
         public static void RunBatch()
         {
             EditorSceneManager.OpenScene("Assets/Scenes/JJinCity.unity");
+            var savedView = UnityEngine.Object.FindObjectsByType<ShopPcUiView>(FindObjectsInactive.Include, FindObjectsSortMode.None).Single();
+            Check(!savedView.gameObject.activeSelf, "Canvas must be saved inactive in the scene");
+            SessionState.SetInt(Key + ".children", savedView.GetComponentsInChildren<Transform>(true).Length);
+            // Use a separate product identity so Start/next-day callbacks cannot touch the player's saves.
+            SessionState.SetString(Key + ".company", PlayerSettings.companyName);
+            SessionState.SetString(Key + ".product", PlayerSettings.productName);
+            PlayerSettings.companyName = "YunVerification";
+            PlayerSettings.productName = "ShopCanvasIsolatedTest";
             SessionState.SetBool(Key, true);
             EditorApplication.EnterPlaymode();
         }
@@ -54,6 +62,8 @@ namespace DeliveryService.Yun.Editor
         private static void Finish(int code)
         {
             EditorApplication.update -= Tick;
+            PlayerSettings.companyName = SessionState.GetString(Key + ".company", PlayerSettings.companyName);
+            PlayerSettings.productName = SessionState.GetString(Key + ".product", PlayerSettings.productName);
             SessionState.SetBool(Key, false);
             EditorApplication.Exit(code);
         }
@@ -63,6 +73,10 @@ namespace DeliveryService.Yun.Editor
             var pc = UnityEngine.Object.FindFirstObjectByType<ShopPC>();
             Check(pc != null, "ShopPC missing");
             var view = pc.pcUIPanel.GetComponent<ShopPcUiView>();
+            Check(UnityEngine.Object.FindObjectsByType<ShopPcUiView>(FindObjectsInactive.Include, FindObjectsSortMode.None).Length == 1,
+                "No additional runtime PC canvas");
+            Check(view.GetComponentsInChildren<Transform>(true).Length == SessionState.GetInt(Key + ".children", -1),
+                "Canvas hierarchy must already exist before Play");
             var cycle = UnityEngine.Object.FindObjectsByType<DayNightCycle>(FindObjectsSortMode.None)
                 .Single(c => c.pcUIPanel == view.gameObject);
             cycle.timeMultiplier = 0;

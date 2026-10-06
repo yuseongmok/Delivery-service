@@ -3,7 +3,7 @@ using UnityEngine.SceneManagement;
 
 namespace DeliveryService.Yun.ShopUI
 {
-    // Only runtime instances are changed. Existing scene/prefab assets remain untouched.
+    // Bind logic to the existing scene canvas; never generate a UI at runtime.
     public static class ShopPcUiBootstrap
     {
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -43,13 +43,11 @@ namespace DeliveryService.Yun.ShopUI
             pc = GetComponent<ShopPC>();
             if (pc == null) return;
             originalPanel = pc.pcUIPanel;
-            viewObject = new GameObject("Yun Shop PC UI", typeof(RectTransform));
+            var view = originalPanel != null ? originalPanel.GetComponent<ShopPcUiView>() : null;
+            if (view == null) return; // Scenes without a baked PC UI keep their original UI.
+            viewObject = view.gameObject;
             viewObject.SetActive(false);
-            SceneManager.MoveGameObjectToScene(viewObject, gameObject.scene);
-            var view = viewObject.AddComponent<ShopPcUiView>();
-            view.Build(pc);
-            if (originalPanel != null) originalPanel.SetActive(false);
-            pc.pcUIPanel = viewObject;
+            view.Initialize(pc);
             var business = gameObject.AddComponent<ShopBusinessUiBridge>();
             business.Bind(pc, view, originalPanel);
             gameObject.AddComponent<ShopSupplyUiBridge>().Bind(view);
@@ -58,7 +56,7 @@ namespace DeliveryService.Yun.ShopUI
         private void OnDestroy()
         {
             if (pc != null && pc.pcUIPanel == viewObject) pc.pcUIPanel = originalPanel;
-            if (viewObject != null) Destroy(viewObject);
+            // The scene owns the canvas lifetime.
         }
     }
 }

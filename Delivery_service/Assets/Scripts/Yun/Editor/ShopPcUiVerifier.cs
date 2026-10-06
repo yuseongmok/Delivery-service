@@ -17,10 +17,9 @@ namespace DeliveryService.Yun.Editor
             GameObject root = null;
             try
             {
-                root = new GameObject("Shop UI verification", typeof(RectTransform));
-                root.SetActive(false);
-                var view = root.AddComponent<ShopPcUiView>();
-                view.Build(null);
+                root = ShopPcUiSceneSetup.InstantiateForVerification();
+                var view = root.GetComponent<ShopPcUiView>();
+                view.Initialize(null); // Repeated initialization must not duplicate callbacks.
                 var buttons = root.GetComponentsInChildren<Button>(true);
                 Require(buttons.Length == 20, "Expected 3 tabs, 4 actions, 12 ingredient controls, 1 close");
                 for (int i = 0; i < 3; i++)

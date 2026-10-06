@@ -1,6 +1,6 @@
 # 매장 PC UI
 
-기존 ShopPC 상호작용으로 여는 주문/영업/발주 화면입니다. 새 코드는 Yun 폴더에만 있으며 기존 게임 스크립트와 씬을 저장하거나 수정하지 않습니다.
+기존 ShopPC 상호작용으로 여는 주문/영업/발주 화면입니다. 코드 변경은 Yun 폴더 안에서만 진행합니다. JJinCity와 YunCity에는 미리 저장된 공용 Canvas 프리팹이 배치되어 있습니다.
 
 ## 사용
 
@@ -19,9 +19,9 @@
 
 ## 구조
 
-- ShopPcUiBootstrap.cs: 씬 로드 시 ShopPC를 찾아 런타임 호스트를 설치합니다. 호스트는 원래 패널을 숨기고 새 패널을 ShopPC.pcUIPanel에 연결합니다. 씬 에셋은 변경하지 않습니다.
-- ShopPcUiView.cs: 실제 uGUI Canvas, Button, Text, ScrollRect를 생성합니다. 배경/버튼은 시안의 배치와 색상에 맞춘 UI 도형이며 텍스트와 숫자는 이미지가 아닙니다.
-- ShopUiArtwork.cs: 피자 로고와 재료 아이콘을 그립니다. 시안의 원본 래스터 그림과 픽셀 단위로 같지는 않습니다. IngredientRow.icon에 Sprite를 설정하면 재료 아이콘을 대체할 수 있습니다.
+- ShopPcUiBootstrap.cs: 씬 로드 시 ShopPC를 찾아 런타임 호스트를 설치합니다. 호스트는 ShopPC.pcUIPanel에 이미 지정된 Canvas의 버튼 이벤트와 게임 기능을 연결합니다. 실행 중 Canvas를 생성하거나 파괴하지 않습니다.
+- ShopPcUiView.cs: 직렬화된 Button, Text, ScrollRect 참조를 사용합니다. UI 생성 코드는 UNITY_EDITOR 안의 최초 프리팹 제작용이며 런타임에서는 호출하지 않습니다. 배경/버튼은 시안의 배치와 색상에 맞춘 UI 도형이며 텍스트와 숫자는 이미지가 아닙니다.
+- ShopUiArtwork.cs: 피자 로고와 재료 아이콘을 그립니다. 시안의 원본 래스터 그림과 픽셀 단위로 같지는 않습니다. 아이콘을 바꾸려면 프리팹의 IngredientIcon Image에 Sprite를 지정하고 그 아래 Artwork를 비활성화합니다.
 - ShopBusinessUiBridge.cs: 원래 PC 패널 참조가 일치하는 DayNightCycle을 찾아 새 UI에 연결합니다. 기존 영업 로직과 버튼 가드를 그대로 호출합니다.
 - ShopSupplyUiBridge.cs / ShopSupplyPurchase.cs: 구매 버튼의 묶음 수를 검증하여 기존 잔액 차감과 발주 API를 호출합니다. 문자열 표시 문구를 파싱하지 않고 구매 전용 이벤트로 연결합니다.
 - ShopSupplyCatalog.cs / ../Resources/YunShopSupplyCatalog.asset: Min/Data의 원본 재료 ScriptableObject 4개를 직접 참조합니다. 가격을 복제하지 않으며, Resources 참조를 통해 빌드에서도 로드됩니다.
@@ -31,9 +31,18 @@
 - ../Editor/ShopPcUiVerifier.cs: 버튼/수량/탭 검사와 배치 모드 Play 검사입니다.
 - ../Editor/ShopPcDayRegression.cs: 실제 UI 레이캐스트와 포인터 이벤트를 사용한 날짜 전환 회귀 검사입니다. 별도 Unity 배치 에디터에서 `DeliveryService.Yun.Editor.ShopPcDayRegression.RunBatch`를 실행하며, 씬은 저장하지 않습니다. 그래픽 레이캐스트 검증이므로 `-nographics`를 사용하지 않습니다.
 
-런타임 Hierarchy의 `Yun Shop PC UI`에서 ingredients의 이름, 수량, 최솟값/최댓값, 아이콘을 확인할 수 있습니다. 이름/아이콘/행 구조는 생성 시 사용하며 수량은 실시간 반영합니다. 실행 중 Inspector 변경은 종료 시 저장되지 않습니다. 기본값을 영구 변경하려면 새 ShopPcUiView 코드의 목록을 수정하면 됩니다. 기존 Min/Woong 코드를 수정할 필요는 없습니다.
+### 편집 방법
 
-글꼴은 Windows 맑은 고딕을 우선 사용합니다. 다른 플랫폼에서는 한국어 폰트 공급을 별도로 구성해야 합니다.
+- 공용 프리팹: `Assets/Scripts/Yun/ShopUI/Prefabs/ShopPcCanvas.prefab`.
+- 두 씬의 Hierarchy 루트에 `Yun Shop PC UI`가 비활성 상태로 존재합니다. PC 상호작용 시 활성화되고 닫기/영업 시작 시 비활성화됩니다.
+- Play하지 않은 상태에서 프리팹을 열고 루트를 잠시 활성화하면 위치·크기·색·텍스트를 Inspector로 수정할 수 있습니다. 편집 후 루트는 비활성으로 저장합니다.
+- `Background/Sidebar`: 사이드 메뉴. `Background/Page_0`: 주문, `Page_1`: 영업, `Page_2`: 발주. 편집하려는 Page만 활성화해서 확인합니다. 실행 시 주문 탭으로 초기화됩니다.
+- 공용 변경은 프리팹에서 편집합니다. 씬 인스턴스를 편집한 경우 필요한 변경만 Overrides → Apply로 반영하면 두 씬에 공유됩니다.
+- 재료 이름은 각 행의 `IngredientName` Text에서 편집합니다. 구매 수량·가격·잔액·클릭 안내는 게임 상태에 따라 갱신되는 텍스트입니다. 행 추가/삭제는 View의 재료 데이터 및 직렬화된 버튼/텍스트 목록 연결도 함께 맞춰야 합니다.
+- ShopPC와 DayNightCycle의 pcUIPanel은 저장된 새 Canvas를 직접 참조합니다. 기존 패널은 비활성으로 보존하여 기존 정산/영업 버튼 참조를 유지합니다.
+- `ShopPcUiSceneSetup.RunBatch`는 최초 제작/배치용입니다. 기존 프리팹이 있으면 다시 생성하지 않아 편집한 디자인을 보존합니다.
+
+저장된 UI는 프로젝트에 포함된 한국어 폰트 `Assets/Fonts/BMJUA_ttf.ttf`를 사용합니다. 각 Text의 Font를 Inspector에서 변경할 수 있습니다.
 
 ## 검증
 
@@ -54,3 +63,5 @@ Unity 6000.3.9f1에서 프로젝트 컴파일과 편집 모드 자동 검사를 
 - 발주 화면을 연 상태에서 자정 자동 전환 및 페이드 완료 후 PC 재접속·영업 시작.
 
 스크롤 검사는 배치 에디터 해상도에 따른 목록 높이 차이를 피하기 위해 실행 중 테스트 화면의 목록 영역만 일시적으로 줄여 검사합니다. 검사는 여러 프레임에 걸쳐 UI 레이캐스트와 포인터 이벤트를 전달하며, 실제 사용자의 마우스/키보드 하드웨어 입력 검사는 아닙니다. 기존 Min/Woong 게임 스크립트 및 씬 에셋은 변경하지 않았습니다.
+
+2026-10-07: 공용 Canvas 프리팹과 두 씬의 저장 참조를 확인했습니다. 저장된 프리팹을 불러와 20개 버튼·탭·구매 연결·수량 초기화를 검증했고, JJinCity Play 모드에서 1~3일차 클릭/스크롤/영업·마감/정산 취소/자정 전환 검사를 통과했습니다. Play 전후 Canvas 하위 오브젝트 수도 동일합니다. 날짜 및 구매 검사는 테스트 전용 제품 이름의 저장 영역을 사용합니다.

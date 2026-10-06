@@ -12,8 +12,18 @@ namespace DeliveryService.Yun.Editor
     {
         public static void RunBatch()
         {
-            try { Verify(); ShopPcUiVerifier.Run(); EditorApplication.Exit(0); }
-            catch (Exception e) { Debug.LogException(e); EditorApplication.Exit(1); }
+            string company = PlayerSettings.companyName, product = PlayerSettings.productName;
+            int code = 0;
+            try
+            {
+                PlayerSettings.companyName = "YunVerification";
+                PlayerSettings.productName = "ShopCanvasIsolatedTest";
+                Verify();
+                ShopPcUiVerifier.Run();
+            }
+            catch (Exception e) { Debug.LogException(e); code = 1; }
+            finally { PlayerSettings.companyName = company; PlayerSettings.productName = product; }
+            EditorApplication.Exit(code);
         }
 
         private static void Require(bool value, string message)
@@ -78,10 +88,8 @@ namespace DeliveryService.Yun.Editor
                 PlayerPrefs.DeleteKey("Pending_" + key);
                 var testCatalog = ScriptableObject.CreateInstance<ShopSupplyCatalog>();
                 testCatalog.materials = new[] { data };
-                uiRoot = new GameObject("Purchase UI test", typeof(RectTransform));
-                uiRoot.SetActive(false);
-                var view = uiRoot.AddComponent<ShopPcUiView>();
-                view.Build(null);
+                uiRoot = ShopPcUiSceneSetup.InstantiateForVerification();
+                var view = uiRoot.GetComponent<ShopPcUiView>();
                 var bridge = uiRoot.AddComponent<ShopSupplyUiBridge>();
                 bridge.Bind(view);
                 typeof(ShopSupplyUiBridge).GetField("catalog", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(bridge, testCatalog);

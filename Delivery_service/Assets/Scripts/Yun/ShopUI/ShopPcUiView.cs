@@ -39,29 +39,67 @@ namespace DeliveryService.Yun.ShopUI
         public int ClickCount { get; private set; }
         public event Action<string> ActionClicked;
         public event Action<int> PurchaseRequested;
-        private readonly List<Text> purchaseLabels = new List<Text>();
-        private Text balanceLabel;
+        [SerializeField] private List<Text> purchaseLabels = new List<Text>();
+        [SerializeField] private Text balanceLabel;
 
         private static readonly Color Navy = new Color32(25, 43, 66, 255);
         private static readonly Color Teal = new Color32(21, 143, 164, 255);
         private static readonly Color Pale = new Color32(242, 246, 249, 255);
         private static readonly Color Border = new Color32(216, 224, 231, 255);
-        private readonly GameObject[] pages = new GameObject[3];
-        private readonly Button[] tabs = new Button[3];
+        [SerializeField] private GameObject[] pages = new GameObject[3];
+        [SerializeField] private Button[] tabs = new Button[3];
         private readonly ShopUiInputScope inputScope = new ShopUiInputScope();
-        private readonly List<Text> quantityLabels = new List<Text>();
-        private readonly List<Button> minusButtons = new List<Button>();
-        private readonly List<Button> plusButtons = new List<Button>();
+        [SerializeField] private List<Text> quantityLabels = new List<Text>();
+        [SerializeField] private List<Button> minusButtons = new List<Button>();
+        [SerializeField] private List<Button> plusButtons = new List<Button>();
         private ShopPC pc;
         private Font font;
         private bool ownsFont;
         private bool built;
-        private Text feedback;
+        [SerializeField] private Text feedback;
         private float feedbackUntil;
         private GameObject ownedEventSystem;
         private Sprite roundedSprite;
         private Texture2D roundedTexture;
 
+        [SerializeField] private Button[] actionButtons;
+        [SerializeField] private Button[] purchaseButtons;
+        [SerializeField] private Button closeButton;
+
+        public void Initialize(ShopPC owner)
+        {
+            pc = owner;
+            if (built) return;
+            if (pages.Length != 3 || pages[0] == null)
+            {
+                Debug.LogError("Shop PC UI prefab references are missing.", this);
+                return;
+            }
+            for (int i = 0; i < tabs.Length; i++)
+            {
+                int index = i;
+                tabs[i].onClick.AddListener(() => SelectTab(index));
+            }
+            string[] actions = { "수락하기", "거절하기", "마감하기", "영업하기" };
+            for (int i = 0; i < actionButtons.Length; i++)
+            {
+                string action = actions[i];
+                actionButtons[i].onClick.AddListener(() => Notify(action));
+            }
+            for (int i = 0; i < ingredients.Count; i++)
+            {
+                int index = i;
+                minusButtons[i].onClick.AddListener(() => ChangeQuantity(index, -1));
+                plusButtons[i].onClick.AddListener(() => ChangeQuantity(index, 1));
+                purchaseButtons[i].onClick.AddListener(() => RequestPurchase(index));
+            }
+            closeButton.onClick.AddListener(Close);
+            built = true;
+            SelectTab(0);
+        }
+
+#if UNITY_EDITOR
+        // Editor baking only. Player builds contain no UI hierarchy construction.
         public void Build(ShopPC owner)
         {
             if (built) return;
@@ -99,6 +137,13 @@ namespace DeliveryService.Yun.ShopUI
             ButtonAt("CloseWindow", background, "닫기  ×", Pale, Navy, .90f, .945f, .985f, .988f, Close, 19);
             Label("Hint", background, "E / ESC  닫기", 17, Navy, .20f, .012f, .37f, .052f);
             feedback = Label("ClickFeedback", background, "", 18, Teal, .40f, .012f, .98f, .052f, TextAnchor.MiddleRight);
+            actionButtons = new[] {
+                pages[0].transform.Find("Accept").GetComponent<Button>(),
+                pages[0].transform.Find("Reject").GetComponent<Button>(),
+                pages[1].transform.Find("CloseBusiness").GetComponent<Button>(),
+                pages[1].transform.Find("OpenBusiness").GetComponent<Button>() };
+            purchaseButtons = purchaseLabels.ConvertAll(t => t.transform.parent.GetComponent<Button>()).ToArray();
+            closeButton = background.Find("CloseWindow").GetComponent<Button>();
             built = true;
             SelectTab(0);
         }
@@ -149,6 +194,8 @@ namespace DeliveryService.Yun.ShopUI
                 RefreshQuantity(i);
             }
         }
+
+#endif
 
         public void SelectTab(int index)
         {
@@ -267,6 +314,7 @@ namespace DeliveryService.Yun.ShopUI
             else DestroyImmediate(value);
         }
 
+#if UNITY_EDITOR
         private void Artwork(Transform parent, int kind, float x0, float y0, float x1, float y1)
         {
             var go = new GameObject("Artwork", typeof(RectTransform), typeof(CanvasRenderer), typeof(ShopUiArtwork));
@@ -365,5 +413,6 @@ namespace DeliveryService.Yun.ShopUI
             outline.effectColor = Navy;
             outline.effectDistance = new Vector2(2, -2);
         }
+#endif
     }
 }
