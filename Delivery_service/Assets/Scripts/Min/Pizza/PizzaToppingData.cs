@@ -18,8 +18,11 @@ public class PizzaToppingData : ScriptableObject
     [Header("타입")]
     public ToppingType toppingType;
 
-    [Header("비용")]  // 박진웅이 추가
+    [Header("원가")]  // 박진웅이 추가
     public int cost = 5;
+
+    [Header("판매가")]
+    public int sellingPrice;
 }
 
 public enum ToppingType

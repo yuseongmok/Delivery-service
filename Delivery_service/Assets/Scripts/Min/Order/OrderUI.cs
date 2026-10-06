@@ -1,45 +1,49 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
-using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class OrderUI : MonoBehaviour
 {
-    [SerializeField] private GameObject uiPanel;
-    [SerializeField] private Text orderText;
-    [SerializeField] private Button acceptButton;
-    [SerializeField] private Button declineButton;
+    // OrderManager가 구독할 이벤트
+    public event Action<PizzaOrder> OnOrderAccepted;
+    public event Action<PizzaOrder> OnOrderDeclined;
 
-    public event Action OnOrderAccepted;
-    public event Action OnOrderDeclined;
+    [Header("UI 연결")]
+    [SerializeField] private Transform contentTransform; // ScrollView/Viewport/Content
+    [SerializeField] private GameObject orderItemPrefab; // 주문 카드 프리팹
 
-    private void Awake()
+    public void RefreshOrderList(List<PizzaOrder> pendingOrders)
     {
-        acceptButton.onClick.AddListener(() => OnOrderAccepted?.Invoke());
-        declineButton.onClick.AddListener(() => OnOrderDeclined?.Invoke());
-        CloseUI();
-    }
-
-    public void ShowUI(List<PizzaOrder> orders)
-    {
-        StringBuilder sb = new StringBuilder();
-        sb.AppendLine("<b>[신규 주문 목록]</b>\n");
-
-        for (int i = 0; i < orders.Count; i++)
+        // 기존 UI 제거
+        foreach (Transform child in contentTransform)
         {
-            sb.AppendLine($"주문번호 {i + 1}. {orders[i].orderName}");
+            Destroy(child.gameObject);
         }
 
-        sb.AppendLine("\n수락하시겠습니까?");
-        orderText.text = sb.ToString();
+        // 대기 주문 목록 새로 생성
+        foreach (PizzaOrder order in pendingOrders)
+        {
+            GameObject newItem = Instantiate(orderItemPrefab, contentTransform);
+            OrderItemUI itemUI = newItem.GetComponent<OrderItemUI>();
 
-        uiPanel.SetActive(true);
+            if (itemUI != null)
+            {
+                itemUI.Setup(
+                    order,
+                    onAccept: (accepted) => OnOrderAccepted?.Invoke(accepted),
+                    onDecline: (declined) => OnOrderDeclined?.Invoke(declined)
+                );
+            }
+        }
+    }
+
+    public void OpenUI()
+    {
+        gameObject.SetActive(true);
     }
 
     public void CloseUI()
     {
-        uiPanel.SetActive(false);
+        gameObject.SetActive(false);
     }
 }

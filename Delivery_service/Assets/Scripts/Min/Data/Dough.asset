@@ -17,4 +17,5 @@ MonoBehaviour:
   toppingPrefab: {fileID: 5918508632570865821, guid: 706fb0512d2a2bd49b27895da201e7e7, type: 3}
   spawnCount: 1
   toppingType: 0
-  cost: 0
+  cost: 1000
+  sellingPrice: 3000

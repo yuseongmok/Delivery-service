@@ -38,7 +38,17 @@ namespace DeliveryService.Yun.ShopUI
         private void OnAction(string action)
         {
             if (cycle == null) return;
-            if (action == "영업하기") cycle.OnClick_OpenShop();
+            if (action == "영업하기")
+            {
+                cycle.OnClick_OpenShop();
+
+                // 영업 시작 시 즉시 주문 1개 생성 및 125초 타이머 재시작 호출
+                var orderManager = FindObjectOfType<OrderManager>();
+                if (orderManager != null)
+                {
+                    orderManager.OnShopOpened();
+                }
+            }
             else if (action == "마감하기") cycle.OnClick_CloseShop();
         }
 

@@ -1,5 +1,7 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static TMPro.Examples.CameraController;
 
 public class OrderManager : MonoBehaviour
 {
@@ -9,26 +11,54 @@ public class OrderManager : MonoBehaviour
     [SerializeField] private PlayerMove playerMove;
     [SerializeField] private CameraMove cameraMove;
 
-    // 배달 지점들
+    [Header("주문 생성 및 타이머")]
+    [SerializeField] private OrderGenerator orderGenerator;
+    [SerializeField] private DayNightCycle dayNightCycle;
+    [SerializeField] private float orderIntervalSeconds = 125f;
+
+    [Header("정산 설정")]
+    [SerializeField] private int basePizzaPrice = 10000;
+
+    [Header("토핑 데이터 목록")]
+    [SerializeField] private List<PizzaToppingData> toppingDataList = new List<PizzaToppingData>();
+
     [SerializeField] private List<DeliveryPoint> deliveryPoints = new List<DeliveryPoint>();
 
-    private List<PizzaOrder> currentOrders;
+    // 누적 대기 주문 목록
+    private List<PizzaOrder> pendingOrders = new List<PizzaOrder>();
+
+    // 현재 진행 중인 배달 주문
+    private PizzaOrder activeOrder;
     private string currentTargetDeliveryID;
 
+    // 코루틴 제어용 변수
+    private Coroutine autoOrderCoroutine;
+
     public string CurrentTargetDeliveryID => currentTargetDeliveryID;
-    //네비게이션 목적지 가져옴
+    public bool HasActiveOrder => activeOrder != null;
+
+    // NavigationManager 연동용 : ID에 해당하는 DeliveryPoint 반환
     public DeliveryPoint CurrentTargetDeliveryPoint
     {
         get
         {
-            return deliveryPoints.Find(point =>
-            point.DeliveryPointID == currentTargetDeliveryID);
-        }
+            if (string.IsNullOrEmpty(currentTargetDeliveryID) || deliveryPoints == null)
+                return null;
 
+            return deliveryPoints.Find(dp => dp != null && dp.DeliveryPointID == currentTargetDeliveryID);
+        }
     }
 
-    // 아직 남은 주문이 있는지 확인
-    public bool HasActiveOrder => currentOrders != null && currentOrders.Count > 0;
+    private void Start()
+    {
+        if (orderGenerator == null)
+        {
+            orderGenerator = FindObjectOfType<OrderGenerator>();
+        }
+
+        // 초기 루틴 시작
+        StartAutoOrderRoutine();
+    }
 
     private void OnEnable()
     {
@@ -48,108 +78,152 @@ public class OrderManager : MonoBehaviour
         }
     }
 
-    public void StartOrderProcess(List<PizzaOrder> orders)
+    /// <summary>
+    /// 영업 시작 버튼을 눌렀을 때 호출되는 메서드
+    /// </summary>
+    public void OnShopOpened()
+    {
+        // 1. 영업 시작 즉시 주문 1개 생성
+        GenerateSingleOrder();
+
+        // 2. 타이머를 즉시 리셋하여 영업 시작 시점부터 125초 카운트다운 시작
+        StartAutoOrderRoutine();
+    }
+
+    private void StartAutoOrderRoutine()
+    {
+        if (autoOrderCoroutine != null)
+        {
+            StopCoroutine(autoOrderCoroutine);
+        }
+        autoOrderCoroutine = StartCoroutine(AutoOrderAccumulateRoutine());
+    }
+
+    // 125초마다 주문 생성 루틴
+    private IEnumerator AutoOrderAccumulateRoutine()
+    {
+        while (true)
+        {
+            yield return new WaitForSecondsRealtime(orderIntervalSeconds);
+
+            bool isShopOpen = dayNightCycle == null || dayNightCycle.isShopOpen;
+
+            if (isShopOpen)
+            {
+                GenerateSingleOrder();
+            }
+        }
+    }
+
+    // 단일 주문 생성 공통 로직
+    private void GenerateSingleOrder()
+    {
+        if (orderGenerator == null) return;
+
+        List<PizzaOrder> newOrders = orderGenerator.GenerateSinglePizzaOrder();
+
+        foreach (var order in newOrders)
+        {
+            order.orderName = $"주문 #{pendingOrders.Count + 1}";
+            pendingOrders.Add(order);
+        }
+
+        if (orderUI != null)
+        {
+            orderUI.RefreshOrderList(pendingOrders);
+        }
+    }
+
+    // 특정 주문 수락
+    private void HandleAccept(PizzaOrder acceptedOrder)
     {
         if (HasActiveOrder)
         {
-            Debug.Log("이미 받은 주문이 있습니다.");
+            Debug.Log("이미 진행 중인 배달 주문이 있습니다! 먼저 배달을 완료해주세요.");
             return;
         }
 
-        currentOrders = orders;
+        activeOrder = acceptedOrder;
+        pendingOrders.Remove(acceptedOrder);
 
-        // 씬 내 배달지 리스트에서 무작위 1곳 선정
+        // 배달지 선정
         if (deliveryPoints != null && deliveryPoints.Count > 0)
         {
             int randomIndex = Random.Range(0, deliveryPoints.Count);
             currentTargetDeliveryID = deliveryPoints[randomIndex].DeliveryPointID;
         }
 
-        orderUI.ShowUI(orders);
-        SetPlayerControl(false);
-    }
-
-    private void HandleAccept()
-    {
         if (currentOrderUI != null)
         {
-            currentOrderUI.DisplayOrders(currentOrders, currentTargetDeliveryID);
+            currentOrderUI.DisplayOrders(new List<PizzaOrder> { activeOrder }, currentTargetDeliveryID);
         }
 
-        orderUI.CloseUI();
-        SetPlayerControl(true);
-    }
-
-    private void HandleDecline()
-    {
-        if (currentOrders != null)
+        if (orderUI != null)
         {
-            currentOrders.Clear();
+            orderUI.RefreshOrderList(pendingOrders);
+
+            if (pendingOrders.Count == 0)
+            {
+                orderUI.CloseUI();
+            }
         }
-        currentTargetDeliveryID = "";
-
-        orderUI.CloseUI();
-        SetPlayerControl(true);
     }
 
-    private void SetPlayerControl(bool enable)
+    // 특정 주문 거절
+    private void HandleDecline(PizzaOrder declinedOrder)
     {
-        if (playerMove != null) playerMove.isControllable = enable;
-        if (cameraMove != null) cameraMove.SetControl(enable);
+        pendingOrders.Remove(declinedOrder);
+
+        if (orderUI != null)
+        {
+            orderUI.RefreshOrderList(pendingOrders);
+
+            if (pendingOrders.Count == 0)
+            {
+                orderUI.CloseUI();
+            }
+        }
     }
 
+    // 배달 완료 검사 및 정산
     public bool TryDeliverPackagedStack(List<PizzaData> pizzaDataList, string deliveryPointID)
     {
-        if (pizzaDataList == null || pizzaDataList.Count == 0 || currentOrders == null || currentOrders.Count == 0)
+        if (pizzaDataList == null || pizzaDataList.Count == 0 || !HasActiveOrder)
             return false;
 
-        // 배달 장소 검사
         if (deliveryPointID != currentTargetDeliveryID)
         {
-            Debug.Log($"여기가 아닙니다.");
+            Debug.Log("여기가 아닙니다.");
             return false;
         }
 
-        // 수량 검사
-        if (pizzaDataList.Count != currentOrders.Count)
+        PizzaData deliveredPizza = pizzaDataList[0];
+
+        if (!deliveredPizza.isBaked)
         {
-            Debug.Log("주문한 피자가 아닙니다.");
+            Debug.Log("덜 구워진 피자입니다!");
             return false;
         }
 
-        // 구움/토핑 일치 검사
-        List<PizzaOrder> remainingOrders = new List<PizzaOrder>(currentOrders);
+        int totalEarnedMoney = basePizzaPrice;
 
-        foreach (PizzaData data in pizzaDataList)
+        foreach (string toppingName in deliveredPizza.toppings)
         {
-            PizzaOrder matchedOrder = null;
-
-            foreach (var order in remainingOrders)
+            PizzaToppingData matchedTopping = GetToppingData(toppingName);
+            if (matchedTopping != null)
             {
-                if (data.MatchesOrder(order))
-                {
-                    matchedOrder = order;
-                    break;
-                }
-            }
-
-            if (matchedOrder != null)
-            {
-                remainingOrders.Remove(matchedOrder);
-            }
-            else
-            {
-                if (!data.isBaked)
-                    Debug.Log("굽X 주문한 피자가 아닙니다.");
-                else
-                    Debug.Log("토핑일치X 주문한 피자가 아닙니다.");
-
-                return false;
+                totalEarnedMoney += matchedTopping.sellingPrice;
             }
         }
 
-        Debug.Log($"배달 성공");
-        currentOrders.Clear();
+        if (MoneyManager.Instance != null)
+        {
+            MoneyManager.Instance.AddMoney(totalEarnedMoney);
+        }
+
+        Debug.Log($"배달 성공! 정산 금액: {totalEarnedMoney}원");
+
+        activeOrder = null;
         currentTargetDeliveryID = "";
 
         if (currentOrderUI != null)
@@ -158,5 +232,15 @@ public class OrderManager : MonoBehaviour
         }
 
         return true;
+    }
+
+    private PizzaToppingData GetToppingData(string toppingIdentifier)
+    {
+        if (toppingDataList == null) return null;
+
+        return toppingDataList.Find(data =>
+            data != null &&
+            (data.toppingName == toppingIdentifier || data.toppingType.ToString() == toppingIdentifier)
+        );
     }
 }
