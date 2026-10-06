@@ -1,10 +1,10 @@
 # YunCity 가로등 테스트
 
-- 테스트 씬: `Assets/Scenes/YunCity.unity` (JJinCity 복사본)
+- 적용 씬: `Assets/Scenes/JJinCity.unity`. 테스트 복사본 `Assets/Scenes/YunCity.unity`도 유지합니다.
 - 제어 오브젝트: `Yun Streetlights (16h)`
 - 연결: 기존 `Time` 오브젝트의 `DayNightCycle.currentTime`을 읽습니다. 시간이나 영업 상태는 변경하지 않습니다.
 - 영업 중이면서 16:00 이상이면 켜집니다. 마감 버튼으로 영업 상태가 닫히면 바로 꺼지며, 16시 이후 마감을 취소하면 다시 켜집니다. 다음 날 06:00에도 꺼집니다. 가로등과 오토바이 전조등이 동일한 조건을 사용합니다.
-- 원본 JJinCity, 기존 스크립트, Synty 프리팹/머티리얼, 프로젝트 렌더링 설정은 수정하지 않았습니다. 다른 씬에 자동 설치하지 않습니다.
+- JJinCity에는 검증된 조명 오브젝트와 해당 씬의 시간 연결만 이관했습니다. 기존 게임 스크립트, Synty/Bike 프리팹·머티리얼, 프로젝트 렌더링 설정은 수정하지 않았습니다. 다른 씬에 자동 설치하지 않습니다.
 
 ## 구성
 
@@ -19,7 +19,7 @@
 1. YunCity를 열고 Play합니다.
 2. PC에서 영업을 시작합니다. 원래 게임 시간의 진행에 맞춰 16시에 자동 점등됩니다.
 3. 빠르게 확인하려면 영업을 시작한 뒤 Play 중 `Time > DayNightCycle > Current Time`을 15.99, 16, 6으로 변경합니다. 16에서 켜지고 6에서 꺼지는지 확인합니다. Play 진입 시 기존 코드가 시간을 06:00으로 초기화하므로 실행 후 변경해야 합니다.
-4. 밝기/범위 조정은 YunCity의 조명에서 합니다. 검토 후 원본 맵에 반영하는 작업은 별도입니다.
+4. JJinCity에도 같은 기능이 적용되어 있습니다. 씬 간 조명 오브젝트는 별도이므로 이후 밝기/배치 변경은 각 씬에 개별 반영합니다.
 
 ## 검증 도구
 
@@ -30,3 +30,5 @@
 `YunCityStreetlightSetup.BuildBatch`는 최초 복사/배치 도구이며 기존 YunCity가 있으면 덮어쓰지 않고 중단합니다. `TuneBatch`는 YunCity의 추가 조명 밝기만 초기 테스트값으로 맞춥니다.
 
 `YunMotorcycleLightSetup.BuildBatch`는 YunCity에만 전조등을 설치하며 중복 설치를 차단합니다. `YunMotorcycleLightVerifier.RunPlayBatch`는 조명 97개의 시간 경계, 실제 마감/마감 취소 함수, 아침 초기화, 영업 종료 상태, 전조등만 비활성화/복구, 오토바이 이동·회전·기울기 추종을 검사합니다. `RenderBatch`는 전조등 점등 전후 화면을 저장하며 씬에는 저장하지 않습니다.
+
+`JJinCityLightingMigration.RunBatch`는 부모 계층과 메시를 모두 확인한 뒤 조명/발광 표면만 복사하고 JJinCity의 DayNightCycle로 재연결합니다. 이미 이관되어 있으면 중복 생성을 거부합니다. `YunMotorcycleLightVerifier.RunJJinPlayBatch`는 JJinCity에서 조명 동작과 기존 Canvas 재료 텍스트 연결, PC 재개방 시 발주 묶음 수 초기화도 검사합니다.

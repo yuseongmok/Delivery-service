@@ -21,6 +21,7 @@ namespace DeliveryService.Yun.ShopUI
 
         private static void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
+            PendingStockText.Install(scene);
             foreach (GameObject root in scene.GetRootGameObjects())
             foreach (ShopPC pc in root.GetComponentsInChildren<ShopPC>(true))
             {

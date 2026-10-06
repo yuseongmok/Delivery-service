@@ -1,0 +1,8 @@
+<linker>
+  <assembly fullname="Assembly-CSharp">
+    <type fullname="Topping" preserve="nothing">
+      <field name="toppingData" />
+      <field name="stockText" />
+    </type>
+  </assembly>
+</linker>

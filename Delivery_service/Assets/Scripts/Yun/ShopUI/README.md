@@ -12,6 +12,8 @@
 - 발주는 페페로니·초콜릿·파인애플·젤리 4종만 표시합니다. 무한 기본 제공인 도우·소스·치즈는 제외합니다.
 - 재료 이름 옆의 ×10은 1묶음당 10개를 의미합니다. ± 버튼은 묶음 수(1~999)를 변경합니다. 구매 금액은 원본 PizzaToppingData.cost × 10 × 묶음 수이며, 구매 버튼에 총가격과 화면 상단에 현재 소지금을 표시합니다.
 - 구매 성공 시 MoneyManager.SpendMoney(PizzaTopping)로 잔액과 재료비 지출을 반영하고 ToppingStockManager.OrderStock으로 다음 날 입고를 예약합니다. 기존 규칙대로 현재 재고+입고 예정+신규 발주 합계는 재료별 100개까지입니다. 잔액 부족, 한도 초과, 데이터 누락/잘못된 가격·수량이면 차감 없이 안내합니다.
+- Canvas의 기존 재료 수량 텍스트에는 입고 전 수량을 `보유/100 (+입고예정)`으로 표시합니다. 예: `30/100 (+20)`. 입고 후에는 `50/100`으로 바뀝니다.
+- PC 패널을 닫았다 다시 열면 발주 묶음 선택 수량은 모두 1로 초기화됩니다. 이미 결제한 발주 내역 및 입고 예정 수량은 유지됩니다. 사이드 탭만 전환할 때는 선택 수량을 유지합니다.
 - 닫기 버튼, E, Escape로 닫습니다. 기존 ShopPC의 거리 이탈 닫기도 유지합니다.
 - 창이 열려 있는 동안 해당 플레이어의 이동/시점/월드 상호작용 입력을 막고 닫을 때 이전 활성 상태를 복구합니다. 시간은 일시정지하지 않습니다.
 
@@ -23,6 +25,7 @@
 - ShopBusinessUiBridge.cs: 원래 PC 패널 참조가 일치하는 DayNightCycle을 찾아 새 UI에 연결합니다. 기존 영업 로직과 버튼 가드를 그대로 호출합니다.
 - ShopSupplyUiBridge.cs / ShopSupplyPurchase.cs: 구매 버튼의 묶음 수를 검증하여 기존 잔액 차감과 발주 API를 호출합니다. 문자열 표시 문구를 파싱하지 않고 구매 전용 이벤트로 연결합니다.
 - ShopSupplyCatalog.cs / ../Resources/YunShopSupplyCatalog.asset: Min/Data의 원본 재료 ScriptableObject 4개를 직접 참조합니다. 가격을 복제하지 않으며, Resources 참조를 통해 빌드에서도 로드됩니다.
+- PendingStockText.cs: 씬 로드 시 Topping에 이미 지정된 재료 데이터/stockText 참조를 읽어 기존 Canvas 텍스트에 붙습니다. Topping 코드를 수정하지 않기 위해 비공개 직렬화 필드를 한 번 읽으며 link.xml로 해당 필드의 빌드 제거를 방지합니다. 재고 이벤트와 활성화 시 수량을 갱신하고, LateUpdate에서 기존 Topping이 덮어쓴 표시를 보정합니다. PlayerPrefs를 프레임마다 읽지는 않습니다.
 - ShopSummaryInputGuard.cs: 기존 정산 창이 떠 있는 동안 커서를 풀고 플레이어 조작과 PC 재상호작용을 잠급니다. 창이 닫히면 복구합니다.
 - ShopUiInputScope.cs: PC/정산창이 공유하는 입력 소유권입니다. 마지막 창이 닫힐 때만 기존 조작 상태를 복구하며, 창이 열린 동안 외부 코드가 커서를 잠그거나 카메라를 활성화하면 LateUpdate에서 UI 입력 상태를 유지합니다. 원래 비활성화된 컴포넌트는 그대로 보존합니다.
 - ../Editor/ShopPcUiVerifier.cs: 버튼/수량/탭 검사와 배치 모드 Play 검사입니다.

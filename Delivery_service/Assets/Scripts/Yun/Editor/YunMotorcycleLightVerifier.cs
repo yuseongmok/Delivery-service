@@ -2,6 +2,7 @@
 using System;
 using System.Linq;
 using DeliveryService.Yun.Streetlights;
+using DeliveryService.Yun.ShopUI;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -16,7 +17,17 @@ namespace DeliveryService.Yun.Editor
 
         public static void RunPlayBatch()
         {
-            EditorSceneManager.OpenScene(YunCityStreetlightSetup.TestScene);
+            BeginPlay(YunCityStreetlightSetup.TestScene);
+        }
+
+        public static void RunJJinPlayBatch()
+        {
+            BeginPlay(YunCityStreetlightSetup.SourceScene);
+        }
+
+        private static void BeginPlay(string path)
+        {
+            EditorSceneManager.OpenScene(path);
             // Do not let InitializeDay deliver the user's real saved ingredient orders in this test.
             UnityEngine.Object.FindFirstObjectByType<DayNightCycle>().enabled = false;
             SessionState.SetBool(Key, true);
@@ -55,7 +66,19 @@ namespace DeliveryService.Yun.Editor
                 }
                 switch (phase++)
                 {
-                    case 0: clock.currentTime = 15.999f; clock.isShopOpen = true; break;
+                    case 0:
+                        var labels = UnityEngine.Object.FindObjectsByType<PendingStockText>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+                        Check(labels.Length >= 4, "Stock label bootstrap installed in active scene");
+                        var pc = UnityEngine.Object.FindFirstObjectByType<ShopPC>();
+                        var view = pc.pcUIPanel.GetComponent<ShopPcUiView>();
+                        pc.pcUIPanel.SetActive(true);
+                        view.ChangeQuantity(0, 3);
+                        pc.pcUIPanel.SetActive(false);
+                        pc.pcUIPanel.SetActive(true);
+                        Check(view.ingredients.All(row => row.quantity == 1), "Reopening PC resets all bundle selections");
+                        pc.pcUIPanel.SetActive(false);
+                        Debug.Log("SCENE_UI_MIGRATION_PASSED: existing stock labels connected and PC reopen resets bundle selections.");
+                        clock.currentTime = 15.999f; clock.isShopOpen = true; break;
                     case 1: clock.currentTime = 16; break;
                     case 2: clock.OnClick_CloseShop(); break;
                     case 3: clock.OnClick_CancelClose(); break;

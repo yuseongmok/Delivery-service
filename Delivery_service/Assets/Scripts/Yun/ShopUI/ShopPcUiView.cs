@@ -216,6 +216,11 @@ namespace DeliveryService.Yun.ShopUI
         private void OnEnable()
         {
             if (!built) return;
+            for (int i = 0; i < ingredients.Count; i++)
+            {
+                ingredients[i].quantity = 1;
+                RefreshQuantity(i);
+            }
             EnsureEventSystem();
             inputScope.Acquire(pc, false);
         }

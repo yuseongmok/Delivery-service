@@ -40,6 +40,8 @@ namespace DeliveryService.Yun.Editor
             go.SetActive(false);
             var data = ScriptableObject.CreateInstance<PizzaToppingData>();
             GameObject uiRoot = null;
+            GameObject stockLabelObject = null;
+            PendingStockText stockBinding = null;
             try
             {
                 var money = go.AddComponent<MoneyManager>();
@@ -89,11 +91,39 @@ namespace DeliveryService.Yun.Editor
                     .GetComponent<UnityEngine.UI.Button>().onClick.Invoke();
                 Require(money.currentMoney == before - 140 && ToppingStockManager.GetPendingStock(key) == 20,
                     "UI purchase button routes chosen bundle count to existing wallet and stock");
+                stockLabelObject = new GameObject("Stock label test", typeof(RectTransform), typeof(UnityEngine.UI.Text));
+                var stockLabel = stockLabelObject.GetComponent<UnityEngine.UI.Text>();
+                stockBinding = stockLabelObject.AddComponent<PendingStockText>();
+                stockBinding.Bind(data, stockLabel);
+                // Explicit lifecycle calls are necessary in this edit-mode batch verification.
+                stockBinding.SendMessage("OnEnable");
+                Require(stockLabel.text == "0/100 (+20)", "Pending units appear on the existing stock label");
+                ToppingStockManager.OrderStock(key, 10);
+                Require(stockLabel.text == "0/100 (+30)", "Additional orders accumulate on label");
+                stockLabel.text = "0/100";
+                stockBinding.SendMessage("LateUpdate");
+                Require(stockLabel.text == "0/100 (+30)", "Legacy label refresh cannot erase pending count");
+                uiRoot.SetActive(true);
+                view.SendMessage("OnEnable");
+                Require(view.ingredients.TrueForAll(row => row.quantity == 1), "Opening resets all bundle selectors");
+                view.ChangeQuantity(0, 3);
+                view.SendMessage("OnDisable");
+                view.SendMessage("OnEnable");
+                Require(view.ingredients[0].quantity == 1 && ToppingStockManager.GetPendingStock(key) == 30,
+                    "Reopening resets selection without canceling pending purchases");
+                view.SendMessage("OnDisable");
+                PlayerPrefs.SetInt("Stock_" + key, 30);
+                PlayerPrefs.DeleteKey("Pending_" + key);
+                ToppingStockManager.ConsumeStock(key, 0);
+                Require(stockLabel.text == "30/100", "Arrival removes pending suffix and updates stock");
+                Debug.Log("SHOP_PENDING_UI_VERIFICATION_PASSED: pending counts, accumulation, competing label refresh, reopening selection reset, arrival.");
                 UnityEngine.Object.DestroyImmediate(testCatalog);
                 Debug.Log("SHOP_SUPPLY_VERIFICATION_PASSED: original assets, unit cost x10, multiple bundles, wallet, expenses, pending delivery, capacity, validation and UI bridge.");
             }
             finally
             {
+                if (stockBinding != null) stockBinding.SendMessage("OnDisable");
+                if (stockLabelObject != null) UnityEngine.Object.DestroyImmediate(stockLabelObject);
                 if (uiRoot != null) UnityEngine.Object.DestroyImmediate(uiRoot);
                 instanceField.SetValue(null, original);
                 UnityEngine.Object.DestroyImmediate(go);

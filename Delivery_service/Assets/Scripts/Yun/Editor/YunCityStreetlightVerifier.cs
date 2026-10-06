@@ -77,7 +77,6 @@ namespace DeliveryService.Yun.Editor
             UnityEngine.Object.DestroyImmediate(cameraObject);
             // Discard verification-only times and camera; never save them.
             EditorSceneManager.OpenScene(YunCityStreetlightSetup.SourceScene);
-            Require(UnityEngine.Object.FindFirstObjectByType<StreetlightTimeController>() == null, "JJinCity has no streetlight controller");
             Require(original.SequenceEqual(File.ReadAllBytes(YunCityStreetlightSetup.SourceScene)), "JJinCity bytes unchanged");
             Debug.Log("YUNCITY_STREETLIGHT_VERIFICATION_PASSED: 96 saved lights, 15:59 off, 16:00 on, night, next-day reset, closed-shop state, disable/re-enable, original scene unchanged.");
         }
