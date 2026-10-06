@@ -85,11 +85,20 @@ public class DayNightCycle : MonoBehaviour
 
     private void UpdateTimeUI()
     {
+        
         if (timeText != null)
         {
-            int hours = Mathf.FloorToInt(currentTime);
-            int minutes = Mathf.FloorToInt((currentTime - hours) * 60f);
-            timeText.text = string.Format("{0:00}:{1:00}", hours, minutes);
+            if (currentTime >= 24f)
+            {
+                timeText.text = "00:00";
+            }
+            else
+            {
+                int hours = Mathf.FloorToInt(currentTime);
+                int minutes = Mathf.FloorToInt((currentTime - hours) * 60f);
+                timeText.text = string.Format("{0:00}:{1:00}", hours, minutes);
+            }
+               
         }
     }
     public void OnClick_OpenShop()
