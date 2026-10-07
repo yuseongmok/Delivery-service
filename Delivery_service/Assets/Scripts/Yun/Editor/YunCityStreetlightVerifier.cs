@@ -29,12 +29,12 @@ namespace DeliveryService.Yun.Editor
                 .Where(l => l.name == "Yun Streetlight").ToArray();
             Require(controller != null && clock != null && controller.LampCount == 96 && lights.Length == 96, "Saved references and all 96 lights");
             clock.isShopOpen = true;
-            foreach (float hour in new[] { 6f, 15.999f, 16f, 20f, 23.99f, 6f, 16f })
+            foreach (float hour in new[] { 5.999f, 6f, 8.999f, 9f, 15.999f, 16f, 20f, 23.99f, 6f, 16f })
             {
                 clock.currentTime = hour;
                 controller.SendMessage("LateUpdate");
-                Require(lights.All(l => l.enabled == (hour >= 16)), "Light state at " + hour);
-                Require(controller.IsLit == (hour >= 16), "Controller state at " + hour);
+                Require(lights.All(l => l.enabled == (hour >= 16 || (hour >= 6 && hour < 9))), "Light state at " + hour);
+                Require(controller.IsLit == (hour >= 16 || (hour >= 6 && hour < 9)), "Controller state at " + hour);
             }
             clock.isShopOpen = false;
             controller.Refresh();
@@ -112,7 +112,7 @@ namespace DeliveryService.Yun.Editor
         private static int phase;
         private static int lastFrame = -1;
         private static double deadline;
-        private static readonly float[] Hours = { 6, 15.999f, 16, 23.99f, 6, 16 };
+        private static readonly float[] Hours = { 5.999f, 6, 8.999f, 9, 15.999f, 16, 23.99f, 6, 16 };
 
         public static void RunPlayBatch()
         {
@@ -146,7 +146,7 @@ namespace DeliveryService.Yun.Editor
                 Require(!clock.enabled, "Verification must not initialize real stock");
                 if (phase > 0)
                 {
-                    bool expected = phase <= Hours.Length ? Hours[phase - 1] >= 16 : true;
+                    bool expected = phase <= Hours.Length ? (Hours[phase - 1] >= 16 || (Hours[phase - 1] >= 6 && Hours[phase - 1] < 9)) : true;
                     Require(lamps.Length == 96 && lamps.All(l => l.enabled == expected), "Runtime light state phase " + phase);
                 }
                 if (phase < Hours.Length) { clock.isShopOpen = true; clock.currentTime = Hours[phase++]; }

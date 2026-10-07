@@ -60,7 +60,7 @@ namespace DeliveryService.Yun.Editor
                 Check(!clock.enabled && lights.Length == 97, "Isolated clock and all lamp references");
                 if (phase > 0)
                 {
-                    bool expected = phase == 2 || phase == 4;
+                    bool expected = phase == 2 || phase == 4 || phase == 5 || phase == 6;
                     Check(lights.All(l => l.enabled == expected), "Shared schedule phase " + phase);
                     Check(headlight.IsLit == expected && street.IsLit == expected, "Controllers agree phase " + phase);
                 }
@@ -83,7 +83,11 @@ namespace DeliveryService.Yun.Editor
                     case 2: clock.OnClick_CloseShop(); break;
                     case 3: clock.OnClick_CancelClose(); break;
                     case 4: clock.currentTime = 6; break;
-                    case 5: clock.currentTime = 20; clock.isShopOpen = false; break;
+                    case 5: clock.currentTime = 8.999f; break;
+                    case 6: clock.currentTime = 9; break;
+                    case 7: clock.currentTime = 5.999f; break;
+                    case 8: clock.currentTime = 6; clock.isShopOpen = false; break;
+                    case 9: clock.currentTime = 20; clock.isShopOpen = false; break;
                     default:
                         clock.isShopOpen = true;
                         foreach (var c in controllers) c.Refresh();
@@ -103,7 +107,7 @@ namespace DeliveryService.Yun.Editor
                         Check(Vector3.Dot(beam.transform.forward, body.TransformDirection(localDirection)) > .999f,
                             "Beam direction follows turning/leaning motorcycle");
                         body.SetPositionAndRotation(position, rotation);
-                        Debug.Log("MOTORCYCLE_LIGHT_PLAY_PASSED: 97 lights, 16h boundary, actual close/cancel APIs, morning, closed evening, lifecycle, translation/rotation/lean.");
+                        Debug.Log("MOTORCYCLE_LIGHT_PLAY_PASSED: 97 lights, 16h boundary, actual close/cancel APIs, 06:00/09:00 boundaries, closed morning/evening, lifecycle, translation/rotation/lean.");
                         Finish(0);
                         break;
                 }

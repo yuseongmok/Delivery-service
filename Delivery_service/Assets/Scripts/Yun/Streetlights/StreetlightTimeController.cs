@@ -30,7 +30,7 @@ namespace DeliveryService.Yun.Streetlights
         public void Refresh()
         {
             // Shared by streetlights and motorcycle headlights; closing/canceling follows business state.
-            bool shouldLight = isActiveAndEnabled && clock != null && clock.isShopOpen && clock.currentTime >= turnOnHour;
+            bool shouldLight = isActiveAndEnabled && clock != null && clock.isShopOpen && (clock.currentTime >= turnOnHour || (clock.currentTime >= 6f && clock.currentTime < 9f));
             if (!applied || shouldLight != IsLit) SetLit(shouldLight);
         }
 
