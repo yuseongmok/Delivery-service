@@ -113,7 +113,7 @@ namespace DeliveryService.Yun.Editor
                 Require(stockLabel.text == "0/100 (+30)", "Legacy label refresh cannot erase pending count");
                 uiRoot.SetActive(true);
                 view.SendMessage("OnEnable");
-                Require(view.ingredients.TrueForAll(row => row.quantity == 1), "Opening resets all bundle selectors");
+                Require(view.ingredients[0].quantity == 1 && view.ingredients[1].quantity == 0, "Opening resets valid selectors and disables missing catalog entries");
                 view.ChangeQuantity(0, 3);
                 view.SendMessage("OnDisable");
                 view.SendMessage("OnEnable");
@@ -125,6 +125,41 @@ namespace DeliveryService.Yun.Editor
                 ToppingStockManager.ConsumeStock(key, 0);
                 Require(stockLabel.text == "30/100", "Arrival removes pending suffix and updates stock");
                 Debug.Log("SHOP_PENDING_UI_VERIFICATION_PASSED: pending counts, accumulation, competing label refresh, reopening selection reset, arrival.");
+                var card = uiRoot.transform.Find("Background/Page_2/IngredientsScroll/Content/Ingredient_0/Card");
+                var plus = card.Find("Plus").GetComponent<UnityEngine.UI.Button>();
+                var minus = card.Find("Minus").GetComponent<UnityEngine.UI.Button>();
+                var purchase = card.Find("Purchase").GetComponent<UnityEngine.UI.Button>();
+                PlayerPrefs.SetInt("Stock_" + key, 60);
+                PlayerPrefs.SetInt("Pending_" + key, 20);
+                view.ChangeQuantity(0, int.MaxValue);
+                Require(view.ingredients[0].quantity == 2 && !plus.interactable && purchase.interactable,
+                    "60 owned +20 pending permits at most two bundles");
+                plus.onClick.Invoke();
+                Require(view.ingredients[0].quantity == 2, "Even direct extra plus callbacks cannot exceed capacity");
+                PlayerPrefs.SetInt("Stock_" + key, 71);
+                view.RefreshQuantities();
+                Require(view.ingredients[0].quantity == 0 && !plus.interactable && !minus.interactable && !purchase.interactable,
+                    "Nine free slots cannot fit one ten-unit bundle; stale selections are cleared");
+                view.SendMessage("OnEnable");
+                Require(view.ingredients[0].quantity == 0 && !plus.interactable, "Reopening cannot bypass the capacity");
+                view.SendMessage("OnDisable");
+                PlayerPrefs.SetInt("Stock_" + key, 70);
+                view.RefreshQuantities();
+                Require(view.ingredients[0].quantity == 1 && purchase.interactable && !plus.interactable,
+                    "Capacity freed by consumption permits exactly one bundle again");
+                before = money.currentMoney;
+                purchase.onClick.Invoke();
+                Require(money.currentMoney == before - 70 && ToppingStockManager.GetPendingStock(key) == 30
+                    && view.ingredients[0].quantity == 0 && !purchase.interactable && !plus.interactable,
+                    "Purchase reaching exactly 100 immediately disables further ordering");
+                purchase.onClick.Invoke();
+                Require(money.currentMoney == before - 70 && ToppingStockManager.GetPendingStock(key) == 30,
+                    "Repeated callback at capacity cannot spend again");
+                PlayerPrefs.SetInt("Stock_" + key, 101);
+                view.RefreshQuantities();
+                Require(view.ingredients[0].quantity == 0 && !plus.interactable && !purchase.interactable,
+                    "Existing stock exceeding 100 remains blocked");
+                Debug.Log("SHOP_CAPACITY_UI_PASSED: combined stock/pending limits, bundle rounding, stale selection, reopen, capacity recovery, exact 100 and repeated purchase.");
                 UnityEngine.Object.DestroyImmediate(testCatalog);
                 Debug.Log("SHOP_SUPPLY_VERIFICATION_PASSED: original assets, unit cost x10, multiple bundles, wallet, expenses, pending delivery, capacity, validation and UI bridge.");
             }

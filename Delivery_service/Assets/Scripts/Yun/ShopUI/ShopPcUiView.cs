@@ -39,6 +39,7 @@ namespace DeliveryService.Yun.ShopUI
         public int ClickCount { get; private set; }
         public event Action<string> ActionClicked;
         public event Action<int> PurchaseRequested;
+        public Func<int, int> BundleCapacity { private get; set; }
         [SerializeField] private List<Text> purchaseLabels = new List<Text>();
         [SerializeField] private Text balanceLabel;
 
@@ -213,21 +214,35 @@ namespace DeliveryService.Yun.ShopUI
         {
             if (index < 0 || index >= ingredients.Count) return;
             IngredientRow row = ingredients[index];
-            int min = Mathf.Max(1, row.minimum);
-            int max = Mathf.Max(min, row.maximum);
+            QuantityBounds(index, out int min, out int max);
             row.quantity = (int)Math.Max(min, Math.Min(max, (long)row.quantity + delta));
             RefreshQuantity(index);
+        }
+
+        private void QuantityBounds(int index, out int min, out int max)
+        {
+            IngredientRow row = ingredients[index];
+            min = Mathf.Max(1, row.minimum);
+            max = Mathf.Max(min, row.maximum);
+            if (BundleCapacity != null) max = Mathf.Min(max, Mathf.Max(0, BundleCapacity(index)));
+            min = Mathf.Min(min, max);
+        }
+
+        public void RefreshQuantities()
+        {
+            for (int i = 0; i < ingredients.Count; i++) RefreshQuantity(i);
         }
 
         private void RefreshQuantity(int index)
         {
             IngredientRow row = ingredients[index];
-            int min = Mathf.Max(1, row.minimum);
-            int max = Mathf.Max(min, row.maximum);
+            QuantityBounds(index, out int min, out int max);
             row.quantity = Mathf.Clamp(row.quantity, min, max);
             quantityLabels[index].text = row.quantity.ToString();
             minusButtons[index].interactable = row.quantity > min;
             plusButtons[index].interactable = row.quantity < max;
+            if (purchaseButtons != null && index < purchaseButtons.Length)
+                purchaseButtons[index].interactable = row.quantity > 0;
         }
 
         private void Notify(string action)
@@ -241,6 +256,8 @@ namespace DeliveryService.Yun.ShopUI
 
         private void RequestPurchase(int index)
         {
+            RefreshQuantity(index);
+            if (ingredients[index].quantity <= 0) return;
             Notify(ingredients[index].name + " " + ingredients[index].quantity + "묶음 (" + ingredients[index].TotalUnits + "개) 구매하기");
             if (PurchaseRequested != null) PurchaseRequested.Invoke(index);
             else ShowFeedback("구매 기능이 연결되지 않았습니다.");

@@ -12,6 +12,7 @@ namespace DeliveryService.Yun.ShopUI
         {
             view = ui;
             catalog = Resources.Load<ShopSupplyCatalog>("YunShopSupplyCatalog");
+            view.BundleCapacity = index => ShopSupplyPurchase.AvailableBundles(Data(index));
             view.PurchaseRequested += Purchase;
             Refresh();
         }
@@ -51,6 +52,7 @@ namespace DeliveryService.Yun.ShopUI
         private void Refresh()
         {
             if (view == null) return;
+            view.RefreshQuantities();
             view.SetBalance(MoneyManager.Instance == null ? "소지금 확인 불가" : $"보유 금액 {MoneyManager.Instance.currentMoney:N0}원");
             for (int i = 0; i < view.ingredients.Count; i++)
                 view.SetPurchasePrice(i, ShopSupplyPurchase.Quote(Data(i), view.ingredients[i].quantity, out _, out int price)
@@ -59,7 +61,11 @@ namespace DeliveryService.Yun.ShopUI
 
         private void OnDestroy()
         {
-            if (view != null) view.PurchaseRequested -= Purchase;
+            if (view != null)
+            {
+                view.PurchaseRequested -= Purchase;
+                view.BundleCapacity = null;
+            }
         }
     }
 }

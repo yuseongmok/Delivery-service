@@ -3,6 +3,16 @@ namespace DeliveryService.Yun.ShopUI
     public static class ShopSupplyPurchase
     {
         public const int MaximumStock = 100;
+        public static int AvailableBundles(PizzaToppingData data)
+        {
+            if (!Quote(data, 1, out _, out _)) return 0;
+            int stock = ToppingStockManager.GetStock(data.toppingName);
+            int pending = ToppingStockManager.GetPendingStock(data.toppingName);
+            if (stock < 0 || pending < 0) return 0;
+            long remaining = MaximumStock - (long)stock - pending;
+            return remaining <= 0 ? 0 : (int)(remaining / ShopPcUiView.IngredientRow.UnitsPerBundle);
+        }
+
         public static bool Quote(PizzaToppingData data, int bundles, out int units, out int price)
         {
             units = price = 0;
