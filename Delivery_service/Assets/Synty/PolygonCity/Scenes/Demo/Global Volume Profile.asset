@@ -15,7 +15,7 @@ MonoBehaviour:
   active: 1
   shadows:
     m_OverrideState: 1
-    m_Value: {x: 0.9786251, y: 1, z: 0.9148895, w: -0.18324609}
+    m_Value: {x: 0.919625, y: 1, z: 0.91303015, w: -0.18324609}
   midtones:
     m_OverrideState: 1
     m_Value: {x: 1, y: 0.94572663, z: 0.9864316, w: 0}
@@ -162,6 +162,9 @@ MonoBehaviour:
     m_OverrideState: 0
     m_Value: {r: 1, g: 1, b: 1, a: 1}
   highQualityFiltering:
+    m_OverrideState: 0
+    m_Value: 0
+  filter:
     m_OverrideState: 0
     m_Value: 0
   downscale:

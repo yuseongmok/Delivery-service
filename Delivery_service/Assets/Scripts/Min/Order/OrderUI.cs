@@ -41,9 +41,4 @@ public class OrderUI : MonoBehaviour
     {
         gameObject.SetActive(true);
     }
-
-    public void CloseUI()
-    {
-        gameObject.SetActive(false);
-    }
 }

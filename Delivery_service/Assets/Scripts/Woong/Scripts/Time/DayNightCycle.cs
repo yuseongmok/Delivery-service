@@ -201,6 +201,12 @@ public class DayNightCycle : MonoBehaviour
 
         ToppingStockManager.DeliverAllPendingStock();
 
+        OrderManager orderManager = FindObjectOfType<OrderManager>();
+        if (orderManager != null) orderManager.ResetOrdersForNewDay();
+
+        NavigationManager navManager = FindObjectOfType<NavigationManager>();
+        if (navManager != null) navManager.ResetNavigationForNewDay();
+
         if (pcUIPanel != null) pcUIPanel.SetActive(false);
         openShopButton.SetActive(true);
         closeShopButton.SetActive(false);

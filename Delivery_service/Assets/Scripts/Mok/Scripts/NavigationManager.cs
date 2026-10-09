@@ -107,6 +107,22 @@ public class NavigationManager : MonoBehaviour
         get { return playerTransform; }
     }
 
+    // 리셋
+    public void ResetNavigationForNewDay()
+    {
+        if (pathLineRenderer != null)
+        {
+            pathLineRenderer.positionCount = 0;
+        }
+
+        displayPath.Clear();
+        RemainingDistance = 0f;
+        debugPath = null;
+        hadActiveOrder = false;
+        lastPathUpdatePosition = Vector3.zero;
+        nextPathUpdateTime = 0f;
+    }
+
     private void Update()
     {
         // 개발 테스트용 단축키

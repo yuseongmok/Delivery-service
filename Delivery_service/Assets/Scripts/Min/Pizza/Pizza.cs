@@ -26,8 +26,6 @@ public class Pizza : MonoBehaviour, IInteractable
 
         // 기본 3종
         currentToppings.Add("도우");
-        currentToppings.Add("소스");
-        currentToppings.Add("치즈");
 
         IsBaked = false;
     }
