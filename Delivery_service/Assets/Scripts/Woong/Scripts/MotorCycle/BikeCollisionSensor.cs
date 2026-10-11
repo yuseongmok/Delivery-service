@@ -2,7 +2,7 @@
 
 public class BikeCollisionSensor : MonoBehaviour
 {
-    [Header("자동 할당됨 (인스펙터에 안 넣어도 됩니다!)")]
+    [Header("자동 할당됨 ")]
     public MotorcycleDurability durabilitySystem;
     public MotorcycleController bikeController;
     public BikePizzaStorage pizzaStorage;

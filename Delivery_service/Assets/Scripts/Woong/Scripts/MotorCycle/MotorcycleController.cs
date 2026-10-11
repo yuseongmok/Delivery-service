@@ -26,6 +26,10 @@ public class MotorcycleController : MonoBehaviour
     public GameObject bikeUIPanel;
     public bool isRefueling = false;
 
+    [Header("날씨 물리 효과")]
+    public bool isSnowing = false;
+    public float iceSlideFactor = 1.5f;
+
     [Header("Phone System")]
     public PhoneController phoneController;
 
@@ -54,7 +58,7 @@ public class MotorcycleController : MonoBehaviour
     private MotorcycleFuel fuelSystem;
     public MotorcycleDurability durabilitySystem;
 
-    private void Start()
+    private void Awake()
     {
         if (sphereCollider != null)
         {
@@ -157,6 +161,9 @@ public class MotorcycleController : MonoBehaviour
     {
         if (sphereRB == null) return;
         float currentAccel = isShiftPressed ? acceleration * shiftAccelMultiplier : acceleration;
+        // 폭설 관련
+        float activeBrake = isSnowing ? brakePower * 0.2f : brakePower;
+        float activeDecel = isSnowing ? deceleration * 0.3f : deceleration;
         if (isBraking)
         {
             currentSpeed = Mathf.Lerp(currentSpeed, 0f, Time.fixedDeltaTime * (brakePower / 10f));
@@ -179,7 +186,21 @@ public class MotorcycleController : MonoBehaviour
 
         Vector3 targetVelocity = transform.forward * currentSpeed;
         targetVelocity.y = sphereRB.linearVelocity.y;
-        sphereRB.linearVelocity = targetVelocity;
+        if (isSnowing)
+        {
+            Vector3 currentHorizontalVel = sphereRB.linearVelocity;
+            currentHorizontalVel.y = 0;
+            Vector3 targetHorizontalVel = targetVelocity;
+            targetHorizontalVel.y = 0;
+
+            Vector3 slidVelocity = Vector3.Lerp(currentHorizontalVel, targetHorizontalVel, Time.fixedDeltaTime * iceSlideFactor);
+            slidVelocity.y = sphereRB.linearVelocity.y;
+            sphereRB.linearVelocity = slidVelocity;
+        }
+        else
+        {
+            sphereRB.linearVelocity = targetVelocity;
+        }
     }
 
     private void RotationPhysics()
@@ -424,10 +445,13 @@ public class MotorcycleController : MonoBehaviour
             sphereRB.linearVelocity = Vector3.zero;
             sphereRB.angularVelocity = Vector3.zero;
 
-            Vector3 targetSpherePos = spawnTransform.position - (spawnTransform.rotation * localOffset);
+            Vector3 safePosition = spawnTransform.position + Vector3.up * 1.5f;
+            Vector3 targetSpherePos = safePosition - (spawnTransform.rotation * localOffset);
+             
             sphereRB.position = targetSpherePos;
             sphereRB.transform.position = targetSpherePos;
 
+            Physics.SyncTransforms(); 
             sphereRB.isKinematic = false;
         }
 
