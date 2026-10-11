@@ -573,8 +573,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RobberAI
   stealAmount: 200
   attackDistance: 1.5
-  moveSpeed: 5
-  destinationUpdateInterval: 0.05
+  moveSpeed: 3.5
 --- !u!1 &2550572100760163421
 GameObject:
   m_ObjectHideFlags: 0
@@ -632,7 +631,7 @@ SkinnedMeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: aa50011ee9495264d97bc391fbb6edae, type: 2}
+  - {fileID: 2100000, guid: 831bb742ea448154ebd4ed1a2b42edcf, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

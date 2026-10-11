@@ -260,8 +260,8 @@ public class NavigationTurnUI : MonoBehaviour
 
         string directionText =
             direction == TurnDirection.Left
-                ? "좌회전"
-                : "우회전";
+                ? "우회전"
+                : "좌회전";
 
 
         turnText.enabled = true;

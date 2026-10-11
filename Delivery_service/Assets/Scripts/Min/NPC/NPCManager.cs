@@ -11,6 +11,8 @@ public class NPCManager : MonoBehaviour
     [SerializeField] private BoxCollider spawnArea;
     [SerializeField] private Transform npcParent;
 
+    private int sideWalkAreaMask;
+
     private void Awake()
     {
         if (spawnArea == null)
@@ -20,6 +22,17 @@ public class NPCManager : MonoBehaviour
         if (npcParent == null)
         {
             npcParent = transform;
+        }
+
+        int sideWalkAreaIndex = NavMesh.GetAreaFromName("SideWalk");
+        if (sideWalkAreaIndex < 0)
+        {
+            sideWalkAreaIndex = NavMesh.GetAreaFromName("sideWalk");
+        }
+
+        if (sideWalkAreaIndex >= 0)
+        {
+            sideWalkAreaMask = 1 << sideWalkAreaIndex;
         }
     }
 
@@ -84,7 +97,7 @@ public class NPCManager : MonoBehaviour
             Vector3 randomWorldPoint = spawnArea.transform.TransformPoint(randomLocalPoint);
 
             // 해당 위치에서 가깝게 위치한 NavMesh 바닥 감지
-            if (NavMesh.SamplePosition(randomWorldPoint, out NavMeshHit hit, 5f, NavMesh.AllAreas))
+            if (NavMesh.SamplePosition(randomWorldPoint, out NavMeshHit hit, 5f, sideWalkAreaMask))
             {
                 resultPosition = hit.position;
                 found = true;
