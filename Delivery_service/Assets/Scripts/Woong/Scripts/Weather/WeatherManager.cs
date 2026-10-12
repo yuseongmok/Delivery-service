@@ -23,6 +23,9 @@ public class WeatherManager : MonoBehaviour
     public ParticleSystem rainParticle;
     public AudioSource rainAudioSource;
 
+    [Header("어지러움 효과 (눈덩이)")]
+    public Image dizzyOverlayUI;
+
     [Header("참조 스크립트")]
     public DayNightCycle dayNightCycle;
     public MotorcycleController motorcycle;
@@ -30,6 +33,7 @@ public class WeatherManager : MonoBehaviour
     private float currentDropletAlpha = 0f;
     private bool isWiping = false;
 
+    private float currentDizzyAlpha = 0f;
     private void Start()
     {
         if (waterDropletUI != null)
@@ -38,6 +42,13 @@ public class WeatherManager : MonoBehaviour
             c.a = 0f;
             waterDropletUI.color = c;
             waterDropletUI.gameObject.SetActive(false);
+        }
+        if (dizzyOverlayUI != null)
+        {
+            Color c = dizzyOverlayUI.color;
+            c.a = 0f;
+            dizzyOverlayUI.color = c;
+            dizzyOverlayUI.gameObject.SetActive(false);
         }
     }
 
@@ -55,6 +66,29 @@ public class WeatherManager : MonoBehaviour
 
         HandleRainState();
         HandleWaterDroplets();
+        HandleDizzyEffect();
+    }
+    public void TriggerDizzyEffect()
+    {
+        currentDizzyAlpha = 0.8f; // 화면을 확 흐리게 만듦
+        if (dizzyOverlayUI != null) dizzyOverlayUI.gameObject.SetActive(true);
+    }
+
+    private void HandleDizzyEffect()
+    {
+        if (dizzyOverlayUI == null) return;
+
+        if (currentDizzyAlpha > 0)
+        {
+            currentDizzyAlpha -= Time.deltaTime * 0.25f; // 서서히 회복
+            Color c = dizzyOverlayUI.color;
+            c.a = currentDizzyAlpha;
+            dizzyOverlayUI.color = c;
+        }
+        else if (dizzyOverlayUI.gameObject.activeSelf)
+        {
+            dizzyOverlayUI.gameObject.SetActive(false);
+        }
     }
 
     private void HandleRainState()

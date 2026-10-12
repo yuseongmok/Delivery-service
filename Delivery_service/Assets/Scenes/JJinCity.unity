@@ -383466,8 +383466,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9957b6313a0ffa548900f937725a228c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WeatherManager
-  isRaining: 1
+  isRaining: 0
   rainStartDay: 2
+  isSnowing: 1
+  snowStartDay: 5
   waterDropletUI: {fileID: 1466632944}
   dropletFillRate: 0.1
   wipeSpeed: 1
@@ -383489,13 +383491,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 064f47383f4c8a0458d00bc414745075, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SnowObstacleSpawner
-  snowmanPrefab: {fileID: 0}
-  playerCenter: {fileID: 0}
+  snowmanPrefab: {fileID: 2598013794465610016, guid: 79805603225fb9448bf16139e80c4860, type: 3}
+  playerCenter: {fileID: 1745745549}
   spawnInterval: 10
   spawnRadius: 60
   maxSnowmen: 15
   despawnDistance: 100
-  motorcycle: {fileID: 0}
+  weatherManager: {fileID: 1606824258}
 --- !u!1 &1607090778
 GameObject:
   m_ObjectHideFlags: 0
