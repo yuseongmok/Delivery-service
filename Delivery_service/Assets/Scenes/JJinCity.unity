@@ -12027,10 +12027,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Yun Shop PC UI
       objectReference: {fileID: 0}
-    - target: {fileID: 4277050304645604842, guid: db7e22589e2788d4d98482a248aaa867, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 5200269203825296833, guid: db7e22589e2788d4d98482a248aaa867, type: 3}
       propertyPath: m_Pivot.x
       value: 0

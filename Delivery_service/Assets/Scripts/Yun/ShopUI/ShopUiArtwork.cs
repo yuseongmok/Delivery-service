@@ -59,6 +59,14 @@ namespace DeliveryService.Yun.ShopUI
                 Circle(.5f,.5f,.44f,cheese); Circle(.5f,.5f,.34f,new Color32(255,225,112,255));
                 Circle(.5f,.5f,.15f,new Color32(242,246,249,255));
             }
+            else if (Kind == 7)
+            {
+                Circle(.57f,.59f,.20f,red);
+                Triangle(new Vector2(.39f,.65f),new Vector2(.74f,.53f),new Vector2(.18f,.15f),red);
+                Triangle(new Vector2(.18f,.15f),new Vector2(.48f,.32f),new Vector2(.08f,.17f),red);
+                Quad(.54f,.76f,.08f,.17f,new Color32(55,135,48,255));
+                Triangle(new Vector2(.43f,.73f),new Vector2(.70f,.73f),new Vector2(.58f,.83f),new Color32(55,135,48,255));
+            }
             else
             {
                 Bear(.23f,.40f,new Color32(234,68,53,255));

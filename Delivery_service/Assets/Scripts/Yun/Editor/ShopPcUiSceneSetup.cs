@@ -30,7 +30,7 @@ namespace DeliveryService.Yun.Editor
                 foreach (string path in new[] { "Assets/Scenes/JJinCity.unity", "Assets/Scenes/YunCity.unity" })
                     Install(path);
                 ShopPcUiVerifier.Run();
-                Debug.Log("SHOP_PC_SCENE_CANVAS_PASSED: both scenes contain a saved inactive prefab, matching PC/day-cycle references and 20 buttons.");
+                Debug.Log("SHOP_PC_SCENE_CANVAS_PASSED: both scenes contain a saved inactive prefab, matching PC/day-cycle references and 23 buttons.");
                 EditorApplication.Exit(0);
             }
             catch (Exception e) { Debug.LogException(e); EditorApplication.Exit(1); }
@@ -87,7 +87,7 @@ namespace DeliveryService.Yun.Editor
             EditorSceneManager.SaveScene(scene);
             scene = EditorSceneManager.OpenScene(path);
             var saved = scene.GetRootGameObjects().SelectMany(r => r.GetComponentsInChildren<ShopPcUiView>(true)).Single();
-            if (saved.gameObject.activeSelf || saved.GetComponentsInChildren<Button>(true).Length != 20)
+            if (saved.gameObject.activeSelf || saved.GetComponentsInChildren<Button>(true).Length != 8 + saved.ingredients.Count * 3)
                 throw new InvalidOperationException("Saved canvas validation failed: " + path);
         }
     }

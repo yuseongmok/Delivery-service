@@ -31,7 +31,7 @@ namespace DeliveryService.Yun.ShopUI
         public List<IngredientRow> ingredients = new List<IngredientRow>
         {
             new IngredientRow("페페로니", 3), new IngredientRow("초콜릿", 4),
-            new IngredientRow("파인애플", 5), new IngredientRow("젤리", 6)
+            new IngredientRow("파인애플", 5), new IngredientRow("젤리", 6), new IngredientRow("고추", 7)
         };
 
         public int SelectedTab { get; private set; }
@@ -280,6 +280,10 @@ namespace DeliveryService.Yun.ShopUI
         private void OnEnable()
         {
             if (!built) return;
+            // A scene override or a previous UI action may have hidden the saved content root.
+            if (pages.Length > 0 && pages[0] != null && pages[0].transform.parent != null)
+                pages[0].transform.parent.gameObject.SetActive(true);
+            SelectTab(SelectedTab);
             for (int i = 0; i < ingredients.Count; i++)
             {
                 ingredients[i].quantity = 1;

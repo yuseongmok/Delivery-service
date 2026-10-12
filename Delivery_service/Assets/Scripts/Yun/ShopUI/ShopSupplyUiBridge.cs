@@ -27,6 +27,7 @@ namespace DeliveryService.Yun.ShopUI
                 case 4: return catalog.Find(ToppingType.Chocolate);
                 case 5: return catalog.Find(ToppingType.Pineapple);
                 case 6: return catalog.Find(ToppingType.Jelly);
+                case 7: return catalog.Find(ToppingType.Pepper);
                 default: return null;
             }
         }

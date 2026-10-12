@@ -21,7 +21,7 @@ namespace DeliveryService.Yun.Editor
                 var view = root.GetComponent<ShopPcUiView>();
                 view.Initialize(null); // Repeated initialization must not duplicate callbacks.
                 var buttons = root.GetComponentsInChildren<Button>(true);
-                Require(buttons.Length == 20, "Expected 3 tabs, 4 actions, 12 ingredient controls, 1 close");
+                Require(buttons.Length == 8 + view.ingredients.Count * 3, "Expected 3 tabs, 4 actions, three controls per ingredient, 1 close");
                 for (int i = 0; i < 3; i++)
                 {
                     buttons.Single(b => b.name == "Tab_" + i).onClick.Invoke();
@@ -46,10 +46,21 @@ namespace DeliveryService.Yun.Editor
                 }
                 foreach (string name in new[] { "Accept", "Reject", "CloseBusiness", "OpenBusiness" })
                     buttons.Single(b => b.name == name).onClick.Invoke();
-                Require(view.ClickCount == 8, "Four purchase and four action callbacks");
+                Require(view.ClickCount == view.ingredients.Count + 4, "One purchase callback per ingredient and four action callbacks");
+                var background = root.transform.Find("Background").gameObject;
+                view.SelectTab(2);
+                background.SetActive(false);
+                view.SendMessage("OnEnable");
+                Require(background.activeSelf && root.transform.Find("Background/Page_2").gameObject.activeSelf,
+                    "Opening PC restores disabled Background and selected page");
+                view.SendMessage("OnDisable");
+                var content = root.transform.Find("Background/Page_2/IngredientsScroll/Content");
+                int pepper = view.ingredients.FindIndex(row => row.artworkKind == 7);
+                Require(content.GetChild(0).name == "Ingredient_" + pepper, "Pepper is first in the visual list");
+
                 Require(root.GetComponentsInChildren<Text>(true).All(t => t.font != null), "Font available");
                 Require(root.GetComponent<Canvas>().renderMode == RenderMode.ScreenSpaceOverlay, "Overlay canvas");
-                Debug.Log("SHOP_UI_VERIFICATION_PASSED: 20 buttons, three tabs, four quantity bounds, purchase and action callbacks, font and canvas.");
+                Debug.Log("SHOP_UI_VERIFICATION_PASSED: 23 buttons, three tabs, five quantity bounds, purchase and action callbacks, font and canvas.");
             }
             finally
             {

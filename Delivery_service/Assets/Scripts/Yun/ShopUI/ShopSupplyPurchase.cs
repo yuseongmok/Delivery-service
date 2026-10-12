@@ -18,7 +18,8 @@ namespace DeliveryService.Yun.ShopUI
             units = price = 0;
             if (data == null || string.IsNullOrWhiteSpace(data.toppingName) || data.cost < 0 || bundles <= 0) return false;
             if (data.toppingType != ToppingType.Pepperoni && data.toppingType != ToppingType.Chocolate
-                && data.toppingType != ToppingType.Pineapple && data.toppingType != ToppingType.Jelly) return false;
+                && data.toppingType != ToppingType.Pineapple && data.toppingType != ToppingType.Jelly
+                && data.toppingType != ToppingType.Pepper) return false;
             long count = (long)bundles * ShopPcUiView.IngredientRow.UnitsPerBundle;
             if (count > int.MaxValue) return false;
             long total = count * data.cost;

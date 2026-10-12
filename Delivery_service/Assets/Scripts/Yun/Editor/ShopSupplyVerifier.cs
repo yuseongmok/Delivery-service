@@ -33,7 +33,7 @@ namespace DeliveryService.Yun.Editor
         {
             var catalog = Resources.Load<ShopSupplyCatalog>("YunShopSupplyCatalog");
             Require(catalog != null, "Build-loadable catalog exists");
-            foreach (var type in new[] { ToppingType.Pepperoni, ToppingType.Chocolate, ToppingType.Pineapple, ToppingType.Jelly })
+            foreach (var type in new[] { ToppingType.Pepperoni, ToppingType.Chocolate, ToppingType.Pineapple, ToppingType.Jelly, ToppingType.Pepper })
             {
                 var item = catalog.Find(type);
                 Require(ShopSupplyPurchase.Quote(item, 2, out int n, out int p) && n == 20 && p == item.cost * 20,
@@ -160,6 +160,23 @@ namespace DeliveryService.Yun.Editor
                 Require(view.ingredients[0].quantity == 0 && !plus.interactable && !purchase.interactable,
                     "Existing stock exceeding 100 remains blocked");
                 Debug.Log("SHOP_CAPACITY_UI_PASSED: combined stock/pending limits, bundle rounding, stale selection, reopen, capacity recovery, exact 100 and repeated purchase.");
+                // The saved fifth row must route to Pepper, using the same stock key as Topping.
+                data.toppingType = ToppingType.Pepper;
+                PlayerPrefs.SetInt("Stock_" + key, 0);
+                PlayerPrefs.DeleteKey("Pending_" + key);
+                view.RefreshQuantities();
+                int pepperIndex = view.ingredients.FindIndex(row => row.artworkKind == 7);
+                Require(pepperIndex >= 0, "Saved prefab contains pepper");
+                before = money.currentMoney;
+                uiRoot.transform.Find("Background/Page_2/IngredientsScroll/Content/Ingredient_" + pepperIndex + "/Card/Purchase")
+                    .GetComponent<UnityEngine.UI.Button>().onClick.Invoke();
+                Require(money.currentMoney == before - data.cost * 10 && ToppingStockManager.GetPendingStock(key) == 10,
+                    "Pepper button deducts unit price x10 and orders ten units");
+                Require(stockLabel.text == "0/100 (+10)", "Pepper uses the same stock and pending label binding");
+                PlayerPrefs.SetInt("Stock_" + key, 90);
+                view.RefreshQuantities();
+                Require(view.ingredients[pepperIndex].quantity == 0, "Pepper respects owned plus pending cap");
+                Debug.Log("PEPPER_SUPPLY_PASSED: fifth saved row, price x10, purchase bridge, pending label, capacity.");
                 UnityEngine.Object.DestroyImmediate(testCatalog);
                 Debug.Log("SHOP_SUPPLY_VERIFICATION_PASSED: original assets, unit cost x10, multiple bundles, wallet, expenses, pending delivery, capacity, validation and UI bridge.");
             }
