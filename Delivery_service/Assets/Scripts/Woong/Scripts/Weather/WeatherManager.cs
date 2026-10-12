@@ -7,6 +7,9 @@ public class WeatherManager : MonoBehaviour
     public bool isRaining = false;
     public int rainStartDay = 3;
 
+    public bool isSnowing = false;
+    public int snowStartDay = 5;
+
     [Header("시야 방해 (빗물 UI)")]
     public Image waterDropletUI;
     public float dropletFillRate = 0.5f;
@@ -42,7 +45,12 @@ public class WeatherManager : MonoBehaviour
     {
         if (dayNightCycle != null && dayNightCycle.currentDay < rainStartDay)
         {
-            isRaining = false;
+            if (dayNightCycle.currentDay < rainStartDay) isRaining = false;
+            if (dayNightCycle.currentDay < snowStartDay) isSnowing = false;
+        }
+        if (motorcycle != null)
+        {
+            motorcycle.isSnowing = this.isSnowing;
         }
 
         HandleRainState();
