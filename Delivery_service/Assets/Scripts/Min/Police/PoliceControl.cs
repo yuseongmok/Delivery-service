@@ -1,37 +1,54 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.UI;
 
 public class PoliceControl : MonoBehaviour
 {
-    [Header("ƒƒ∆˜≥Õ∆Æ π◊ ¥ÎªÛ")]
     [SerializeField] private NavMeshAgent agent;
     private Transform playerOnFootTarget;
     private MotorcycleController bikeController;
 
-    [Header("Ω√æﬂ∞¢(FOV) º≥¡§")]
+    [Header("ÏãúÏïºÍ∞Å")]
     [SerializeField] private float viewDistance = 15f;
     [SerializeField] private float viewAngle = 90f;
-    [SerializeField] private LayerMask obstacleMask;        // ∞«π∞, ∫Æ µÓ ∑π¿ÃæÓ
+    [SerializeField] private LayerMask obstacleMask;
 
-    [Header("√ﬂ∞› ≈∏¿Ã∏”")]
-    [SerializeField] private float maxTotalChaseTime = 120f;    // Ω√æﬂ ≥ª √ﬂ∞› Ω√∞£ (2∫–)
-    [SerializeField] private float maxOutOfSightTime = 60f;     // Ω√æﬂ π€ √ﬂ∞› Ω√∞£ (1∫–)
+    [Header("Ï∂îÍ≤© ÌÉÄÏù¥Î®∏")]
+    [SerializeField] private float maxTotalChaseTime = 120f;
+    [SerializeField] private float maxOutOfSightTime = 60f;
 
-    [SerializeField] private float pathUpdateInterval = 0.15f;  // 0.15√ ∏∂¥Ÿ ∞Ê∑Œ æ˜µ•¿Ã∆Æ (øÚ¬Ò∞≈∏≤ πÊ¡ˆ)
+    [Header("Ï≤¥Ìè¨")]
+    [SerializeField] private float arrestDistance = 2.0f;
+    [SerializeField] private float fadeDuration = 1.0f;
+    [SerializeField] private int fineAmount = 500;
+
+    private Transform policeStationSpawn;
+    private Image fadeScreen;
+
+    [SerializeField] private float pathUpdateInterval = 0.15f;
     private float nextPathUpdateTime;
 
-    private float totalChaseTimer;      // ¿¸√º Ω√∞£ (2∫–)
-    private float outOfSightTimer;      // Ω√æﬂ∞¢ π€ Ω√∞£
+    private float totalChaseTimer;
+    private float outOfSightTimer;
     private bool isInSight;
 
-    // ∆˜¿ß √ﬂ∞›¿ª ¿ß«— ø¿«¡º¬ (¿⁄µø ¡ˆ¡§)
+    private static bool isArresting = false;
+
     private float flankAngle;
     private float flankDistance;
 
-    public void Initialize(Transform targetPlayer, float angleOffset, float distOffset)
+    private void Awake()
+    {
+        isArresting = false;
+    }
+
+    public void Initialize(Transform targetPlayer, float angleOffset, float distOffset, Transform stationSpawn = null, Image fadeUI = null)
     {
         flankAngle = angleOffset;
         flankDistance = distOffset;
+        policeStationSpawn = stationSpawn;
+        fadeScreen = fadeUI;
 
         if (agent == null) agent = GetComponent<NavMeshAgent>();
 
@@ -42,6 +59,7 @@ public class PoliceControl : MonoBehaviour
 
         ResetChaseTimers();
         FindAllTargets();
+        FindUIAndSpawnPoint();
     }
 
     public void ResetChaseTimers()
@@ -52,7 +70,6 @@ public class PoliceControl : MonoBehaviour
 
     private void FindAllTargets()
     {
-        // ∫∏«‡ «√∑π¿ÃæÓ √£±‚
         PlayerMove playerMove = FindObjectOfType<PlayerMove>(true);
         if (playerMove != null)
         {
@@ -67,10 +84,30 @@ public class PoliceControl : MonoBehaviour
             }
         }
 
-        // ø¿≈‰πŸ¿Ã √£±‚
         if (bikeController == null)
         {
             bikeController = FindObjectOfType<MotorcycleController>(true);
+        }
+    }
+
+    private void FindUIAndSpawnPoint()
+    {
+        if (policeStationSpawn == null)
+        {
+            GameObject spawnObj = GameObject.FindGameObjectWithTag("PoliceStation");
+            if (spawnObj != null)
+            {
+                policeStationSpawn = spawnObj.transform;
+            }
+        }
+
+        if (fadeScreen == null)
+        {
+            GameObject fadeObj = GameObject.FindGameObjectWithTag("FadeScreen");
+            if (fadeObj != null)
+            {
+                fadeScreen = fadeObj.GetComponent<Image>();
+            }
         }
     }
 
@@ -81,22 +118,21 @@ public class PoliceControl : MonoBehaviour
             FindAllTargets();
         }
 
-        // ø¿≈‰πŸ¿Ãø° ≈∏∞Ì ¿÷¥¬ ∞ÊøÏ ø¿≈‰πŸ¿Ã Transform π›»Ø
         if (bikeController != null && bikeController.isDriven)
         {
             return bikeController.transform;
         }
 
-        // ≥ª∏∞ ªÛ≈¬¿Œ ∞ÊøÏ ∫∏«‡ «√∑π¿ÃæÓ Transform π›»Ø
         return playerOnFootTarget;
     }
 
     private void Update()
     {
+        if (isArresting) return;
+
         Transform activeTarget = GetActivePlayerTarget();
         if (activeTarget == null) return;
 
-        // Ω√æﬂ∞¢ π◊ ¿Âæ÷π∞ ∞ÀªÁ
         isInSight = CheckLineOfSight(activeTarget);
         UpdateTimers();
 
@@ -106,13 +142,122 @@ public class PoliceControl : MonoBehaviour
             MoveToFlankPosition(activeTarget);
         }
 
+        // Ï≤¥Ìè¨ Í±∞Î¶¨ Í≤ÄÏÇ¨
+        float flatDistance = GetFlatDistance(transform.position, activeTarget.position);
+        if (flatDistance <= arrestDistance)
+        {
+            StartCoroutine(ArrestRoutine(activeTarget));
+            return;
+        }
+
         if (totalChaseTimer <= 0f || outOfSightTimer <= 0f)
         {
             DespawnPolice();
         }
     }
 
-    // Ω√æﬂ∞¢ π◊ ∑π¿Ãƒ≥Ω∫∆Æ ¿Âæ÷π∞ ∞ÀªÁ
+    private float GetFlatDistance(Vector3 pos1, Vector3 pos2)
+    {
+        Vector3 p1 = new Vector3(pos1.x, 0f, pos1.z);
+        Vector3 p2 = new Vector3(pos2.x, 0f, pos2.z);
+        return Vector3.Distance(p1, p2);
+    }
+
+    private IEnumerator ArrestRoutine(Transform target)
+    {
+        if (isArresting) yield break;
+        isArresting = true;
+
+        PoliceControl[] allPolice = FindObjectsOfType<PoliceControl>();
+        foreach (var p in allPolice)
+        {
+            if (p != null && p.agent != null && p.agent.isOnNavMesh)
+            {
+                p.agent.isStopped = true;
+            }
+        }
+
+        // ÌéòÏù¥Îìú ÏïÑÏõÉ
+        if (fadeScreen != null)
+        {
+            fadeScreen.gameObject.SetActive(true);
+            Color c = fadeScreen.color;
+            float t = 0f;
+            while (t < fadeDuration)
+            {
+                t += Time.deltaTime;
+                c.a = Mathf.Lerp(0f, 1f, t / fadeDuration);
+                fadeScreen.color = c;
+                yield return null;
+            }
+        }
+
+        Transform playerToTeleport = target;
+
+        if (bikeController != null && bikeController.isDriven)
+        {
+            bikeController.ExitBike();
+
+            if (playerOnFootTarget != null)
+            {
+                playerToTeleport = playerOnFootTarget;
+            }
+        }
+
+        // Í≤ΩÏ∞∞ÏÑúÎ°ú Ïù¥Îèô
+        if (policeStationSpawn != null && playerToTeleport != null)
+        {
+            CharacterController cc = playerToTeleport.GetComponent<CharacterController>();
+            if (cc != null) cc.enabled = false;
+
+            Rigidbody rb = playerToTeleport.GetComponent<Rigidbody>();
+            if (rb != null)
+            {
+                rb.linearVelocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+            }
+
+            playerToTeleport.position = policeStationSpawn.position;
+            playerToTeleport.rotation = policeStationSpawn.rotation;
+
+            if (cc != null) cc.enabled = true;
+        }
+
+        // Î≤åÍ∏à
+        if (MoneyManager.Instance != null)
+        {
+            MoneyManager.Instance.AccidentMoney(fineAmount);
+        }
+
+        // Ï∂îÍ≤©Ï§ëÏù∏ Í≤ΩÏ∞∞ ÏÇ≠Ï†ú
+        foreach (var p in allPolice)
+        {
+            if (p != null && p != this)
+            {
+                Destroy(p.gameObject);
+            }
+        }
+
+        // ÌéòÏù¥Îìú Ïù∏
+        if (fadeScreen != null)
+        {
+            Color c = fadeScreen.color;
+            float t = 0f;
+            while (t < fadeDuration)
+            {
+                t += Time.deltaTime;
+                c.a = Mathf.Lerp(1f, 0f, t / fadeDuration);
+                fadeScreen.color = c;
+                yield return null;
+            }
+            fadeScreen.gameObject.SetActive(false);
+        }
+
+        isArresting = false;
+
+        Destroy(gameObject);
+    }
+
     private bool CheckLineOfSight(Transform target)
     {
         Vector3 dirToPlayer = (target.position - transform.position).normalized;
@@ -125,28 +270,23 @@ public class PoliceControl : MonoBehaviour
         return true;
     }
 
-    // Ω√æﬂ ªÛ≈¬ø° µ˚∏• ≈∏¿Ã∏” ¡¶æÓ
     private void UpdateTimers()
     {
-        // ¿¸√º √ﬂ∞› Ω√∞£¿∫ Ω√æﬂ »Æ∫∏ ø©∫ŒøÕ ∞¸∞Ëæ¯¿Ã π´¡∂∞« ∞®º“
         totalChaseTimer -= Time.deltaTime;
 
         if (isInSight)
         {
-            // Ω√æﬂø° ∫∏¿œ ∂ß¥¬ ø¨º” ¿Ã≈ª ≈∏¿Ã∏”∏∏ 60√ ∑Œ ∏Æº¬
             outOfSightTimer = maxOutOfSightTime;
         }
         else
         {
-            // Ω√æﬂø°º≠ ≥ı√∆¿ª ∂ß∏∏ 1∫– ≈∏¿Ã∏”∞° ¬˜∞®µ 
             outOfSightTimer -= Time.deltaTime;
         }
     }
 
-    // ∆˜¿ß ¿ßƒ°∑Œ √ﬂ∞›
     private void MoveToFlankPosition(Transform target)
     {
-        if (!agent.isOnNavMesh) return;
+        if (agent == null || !agent.isOnNavMesh) return;
 
         Vector3 targetForward = target.forward;
         Vector3 offsetDirection = Quaternion.Euler(0, flankAngle, 0) * targetForward;

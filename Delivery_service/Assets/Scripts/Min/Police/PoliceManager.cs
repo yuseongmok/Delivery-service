@@ -1,5 +1,7 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PoliceManager : MonoBehaviour
 {
@@ -7,8 +9,15 @@ public class PoliceManager : MonoBehaviour
     [SerializeField] private GameObject policePrefab;
     [SerializeField] private Transform[] spawnPoints;
     [SerializeField] private Transform playerTransform;
-    [SerializeField] private int defaultSpawnCount = 3;     // 경찰 스폰 수
 
+    [Header("사고 발생 시 출동 경찰 수")]
+    [SerializeField] private int defaultSpawnCount = 3;
+
+    [Header("경찰서 및 UI 설정 (씬 오브젝트 연결)")]
+    [SerializeField] private Transform policeStationSpawn;
+    [SerializeField] private Image fadeScreen;
+
+    // 현재 추격 중인 경찰 객체 목록
     private List<PoliceControl> activePoliceList = new List<PoliceControl>();
 
     // 포위 오프셋 테이블
@@ -22,12 +31,11 @@ public class PoliceManager : MonoBehaviour
         (120f, 5f)     // 우측 후방
     };
 
+    // 사고 합의 거부 버튼 클릭 시 호출
     public void SpawnPoliceOnAccidentRefused()
     {
-        // 이미 파괴되거나 디스폰된 경찰 객체 정리
         activePoliceList.RemoveAll(p => p == null);
 
-        // 현재 살아있는 추격 경찰이 있는 경우 재스폰 없이 타이머만 리셋
         if (activePoliceList.Count > 0)
         {
             foreach (PoliceControl police in activePoliceList)
@@ -38,14 +46,13 @@ public class PoliceManager : MonoBehaviour
                 }
             }
         }
-        // 쫓아오는 경찰이 없는 경우 신규 스폰
         else
         {
             SpawnPoliceGroup(defaultSpawnCount);
         }
     }
 
-    // 지정된 수만큼 경찰을 스폰하여 포위망 형성
+    // 지정된 수만큼 경찰 스폰
     public void SpawnPoliceGroup(int count)
     {
         if (spawnPoints == null || spawnPoints.Length == 0 || policePrefab == null) return;
@@ -54,7 +61,6 @@ public class PoliceManager : MonoBehaviour
 
         for (int i = 0; i < count; i++)
         {
-            // 정해진 포인트 중 무작위 위치 선택
             Transform selectedSpawn = spawnPoints[Random.Range(0, spawnPoints.Length)];
 
             GameObject policeObj = Instantiate(policePrefab, selectedSpawn.position, selectedSpawn.rotation);
@@ -62,10 +68,8 @@ public class PoliceManager : MonoBehaviour
 
             if (police != null)
             {
-                // 경찰 순번에 따른 포위 패턴 부여
                 var pattern = flankPattern[i % flankPattern.Length];
-                police.Initialize(playerTransform, pattern.angle, pattern.dist);
-
+                police.Initialize(playerTransform, pattern.angle, pattern.dist, policeStationSpawn, fadeScreen);
                 activePoliceList.Add(police);
             }
         }

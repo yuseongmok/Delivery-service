@@ -8,7 +8,7 @@ public class RobberAI : MonoBehaviour
 
     [Header("강탈 설정")]
     [SerializeField] private int stealAmount = 200;
-    [SerializeField] private float attackDistance = 1.8f;
+    [SerializeField] private float attackDistance = 2.5f; // 강탈 사거리 (2.5m로 상향)
 
     [Header("이동 설정")]
     [SerializeField] private float moveSpeed = 5f;
@@ -32,9 +32,9 @@ public class RobberAI : MonoBehaviour
 
         // NavMeshAgent 설정
         agent.speed = moveSpeed;
-        agent.acceleration = 15f;
+        agent.acceleration = 20f;
         agent.angularSpeed = 360f;
-        agent.stoppingDistance = Mathf.Max(0.2f, attackDistance - 0.4f);
+        agent.stoppingDistance = 0.8f;      // 도달 전 멈추지 않도록 0.8m로 조정
         agent.autoBraking = false;
 
         Animator animator = GetComponent<Animator>();
@@ -69,18 +69,11 @@ public class RobberAI : MonoBehaviour
     private void Update()
     {
         if (agent == null) return;
+        if (!agent.isOnNavMesh) return;
 
-        // 1. NavMesh 위에 정상 배치되었는지 확인
-        if (!agent.isOnNavMesh)
-        {
-            Debug.LogError($"[RobberAI] '{gameObject.name}'가 NavMesh 위에 없습니다! 씬 바닥의 NavMesh 상태를 확인하세요.");
-            return;
-        }
-
-        // 2. 현재 상태에 맞는 실시간 목표 좌표 계산 (오토바이 vs 플레이어)
         Vector3 targetPosition = GetCurrentTargetPosition();
 
-        // 3. 목표 지점이 0.3m 이상 바뀌었거나 경로가 끊겼을 때만 SetDestination 호출 (매 프레임 호출 방지)
+        // 0.3m 이상 이동했을 때 경로 갱신
         if (Vector3.Distance(lastDestination, targetPosition) > 0.3f || !agent.hasPath)
         {
             lastDestination = targetPosition;
@@ -88,15 +81,26 @@ public class RobberAI : MonoBehaviour
             agent.SetDestination(targetPosition);
         }
 
-        // 4. 강탈 거리 체크
+        // 강탈 조건 체크
         if (!hasStolen)
         {
-            float distance = Vector3.Distance(transform.position, targetPosition);
-            if (distance <= attackDistance)
+            // 높이(Y축) 차이를 제외한 순수 수평 거리 계산
+            float flatDistance = GetFlatDistance(transform.position, targetPosition);
+
+            // 수평 거리가 attackDistance 이내이거나 NavMeshAgent가 목적지에 충분히 다가갔을 때
+            if (flatDistance <= attackDistance || (agent.hasPath && agent.remainingDistance <= attackDistance))
             {
                 StealMoney();
             }
         }
+    }
+
+    // Y축 높이를 무시하고 X, Z 평면 상의 거리 계산
+    private float GetFlatDistance(Vector3 pos1, Vector3 pos2)
+    {
+        Vector3 p1 = new Vector3(pos1.x, 0f, pos1.z);
+        Vector3 p2 = new Vector3(pos2.x, 0f, pos2.z);
+        return Vector3.Distance(p1, p2);
     }
 
     private Vector3 GetCurrentTargetPosition()
@@ -106,7 +110,6 @@ public class RobberAI : MonoBehaviour
             FindReferences();
         }
 
-        // 플레이어가 오토바이에 탔거나 PlayerMove가 꺼진 경우 -> 오토바이 위치 추적
         bool isPlayerInBike = (bikeCache != null && bikeCache.isDriven) ||
                               (playerCache != null && !playerCache.gameObject.activeInHierarchy);
 
@@ -115,13 +118,11 @@ public class RobberAI : MonoBehaviour
             return bikeCache.transform.position;
         }
 
-        // 플레이어가 내려서 걸어다니는 경우 -> 플레이어 위치 추적
         if (playerCache != null && playerCache.gameObject.activeInHierarchy)
         {
             return playerCache.transform.position;
         }
 
-        // 예외 상황 분기
         if (bikeCache != null) return bikeCache.transform.position;
         if (playerCache != null) return playerCache.transform.position;
 
@@ -141,14 +142,14 @@ public class RobberAI : MonoBehaviour
 
         if (playerPizzaStolen || bikePizzaStolen)
         {
-            Debug.Log("[RobberAI] 피자를 모두 가져갔습니다");
+            Debug.Log("[RobberAI] 피자를 모두 강탈하고 도망칩니다!");
         }
         else
         {
             if (MoneyManager.Instance != null)
             {
                 MoneyManager.Instance.AccidentMoney(stealAmount);
-                Debug.Log($"[RobberAI] 피자가 없어 {stealAmount}원을 훔쳐갔습니다");
+                Debug.Log($"[RobberAI] 피자가 없어 {stealAmount}원을 훔치고 도망칩니다!");
             }
         }
 
