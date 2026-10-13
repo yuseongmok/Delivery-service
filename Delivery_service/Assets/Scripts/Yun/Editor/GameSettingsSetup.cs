@@ -44,14 +44,15 @@ namespace DeliveryService.Yun.Editor
                     if (saved.gameObject.activeSelf) throw new Exception("Panel must be saved inactive");
                     var sliders = saved.GetComponentsInChildren<Slider>(true);
                     var buttons = saved.GetComponentsInChildren<Button>(true);
-                    if (sliders.Length != 2 || buttons.Length != 3 ||
+                    int expectedButtons = saved.GetComponentInChildren<DeliveryService.Yun.Achievements.AchievementPanelView>(true) != null ? 5 : 3;
+                    if (sliders.Length != 2 || buttons.Length != expectedButtons ||
                         sliders.Any(s => s.onValueChanged.GetPersistentEventCount() != 1) ||
                         buttons.Any(b => b.onClick.GetPersistentEventCount() != 1))
                         throw new Exception("Saved UI callback validation failed");
                     var serialized = new SerializedObject(saved);
                     foreach (string field in new[] { "audioSettings", "shopPc", "bgmSlider", "sfxSlider", "bgmValue", "sfxValue", "status" })
                         if (serialized.FindProperty(field).objectReferenceValue == null) throw new Exception("Missing " + field);
-                    Debug.Log("SETTINGS_SCENE_PASSED: " + path + " / inactive panel, two sliders, three buttons, saved callbacks and references.");
+                    Debug.Log("SETTINGS_SCENE_PASSED: " + path + " / inactive panel, two sliders, " + expectedButtons + " buttons, saved callbacks and references.");
                 }
                 EditorApplication.Exit(0);
             }

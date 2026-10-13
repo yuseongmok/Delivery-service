@@ -1,0 +1,10 @@
+<linker>
+  <assembly fullname="Assembly-CSharp">
+    <type fullname="PizzaPickUpZone" preserve="nothing">
+      <field name="packagedDataList" />
+    </type>
+    <type fullname="BikePizzaStorage" preserve="nothing">
+      <field name="storedPizzas" />
+    </type>
+  </assembly>
+</linker>
