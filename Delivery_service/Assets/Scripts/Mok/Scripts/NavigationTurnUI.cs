@@ -49,6 +49,7 @@ public class NavigationTurnUI : MonoBehaviour
     }
 
 
+    private int routeRevision=-1;
     private void Update()
     {
         if (navigationManager == null ||
@@ -57,6 +58,7 @@ public class NavigationTurnUI : MonoBehaviour
             return;
         }
 
+        if(routeRevision!=navigationManager.RouteRevision){ClearTurn();routeRevision=navigationManager.RouteRevision;}
         // 현재 내비게이션이 추적하고 있는 대상을 가져온다.
         // 도보 상태에서는 Player,
         // 오토바이 탑승 상태에서는 Motorcycle이 된다.
@@ -72,7 +74,7 @@ public class NavigationTurnUI : MonoBehaviour
 
         // 주문이 없으면 안내 초기화
 
-        if (navigationManager.CurrentDestination == null)
+        if (!navigationManager.HasRouteDestination)
         {
             ClearTurn();
             turnText.enabled = false;

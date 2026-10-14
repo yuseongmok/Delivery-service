@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 
 public class PhoneController : MonoBehaviour
@@ -25,6 +25,7 @@ public class PhoneController : MonoBehaviour
 
     // 현재 핸드폰을 꺼낸 상태인지 여부
     private bool isPhoneOpen = false;
+    private MotorcycleController[] bikes;
 
     public void ClosePhone()
     {
@@ -40,6 +41,7 @@ public class PhoneController : MonoBehaviour
 
     private void Start()
     {
+        bikes = FindObjectsByType<MotorcycleController>(FindObjectsSortMode.None);
         if (phoneTransform == null)
             return;
 
@@ -55,7 +57,10 @@ public class PhoneController : MonoBehaviour
 
 
 
-        if (Input.GetKeyDown(KeyCode.M))
+        bool riding = false;
+        if (bikes != null) foreach (var bike in bikes) if (bike != null && bike.isDriven) { riding = true; break; }
+        if (riding && isPhoneOpen) ClosePhone();
+        if (!riding && Time.timeScale > 0 && Cursor.lockState == CursorLockMode.Locked && Input.GetKeyDown(KeyCode.M))
         {
             TogglePhone();
         }

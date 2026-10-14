@@ -26,7 +26,7 @@ public class NavigationDistanceUI : MonoBehaviour
         // 주문이 없는 경우
         // --------------------------------------------------
 
-        if (navigationManager.CurrentDestination == null)
+        if (!navigationManager.HasRouteDestination)
         {
             // GameObject를 끄면 이 스크립트까지 정지하기 때문에
             // TextMeshPro 컴포넌트의 렌더링만 숨긴다.
@@ -42,6 +42,7 @@ public class NavigationDistanceUI : MonoBehaviour
         distanceText.enabled = true;
 
 
+        if(navigationManager.DisplayPath.Count==0){distanceText.text=navigationManager.RouteStatus;return;}
         float distance =
             navigationManager.RemainingDistance;
 

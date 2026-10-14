@@ -37,8 +37,8 @@ public class NavigationDestinationIconController : MonoBehaviour
 
 
         // 현재 주문의 배달 목적지를 가져온다.
-        DeliveryPoint destination =
-            navigationManager.CurrentDestination;
+        Transform destination =
+            navigationManager.RouteDestination;
 
 
         // --------------------------------------------------
@@ -63,7 +63,7 @@ public class NavigationDestinationIconController : MonoBehaviour
 
         Vector3 viewportPosition =
             navigationCamera.WorldToViewportPoint(
-                destination.transform.position
+                destination.position
             );
 
 
