@@ -23,11 +23,21 @@ namespace DeliveryService.Yun.Editor
 
         public static void RunBatch()
         {
+            ApplyScenes(new[] { "JJinCity", "YunCity" });
+        }
+
+        public static void RunJJinCityBatch()
+        {
+            ApplyScenes(new[] { "JJinCity" });
+        }
+
+        private static void ApplyScenes(string[] names)
+        {
             try
             {
                 rounded = AssetDatabase.LoadAllAssetsAtPath("Assets/Scripts/Yun/ShopUI/Prefabs/ShopPcRounded.asset").OfType<Sprite>().Single();
                 font = AssetDatabase.LoadAssetAtPath<Font>("Assets/Fonts/BMJUA_ttf.ttf");
-                foreach (string name in new[] { "JJinCity", "YunCity" })
+                foreach (string name in names)
                 {
                     var scene = EditorSceneManager.OpenScene("Assets/Scenes/" + name + ".unity");
                     var panel = scene.GetRootGameObjects().SelectMany(r => r.GetComponentsInChildren<GameSettingsPanel>(true)).Single();
