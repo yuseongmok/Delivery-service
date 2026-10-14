@@ -11,6 +11,9 @@ public class NPCManager : MonoBehaviour
     [SerializeField] private BoxCollider spawnArea;
     [SerializeField] private Transform npcParent;
 
+    [Header("가장자리 안전거리")]
+    [SerializeField] private float minDistanceFromEdge = 1.2f;
+
     private int sideWalkAreaMask;
 
     private void Awake()
@@ -33,6 +36,10 @@ public class NPCManager : MonoBehaviour
         if (sideWalkAreaIndex >= 0)
         {
             sideWalkAreaMask = 1 << sideWalkAreaIndex;
+        }
+        else
+        {
+            sideWalkAreaMask = NavMesh.AllAreas;
         }
     }
 
@@ -68,10 +75,10 @@ public class NPCManager : MonoBehaviour
     private void HandleNPCDeath(NPCControl npc)
     {
         npc.OnNPCDeath -= HandleNPCDeath;
-        SpawnNPC();     // 인원수 맞추기 위해 바로 스폰
+        SpawnNPC();
     }
 
-    // NavMesh 인지 검사
+    // NavMesh 가장자리 거리만 검사하여 좌표 반환
     private Vector3 GetRandomNavMeshPosition()
     {
         Vector3 resultPosition = transform.position;
@@ -86,21 +93,26 @@ public class NPCManager : MonoBehaviour
         {
             attempt++;
 
-            // BoxCollider 공간 내 무작위 좌표 생성
             Vector3 randomLocalPoint = new Vector3(
                 Random.Range(-extents.x, extents.x) + center.x,
                 Random.Range(-extents.y, extents.y) + center.y,
                 Random.Range(-extents.z, extents.z) + center.z
             );
-
-            // 월드 좌표로 변환
             Vector3 randomWorldPoint = spawnArea.transform.TransformPoint(randomLocalPoint);
 
-            // 해당 위치에서 가깝게 위치한 NavMesh 바닥 감지
+            // 인도 NavMesh 바닥 감지
             if (NavMesh.SamplePosition(randomWorldPoint, out NavMeshHit hit, 5f, sideWalkAreaMask))
             {
-                resultPosition = hit.position;
-                found = true;
+                // 가장 가까운 NavMesh 가장자리까지의 거리 측정
+                if (NavMesh.FindClosestEdge(hit.position, out NavMeshHit edgeHit, sideWalkAreaMask))
+                {
+                    // 가장자리와의 거리가 지정한 안전거리 이상일 때만 스폰 좌표로 확정
+                    if (edgeHit.distance >= minDistanceFromEdge)
+                    {
+                        resultPosition = hit.position;
+                        found = true;
+                    }
+                }
             }
         }
 

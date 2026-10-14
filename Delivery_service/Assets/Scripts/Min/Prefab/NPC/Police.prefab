@@ -1425,9 +1425,11 @@ MonoBehaviour:
   viewAngle: 90
   obstacleMask:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 1
   maxTotalChaseTime: 120
   maxOutOfSightTime: 60
+  arrestDistance: 2
+  fadeDuration: 1
   pathUpdateInterval: 0.15
 --- !u!1 &3526122849167066527
 GameObject:
