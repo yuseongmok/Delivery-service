@@ -16,6 +16,10 @@ namespace DeliveryService.Yun.Editor
         private static int phase;
         private static double deadline;
         private static int frame = -1;
+        private static float pausedTime;
+        private static int pausedFrame;
+        private static Vector3[] pausedPositions;
+        private static Transform[] movingObjects;
 
         public static void RunBatch()
         {
@@ -62,11 +66,25 @@ namespace DeliveryService.Yun.Editor
                     VerifyEscape(panel);
                     if (AudioManager.Instance == null) new GameObject("Verification Audio Manager").AddComponent<AudioManager>();
                     panel.gameObject.SetActive(true);
+                    Check(Time.timeScale == 0, "World time is paused");
+                    Check(panel.transform.root.name == "SettingsCanvas", "Independent settings Canvas");
+                    foreach (var bike in UnityEngine.Object.FindObjectsByType<MotorcycleController>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                        Check(!bike.enabled, "Bike controls and mouse look disabled");
+                    movingObjects = UnityEngine.Object.FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None)
+                        .Where(s => s is CarMov || s is NPCControl || s is MotorcycleController || s is PlayerMove)
+                        .Select(s => s.transform).ToArray();
+                    pausedPositions = movingObjects.Select(t => t.position).ToArray();
+                    pausedTime = Time.time; pausedFrame = Time.frameCount;
                     bgm.value = .25f; sfx.value = .4f;
                     phase = 1;
                     return;
                 }
                 if (phase != 1) return;
+                if (Time.frameCount < pausedFrame + 20) return;
+                Check(Mathf.Approximately(Time.time, pausedTime), "Game clock frozen across 20 frames");
+                for (int i = 0; i < movingObjects.Length; i++)
+                    Check(movingObjects[i] != null && Vector3.Distance(movingObjects[i].position, pausedPositions[i]) < .001f,
+                        "World object stayed frozen");
                 var manager = AudioManager.Instance;
                 Check(Mathf.Approximately(manager.GetCategoryVolume(SoundCategory.Bgm), .25f), "BGM category");
                 foreach (var category in new[] { SoundCategory.Sfx, SoundCategory.Ui, SoundCategory.Ambience })
@@ -74,6 +92,17 @@ namespace DeliveryService.Yun.Editor
                 Check(Cursor.visible && Cursor.lockState == CursorLockMode.None, "Settings cursor");
                 panel.GetComponentsInChildren<Button>(true).Single(b => b.name == "Close").onClick.Invoke();
                 Check(!panel.gameObject.activeSelf, "Close hides saved panel");
+                Check(Time.timeScale == 1, "Close restores game time");
+                Time.timeScale = .5f;
+                panel.gameObject.SetActive(true);
+                panel.OpenAchievements();
+                Check(Time.timeScale == 0, "Achievements remain paused");
+                panel.Close();
+                Check(Time.timeScale == 0 && panel.gameObject.activeSelf, "Achievement back keeps pause");
+                panel.Close();
+                Check(Time.timeScale == .5f, "Original time scale restored exactly");
+                Time.timeScale = 1;
+                Debug.Log("SETTINGS_PAUSE_PASSED: world transforms, time, bike input, achievement navigation and original speed restoration.");
                 panel.gameObject.SetActive(true);
                 Check(Mathf.Approximately(bgm.value, .25f) && Mathf.Approximately(sfx.value, .4f), "Reopen values");
                 Check(Mathf.Approximately(PlayerPrefs.GetFloat("Yun.Settings.BgmVolume"), .25f)

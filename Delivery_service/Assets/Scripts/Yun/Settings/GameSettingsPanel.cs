@@ -20,6 +20,7 @@ namespace DeliveryService.Yun.Settings
         [Tooltip("로비 제작 후 Build Profiles의 Scene List에 추가하고 씬 경로를 지정하세요. 예: Assets/Scenes/Lobby.unity")]
         [SerializeField] private string lobbyScenePath;
         private readonly ShopUiInputScope input = new ShopUiInputScope();
+        private readonly SettingsPauseScope pause = new SettingsPauseScope();
         private bool loading;
 
         private void OnEnable()
@@ -35,11 +36,13 @@ namespace DeliveryService.Yun.Settings
                 UpdateValues();
             }
             input.Acquire(shopPc, true);
+            pause.Acquire();
         }
 
         private void LateUpdate()
         {
             input.Maintain();
+            pause.Maintain();
             FitWindow(settingsWindow);
             FitWindow(achievementsPage);
         }
@@ -57,6 +60,7 @@ namespace DeliveryService.Yun.Settings
         }
         private void OnDisable()
         {
+            pause.Release();
             input.Release();
             if (audioSettings != null) audioSettings.Save();
         }
@@ -106,6 +110,8 @@ namespace DeliveryService.Yun.Settings
             }
             if (audioSettings != null) audioSettings.Save();
             loading = true;
+            // Restore the clock before the destination scene's Awake/Start runs.
+            gameObject.SetActive(false);
             SceneManager.LoadSceneAsync(lobbyScenePath, LoadSceneMode.Single);
         }
 
