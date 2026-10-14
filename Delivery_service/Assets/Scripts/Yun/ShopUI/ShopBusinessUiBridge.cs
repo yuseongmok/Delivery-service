@@ -40,7 +40,9 @@ namespace DeliveryService.Yun.ShopUI
             if (cycle == null) return;
             if (action == "영업하기")
             {
-                cycle.OnClick_OpenShop();
+                var dashboard = view.GetComponent<DeliveryService.Mok.ShopUI.ShopPcBusinessDashboard>();
+                if (dashboard != null) dashboard.OpenShop();
+                else cycle.OnClick_OpenShop();
             }
             else if (action == "마감하기") cycle.OnClick_CloseShop();
         }

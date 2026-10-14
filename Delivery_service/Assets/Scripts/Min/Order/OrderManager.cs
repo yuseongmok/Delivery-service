@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -13,7 +12,29 @@ public class OrderManager : MonoBehaviour
     [Header("주문 생성 및 타이머")]
     [SerializeField] private OrderGenerator orderGenerator;
     [SerializeField] private DayNightCycle dayNightCycle;
-    [SerializeField] private float orderIntervalSeconds = 125f;
+    private const float orderIntervalSeconds = 30f;
+    private const int dailyOrderLimit = 7;
+    private int generatedToday;
+    private float nextOrderWait = -1f;
+    public int OrdersGeneratedToday => generatedToday;
+    public int DailyOrderLimit => dailyOrderLimit;
+    public bool DailyOrdersExhausted => generatedToday >= dailyOrderLimit && !HasActiveOrder && pendingOrders.Count == 0;
+
+    private void ScheduleNextOrder()
+    {
+        if (generatedToday < dailyOrderLimit && !HasActiveOrder && pendingOrders.Count == 0)
+            nextOrderWait = orderIntervalSeconds;
+    }
+
+    private void AdvanceOrderWait(float realSeconds)
+    {
+        if (dayNightCycle == null || !dayNightCycle.isShopOpen || nextOrderWait < 0f) return;
+        if (HasActiveOrder || pendingOrders.Count != 0) return;
+        nextOrderWait -= realSeconds;
+        if (nextOrderWait > 0f) return;
+        nextOrderWait = -1f;
+        GenerateSingleOrder();
+    }
 
     [Header("정산 설정")]
     [SerializeField] private int basePizzaPrice = 10000;
@@ -28,10 +49,67 @@ public class OrderManager : MonoBehaviour
     // 현재 진행 중인 배달 주문
     private PizzaOrder activeOrder;
     private string currentTargetDeliveryID;
+    // Code-owned balance value; old serialized Inspector values cannot override it.
+    private const float deliveryTimeLimitMinutes = 80f;
+    private double deliveryDeadlineMinutes;
+    private double GameMinutes => dayNightCycle == null ? 0d
+        : dayNightCycle.currentDay * 1440d + dayNightCycle.currentTime * 60d;
+    public float RemainingDeliveryMinutes => !HasActiveOrder ? 0f
+        : (float)System.Math.Max(0d, deliveryDeadlineMinutes - GameMinutes);
+
+    private void UpdateDeliveryDeadline()
+    {
+        if (!HasActiveOrder || dayNightCycle == null) return;
+        if (GameMinutes >= deliveryDeadlineMinutes)
+        {
+            PizzaOrder expired = activeOrder;
+            activeOrder = null;
+            currentTargetDeliveryID = "";
+            deliveryDeadlineMinutes = 0;
+            if (currentOrderUI != null) currentOrderUI.DisplayCancelledOrder(expired);
+            var navigation = FindObjectOfType<NavigationManager>();
+            if (navigation != null) navigation.ResetNavigationForNewDay();
+            ScheduleNextOrder();
+            OrdersChanged?.Invoke();
+            return;
+        }
+        if (currentOrderUI != null)
+            currentOrderUI.DisplayTimedOrder(activeOrder, currentTargetDeliveryID, RemainingDeliveryMinutes);
+    }
 
     // 코루틴 및 영업 상태 감시 변수
-    private Coroutine autoOrderCoroutine;
     private bool prevShopOpenState = false;
+
+    // UI observes the existing queue; generation and delivery remain owned here.
+    private int nextOrderNumber = 1;
+    private int orderNumberDay = -1;
+    public event System.Action OrdersChanged;
+    public System.Collections.ObjectModel.ReadOnlyCollection<PizzaOrder> PendingOrders => pendingOrders.AsReadOnly();
+    public PizzaOrder ActiveOrder => activeOrder;
+
+    public bool TryAcceptOrder(PizzaOrder order)
+    {
+        if (order == null || HasActiveOrder || !pendingOrders.Contains(order)) return false;
+        HandleAccept(order);
+        return activeOrder == order;
+    }
+
+    public bool TryDeclineOrder(PizzaOrder order)
+    {
+        if (order == null || !pendingOrders.Contains(order)) return false;
+        HandleDecline(order);
+        return true;
+    }
+
+    private void UpdateOrderNumberDay()
+    {
+        int day = dayNightCycle != null ? dayNightCycle.currentDay : 1;
+        if (orderNumberDay == day) return;
+        orderNumberDay = day;
+        nextOrderNumber = 1;
+        generatedToday = 0;
+        nextOrderWait = -1f;
+    }
 
     public string CurrentTargetDeliveryID => currentTargetDeliveryID;
     public bool HasActiveOrder => activeOrder != null;
@@ -86,41 +164,38 @@ public class OrderManager : MonoBehaviour
             // [상태 감지 2] 마감 및 다음 날 리셋 (true -> false)
             else if (!dayNightCycle.isShopOpen && prevShopOpenState)
             {
-                ResetOrdersForNewDay();
+                // Preserve orders and cooldown if the closing confirmation is cancelled.
             }
 
             prevShopOpenState = dayNightCycle.isShopOpen;
         }
+        AdvanceOrderWait(Time.unscaledDeltaTime);
+        UpdateDeliveryDeadline();
     }
 
     // 영업 시작 시 자동 호출 (1일차, 2일차 등 매일 영업 시작 때마다 실행)
     public void OnShopOpened()
     {
-        // 1. 영업 시작 즉시 주문 1개 생성
-        GenerateSingleOrder();
-
-        // 2. 타이머 리셋 후 125초 주기 시작
-        if (autoOrderCoroutine != null) StopCoroutine(autoOrderCoroutine);
-        autoOrderCoroutine = StartCoroutine(AutoOrderAccumulateRoutine());
-
-        Debug.Log("[OrderManager] 영업 시작 감지: 즉시 주문 1개 생성 및 125초 타이머 재시작");
+        UpdateOrderNumberDay();
+        if (generatedToday == 0) GenerateSingleOrder();
+        else if (!HasActiveOrder && pendingOrders.Count == 0 && nextOrderWait < 0f)
+            ScheduleNextOrder();
     }
 
     // 마감 또는 날짜 전환 시 자동 호출되는 리셋 메서드
     public void ResetOrdersForNewDay()
     {
-        if (autoOrderCoroutine != null)
-        {
-            StopCoroutine(autoOrderCoroutine);
-            autoOrderCoroutine = null;
-        }
+        nextOrderWait = -1f;
+        prevShopOpenState = false;
 
+        UpdateOrderNumberDay();
         pendingOrders.Clear();
         activeOrder = null;
         currentTargetDeliveryID = "";
 
         if (orderUI != null) orderUI.RefreshOrderList(pendingOrders);
         if (currentOrderUI != null) currentOrderUI.ClearOrder();
+        OrdersChanged?.Invoke();
 
         // 내비게이션도 동시 리셋
         NavigationManager navManager = FindObjectOfType<NavigationManager>();
@@ -132,47 +207,43 @@ public class OrderManager : MonoBehaviour
         Debug.Log("[OrderManager] 마감 감지: 주문/배달타겟/네비게이션이 완전히 초기화되었습니다.");
     }
 
-    private IEnumerator AutoOrderAccumulateRoutine()
-    {
-        while (true)
-        {
-            yield return new WaitForSecondsRealtime(orderIntervalSeconds);
-
-            bool isShopOpen = dayNightCycle == null || dayNightCycle.isShopOpen;
-            if (isShopOpen)
-            {
-                GenerateSingleOrder();
-            }
-        }
-    }
-
     private void GenerateSingleOrder()
     {
-        if (orderGenerator == null) return;
+        UpdateOrderNumberDay();
+        if (orderGenerator == null || generatedToday >= dailyOrderLimit || HasActiveOrder || pendingOrders.Count != 0) return;
+        if (dayNightCycle == null || !dayNightCycle.isShopOpen) return;
 
         List<PizzaOrder> newOrders = orderGenerator.GenerateSinglePizzaOrder();
         if (newOrders == null) return;
 
+        UpdateOrderNumberDay();
         foreach (var order in newOrders)
         {
-            order.orderName = $"주문 #{pendingOrders.Count + 1}";
+            order.orderName = $"주문 {nextOrderNumber++:D2}";
             pendingOrders.Add(order);
+            generatedToday++;
+            break; // One opportunity per cycle, even if a generator returns multiple entries.
         }
 
         if (orderUI != null)
         {
             orderUI.RefreshOrderList(pendingOrders);
         }
+        OrdersChanged?.Invoke();
     }
 
     private void HandleAccept(PizzaOrder acceptedOrder)
     {
+        if (acceptedOrder == null || !pendingOrders.Contains(acceptedOrder)) return;
         if (HasActiveOrder)
         {
             Debug.Log("이미 진행 중인 배달 주문이 있습니다! 먼저 배달을 완료해주세요.");
             return;
         }
 
+        if (dayNightCycle == null) dayNightCycle = FindObjectOfType<DayNightCycle>();
+        if (dayNightCycle == null) return;
+        deliveryDeadlineMinutes = GameMinutes + deliveryTimeLimitMinutes;
         activeOrder = acceptedOrder;
         pendingOrders.Remove(acceptedOrder);
 
@@ -184,28 +255,33 @@ public class OrderManager : MonoBehaviour
 
         if (currentOrderUI != null)
         {
-            currentOrderUI.DisplayOrders(new List<PizzaOrder> { activeOrder }, currentTargetDeliveryID);
+            currentOrderUI.DisplayTimedOrder(activeOrder, currentTargetDeliveryID, RemainingDeliveryMinutes);
         }
 
         if (orderUI != null)
         {
             orderUI.RefreshOrderList(pendingOrders);
         }
+        OrdersChanged?.Invoke();
     }
 
     private void HandleDecline(PizzaOrder declinedOrder)
     {
-        pendingOrders.Remove(declinedOrder);
+        if (declinedOrder == null || !pendingOrders.Remove(declinedOrder)) return;
 
         if (orderUI != null)
         {
             orderUI.RefreshOrderList(pendingOrders);
         }
+        ScheduleNextOrder();
+        OrdersChanged?.Invoke();
     }
 
     // 배달 완료 검사 및 정산
     public bool TryDeliverPackagedStack(List<PizzaData> pizzaDataList, string deliveryPointID)
     {
+        // Check synchronously so delivery cannot win a race against the next Update.
+        UpdateDeliveryDeadline();
         if (pizzaDataList == null || pizzaDataList.Count == 0 || !HasActiveOrder)
             return false;
 
@@ -254,6 +330,8 @@ public class OrderManager : MonoBehaviour
             currentOrderUI.ClearOrder();
         }
 
+        ScheduleNextOrder();
+        OrdersChanged?.Invoke();
         return true;
     }
 

@@ -1,14 +1,15 @@
 using UnityEngine;
 using System.IO;
 using System;
-public enum ExpenseType { None, PizzaTopping, Fuel }
+public enum ExpenseType { None, PizzaTopping, Fuel, Loss }
 
 public class MoneyManager : MonoBehaviour
 {
     public static MoneyManager Instance { get; private set; }
 
     [Header("현재 재화")]
-    public int currentMoney = 1000;
+    private const int StartingMoney = 20000;
+    public int currentMoney = StartingMoney;
 
     [Header("오늘의 정산 데이터")]
     public int dailyIncome = 0;
@@ -17,6 +18,8 @@ public class MoneyManager : MonoBehaviour
     public int expenseFuel = 0;
 
     public event Action<int> OnMoneyChanged;
+    // Signed amount: income positive, expense negative. Emitted only for completed transactions.
+    public event Action<int, ExpenseType> TransactionRecorded;
     private string saveFilePath;
     private int lastCheckedMoney;
 
@@ -27,7 +30,10 @@ public class MoneyManager : MonoBehaviour
             Instance = this;
             DontDestroyOnLoad(gameObject);
             saveFilePath = Path.Combine(Application.persistentDataPath, "economySave.json");
-            LoadMoney();
+            // Each new game session starts with the same capital, including existing players.
+            currentMoney = StartingMoney;
+            ResetDailyStats();
+            SaveMoney();
             lastCheckedMoney = currentMoney;
         }
         else
@@ -49,6 +55,7 @@ public class MoneyManager : MonoBehaviour
 #endif
     public bool SpendMoney(int amount, ExpenseType expenseType = ExpenseType.None)
     {
+        if (amount <= 0) return false;
         if (currentMoney >= amount)
         {
             currentMoney -= amount;
@@ -61,6 +68,7 @@ public class MoneyManager : MonoBehaviour
 
             SaveMoney();
             OnMoneyChanged?.Invoke(currentMoney);
+            TransactionRecorded?.Invoke(-amount, expenseType);
             return true;
         }
         return false;
@@ -68,12 +76,14 @@ public class MoneyManager : MonoBehaviour
 
     public void AddMoney(int amount)
     {
+        if (amount <= 0) return;
         currentMoney += amount;
         lastCheckedMoney = currentMoney;
         dailyIncome += amount; // 정산용 수익 누적
 
         SaveMoney();
         OnMoneyChanged?.Invoke(currentMoney);
+        TransactionRecorded?.Invoke(amount, ExpenseType.None);
     }
 
     public void ResetDailyStats()
@@ -86,12 +96,14 @@ public class MoneyManager : MonoBehaviour
 
     public void AccidentMoney(int amount)
     {
+        if (amount <= 0) return;
         currentMoney -= amount;
         lastCheckedMoney = currentMoney;
-        dailyIncome -= amount;
+        dailyTotalExpense += amount; // Fines and theft are expenses, not negative sales.
 
         SaveMoney();
         OnMoneyChanged?.Invoke(currentMoney);
+        TransactionRecorded?.Invoke(-amount, ExpenseType.Loss);
     }
 
     private void SaveMoney()
@@ -101,15 +113,7 @@ public class MoneyManager : MonoBehaviour
         File.WriteAllText(saveFilePath, json);
     }
 
-    private void LoadMoney()
-    {
-        if (File.Exists(saveFilePath))
-        {
-            string json = File.ReadAllText(saveFilePath);
-            EconomySaveData data = JsonUtility.FromJson<EconomySaveData>(json);
-            currentMoney = data.savedMoney;
-        }
-    }
+
 }
 
 [System.Serializable]

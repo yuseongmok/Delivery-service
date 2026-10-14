@@ -49,7 +49,7 @@ public class FuelNozzle : MonoBehaviour
                 {
                     int costToDeduct = Mathf.FloorToInt(costAccumulator);
                     // µ·¾øÀ¸¸é Æ¨°Ü³»±â
-                    if (MoneyManager.Instance.SpendMoney(costToDeduct))
+                    if (MoneyManager.Instance.SpendMoney(costToDeduct, ExpenseType.Fuel))
                     {
                         costAccumulator -= costToDeduct;
                     }
