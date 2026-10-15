@@ -5,11 +5,23 @@ public class PizzaData
 {
     public List<string> toppings = new List<string>();
     public bool isBaked; // 구워졌는지
+    public bool isRuined = false;   // 망가졌는지
 
-    public PizzaData(List<string> toppings, bool isBaked)
+    public PizzaData(List<string> toppings, bool isBaked, bool isRuined = false)
     {
         this.toppings = new List<string>(toppings);
         this.isBaked = isBaked;
+        this.isRuined = isRuined;
+    }
+
+    public PizzaData(PizzaData other)
+    {
+        if (other != null)
+        {
+            this.toppings = new List<string>(other.toppings);
+            this.isBaked = other.isBaked;
+            this.isRuined = other.isRuined;
+        }
     }
 
     // 주문서와 피자 상태 비교

@@ -17510,6 +17510,7 @@ Transform:
   m_Children:
   - {fileID: 1900352948}
   - {fileID: 978772212}
+  - {fileID: 1625820814}
   m_Father: {fileID: 1501044974}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &75146505
@@ -226761,6 +226762,7 @@ GameObject:
   - component: {fileID: 910068584}
   - component: {fileID: 910068586}
   - component: {fileID: 910068585}
+  - component: {fileID: 910068587}
   m_Layer: 0
   m_Name: Mok Pizza Shop
   m_TagString: Untagged
@@ -226900,6 +226902,22 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 910068583}
   m_Mesh: {fileID: 4300000, guid: 6d74f08fb62199b4d9ea66402561e180, type: 2}
+--- !u!208 &910068587
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 910068583}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 1
+  m_Extents: {x: 6.505, y: 3.5, z: 4.8100004}
+  m_MoveThreshold: 0.1
+  m_Carve: 1
+  m_CarveOnlyStationary: 1
+  m_Center: {x: 0, y: 2.16, z: 0}
+  m_TimeToStationary: 0.5
 --- !u!1 &910072134
 GameObject:
   m_ObjectHideFlags: 0
@@ -398837,6 +398855,54 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!1 &1625820813
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1625820814}
+  - component: {fileID: 1625820815}
+  m_Layer: 0
+  m_Name: NavBlock (1)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1625820814
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1625820813}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0.92804897, z: -0, w: 0.37245825}
+  m_LocalPosition: {x: 0.66, y: 0, z: -16.04}
+  m_LocalScale: {x: 0.24527, y: 1, z: 0.047559205}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 75129357}
+  m_LocalEulerAnglesHint: {x: 0, y: -136.265, z: 0}
+--- !u!208 &1625820815
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1625820813}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 1
+  m_Extents: {x: 7.5, y: 0.5, z: 7.5}
+  m_MoveThreshold: 0.1
+  m_Carve: 1
+  m_CarveOnlyStationary: 1
+  m_Center: {x: 0, y: 0, z: 0}
+  m_TimeToStationary: 0.5
 --- !u!33 &1625914295
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -408637,7 +408703,7 @@ NavMeshObstacle:
   m_Enabled: 1
   serializedVersion: 3
   m_Shape: 1
-  m_Extents: {x: 7.5, y: 2.5, z: 4}
+  m_Extents: {x: 8.05, y: 2.5, z: 4.3}
   m_MoveThreshold: 0.1
   m_Carve: 1
   m_CarveOnlyStationary: 1
@@ -477417,6 +477483,7 @@ GameObject:
   - component: {fileID: 1930091106}
   - component: {fileID: 1931253618}
   - component: {fileID: 64765766332391762}
+  - component: {fileID: 64765766332391763}
   m_Layer: 0
   m_Name: SM_Prop_Skip_04
   m_TagString: Untagged
@@ -611533,6 +611600,22 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 43416572630035160, guid: 9d91de2d64a580143a212bed10b6acaf, type: 2}
+--- !u!208 &64765766332391763
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1933217432}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 1
+  m_Extents: {x: 1.2140001, y: 0.92300004, z: 0.65900004}
+  m_MoveThreshold: 0.1
+  m_Carve: 1
+  m_CarveOnlyStationary: 1
+  m_Center: {x: 0, y: 0.92300004, z: -1.19}
+  m_TimeToStationary: 0.5
 --- !u!64 &64765766412726215
 MeshCollider:
   m_ObjectHideFlags: 0

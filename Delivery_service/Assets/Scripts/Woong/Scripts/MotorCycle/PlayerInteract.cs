@@ -79,8 +79,11 @@ public class PlayerInteract : MonoBehaviour
             MotorcycleController bike = hit.collider.GetComponentInParent<MotorcycleController>();
             if (bike != null && heldNozzle == null && !bike.isRefueling)
             {
-                bike.EnterBike(this.gameObject);
-                this.gameObject.SetActive(false);
+                // 탑승에 성공했을 때만 플레이어 비활성화
+                if (bike.EnterBike(this.gameObject))
+                {
+                    this.gameObject.SetActive(false);
+                }
             }
         }
     }

@@ -294,8 +294,9 @@ public class OrderManager : MonoBehaviour
         PizzaData deliveredPizza = pizzaDataList[0];
         bool isBaked = deliveredPizza.isBaked;
         bool isBaseValid = HasBaseIngredients(deliveredPizza.toppings);
+        bool isRuined = deliveredPizza.isRuined;
 
-        if (isBaked && isBaseValid)
+        if (!isRuined && isBaked && isBaseValid)
         {
             int totalEarnedMoney = basePizzaPrice;
 
@@ -320,6 +321,17 @@ public class OrderManager : MonoBehaviour
             }
 
             Debug.Log($"배달 성공 {totalEarnedMoney}원");
+        }
+        else
+        {
+            if (isRuined)
+            {
+                Debug.Log("망가진 피자를 배달해서 0원");
+            }
+            else
+            {
+                Debug.Log("안구워서 0원");
+            }
         }
 
         activeOrder = null;

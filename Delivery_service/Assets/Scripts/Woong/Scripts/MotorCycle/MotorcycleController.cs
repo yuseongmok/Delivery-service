@@ -229,8 +229,15 @@ public class MotorcycleController : MonoBehaviour
         if (bikeUIPanel != null) bikeUIPanel.SetActive(isDriven || isRefueling);
     }
 
-    public void EnterBike(GameObject playerObject)
+    public bool EnterBike(GameObject playerObject)
     {
+        if (playerObject != null)
+        {
+            ToppingInventory inventory = playerObject.GetComponent<ToppingInventory>();
+            if (inventory != null && (inventory.HasPizza() || inventory.HasPackagedPizzas()))
+                return false;
+        }
+
         isDriven = true;
         rider = playerObject;
         if (navigationManager != null)
@@ -260,6 +267,8 @@ public class MotorcycleController : MonoBehaviour
         {
             robber.SetTarget(activeTarget);
         }
+
+        return true;
     }
 
     public void ExitBike()
