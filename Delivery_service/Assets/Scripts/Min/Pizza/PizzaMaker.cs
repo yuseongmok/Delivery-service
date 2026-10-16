@@ -128,6 +128,8 @@ public class PizzaMaker : MonoBehaviour, IInteractable
 
         GameObject pizzaObject = currentPizza.gameObject;
 
+        currentPizza.SetPlaced(false);
+        currentPizza.SetHeld(true);
         currentPizza = null;
 
         pizzaObject.transform.SetParent(inventory.HoldPoint);

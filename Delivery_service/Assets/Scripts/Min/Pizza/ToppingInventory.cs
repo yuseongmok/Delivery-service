@@ -21,6 +21,14 @@ public class ToppingInventory : MonoBehaviour
 
     public List<PizzaData> GetHeldPackagedPizzas() => heldPackagedPizzas;
 
+    public event System.Action ContentsChanged;
+
+    private void Awake()
+    {
+        if (GetComponent<DeliveryService.Mok.CarriedItemVisual>() == null)
+            gameObject.AddComponent<DeliveryService.Mok.CarriedItemVisual>();
+    }
+
     private void Start()
     {
         UpdateUI();
@@ -28,6 +36,8 @@ public class ToppingInventory : MonoBehaviour
 
     private void UpdateUI()
     {
+        // Fire even without a HUD, before RemovePizza returns to its caller.
+        ContentsChanged?.Invoke();
         if (currentTopping == null) return;
 
         if (CurrentItem != null)

@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 public class MotorcycleController : MonoBehaviour
 {
@@ -397,44 +397,7 @@ public class MotorcycleController : MonoBehaviour
 
     private System.Collections.IEnumerator BailOutRoutine(GameObject playerToRoll, float speed, Vector3 direction)
     {
-        yield return new WaitForFixedUpdate();
-
-        CharacterController cc = playerToRoll.GetComponent<CharacterController>();
-        PlayerMove pm = playerToRoll.GetComponent<PlayerMove>();
-
-        if (pm != null) pm.enabled = false;
-        yield return null;
-        if (cc != null) cc.enabled = false;
-
-        CapsuleCollider tempCol = playerToRoll.GetComponent<CapsuleCollider>();
-        bool addedCol = false;
-        if (tempCol == null)
-        {
-            tempCol = playerToRoll.AddComponent<CapsuleCollider>();
-            tempCol.height = 2f;
-            tempCol.radius = 0.5f;
-            tempCol.material = new PhysicsMaterial { dynamicFriction = 0.3f, bounciness = 0.1f };
-            addedCol = true;
-        }
-
-        Rigidbody tempRb = playerToRoll.GetComponent<Rigidbody>();
-        if (tempRb == null) tempRb = playerToRoll.AddComponent<Rigidbody>();
-
-        tempRb.isKinematic = false;
-        tempRb.useGravity = true;
-        tempRb.collisionDetectionMode = CollisionDetectionMode.Continuous;
-        tempRb.linearVelocity = direction * speed * 0.9f;
-
-        Vector3 rollTorque = playerToRoll.transform.right * speed * 1.5f + Random.insideUnitSphere * speed;
-        tempRb.AddTorque(rollTorque, ForceMode.VelocityChange);
-        yield return new WaitForSeconds(3.0f);
-
-        if (tempRb != null) Destroy(tempRb);
-        if (addedCol && tempCol != null) Destroy(tempCol);
-        playerToRoll.transform.rotation = Quaternion.Euler(0, playerToRoll.transform.rotation.eulerAngles.y, 0);
-
-        if (cc != null) cc.enabled = true;
-        if (pm != null) pm.enabled = true;
+        yield return DeliveryService.Mok.PlayerKnockdown.Roll(playerToRoll, speed, direction);
 
         rider = null;
     }

@@ -14,6 +14,9 @@ public class Topping : MonoBehaviour, IInteractable
     private void Start()
     {
         UpdateVisuals();
+        var visual = GetComponent<DeliveryService.Mok.ToppingTrayVisual>();
+        if (visual == null) visual = gameObject.AddComponent<DeliveryService.Mok.ToppingTrayVisual>();
+        visual.Initialize(toppingData);
     }
 
     private void OnEnable()

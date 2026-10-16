@@ -7,6 +7,8 @@ public class PlayerInteraction : MonoBehaviour
     [SerializeField] private float interactDistance = 3f;
     [SerializeField] private LayerMask interactLayer;
 
+    public Camera InteractionCamera => playerCamera;
+
     private ToppingInventory inventory;
 
     private void Awake()
@@ -24,6 +26,9 @@ public class PlayerInteraction : MonoBehaviour
 
     private void TryInteract()
     {
+        var combat = GetComponent<DeliveryService.Mok.PlayerCombat>();
+        if (combat != null && !combat.CanAct) return;
+        if (combat != null && combat.TryPickpocket()) return;
         Ray ray = new Ray(playerCamera.transform.position, playerCamera.transform.forward);
 
         if (!Physics.Raycast(ray, out RaycastHit hit, interactDistance, interactLayer))
@@ -35,7 +40,11 @@ public class PlayerInteraction : MonoBehaviour
 
         if (pizza != null && pizza.IsPlaced)
         {
-            pizza.Interact(inventory);
+            // The workbench owns pickup as well as topping placement.
+            // A hit on any pizza/topping collider should behave like a hit on its workbench.
+            PizzaMaker maker = pizza.GetComponentInParent<PizzaMaker>();
+            if (maker != null) maker.Interact(inventory);
+            else pizza.Interact(inventory);
             return;
         }
 

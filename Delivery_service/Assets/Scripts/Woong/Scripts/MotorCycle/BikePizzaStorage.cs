@@ -7,6 +7,7 @@ public class BikePizzaStorage : MonoBehaviour, IInteractable
     [Header("피자 적재 설정")]
     public GameObject pizzaBoxVisual;
     private List<PizzaData> storedPizzas = new List<PizzaData>();
+    public int StoredCount => storedPizzas.Count;
 
     [Header("피자 흔들림 게이지")]
     public GameObject pizzaUIGroup;
@@ -120,19 +121,23 @@ public class BikePizzaStorage : MonoBehaviour, IInteractable
 
     public void Interact(ToppingInventory inventory)
     {
-        if (inventory.HasPackagedPizzas())
+        var visual = GetComponent<DeliveryService.Mok.BikeCargoVisual>();
+        if (visual != null && visual.IsBusy) return;
+        bool storing = inventory.HasPackagedPizzas();
+        if (!storing && (storedPizzas.Count == 0 || inventory.HasItem())) return;
+        var expected = new List<PizzaData>(storing ? inventory.GetHeldPackagedPizzas() : storedPizzas);
+        bool Commit()
         {
-            storedPizzas = inventory.ClearPackagedPizzas();
-            if (pizzaBoxVisual != null) pizzaBoxVisual.SetActive(true);
-            Debug.Log("오토바이에 피자를 적재했습니다");
+            var current = storing ? inventory.GetHeldPackagedPizzas() : storedPizzas;
+            if (current.Count != expected.Count || (!storing && inventory.HasItem())) return false;
+            for (int i=0; i<current.Count; i++) if (!ReferenceEquals(current[i], expected[i])) return false;
+            if (storing) storedPizzas.AddRange(inventory.ClearPackagedPizzas());
+            else { inventory.AddPackagedDataStack(new List<PizzaData>(storedPizzas)); storedPizzas.Clear(); }
+            UpdateUI();
+            return true;
         }
-        else if (storedPizzas.Count > 0 && !inventory.HasItem())
-        {
-            inventory.AddPackagedDataStack(new List<PizzaData>(storedPizzas));
-            storedPizzas.Clear();
-            // if (pizzaBoxVisual != null) pizzaBoxVisual.SetActive(false);
-            Debug.Log("오토바이에서 피자를 꺼냈습니다");
-        }
+        if (visual != null) visual.Animate(inventory, storing, expected.Count, Commit);
+        else Commit();
     }
 
     // 적재 피자 스틸
@@ -141,6 +146,8 @@ public class BikePizzaStorage : MonoBehaviour, IInteractable
         if (storedPizzas != null && storedPizzas.Count > 0)
         {
             storedPizzas.Clear();
+            var cargo = GetComponent<DeliveryService.Mok.BikeCargoVisual>();
+            if (cargo != null) cargo.Refresh();
             currentShake = 0f;
             //if (pizzaBoxVisual != null) pizzaBoxVisual.SetActive(false);
             UpdateUI();

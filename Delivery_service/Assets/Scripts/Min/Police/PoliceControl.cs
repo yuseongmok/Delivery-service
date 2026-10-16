@@ -28,12 +28,19 @@ public class PoliceControl : MonoBehaviour
 
     [SerializeField] private float pathUpdateInterval = 0.15f;
     private float nextPathUpdateTime;
+    private NavMeshPath chasePath;
 
+    public float RemainingChaseSeconds => Mathf.Max(0f,totalChaseTimer);
+    public bool HasVisualContact => isActiveAndEnabled && !isArresting && isInSight && RemainingChaseSeconds>0;
+    private Vector3 lastKnownPosition;
+    private bool targetHidden;
     private float totalChaseTimer;
     private float outOfSightTimer;
     private bool isInSight;
 
     private static bool isArresting = false;
+    public static bool IsArrestInProgress => isArresting;
+    private bool pausedForKnockdown;
 
     private float flankAngle;
     private float flankDistance;
@@ -59,6 +66,7 @@ public class PoliceControl : MonoBehaviour
 
         ResetChaseTimers();
         FindAllTargets();
+        if(playerOnFootTarget!=null)lastKnownPosition=playerOnFootTarget.position;
         FindUIAndSpawnPoint();
     }
 
@@ -132,8 +140,20 @@ public class PoliceControl : MonoBehaviour
 
         Transform activeTarget = GetActivePlayerTarget();
         if (activeTarget == null) return;
+        var combat = playerOnFootTarget != null ? playerOnFootTarget.GetComponent<DeliveryService.Mok.PlayerCombat>() : null;
+        if (combat != null && combat.IsDown) {
+            if (agent != null && agent.enabled && agent.isOnNavMesh) agent.isStopped = true;
+            pausedForKnockdown = true; return;
+        }
+        if (pausedForKnockdown) {
+            if (agent != null && agent.enabled && agent.isOnNavMesh) agent.isStopped = false;
+            pausedForKnockdown = false;
+        }
 
+        var hiding=activeTarget.GetComponent<DeliveryService.Mok.PlayerHiding>();
+        targetHidden=hiding!=null&&hiding.IsHidden;
         isInSight = CheckLineOfSight(activeTarget);
+        if(isInSight)lastKnownPosition=activeTarget.position;
         UpdateTimers();
 
         if (Time.time >= nextPathUpdateTime)
@@ -144,7 +164,7 @@ public class PoliceControl : MonoBehaviour
 
         // 체포 거리 검사
         float flatDistance = GetFlatDistance(transform.position, activeTarget.position);
-        if (flatDistance <= arrestDistance)
+        if (!targetHidden && flatDistance <= arrestDistance)
         {
             StartCoroutine(ArrestRoutine(activeTarget));
             return;
@@ -260,6 +280,8 @@ public class PoliceControl : MonoBehaviour
 
     private bool CheckLineOfSight(Transform target)
     {
+        var hiding=target.GetComponent<DeliveryService.Mok.PlayerHiding>();
+        if(hiding!=null&&hiding.IsHidden)return false;
         Vector3 dirToPlayer = (target.position - transform.position).normalized;
         float distToPlayer = Vector3.Distance(transform.position, target.position);
 
@@ -290,16 +312,16 @@ public class PoliceControl : MonoBehaviour
 
         Vector3 targetForward = target.forward;
         Vector3 offsetDirection = Quaternion.Euler(0, flankAngle, 0) * targetForward;
-        Vector3 targetPosition = target.position + (offsetDirection * flankDistance);
+        Vector3 targetPosition = targetHidden?lastKnownPosition:target.position + (offsetDirection * flankDistance);
 
-        if (NavMesh.SamplePosition(targetPosition, out NavMeshHit hit, 3f, NavMesh.AllAreas))
-        {
-            agent.SetDestination(hit.position);
-        }
-        else
-        {
-            agent.SetDestination(target.position);
-        }
+        Vector3 destination = NavMesh.SamplePosition(targetPosition, out NavMeshHit hit, 3f, NavMesh.AllAreas)
+            ? hit.position : (targetHidden ? lastKnownPosition : target.position);
+        if (agent.hasPath && (agent.destination - destination).sqrMagnitude < .0625f) return;
+        // Reuse a completed path so repeated asynchronous requests cannot starve movement.
+        if (chasePath == null) chasePath = new NavMeshPath();
+        var filter = new NavMeshQueryFilter { agentTypeID = agent.agentTypeID, areaMask = agent.areaMask };
+        if (NavMesh.CalculatePath(agent.nextPosition, destination, filter, chasePath) && chasePath.corners.Length > 1)
+            agent.SetPath(chasePath);
     }
 
     private void DespawnPolice()

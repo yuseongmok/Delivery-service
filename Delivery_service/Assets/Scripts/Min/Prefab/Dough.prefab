@@ -40,7 +40,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4261563566328247877}
-  m_Mesh: {fileID: -9037851627997230718, guid: 02044a34e91c157468089e5de5a6e1c6, type: 3}
+  m_Mesh: {fileID: 4300000, guid: 12033331ee8f4144688f8f771cde1c5d, type: 2}
 --- !u!23 &7529047182792604942
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -66,7 +66,20 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: b7b4f44230d18e6418cf03d21ad090f8, type: 2}
+  - {fileID: 2100000, guid: 9a6d4878c8e48e14d896e4e5591519cc, type: 2}
+  - {fileID: 2100000, guid: 6e37613df53d4b746b0bad265fb5380c, type: 2}
+  - {fileID: 2100000, guid: f6ab0ab463235374fb83a1faaa4e7c34, type: 2}
+  - {fileID: 2100000, guid: 8e11f87f65a82d448ba412435ceb8b7c, type: 2}
+  - {fileID: 2100000, guid: 2043e128519b4534d89bc844b2f9c7ea, type: 2}
+  - {fileID: 2100000, guid: 018671807424f69459beb9eadff30fc7, type: 2}
+  - {fileID: 2100000, guid: 7311af5c2e1f9c0449fdc94d6e60e89b, type: 2}
+  - {fileID: 2100000, guid: 2ad7cddc340c26d4088968a3788e4d0c, type: 2}
+  - {fileID: 2100000, guid: e4bf5cefcb5df7945984b6f73240f799, type: 2}
+  - {fileID: 2100000, guid: d392dbf32b36cd745ae8903ece9af6d6, type: 2}
+  - {fileID: 2100000, guid: ab68a367253c89542ab6036a579456f3, type: 2}
+  - {fileID: 2100000, guid: f7a4f72ac0600414a825d066e4e5f667, type: 2}
+  - {fileID: 2100000, guid: cc00a34fb97d4c642815c65aeb92b814, type: 2}
+  - {fileID: 2100000, guid: 372f521b86f18984bac0d01146c6bd46, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -159,6 +172,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Topping
   toppingData: {fileID: 11400000, guid: bf1bef9c5ecbe2c47bf71d1a6c8057b5, type: 2}
+  stockText: {fileID: 0}
 --- !u!114 &3906394410628903782
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -174,3 +188,4 @@ MonoBehaviour:
   toppingPoint: {fileID: 1310698073107936666}
   doughCollider: {fileID: 2562941458434292891}
   toppingRadiusRatio: 40
+  currentToppings: []

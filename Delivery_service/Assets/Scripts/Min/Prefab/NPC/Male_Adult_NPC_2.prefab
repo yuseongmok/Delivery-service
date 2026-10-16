@@ -144,6 +144,7 @@ GameObject:
   - component: {fileID: 5446504856555841532}
   - component: {fileID: 4098019744325108393}
   - component: {fileID: 2487063007419309451}
+  - component: {fileID: 303947226828723760}
   m_Layer: 16
   m_Name: Male_Adult_NPC_2
   m_TagString: Untagged
@@ -255,6 +256,26 @@ CapsuleCollider:
   m_Height: 1.7165421
   m_Direction: 1
   m_Center: {x: 0, y: 0.83827156, z: 0}
+--- !u!114 &303947226828723760
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 184257306570946756}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bdced4d458e71be42a2e354662a97521, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DeliveryService.Mok.CitizenCombat
+  maximumHealth: 100
+  chaseSpeed: 4.5
+  punchRange: 2.8
+  punchCooldown: 1.4
+  attackStartRange: 2.6
+  combatSpacing: 2.2
+  punchDamage: 10
+  knockdownSeconds: 3
 --- !u!1 &327264812987394549
 GameObject:
   m_ObjectHideFlags: 0

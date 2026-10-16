@@ -56,15 +56,51 @@ public class NavigationManager : MonoBehaviour {
  int road=NavMesh.GetAreaFromName("Road"),sidewalk=NavMesh.GetAreaFromName("SideWalk");
  if(road<0||sidewalk<0||NavMesh.GetSettingsCount()==0){RouteStatus="도로 정보를 찾을 수 없습니다";return;}
  int mask=(1<<road)|(1<<sidewalk);
- var filter=new NavMeshQueryFilter{agentTypeID=NavMesh.GetSettingsByIndex(0).agentTypeID,areaMask=mask};filter.SetAreaCost(road,1);filter.SetAreaCost(sidewalk,20);
- if(!NavMesh.SamplePosition(lastPosition,out var start,30,filter)||!NavMesh.SamplePosition(lastDestinationPosition,out var end,20,filter)){RouteStatus="이 위치에서는 경로를 찾을 수 없습니다";return;}
- var path=new NavMeshPath();
- if(!NavMesh.CalculatePath(start.position,end.position,filter,path)||path.status!=NavMeshPathStatus.PathComplete){RouteStatus="목적지까지 연결된 도로가 없습니다";return;}
+ var filter=new NavMeshQueryFilter{agentTypeID=NavMesh.GetSettingsByIndex(0).agentTypeID,areaMask=mask};filter.SetAreaCost(road,1);filter.SetAreaCost(sidewalk,2);
+ // The nearest sidewalk polygon may be a disconnected entrance or an upper floor.
+ // Keep a complete existing route; otherwise try nearby road anchors without drawing
+ // an invented straight connection through buildings or accepting a partial path.
+ var starts = new List<Vector3>(); var ends = new List<Vector3>();
+ AddAnchor(lastPosition, 30, filter, starts);
+ AddAnchor(lastDestinationPosition, 20, filter, ends);
+ var roadFilter = filter; roadFilter.areaMask = 1 << road;
+ AddAnchor(lastPosition, 30, roadFilter, starts);
+ AddAnchor(lastDestinationPosition, 20, roadFilter, ends);
+ if(starts.Count==0||ends.Count==0){RouteStatus="이 위치에서는 경로를 찾을 수 없습니다";return;}
+ var path=new NavMeshPath(); bool complete=false;
+ for(int i=0;i<starts.Count&&!complete;i++)for(int j=0;j<ends.Count&&!complete;j++)
+  complete=NavMesh.CalculatePath(starts[i],ends[j],filter,path)&&path.status==NavMeshPathStatus.PathComplete;
+ if(!complete){
+  // A curb, entrance or overlapping surface can also split the nearest road anchor.
+  // Search a bounded neighborhood only after the cheap nearest-anchor attempts fail.
+  AddNearbyAnchors(lastDestinationPosition,roadFilter,ends);
+  for(int i=0;i<starts.Count&&!complete;i++)for(int j=0;j<ends.Count&&!complete;j++)
+   complete=NavMesh.CalculatePath(starts[i],ends[j],filter,path)&&path.status==NavMeshPathStatus.PathComplete;
+  if(!complete){
+   AddNearbyAnchors(lastPosition,roadFilter,starts);
+   for(int i=0;i<starts.Count&&!complete;i++)for(int j=0;j<ends.Count&&!complete;j++)
+    complete=NavMesh.CalculatePath(starts[i],ends[j],filter,path)&&path.status==NavMeshPathStatus.PathComplete;
+  }
+ }
+ if(!complete){RouteStatus="목적지까지 연결된 도로가 없습니다";return;}
  if(path.corners.Length<2){RouteStatus="목적지 근처입니다";return;}
  // Preserve actual navigable corners: adding artificial right-angle bends can cut through buildings.
  for(int i=0;i<path.corners.Length;i++){displayPath.Add(path.corners[i]);if(i>0)RemainingDistance+=Vector3.Distance(path.corners[i-1],path.corners[i]);}
  if(pathLineRenderer!=null){pathLineRenderer.positionCount=displayPath.Count;for(int i=0;i<displayPath.Count;i++){var point=displayPath[i];point.y=pathLineHeight;pathLineRenderer.SetPosition(i,point);}}
  RouteStatus="안내 중";
  }
+ static void AddNearbyAnchors(Vector3 position,NavMeshQueryFilter filter,List<Vector3> anchors){
+  for(int radius=4;radius<=12;radius+=4)for(int direction=0;direction<8;direction++){
+   float angle=direction*Mathf.PI/4;
+   var probe=position+new Vector3(Mathf.Cos(angle)*radius,0,Mathf.Sin(angle)*radius);
+   AddAnchor(probe,4,filter,anchors);
+  }
+ }
+ static void AddAnchor(Vector3 position,float radius,NavMeshQueryFilter filter,List<Vector3> anchors){
+  if(!NavMesh.SamplePosition(position,out var hit,radius,filter))return;
+  foreach(var anchor in anchors)if((anchor-hit.position).sqrMagnitude<.01f)return;
+  anchors.Add(hit.position);
+ }
  void ClearNavigationPath(){displayPath.Clear();RemainingDistance=0;if(pathLineRenderer!=null)pathLineRenderer.positionCount=0;}
 }
+

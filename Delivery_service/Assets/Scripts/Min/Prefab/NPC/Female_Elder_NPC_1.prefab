@@ -1490,6 +1490,7 @@ GameObject:
   - component: {fileID: 1975967063560531053}
   - component: {fileID: 6262183301335140456}
   - component: {fileID: 4737078887117862584}
+  - component: {fileID: 2273566115651095024}
   m_Layer: 16
   m_Name: Female_Elder_NPC_1
   m_TagString: Untagged
@@ -1601,6 +1602,26 @@ CapsuleCollider:
   m_Height: 1.55
   m_Direction: 1
   m_Center: {x: 0, y: 0.77, z: 0}
+--- !u!114 &2273566115651095024
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5606166398752108071}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bdced4d458e71be42a2e354662a97521, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DeliveryService.Mok.CitizenCombat
+  maximumHealth: 100
+  chaseSpeed: 4.5
+  punchRange: 2.8
+  punchCooldown: 1.4
+  attackStartRange: 2.6
+  combatSpacing: 2.2
+  punchDamage: 10
+  knockdownSeconds: 3
 --- !u!1 &5765012768653594682
 GameObject:
   m_ObjectHideFlags: 0

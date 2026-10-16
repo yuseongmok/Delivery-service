@@ -132,7 +132,7 @@ namespace DeliveryService.Mok.Navigation
             // A fixed logical layout scales within the existing display; no change to either physical phone.
             var root = Rect("Phone Apps",display,0,0,540,960);
             root.transform.localScale = new Vector3(display.rect.width/540f,display.rect.height/960f,1);
-            if(font==null)font=Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            font=DeliveryService.Mok.MokUIFont.Font;
             var distance=display.Find("FinalDistanceText");if(distance!=null && distance is RectTransform distanceRect) distanceRect.anchoredPosition += new Vector2(0,90);
             var oldHint=display.Find("DestinationHint");if(oldHint!=null)oldHint.gameObject.SetActive(false);
             home=Panel("Home",root.transform,0,0,540,960,new Color(.055f,.12f,.19f));

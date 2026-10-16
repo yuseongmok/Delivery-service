@@ -24,9 +24,13 @@ public class PizzaPickUpZone : MonoBehaviour, IInteractable
         // 픽업존 위 상자 오브젝트 생성
         if (packagedPizzaPrefab != null && placePoint != null)
         {
-            GameObject newBox = Instantiate(packagedPizzaPrefab, placePoint);
-            newBox.transform.localPosition = new Vector3(0f, stackHeight * visualBoxes.Count, 0f);
-            newBox.transform.localRotation = Quaternion.identity;
+            GameObject newBox = DeliveryService.Mok.PizzaBoxStation.CreateClosedPackage(placePoint, visualBoxes.Count);
+            if (newBox == null)
+            {
+                newBox = Instantiate(packagedPizzaPrefab, placePoint);
+                newBox.transform.localPosition = new Vector3(0f, stackHeight * visualBoxes.Count, 0f);
+                newBox.transform.localRotation = Quaternion.identity;
+            }
             visualBoxes.Add(newBox);
         }
 

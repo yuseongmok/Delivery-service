@@ -15,9 +15,20 @@ public class Pizza : MonoBehaviour, IInteractable
     public bool IsPlaced { get; private set; }
     public bool IsBaked { get; private set; }
 
+    private DeliveryService.Mok.PizzaStageVisual stageVisual;
+
     private void Awake()
     {
         InitBasePizza();
+        stageVisual = gameObject.AddComponent<DeliveryService.Mok.PizzaStageVisual>();
+        stageVisual.Initialize();
+        if (stageVisual.Ready && doughCollider is BoxCollider box)
+        {
+            // Match the new 0.95 m visual; retain the previous topping spread (~0.38 m).
+            box.size = new Vector3(.95f, .1f, .95f);
+            box.center = new Vector3(0, -.015f, 0);
+            toppingRadiusRatio = .8f;
+        }
     }
 
     public void InitBasePizza()
@@ -28,6 +39,7 @@ public class Pizza : MonoBehaviour, IInteractable
         currentToppings.Add("µµ¿ì");
 
         IsBaked = false;
+        if (stageVisual != null) stageVisual.ResetLayers();
     }
 
     public void SetPlaced(bool value)
@@ -37,6 +49,7 @@ public class Pizza : MonoBehaviour, IInteractable
     public void SetBaked(bool value)
     {
         IsBaked = value;
+        if (stageVisual != null) stageVisual.Refresh(value);
     }
     public PizzaData ToData()
     {
@@ -79,6 +92,11 @@ public class Pizza : MonoBehaviour, IInteractable
 
     private void SpawnTopping(PizzaToppingData topping)
     {
+        if (stageVisual != null && stageVisual.Ready && stageVisual.Supports(topping.toppingType))
+        {
+            stageVisual.AddLayer(topping.toppingType, IsBaked);
+            return;
+        }
         if (topping.toppingPrefab == null || toppingPoint == null)
             return;
 

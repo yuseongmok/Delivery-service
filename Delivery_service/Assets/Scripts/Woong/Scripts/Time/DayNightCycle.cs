@@ -173,6 +173,9 @@ public class DayNightCycle : MonoBehaviour
             }
         }
 
+        // Check before new-day resets, deliveries and respawns, for both closing paths.
+        if (DeliveryService.Mok.BankruptcyGameOver.TryEndDay(this)) yield break;
+
         currentDay++;
         dailyIncome = 0f;
         dailyExpense = 0f;

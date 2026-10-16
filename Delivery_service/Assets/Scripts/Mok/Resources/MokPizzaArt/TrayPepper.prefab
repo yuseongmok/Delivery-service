@@ -1,0 +1,145 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &831027236477557783
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6953996238490713676}
+  - component: {fileID: 7228861862729740521}
+  - component: {fileID: 1028903673299500970}
+  m_Layer: 0
+  m_Name: TrayPepperMesh
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6953996238490713676
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 831027236477557783}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4823292777582587301}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!33 &7228861862729740521
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 831027236477557783}
+  m_Mesh: {fileID: 4300000, guid: 16e9791756a9fd14fb91970137be936a, type: 2}
+--- !u!23 &1028903673299500970
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 831027236477557783}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: d5914621e0e7f5048b4cd0c2d00cf31c, type: 2}
+  - {fileID: 2100000, guid: eca84cd232cd56a4889ce91b94825734, type: 2}
+  - {fileID: 2100000, guid: ea6ca922c15f5f1459b86b431bd63766, type: 2}
+  - {fileID: 2100000, guid: a1d411a3da084ad4ab916821185ed17c, type: 2}
+  - {fileID: 2100000, guid: e6fc50405f244774888cefa5c0879fbb, type: 2}
+  - {fileID: 2100000, guid: 72b03a5f78cada842903a4a1d88ec155, type: 2}
+  - {fileID: 2100000, guid: 69358b975b52cbc478674fe19eeec20b, type: 2}
+  - {fileID: 2100000, guid: 3a42dfcc82bfd4b48978058c0c8b0416, type: 2}
+  - {fileID: 2100000, guid: 4d1aa8a1b8c6f244cafe04dd6123d736, type: 2}
+  - {fileID: 2100000, guid: afe8f03713d184447bfe83095b51c2b5, type: 2}
+  - {fileID: 2100000, guid: eafe3fb521a4f3e4482201383ba00fd3, type: 2}
+  - {fileID: 2100000, guid: a8fda28374875af4abeccc1feef7b40e, type: 2}
+  - {fileID: 2100000, guid: 14efd46cbd4bf6d4c962f8c51f5c5863, type: 2}
+  - {fileID: 2100000, guid: 7311af5c2e1f9c0449fdc94d6e60e89b, type: 2}
+  - {fileID: 2100000, guid: 2ad7cddc340c26d4088968a3788e4d0c, type: 2}
+  - {fileID: 2100000, guid: 6a7127a5b378e6846810f0c36761cce5, type: 2}
+  - {fileID: 2100000, guid: 406dd6ddbd9ed3747b3a2bd2e3b6b0ea, type: 2}
+  - {fileID: 2100000, guid: 9a6d4878c8e48e14d896e4e5591519cc, type: 2}
+  - {fileID: 2100000, guid: f6ab0ab463235374fb83a1faaa4e7c34, type: 2}
+  - {fileID: 2100000, guid: 10a55d7fe53522848be66325e5b09fcf, type: 2}
+  - {fileID: 2100000, guid: 2218dbd0bf1e17d45965b5723b018ec5, type: 2}
+  - {fileID: 2100000, guid: 7a0ee0306b7a14649aaa0b06ce950a6c, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_MaskInteraction: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &4493280114188597175
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4823292777582587301}
+  m_Layer: 0
+  m_Name: TrayPepper
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4823292777582587301
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4493280114188597175}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 6953996238490713676}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

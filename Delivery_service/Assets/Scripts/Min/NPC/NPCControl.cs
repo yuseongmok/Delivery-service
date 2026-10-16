@@ -31,6 +31,38 @@ public class NPCControl : MonoBehaviour
     // NPC 사망 시 매니저에 알릴 이벤트
     public event Action<NPCControl> OnNPCDeath;
 
+    // Combat can borrow the existing ragdoll without firing the death/respawn event.
+    public bool ExternalControl { get; set; }
+    public bool IsKnockedDown { get; private set; }
+    public bool IsDead => isDead;
+    public Transform RagdollCenter => mainBone != null ? mainBone : transform;
+    Transform[] poseBones;
+    Vector3[] restPositions;
+    Quaternion[] restRotations;
+    public void KnockDown(Vector3 direction, float velocity) {
+        if (isDead || IsKnockedDown) return;
+        IsKnockedDown = true;
+        SetRagdollActive(true);
+        foreach (var body in ragdollRig) if (body.gameObject != gameObject) {
+            body.linearVelocity = Vector3.zero; body.angularVelocity = Vector3.zero;
+            body.AddForce((direction.normalized + Vector3.up * .45f) * velocity, ForceMode.VelocityChange);
+        }
+    }
+    public bool RecoverFromKnockDown() {
+        if (isDead || !IsKnockedDown) return false;
+        if (!NavMesh.SamplePosition(RagdollCenter.position, out var hit, 5f, NavMesh.AllAreas)) return false;
+        foreach (var body in ragdollRig) if (body.gameObject != gameObject) {
+            body.linearVelocity = Vector3.zero; body.angularVelocity = Vector3.zero; body.isKinematic = true;
+        }
+        transform.position = hit.position;
+        for (int i=0;i<poseBones.Length;i++) { poseBones[i].localPosition=restPositions[i];poseBones[i].localRotation=restRotations[i]; }
+        SetRagdollActive(false);
+        if (agent != null && agent.isOnNavMesh) agent.Warp(hit.position);
+        if (anim != null) { anim.Rebind(); anim.Update(0); }
+        IsKnockedDown = false;
+        return true;
+    }
+
     private void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
@@ -39,6 +71,9 @@ public class NPCControl : MonoBehaviour
         ragdollRig = GetComponentsInChildren<Rigidbody>();
         ragdollCol = GetComponentsInChildren<Collider>();
 
+        poseBones = System.Array.FindAll(GetComponentsInChildren<Transform>(), t => t != transform);
+        restPositions = System.Array.ConvertAll(poseBones, t => t.localPosition);
+        restRotations = System.Array.ConvertAll(poseBones, t => t.localRotation);
         SetRagdollActive(false);
     }
 
@@ -49,7 +84,7 @@ public class NPCControl : MonoBehaviour
 
     private void Update()
     {
-        if (isDead) return;
+        if (isDead || IsKnockedDown || ExternalControl) return;
 
         UpdateAnimation();
 

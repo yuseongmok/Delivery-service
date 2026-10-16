@@ -30,6 +30,7 @@ public class MotorcycleAccident : MonoBehaviour
                 Vector3 hitDirection = controller.transform.forward;
                 float hitForce = absoluteSpeed * 30f;
                 npc.Die(hitDirection, Mathf.Clamp(hitForce, 15f, 60f));
+                DeliveryService.Mok.CitizenCrime.ReportPlayerKill(npc);
 
                 controller.ApplyImpactDeceleration(speedMultiplierOnImpact);
 
