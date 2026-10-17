@@ -8,7 +8,7 @@ namespace DeliveryService.Yun.Audio
         [SerializeField] private MotorcycleController motorcycle;
         [SerializeField, Min(0)] private float minimumSpeed = .3f;
         [Header("Engine response")]
-        [SerializeField] private Vector2 pitchRange = new Vector2(.8f, 1.35f);
+        [SerializeField] private Vector2 layerPitchRange = new Vector2(.92f, 1.12f);
         [SerializeField, Range(0, 1)] private float lowSpeedVolume = .25f;
         [SerializeField, Min(.01f)] private float fadeInSeconds = .45f;
         [SerializeField, Min(.01f)] private float fadeOutSeconds = .6f;
@@ -18,6 +18,8 @@ namespace DeliveryService.Yun.Audio
         [SerializeField, Min(0)] private float brakeStartSpeed = 4f;
         [SerializeField, Min(.01f)] private float brakeMaximumSeconds = 1.5f;
         private SoundHandle driving = SoundHandle.Invalid, braking = SoundHandle.Invalid;
+        private SoundHandle highEngine = SoundHandle.Invalid;
+        private float blend;
         private AudioManager owner;
         private float volume, pitch = .8f, previousSpeed, brakeAge, brakeVolume;
         private bool brakeArmed, sampledSpeed;
@@ -36,15 +38,24 @@ namespace DeliveryService.Yun.Audio
             float speed = riding ? Mathf.Abs(motorcycle.CurrentSpeed) : 0;
             float normalized = Mathf.Clamp01(speed / Mathf.Max(1, motorcycle.maxSpeed));
             bool moving = riding && speed >= minimumSpeed;
+            // No tail after stopping, dismounting, or disabling gameplay controls.
+            if (!moving) { StopAll(); return; }
             float target = moving ? Mathf.Lerp(lowSpeedVolume, 1, normalized) : 0;
             volume = Mathf.MoveTowards(volume, target, dt / Mathf.Max(.01f, target > volume ? fadeInSeconds : fadeOutSeconds));
-            pitch = Mathf.MoveTowards(pitch, Mathf.Lerp(pitchRange.x, pitchRange.y, normalized), dt * pitchResponse);
+            pitch = Mathf.MoveTowards(pitch, Mathf.Lerp(layerPitchRange.x, layerPitchRange.y, normalized), dt * pitchResponse);
+            blend = Mathf.MoveTowards(blend, Mathf.SmoothStep(0, 1, Mathf.InverseLerp(.15f, .85f, normalized)), dt * 2.5f);
             if (moving && !manager.IsHandleValid(driving))
             {
                 driving = manager.PlayFollow(SoundId.MotorcycleEngineLoop, transform);
                 manager.SetVolume(driving, 0);
             }
-            manager.SetVolume(driving, volume); manager.SetPitch(driving, pitch);
+            if (!manager.IsHandleValid(highEngine))
+            {
+                highEngine = manager.PlayFollow(SoundId.MotorcycleEngineHighLoop, transform);
+                manager.SetVolume(highEngine, 0);
+            }
+            manager.SetVolume(driving, volume * Mathf.Sqrt(1 - blend)); manager.SetPitch(driving, pitch);
+            manager.SetVolume(highEngine, volume * Mathf.Sqrt(blend)); manager.SetPitch(highEngine, pitch);
             if (!moving && volume <= .001f) { manager.Stop(driving); driving = SoundHandle.Invalid; }
 
             // Rearm only after returning to travel speed, avoiding repeated low-speed squeals.
@@ -68,9 +79,10 @@ namespace DeliveryService.Yun.Audio
 
         private void StopAll()
         {
-            if (owner != null) { owner.Stop(driving); owner.Stop(braking); }
+            if (owner != null) { owner.Stop(driving); owner.Stop(highEngine); owner.Stop(braking); }
+            highEngine = SoundHandle.Invalid; blend = 0;
             driving = braking = SoundHandle.Invalid; owner = null;
-            volume = brakeVolume = brakeAge = previousSpeed = 0; pitch = pitchRange.x;
+            volume = brakeVolume = brakeAge = previousSpeed = 0; pitch = layerPitchRange.x;
             brakeArmed = sampledSpeed = false;
         }
         private void OnDisable() { StopAll(); }

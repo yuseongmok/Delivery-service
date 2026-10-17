@@ -290,6 +290,7 @@ namespace DeliveryService.Yun.Audio
 
                 case SoundId.OvenLoop:
                 case SoundId.MotorcycleEngineLoop:
+                case SoundId.MotorcycleEngineHighLoop:
                 case SoundId.MotorcycleWindLoop:
                 case SoundId.MotorcycleBreakdownLoop:
                 case SoundId.FuelLoop:

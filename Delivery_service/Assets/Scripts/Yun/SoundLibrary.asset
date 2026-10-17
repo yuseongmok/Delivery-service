@@ -296,8 +296,8 @@ MonoBehaviour:
   - id: 403
     category: 1
     clips:
-    - {fileID: 8300000, guid: 6d7d369a05eb0ec4aa933948dd2d2f53, type: 3}
-    volume: 0.44
+    - {fileID: 8300000, guid: 4fea574be02c24441a04086cabc576d6, type: 3}
+    volume: 0.65
     pitchRange: {x: 1, y: 1}
     loop: 1
     spatialMode: 1
@@ -326,8 +326,8 @@ MonoBehaviour:
   - id: 406
     category: 1
     clips:
-    - {fileID: 0}
-    volume: 1
+    - {fileID: 8300000, guid: a326da5e7ae40e84fad5eadcd2286c38, type: 3}
+    volume: 0.7
     pitchRange: {x: 1, y: 1}
     loop: 0
     spatialMode: 1
@@ -336,8 +336,8 @@ MonoBehaviour:
   - id: 407
     category: 1
     clips:
-    - {fileID: 0}
-    volume: 1
+    - {fileID: 8300000, guid: 836e62ea04bc03c409b971cddae62db2, type: 3}
+    volume: 0.7
     pitchRange: {x: 1, y: 1}
     loop: 0
     spatialMode: 1
@@ -701,5 +701,15 @@ MonoBehaviour:
     pitchRange: {x: 1, y: 1}
     loop: 0
     spatialMode: 0
+    minDistance: 1
+    maxDistance: 25
+  - id: 410
+    category: 1
+    clips:
+    - {fileID: 8300000, guid: 27f91bc57eff0084f99da515f613f2f4, type: 3}
+    volume: 0.65
+    pitchRange: {x: 1, y: 1}
+    loop: 1
+    spatialMode: 1
     minDistance: 1
     maxDistance: 25

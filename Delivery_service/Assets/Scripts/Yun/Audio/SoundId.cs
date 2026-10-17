@@ -94,6 +94,8 @@ namespace DeliveryService.Yun.Audio
         MotorcycleBreakdownLoop = 408,
         [InspectorName("오토바이/엔진 꺼짐")]
         MotorcycleEngineOff = 409,
+        [InspectorName("오토바이/고속 엔진 반복음")]
+        MotorcycleEngineHighLoop = 410,
 
         [InspectorName("주유/노즐 집기")]
         FuelNozzlePickup = 500,
