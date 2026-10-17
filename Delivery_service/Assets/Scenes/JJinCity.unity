@@ -51048,6 +51048,19 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 1835432650995548267, guid: 1f88a9a8729892945958c2fb932d780d, type: 3}
   m_PrefabInstance: {fileID: 463732176}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &205420684
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 205420675}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c08012f9af569a345a30a4cb1b0c09b9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DeliveryService.Yun.Audio.MotorcycleCollisionAudioReceiver
+  audioOwner: {fileID: 1745745555}
 --- !u!23 &205488082
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -118567,18 +118580,56 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 9042388167991725923, guid: 1f88a9a8729892945958c2fb932d780d, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1745745554}
+    - targetCorrespondingSourceObject: {fileID: 9042388167991725923, guid: 1f88a9a8729892945958c2fb932d780d, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1745745555}
+    - targetCorrespondingSourceObject: {fileID: 9042388167991725923, guid: 1f88a9a8729892945958c2fb932d780d, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1745745556}
     - targetCorrespondingSourceObject: {fileID: 8849383491485516756, guid: 1f88a9a8729892945958c2fb932d780d, type: 3}
       insertIndex: -1
       addedObject: {fileID: 205420680}
     - targetCorrespondingSourceObject: {fileID: 8849383491485516756, guid: 1f88a9a8729892945958c2fb932d780d, type: 3}
       insertIndex: -1
       addedObject: {fileID: 205420681}
+    - targetCorrespondingSourceObject: {fileID: 8849383491485516756, guid: 1f88a9a8729892945958c2fb932d780d, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 205420684}
+    - targetCorrespondingSourceObject: {fileID: 5651127028282202911, guid: 1f88a9a8729892945958c2fb932d780d, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 463732180}
+    - targetCorrespondingSourceObject: {fileID: 1803395242563795397, guid: 1f88a9a8729892945958c2fb932d780d, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 921332833}
   m_SourcePrefab: {fileID: 100100000, guid: 1f88a9a8729892945958c2fb932d780d, type: 3}
 --- !u!4 &463732177 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5556515491103919344, guid: 1f88a9a8729892945958c2fb932d780d, type: 3}
   m_PrefabInstance: {fileID: 463732176}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &463732178 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1803395242563795397, guid: 1f88a9a8729892945958c2fb932d780d, type: 3}
+  m_PrefabInstance: {fileID: 463732176}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &463732179 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5651127028282202911, guid: 1f88a9a8729892945958c2fb932d780d, type: 3}
+  m_PrefabInstance: {fileID: 463732176}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &463732180
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 463732179}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c08012f9af569a345a30a4cb1b0c09b9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DeliveryService.Yun.Audio.MotorcycleCollisionAudioReceiver
+  audioOwner: {fileID: 1745745555}
 --- !u!23 &463790528
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -238282,12 +238333,25 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 8900123081567772848, guid: 1f88a9a8729892945958c2fb932d780d, type: 3}
   m_PrefabInstance: {fileID: 463732176}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 463732178}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c0d1490a46146b34fa7add4ba5bf724e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FuelCap
+--- !u!114 &921332833
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 463732178}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c08012f9af569a345a30a4cb1b0c09b9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DeliveryService.Yun.Audio.MotorcycleCollisionAudioReceiver
+  audioOwner: {fileID: 1745745555}
 --- !u!1 &921377142
 GameObject:
   m_ObjectHideFlags: 0
@@ -330930,6 +330994,7 @@ GameObject:
   - component: {fileID: 1317089479}
   - component: {fileID: 1317089478}
   - component: {fileID: 1317089480}
+  - component: {fileID: 1317089481}
   m_Layer: 13
   m_Name: PizzaBox
   m_TagString: Untagged
@@ -331009,6 +331074,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DeliveryService.Mok.BikeCargoVisual
   lid: {fileID: 141458616}
   contents: {fileID: 141458615}
+--- !u!114 &1317089481
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1317089476}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c08012f9af569a345a30a4cb1b0c09b9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DeliveryService.Yun.Audio.MotorcycleCollisionAudioReceiver
+  audioOwner: {fileID: 1745745555}
 --- !u!1 &1317211771
 GameObject:
   m_ObjectHideFlags: 0
@@ -443942,7 +444020,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DeliveryService.Yun.Audio.MotorcycleDrivingAudio
   motorcycle: {fileID: 0}
   minimumSpeed: 0.3
-  pitchRange: {x: 0.8, y: 1.35}
+  layerPitchRange: {x: 0.92, y: 1.12}
   lowSpeedVolume: 0.25
   fadeInSeconds: 0.45
   fadeOutSeconds: 0.6
@@ -443950,6 +444028,34 @@ MonoBehaviour:
   brakeArmSpeed: 6
   brakeStartSpeed: 4
   brakeMaximumSeconds: 1.5
+--- !u!114 &1745745555
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 146860201}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 88b407aff1697904c8afd89f1a8c6748, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DeliveryService.Yun.Audio.MotorcycleCollisionAudio
+  motorcycle: {fileID: 1745745550}
+  minimumImpactSpeed: 2
+  cooldown: 0.25
+--- !u!114 &1745745556
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 146860201}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c08012f9af569a345a30a4cb1b0c09b9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DeliveryService.Yun.Audio.MotorcycleCollisionAudioReceiver
+  audioOwner: {fileID: 1745745555}
 --- !u!33 &1745784220
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -507564,6 +507670,7 @@ GameObject:
   - component: {fileID: 2002564370}
   - component: {fileID: 2002564369}
   - component: {fileID: 2002564368}
+  - component: {fileID: 2002564371}
   m_Layer: 12
   m_Name: BikePhone
   m_TagString: Untagged
@@ -507665,6 +507772,19 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2002564366}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &2002564371
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2002564366}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c08012f9af569a345a30a4cb1b0c09b9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DeliveryService.Yun.Audio.MotorcycleCollisionAudioReceiver
+  audioOwner: {fileID: 1745745555}
 --- !u!33 &2002776286
 MeshFilter:
   m_ObjectHideFlags: 0
