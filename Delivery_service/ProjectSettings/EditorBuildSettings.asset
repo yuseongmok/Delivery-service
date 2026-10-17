@@ -6,6 +6,9 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/Scenes/Lobby.unity
+    guid: 30a346616feb95f4fb1de386d2a726f0
+  - enabled: 1
     path: Assets/Scenes/JJinCity.unity
     guid: 043baf8f29a81e340b7ab851053efb06
   m_configObjects:
