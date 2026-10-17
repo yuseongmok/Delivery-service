@@ -86,6 +86,15 @@ public class MoneyManager : MonoBehaviour
         TransactionRecorded?.Invoke(amount, ExpenseType.None);
     }
 
+    // 투자 원금 이동은 영업 수입/지출 통계에 넣지 않는다.
+    public bool TransferInvestmentMoney(int delta)
+    {
+        long balance=(long)currentMoney+delta;
+        if(delta==0 || balance>int.MaxValue || balance<int.MinValue || (delta<0 && balance<0))return false;
+        currentMoney=(int)balance;lastCheckedMoney=currentMoney;
+        SaveMoney();OnMoneyChanged?.Invoke(currentMoney);return true;
+    }
+
     public void ResetDailyStats()
     {
         dailyIncome = 0;

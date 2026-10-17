@@ -174,6 +174,7 @@ public class DayNightCycle : MonoBehaviour
         }
 
         // 두 마감 경로 모두 다음 날 초기화·납품·리스폰 전에 검사한다.
+        yield return DeliveryService.Mok.Stocks.StockDebtPrompt.Resolve();
         if (DeliveryService.Mok.BankruptcyGameOver.TryEndDay(this)) yield break;
 
         currentDay++;

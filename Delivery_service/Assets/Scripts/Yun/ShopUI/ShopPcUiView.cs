@@ -71,7 +71,7 @@ namespace DeliveryService.Yun.ShopUI
         {
             pc = owner;
             if (built) return;
-            if (pages.Length != 3 || pages[0] == null)
+            if (pages.Length < 3 || pages[0] == null)
             {
                 Debug.LogError("Shop PC UI prefab references are missing.", this);
                 return;

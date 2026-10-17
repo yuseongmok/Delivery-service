@@ -11,7 +11,7 @@ namespace DeliveryService.Mok.Navigation
         public Camera overviewCamera; // 기존 씬 참조 유지를 위한 필드이며 활성화하지 않는다.
         public Font font;
         public RenderTexture overviewTexture;
-        public enum Screen { Home, Destinations, Map }
+        public enum Screen { Home, Destinations, Map, Stocks }
         public Screen CurrentScreen { get; private set; } = Screen.Map;
         public int Selection { get; private set; }
         public bool IsRiding => bikes != null && bikes.Any(b => b != null && b.isDriven);
@@ -19,6 +19,7 @@ namespace DeliveryService.Mok.Navigation
         PhoneController phone;
         MotorcycleController[] bikes;
         GameObject home, destinations;
+        DeliveryService.Mok.Stocks.StockPhoneApp stocks;
         Text[] apps, rows;
         Text notice, hint;
         bool wasRiding, wasOpen;
@@ -48,6 +49,15 @@ namespace DeliveryService.Mok.Navigation
             wasOpen = open;
             if (IsOpen && Time.timeScale > 0 && Cursor.lockState == CursorLockMode.Locked)
             {
+                if(CurrentScreen==Screen.Stocks){
+                    if(Input.GetKeyDown(KeyCode.UpArrow))stocks.Move(1,false);
+                    if(Input.GetKeyDown(KeyCode.DownArrow))stocks.Move(-1,false);
+                    if(Input.GetKeyDown(KeyCode.LeftArrow))stocks.Move(-1,true);
+                    if(Input.GetKeyDown(KeyCode.RightArrow))stocks.Move(1,true);
+                    if(Input.GetKeyDown(KeyCode.Return)||Input.GetKeyDown(KeyCode.KeypadEnter))stocks.Confirm();
+                    if(Input.GetKeyDown(KeyCode.Backspace)&&!stocks.Back())Show(Screen.Home);
+                    return;
+                }
                 if (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.LeftArrow)) MoveSelection(-1);
                 else if (Input.GetKeyDown(KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.RightArrow)) MoveSelection(1);
                 if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)) Confirm();
@@ -69,7 +79,7 @@ namespace DeliveryService.Mok.Navigation
             if (CurrentScreen == Screen.Home)
             {
                 if (Selection == 0) Show(Screen.Destinations);
-                else notice.text = "주식 앱은 준비 중입니다";
+                else Show(Screen.Stocks);
                 return;
             }
             if (manager == null) return;
@@ -94,12 +104,13 @@ namespace DeliveryService.Mok.Navigation
         NavigationPlace SelectedPlace(int i) => places == null ? null : places.FirstOrDefault(p => p != null && p.kind == kinds[i]);
         public void Show(Screen screen)
         {
-            if (IsRiding && screen == Screen.Home) screen = Screen.Map;
+            if (IsRiding && (screen == Screen.Home || screen == Screen.Stocks)) screen = Screen.Map;
             CurrentScreen = screen; Selection = 0;
             if (home == null) return;
             places = FindObjectsByType<NavigationPlace>(FindObjectsSortMode.None);
             home.SetActive(screen == Screen.Home);
             destinations.SetActive(screen == Screen.Destinations);
+            stocks.gameObject.SetActive(screen==Screen.Stocks);if(screen==Screen.Stocks)stocks.Open();
             notice.text = "";
             Refresh();
         }
@@ -114,7 +125,7 @@ namespace DeliveryService.Mok.Navigation
                 rows[i].color = available ? Color.white : new Color(.6f,.66f,.7f);
                 rows[i].transform.parent.GetComponent<Image>().color = i == Selection ? new Color(.08f,.43f,.48f) : new Color(.12f,.18f,.23f);
             }
-            hint.text = CurrentScreen == Screen.Map ? "방향키 목적지 · Enter 확인" : "방향키 선택 · Enter 확인\nBackspace 뒤로";
+            hint.text = "";
         }
         GameObject Rect(string name, Transform parent, float x, float y, float w, float h)
         {
@@ -139,14 +150,15 @@ namespace DeliveryService.Mok.Navigation
             Label("DELIVERY PHONE",home.transform,36,90,470,65,36);
             Label("오늘도 안전 운전",home.transform,36,160,470,45,26);
             apps=new Text[2];
-            for(int i=0;i<2;i++){var tile=Panel(i==0?"Map app":"Stocks app",home.transform,36+i*244,310,224,170,Color.gray);apps[i]=Label(i==0?"지도":"주식\n준비 중",tile.transform,24,20,180,130,38);}
+            for(int i=0;i<2;i++){var tile=Panel(i==0?"Map app":"Stocks app",home.transform,36+i*244,310,224,170,Color.gray);apps[i]=Label(i==0?"지도":"주식",tile.transform,24,20,180,130,38);}
             destinations=Panel("Destinations",root.transform,14,350,512,530,new Color(.06f,.10f,.14f,.98f));
             Label("목적지 선택",destinations.transform,24,12,460,60,34);
             rows=new Text[4];
             for(int i=0;i<4;i++){var row=Panel(names[i],destinations.transform,16,82+i*88,480,76,Color.gray);rows[i]=Label("",row.transform,12,0,458,76,32);}
             notice=Label("",root.transform,30,818,480,64,24);
             var footer=Panel("Controls",root.transform,0,890,540,70,new Color(.045f,.08f,.12f));
-            hint=Label("",footer.transform,22,0,496,70,23);
+            hint=Label("",footer.transform,22,0,496,70,23);footer.SetActive(false);
+            stocks=DeliveryService.Mok.Stocks.StockPhoneApp.Build(root.transform,font);
         }
     }
 }

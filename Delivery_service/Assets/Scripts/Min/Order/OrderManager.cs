@@ -343,6 +343,7 @@ public class OrderManager : MonoBehaviour
         }
 
         RobberyManager.NotifyDeliveryCompleted();
+        DeliveryService.Mok.Stocks.StockMarket.Instance?.DeliveryClue();
         ScheduleNextOrder();
         OrdersChanged?.Invoke();
         return true;
