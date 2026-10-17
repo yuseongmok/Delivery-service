@@ -108586,6 +108586,9 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 1440373711}
     m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 9042388167991725923, guid: 1f88a9a8729892945958c2fb932d780d, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1745745551}
     - targetCorrespondingSourceObject: {fileID: 8849383491485516756, guid: 1f88a9a8729892945958c2fb932d780d, type: 3}
       insertIndex: -1
       addedObject: {fileID: 205420680}
@@ -418477,7 +418480,7 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 5817904115907149233, guid: 1f88a9a8729892945958c2fb932d780d, type: 3}
   m_PrefabInstance: {fileID: 463732176}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 463732178}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b828a4f0be0010b498c9307b9743d701, type: 3}
@@ -741696,6 +741699,33 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &463732178 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 9042388167991725923, guid: 1f88a9a8729892945958c2fb932d780d, type: 3}
+  m_PrefabInstance: {fileID: 463732176}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1745745551
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 463732178}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cfac5c8156e342040bf022e8b048510c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DeliveryService.Yun.Audio.MotorcycleDrivingAudio
+  motorcycle: {fileID: 0}
+  minimumSpeed: 0.3
+  pitchRange: {x: 0.8, y: 1.35}
+  lowSpeedVolume: 0.25
+  fadeInSeconds: 0.45
+  fadeOutSeconds: 0.6
+  pitchResponse: 3
+  brakeArmSpeed: 6
+  brakeStartSpeed: 4
+  brakeMaximumSeconds: 1.5
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
