@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace DeliveryService.Mok.ShopUI
 {
-    // Lives on the PC, so closing its screen never stops accounting.
+    // PC 본체에 붙어 있으므로 화면을 닫아도 회계를 계속 기록한다.
     public sealed class ShopDayLedger : MonoBehaviour
     {
         public DayNightCycle cycle;
@@ -39,7 +39,7 @@ namespace DeliveryService.Mok.ShopUI
         }
         private void Record(int amount, ExpenseType type)
         {
-            // A transaction before the opening button must not enter today's report.
+            // 개점 버튼을 누르기 전 거래는 오늘 통계에 포함하지 않는다.
             if (cycle == null || !cycle.isShopOpen) return;
             BeginDay();
             if (amount > 0) Income += amount;

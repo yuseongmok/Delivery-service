@@ -36,7 +36,7 @@ public class ToppingInventory : MonoBehaviour
 
     private void UpdateUI()
     {
-        // Fire even without a HUD, before RemovePizza returns to its caller.
+        // HUD가 없어도 RemovePizza가 반환되기 전에 이벤트를 보낸다.
         ContentsChanged?.Invoke();
         if (currentTopping == null) return;
 

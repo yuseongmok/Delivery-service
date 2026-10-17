@@ -36,14 +36,14 @@ static Light Lamp(string name,Vector3 pos,float intensity,float range,LightType 
 public static void Build(){
 var shop=GameObject.Find("PizzaStore");if(shop==null)throw new Exception("PizzaStore missing");if(shop.transform.Find("Mok Pizza Shop")!=null)throw new Exception("Building already installed. Preserve edits.");if(Directory.Exists(Folder))throw new Exception("Asset folder exists; do not overwrite.");
 EditorSceneManager.SaveScene(shop.scene);File.Copy(shop.scene.path,"Temp/Mok-building-before.unity",true);
-// Preserve every existing gameplay transform and serialized object reference.
+// 기존 게임 오브젝트의 Transform과 저장된 참조를 유지한다.
 var behaviours=shop.GetComponentsInChildren<MonoBehaviour>(true).Where(b=>b!=null).ToArray();var positions=behaviours.ToDictionary(b=>b,b=>b.transform.position);
 var refs=new List<Tuple<MonoBehaviour,string,UnityEngine.Object>>();foreach(var b in behaviours){var so=new SerializedObject(b);var p=so.GetIterator();while(p.Next(true))if(p.propertyType==SerializedPropertyType.ObjectReference)refs.Add(Tuple.Create(b,p.propertyPath,p.objectReferenceValue));}
 Directory.CreateDirectory(Folder);AssetDatabase.Refresh();font=AssetDatabase.LoadAssetAtPath<Font>("Assets/Fonts/BMJUA_ttf.ttf");
 mats=new[]{Mat("Limestone","#999F93"),Mat("DeepTeal","#30484A"),Mat("OxideRed","#884C3E"),Mat("StoneFloor","#747D78"),Mat("RoofSlate","#3D4849"),Mat("WarmTrim","#B6B7A3"),Mat("Steel","#687A77")};v.Clear();tri=mats.Select(m=>new List<int>()).ToArray();lights.Clear();lamps.Clear();signs.Clear();
 root=new GameObject("Mok Pizza Shop");root.transform.position=Anchor;root.transform.SetParent(shop.transform,true);Undo.RegisterCreatedObjectUndo(root,"Install low-poly pizza shop");
 Solid("Foundation",3,new Vector3(0,-.14f,0),new Vector3(10.98f,.28f,9.62f));
-// A tile grid with broad, quiet blocks rather than photographic texture.
+// 사진 텍스처 대신 큼직하고 단순한 타일을 만든다.
 for(int x=-5;x<=5;x++)Box(4,new Vector3(x,-.001f,0),new Vector3(.012f,.006f,9.4f));
 for(int z=-4;z<=4;z++)Box(4,new Vector3(0,-.001f,z),new Vector3(10.8f,.006f,.012f));
 Solid("BackWall",0,new Vector3(0,1.75f,-3.34f),new Vector3(8.98f,3.5f,.28f));
@@ -55,7 +55,7 @@ foreach(float z in new[]{-2.25f,-.15f,1.9f}){
 Box(1,new Vector3(x,1.95f,z),new Vector3(.32f,.065f,1.85f));
 Box(1,new Vector3(x,1.07f,z),new Vector3(.36f,.10f,1.85f));Box(1,new Vector3(x,2.76f,z),new Vector3(.36f,.10f,1.85f));}
 Box(5,new Vector3(x,1.08f,-.2f),new Vector3(.39f,.09f,6.65f));}
-// Front display windows stop before the original right-hand entry route.
+// 기존 오른쪽 출입 동선을 막지 않도록 전면 창을 배치한다.
 Solid("FrontLowWall",0,new Vector3(-1.2f,.43f,2.91f),new Vector3(6.35f,.86f,.22f));
 foreach(float x in new[]{-4.4f,-1.9f,2.05f,4.4f}){
 Solid("FrontPier",0,new Vector3(x,1.65f,2.91f),new Vector3(.28f,3.3f,.3f));Box(5,new Vector3(x,.15f,2.91f),new Vector3(.38f,.3f,.38f));Box(5,new Vector3(x,3.19f,2.91f),new Vector3(.44f,.17f,.44f));}
@@ -67,16 +67,16 @@ Box(5,new Vector3(0,3.42f,-.05f),new Vector3(9.65f,.10f,7.35f));
 Box(2,new Vector3(0,3.78f,3.49f),new Vector3(9.65f,.58f,.18f));Box(1,new Vector3(0,4.09f,3.49f),new Vector3(9.8f,.09f,.24f));Box(5,new Vector3(0,3.47f,3.49f),new Vector3(9.8f,.06f,.24f));
 foreach(float x in new[]{-4.72f,4.72f})Box(1,new Vector3(x,3.88f,-.05f),new Vector3(.16f,.42f,7.25f));
 Box(1,new Vector3(0,3.88f,-3.62f),new Vector3(9.5f,.42f,.16f));
-// Roof utilities: simple faceted shapes, set back from the shop sign.
+// 지붕 설비는 단순한 다면체로 만들고 간판 뒤쪽에 둔다.
 Box(6,new Vector3(-2.8f,3.95f,-1.9f),new Vector3(1.1f,.45f,.95f));for(int i=0;i<5;i++)Box(4,new Vector3(-3.2f+i*.2f,4.19f,-1.9f),new Vector3(.08f,.025f,.8f));
 Box(4,new Vector3(2.8f,4.12f,-2.2f),new Vector3(.5f,.8f,.5f));Box(6,new Vector3(2.8f,4.55f,-2.2f),new Vector3(.7f,.1f,.7f));
-// Raised coarse masonry courses and corner blocks.
+// 굵은 벽돌 띠와 모서리 블록을 만든다.
 for(float y=.5f;y<3.3f;y+=.52f){Box(5,new Vector3(0,y,-3.49f),new Vector3(8.95f,.022f,.025f));foreach(float x in new[]{-4.4f,4.4f})foreach(float z in new[]{-3.3f,2.91f})Box(5,new Vector3(x,y,z),new Vector3(.39f,.18f,.36f));}
-// Low-poly pizza medallion on the fascia.
+// 전면 띠에 로우폴리 피자 문양을 배치한다.
 Disc(5,new Vector3(-3.48f,3.79f,3.595f),.25f,12);Disc(2,new Vector3(-3.48f,3.79f,3.601f),.19f,12);Disc(5,new Vector3(-3.48f,3.79f,3.605f),.16f,12);
 foreach(var p in new[]{new Vector2(-.07f,.05f),new Vector2(.08f,.02f),new Vector2(0,-.09f)})Disc(2,new Vector3(-3.48f+p.x,3.79f+p.y,3.61f),.035f,6);
 var shell=root.AddComponent<MeshFilter>();shell.sharedMesh=Mesh("ShopShell_LowPoly");var renderer=root.AddComponent<MeshRenderer>();renderer.sharedMaterials=mats;
-// Windows are transparent and lit; no opaque blue plates hiding the interior.
+// 창은 조명을 받는 투명 재질로 만들어 내부가 보이게 한다.
 var glass=Mat("WindowGlass","#78948D",.45f);glass.SetFloat("_Surface",1);glass.SetFloat("_Blend",0);glass.SetInt("_SrcBlend",(int)BlendMode.SrcAlpha);glass.SetInt("_DstBlend",(int)BlendMode.OneMinusSrcAlpha);glass.SetInt("_ZWrite",0);glass.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");glass.renderQueue=3000;glass.SetColor("_BaseColor",new Color(.47f,.58f,.55f,.16f));
 foreach(float x in new[]{-4.4f,4.4f})foreach(float z in new[]{-2.25f,-.15f,1.9f})Cube("SideGlass",new Vector3(x,1.94f,z),new Vector3(.035f,1.6f,1.82f),glass,root.transform,true);
 Cube("FrontGlassLeft",new Vector3(-3.15f,1.93f,2.93f),new Vector3(2.17f,1.93f,.035f),glass,root.transform,true);Cube("FrontGlassMain",new Vector3(.05f,1.93f,2.93f),new Vector3(3.61f,1.93f,.035f),glass,root.transform,true);
@@ -89,17 +89,17 @@ lamps.Add(Cube("CeilingLampDiffuser",new Vector3(x,3.299f,z),new Vector3(1f,.025
 Lamp("InteriorLight",new Vector3(x,3.18f,z),4.5f,5.5f,LightType.Spot,new Vector3(90,0,0));}
 foreach(float x in new[]{-2.8f,2.8f}){Cube("SignLampArm",new Vector3(x,4.13f,3.75f),new Vector3(.06f,.07f,.58f),mats[1],root.transform);Cube("SignLampHousing",new Vector3(x,4.09f,4.02f),new Vector3(.34f,.12f,.24f),mats[1],root.transform);lamps.Add(Cube("SignLampLens",new Vector3(x,4.02f,4.02f),new Vector3(.28f,.025f,.18f),glow,root.transform).GetComponent<Renderer>());Lamp("SignLight",new Vector3(x,3.99f,3.99f),2.2f,3,LightType.Spot,new Vector3(52,180,0));}
 var switchGo=Cube("LightSwitch",new Vector3(4.22f,1.35f,2.25f),new Vector3(.1f,.24f,.18f),mats[5],root.transform,true);switchGo.layer=3;
-// Keep the switch transform unit-scaled for readable labels and ray bounds.
+// 글자와 상호작용 범위가 맞도록 스위치 스케일은 1로 유지한다.
 var switchWorld=switchGo.transform.position;switchGo.GetComponent<BoxCollider>().size=new Vector3(1,1,1);
 var controller=switchGo.AddComponent<ShopLightSwitch>();controller.lights=lights.ToArray();controller.lampSurfaces=lamps.ToArray();controller.signText=signs.ToArray();
 Cube("SwitchRocker",new Vector3(4.159f,1.35f,2.25f),new Vector3(.025f,.13f,.10f),mats[1],root.transform);
 controller.label=Text("SwitchLabel","E  조명 끄기",new Vector3(4.15f,1.59f,2.25f),.025f,root.transform,new Vector3(0,90,0));controller.SetLights(true);
-// The imported parent itself also contains the old building mesh.
+// 불러온 부모 오브젝트에도 기존 건물 메시가 있다.
 foreach(var r in shop.GetComponents<Renderer>()){Undo.RecordObject(r,"Hide original shop mesh");r.enabled=false;PrefabUtility.RecordPrefabInstancePropertyModifications(r);}
 foreach(var c in shop.GetComponents<Collider>()){Undo.RecordObject(c,"Disable original shop collision");c.enabled=false;PrefabUtility.RecordPrefabInstancePropertyModifications(c);}
-// Replace only the old shell pieces; retain them disabled for recovery.
+// 기존 외벽만 교체하고 복구용으로 비활성화해 보관한다.
 foreach(string name in new[]{"Ground","Ground (1)","Wall_L","Wall_R","Wall_B","Wall_F","Wall_F (1)","Signboard"}){var old=shop.transform.Find(name);if(old==null)throw new Exception("Missing shell part: "+name);if(old.GetComponentsInChildren<MonoBehaviour>(true).Any(b=>b!=null))throw new Exception("Gameplay script on shell: "+name);Undo.RecordObject(old.gameObject,"Replace original shop shell");old.gameObject.SetActive(false);PrefabUtility.RecordPrefabInstancePropertyModifications(old.gameObject);}
-// Convert only this store's unlit prop material instances, retaining their textures.
+// 이 매장의 Unlit 소품 재질만 변환하고 텍스처는 유지한다.
 var converted=new Dictionary<Material,Material>();foreach(var r in shop.GetComponentsInChildren<MeshRenderer>(true)){
 if(r.transform.IsChildOf(root.transform)||!r.gameObject.activeInHierarchy)continue;var materials=r.sharedMaterials;bool changed=false;
 for(int i=0;i<materials.Length;i++){var old=materials[i];if(old==null||old.shader.name.IndexOf("Unlit",StringComparison.OrdinalIgnoreCase)<0)continue;if(!converted.TryGetValue(old,out var lit)){lit=new Material(Shader.Find("Universal Render Pipeline/Lit")){name="PropLit_"+converted.Count};var texture=old.HasProperty("_BaseMap")?old.GetTexture("_BaseMap"):old.HasProperty("_MainTex")?old.GetTexture("_MainTex"):null;lit.SetTexture("_BaseMap",texture);lit.SetColor("_BaseColor",old.HasProperty("_BaseColor")?old.GetColor("_BaseColor"):old.HasProperty("_Color")?old.GetColor("_Color"):Color.white);lit.SetFloat("_Smoothness",.12f);AssetDatabase.CreateAsset(lit,Folder+"/"+lit.name+".mat");converted.Add(old,lit);}materials[i]=lit;changed=true;}

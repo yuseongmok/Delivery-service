@@ -37,14 +37,14 @@ for(int i=0;i<2;i++){Check(citizen.ReceiveKick(p,Vector3.back,30),"Next kick acc
 Check(citizen.Health==10,"Three kicks leave 10 health",log);int deaths=0;citizen.Npc.OnNPCDeath+=_=>deaths++;
 Check(citizen.ReceiveKick(p,Vector3.back,30)&&citizen.Health==0&&citizen.Npc.IsDead,"Fourth kick uses existing death ragdoll",log);Check(deaths==1,"Death event fires once for existing population manager",log);
 until=Time.time+5.5f;while(Time.time<until)yield return null;Check(citizen==null,"Dead citizen removed after existing five-second delay",log);
-// Wall occlusion uses the same ray/sphere path as the live controls.
+// 실제 조작과 같은 레이·구체 검사로 벽 차단을 확인한다.
 citizen=UnityEngine.Object.Instantiate(prefab,spot.position,Quaternion.identity).GetComponent<CitizenCombat>();yield return null;
 cc.enabled=false;p.transform.position=spot.position+Vector3.forward*1.3f;cc.enabled=true;p.View.transform.LookAt(citizen.transform.position+Vector3.up*1.1f);
 var wall=GameObject.CreatePrimitive(PrimitiveType.Cube);wall.transform.position=spot.position+new Vector3(0,1,.65f);wall.transform.localScale=new Vector3(2,2,.15f);Physics.SyncTransforms();
 Check(!p.TryPickpocket()&&!p.ResolveKick()&&citizen.Health==100,"Walls block both theft and kick",log);UnityEngine.Object.Destroy(wall);
 Cursor.lockState=CursorLockMode.None;Check(!p.TryKick()&&!p.TryPickpocket(),"Unlocked UI cursor blocks combat input",log);Cursor.lockState=CursorLockMode.Locked;
 UnityEngine.Object.Destroy(citizen.gameObject);
-// Verify actual path following rather than only the aggression state.
+// 공격 상태뿐 아니라 실제 경로 이동도 확인한다.
 citizen=UnityEngine.Object.Instantiate(prefab,spot.position,Quaternion.identity).GetComponent<CitizenCombat>();yield return null;
 Check(NavMesh.SamplePosition(spot.position+Vector3.forward*6,out var distant,4,NavMesh.AllAreas),"Distant chase destination exists",log);
 cc.enabled=false;p.transform.position=distant.position;cc.enabled=true;citizen.Provoke(p);Vector3 original=citizen.transform.position;

@@ -53,12 +53,12 @@ Set(manager,"orderIntervalSeconds",.35f);dashboard.openButton.onClick.Invoke();d
 Check(cycle.isShopOpen&&pc.pcUIPanel.activeSelf&&view.SelectedTab==0&&dashboard.orderList.activeInHierarchy&&!dashboard.openingGate.activeSelf,"opening keeps PC open and reveals order list");
 Check(Cursor.visible&&Cursor.lockState==CursorLockMode.None&&!pc.cameraLookScript.enabled,"opening keeps cursor available and camera suspended");
 var money=MoneyManager.Instance;money.AddMoney(18000);money.SpendMoney(2000,ExpenseType.PizzaTopping);money.AccidentMoney(500);money.SpendMoney(300);
-// Exercise the actual refueling caller with a controlled charge.
+// 지정한 비용으로 실제 주유 호출을 검사한다.
 var nozzle=UnityEngine.Object.FindFirstObjectByType<FuelNozzle>();var cap=UnityEngine.Object.FindObjectsByType<FuelCap>(FindObjectsSortMode.None).First(c=>c.bikeFuelSystem!=null);
 nozzle.enabled=false;nozzle.currentTargetCap=cap;nozzle.currentState=FuelNozzle.NozzleState.Refueling;nozzle.costPerSecond=0;nozzle.refuelSpeed=0;cap.bikeFuelSystem.currentFuel=0;Set(nozzle,"costAccumulator",4000f);Invoke(nozzle,"Update");
 Check(ledger.Income==18000&&ledger.Expense==6800&&ledger.Ingredients==2000&&ledger.Fuel==4000&&ledger.Loss==500&&ledger.Other==300&&ledger.Profit==11200,"actual income, refueling, ingredients, fines/theft and other costs reconcile exactly");
 long expense=ledger.Expense;Check(!money.SpendMoney(money.currentMoney+1)&&!money.SpendMoney(-1)&&ledger.Expense==expense,"failed and invalid purchases are not recorded");
-// Real supply purchase from the existing UI.
+// 기존 UI를 통해 실제 재료 구매를 검사한다.
 view.SelectTab(2);var catalog=Resources.Load<ShopSupplyCatalog>("YunShopSupplyCatalog");var data=catalog.Find(ToppingType.Pepperoni);PlayerPrefs.SetInt("Stock_"+data.toppingName,0);PlayerPrefs.SetInt("Pending_"+data.toppingName,0);view.ingredients[0].quantity=1;view.RefreshQuantities();
 view.transform.Find("Background/Page_2/IngredientsScroll/Content/Ingredient_0/Card/Purchase").GetComponent<Button>().onClick.Invoke();
 Check(ledger.Ingredients==2000+data.cost*10&&ToppingStockManager.GetPendingStock(data.toppingName)==10,"real supply purchase enters ingredient statistics once");

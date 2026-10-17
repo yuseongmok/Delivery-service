@@ -10,7 +10,7 @@ using UnityEngine.Rendering;
 
 namespace DeliveryService.Mok.Editor
 {
-    // Editor-only authoring tool. Does not save or overwrite the gameplay scene.
+    // 에디터 전용 제작 도구이며 게임 씬을 저장하거나 덮어쓰지 않는다.
     public static class PizzaWorkbenchBuilder
     {
         const string Folder = "Assets/Scripts/Mok/Art/PizzaWorkbench";
@@ -57,11 +57,11 @@ namespace DeliveryService.Mok.Editor
                     MakeMaterial("OxideRed", "#823E32",0,0.19f)
                 };
                 vertices.Clear();uvs.Clear();indices=Enumerable.Range(0,materials.Length).Select(_=>new List<int>()).ToArray();
-                // Dimensions preserve original countertop and PizzaPoint height.
+                // 기존 상판과 PizzaPoint 높이를 유지한다.
                 Box(2,new Vector3(0,.765f,0),new Vector3(1.26f,.05f,1.06f),.035f);
                 Box(0,new Vector3(0,.8105f,0),new Vector3(1.24f,.041f,1.04f),.035f);
                 Box(1,new Vector3(0,.678f,0),new Vector3(1.12f,.125f,.91f),.015f);
-                // Two shallow drawer faces, mirrored so either approach works.
+                // 양쪽에서 사용할 수 있도록 얕은 서랍 두 개를 대칭 배치한다.
                 foreach(float front in new[]{-1f,1f}) {
                     Box(4,new Vector3(0,.728f,front*.462f),new Vector3(1.09f,.015f,.015f),.003f);
                     foreach(float side in new[]{-1f,1f}) {
@@ -92,7 +92,7 @@ namespace DeliveryService.Mok.Editor
                 report.colliderCenter=new Vector3(0,.4155f,0);
                 File.WriteAllText(Output+"/integration.json",JsonUtility.ToJson(report,true));
                 File.WriteAllText(Output+"/dimensions.txt",$"Original world bounds: {oldBounds}\nTransform world scale: {tr.lossyScale}\nPizzaPoint local: {point.localPosition}\nTriangles: {report.triangles}");
-                // In-memory visual substitution only. The narrowly scoped scene patch is applied separately.
+                // 메모리에서 외형만 교체하며 씬 수정은 별도로 적용한다.
                 maker.GetComponent<MeshFilter>().sharedMesh=mesh;maker.GetComponent<MeshRenderer>().sharedMaterials=materials;
                 var box=maker.GetComponent<BoxCollider>();box.center=report.colliderCenter;box.size=report.colliderSize;
                 Physics.SyncTransforms();

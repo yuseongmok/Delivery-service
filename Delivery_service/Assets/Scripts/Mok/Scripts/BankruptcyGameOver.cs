@@ -1,6 +1,6 @@
 using UnityEngine;
 namespace DeliveryService.Mok {
-// Terminal run state: invoked only at the next-day boundary, before daily resets.
+// 다음 날로 넘어갈 때 일일 초기화 전에 게임오버를 판정한다.
 public sealed class BankruptcyGameOver : MonoBehaviour {
     public int SurvivedDays {get;private set;}
     Font font; float previousScale;
@@ -11,7 +11,7 @@ public sealed class BankruptcyGameOver : MonoBehaviour {
         screen.SurvivedDays=clock.currentDay;
         screen.previousScale=Time.timeScale;
         clock.isShopOpen=false;
-        // Stop game input and outstanding coroutines as well as physics/time.
+        // 입력·코루틴·물리·시간 진행을 멈춘다.
         foreach(var behaviour in FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None)){
             if(behaviour==screen||behaviour is IncomeFeedback||behaviour.GetType().Assembly!=typeof(PlayerCombat).Assembly)continue;
             behaviour.StopAllCoroutines();behaviour.enabled=false;

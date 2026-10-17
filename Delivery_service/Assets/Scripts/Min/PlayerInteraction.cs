@@ -40,8 +40,8 @@ public class PlayerInteraction : MonoBehaviour
 
         if (pizza != null && pizza.IsPlaced)
         {
-            // The workbench owns pickup as well as topping placement.
-            // A hit on any pizza/topping collider should behave like a hit on its workbench.
+            // 제작대에서 토핑 배치와 피자 집기를 함께 처리한다.
+            // 피자나 토핑 콜라이더를 눌러도 해당 제작대 상호작용으로 처리한다.
             PizzaMaker maker = pizza.GetComponentInParent<PizzaMaker>();
             if (maker != null) maker.Interact(inventory);
             else pizza.Interact(inventory);

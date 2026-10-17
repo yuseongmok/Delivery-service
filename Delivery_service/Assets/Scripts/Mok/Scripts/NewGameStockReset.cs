@@ -6,8 +6,8 @@ namespace DeliveryService.Mok
 {
     public static class NewGameStockReset
     {
-        // Called once per application/Editor Play session, before any scene reads stock.
-        // Scene changes and the next trading day do not invoke this callback.
+        // 게임 또는 에디터 플레이 시작 시 재고를 읽기 전에 한 번 호출한다.
+        // 씬 이동이나 다음 영업일 전환에는 호출하지 않는다.
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void ResetStock()
         {

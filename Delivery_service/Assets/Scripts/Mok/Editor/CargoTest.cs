@@ -12,7 +12,7 @@ public static IEnumerator RunCore(Action<string> log){
 var bike=UnityEngine.Object.FindFirstObjectByType<BikePizzaStorage>();var cargo=bike.GetComponent<BikeCargoVisual>();var inv=UnityEngine.Object.FindFirstObjectByType<ToppingInventory>();
 var cycle=UnityEngine.Object.FindFirstObjectByType<DayNightCycle>();cycle.timeMultiplier=0;cycle.currentTime=12;typeof(DayNightCycle).GetMethod("UpdateLighting",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(cycle,null);
 Check(cargo!=null&&cargo.Lid!=null,"Cargo scene model and lid references survive reload",log);
-// Move the test player near the boot to make the transfer path representative.
+// 실제 이동 연출처럼 배달통 가까이에 테스트 플레이어를 놓는다.
 var camera=inv.GetComponent<PlayerInteraction>().InteractionCamera;var pos=camera.transform.position;var rot=camera.transform.rotation;
 camera.transform.position=bike.transform.position+new Vector3(.15f,.55f,-1.2f);camera.transform.LookAt(bike.transform.position+Vector3.up*.25f);
 Physics.SyncTransforms();Check(Physics.Raycast(bike.transform.position+new Vector3(0,.25f,-1),Vector3.forward,out var hit,2,1<<bike.gameObject.layer)&&hit.collider.GetComponentInParent<BikePizzaStorage>()==bike,"Cargo interaction collider reachable",log);

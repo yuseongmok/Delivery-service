@@ -38,6 +38,7 @@ public class MotorcycleController : MonoBehaviour
 
     private float currentSpeed = 0f;
     public float CurrentSpeed => currentSpeed;
+    public bool IsControlAvailable => isActiveAndEnabled && isControllable && !isRefueling;
     private float currentSteerAngle = 0f;
     private float smoothedSteerInput = 0f;
 

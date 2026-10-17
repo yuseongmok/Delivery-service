@@ -63,7 +63,7 @@ namespace DeliveryService.Mok.Editor
             while(!pizza.IsBaked)yield return null;
             Check(!visual.transform.Find("Mok Pizza Stages/ShreddedCheese").gameObject.activeSelf&&visual.transform.Find("Mok Pizza Stages/MeltedCheese").gameObject.activeSelf&&visual.transform.Find("Mok Pizza Stages/BakedCrust").gameObject.activeSelf,"Oven completion switches crust and melted cheese",log);
             oven.Interact(inv);Check(inv.HeldPizza==pizza.gameObject,"Oven pickup retains baked pizza",log);
-            // Return to workbench to inspect the baked stage under the same light/camera.
+            // 같은 조명과 카메라에서 구운 상태를 확인하도록 제작대로 돌아간다.
             maker.Interact(inv);Capture(pizza.transform,"baked-cheese");maker.Interact(inv);
             var station=packing.GetComponent<PizzaBoxStation>();
             packing.Interact(inv);packing.Interact(inv);
@@ -89,7 +89,7 @@ namespace DeliveryService.Mok.Editor
             Check(inv.GetHeldPackagedPizzas().Count==1,"Existing pickup transfers packaged pizza to inventory",log);
             Check(((List<GameObject>)Get(pickup,"visualBoxes")).Count==0,"Pickup removes only completed box visuals",log);
             inv.ClearPackagedPizzas();
-            // Empty-box toggling and a second package must not leave the station stuck.
+            // 빈 상자 조작과 두 번째 포장 후에도 정상 작동하는지 확인한다.
             packing.Interact(inv);while(station.IsBusy)yield return null;
             packing.Interact(inv);while(station.IsBusy)yield return null;
             Check(!station.IsOpen&&station.ContainedPizza==null,"Empty box can reopen and close for reuse",log);

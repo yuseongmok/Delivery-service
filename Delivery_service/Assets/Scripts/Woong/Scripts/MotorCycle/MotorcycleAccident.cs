@@ -17,6 +17,13 @@ public class MotorcycleAccident : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         if (controller == null) return;
+        // 강도는 사고 대화창 없이 제압하고 훔친 피자를 떨어뜨린다.
+        var robber=other.GetComponentInParent<RobberAI>();
+        if(robber!=null){
+            if(controller.isDriven&&robber.ReceiveBikeImpact(controller.transform.forward*Mathf.Sign(controller.CurrentSpeed),Mathf.Abs(controller.CurrentSpeed)))
+                controller.ApplyImpactDeceleration(speedMultiplierOnImpact);
+            return;
+        }
 
         if (((1 << other.gameObject.layer) & npcLayer) != 0)
         {

@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace DeliveryService.Mok
 {
-    // Replaces appearance only. The original interaction collider and stock label remain in place.
+    // 외형만 교체하고 기존 상호작용 콜라이더와 재고 표시는 유지한다.
     public sealed class ToppingTrayVisual : MonoBehaviour
     {
         [SerializeField] private Transform model;
@@ -10,7 +10,7 @@ namespace DeliveryService.Mok
         public void Initialize(PizzaToppingData data)
         {
             if (model == null) model = transform.Find("Mok Ingredient Tray");
-            // The legacy dough prefab also carries Topping; it is a pizza, not a supply station.
+            // 기존 도우에도 Topping이 있지만 재료 보관대가 아닌 피자다.
             if (Model != null || data == null || GetComponentInParent<Pizza>() != null) return;
             var prefab = Resources.Load<GameObject>("MokPizzaArt/Tray" + data.toppingType);
             if (prefab == null) return;

@@ -38,7 +38,7 @@ if(stage==0){
 pc=UnityEngine.Object.FindFirstObjectByType<ShopPC>();manager=pc.GetComponentInChildren<OrderManager>(true);cycle=UnityEngine.Object.FindObjectsByType<DayNightCycle>(FindObjectsSortMode.None).Single(c=>c.pcUIPanel==pc.pcUIPanel);view=pc.pcUIPanel.GetComponent<ShopPcUiView>();queue=pc.pcUIPanel.GetComponentInChildren<ShopPcOrderQueue>(true);
 Check(queue.manager==manager,"new PC uses the original OrderManager");Check(Mathf.Approximately((float)typeof(OrderManager).GetField("orderIntervalSeconds",Flags).GetValue(manager),125f),"saved production order interval is still 125 seconds");
 var money=MoneyManager.Instance;if(money!=null)Set(money,"saveFilePath",Path.GetFullPath("Temp/Mok-orders-test-economy.json"));
-// Accelerate only the running test instance; exercise the real coroutine.
+// 테스트 인스턴스만 가속하고 실제 코루틴을 실행한다.
 Set(manager,"orderIntervalSeconds",.35f);Open();view.GetComponentsInChildren<Button>(true).Single(b=>b.name=="OpenBusiness").onClick.Invoke();stage=1;return;
 }
 if(stage==1){if(manager.PendingOrders.Count<1)return;Check(manager.PendingOrders[0].orderName=="주문 01","opening creates order 01");Open();Check(queue.VisibleCount==1,"first order appears in new PC");Invoke(pc,"ClosePanel");stage=2;return;}

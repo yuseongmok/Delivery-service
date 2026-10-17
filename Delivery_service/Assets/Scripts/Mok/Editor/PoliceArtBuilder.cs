@@ -23,7 +23,7 @@ var bones=root.GetComponentsInChildren<Transform>().ToDictionary(t=>t.name,t=>t)
 for(int i=0;i<triangles.Length;i+=3){var p=(vertices[triangles[i]]+vertices[triangles[i+1]]+vertices[triangles[i+2]])/3;int slot=p.y<.17f?3:p.y<.87f?1:p.y>1.62f?4:p.y>1.38f||Mathf.Abs(p.x)>.62f?2:0;lists[slot].AddRange(new[]{triangles[i],triangles[i+1],triangles[i+2]});}
 mesh.subMeshCount=5;for(int i=0;i<5;i++)mesh.SetTriangles(lists[i],i);SaveAsset(mesh,"UniformBody.asset");renderer.sharedMesh=AssetDatabase.LoadAssetAtPath<Mesh>(Dir+"UniformBody.asset");renderer.sharedMaterials=new[]{navy,pants,skin,black,hair};
 Transform Bone(string name)=>bones[name];
-// Accessories are stored on the rig, with their world scale preserved through the imported 100x armature.
+// 100배 Armature 아래에서도 실제 크기를 유지해 장비를 뼈대에 저장한다.
 Attach(root.transform,Bone("Head"),"Police cap crown",new Vector3(0,1.71f,.005f),new Vector3(.31f,.055f,.28f),navy,PrimitiveType.Cylinder);
 Attach(root.transform,Bone("Head"),"Cap band",new Vector3(0,1.675f,.005f),new Vector3(.315f,.025f,.285f),black,PrimitiveType.Cylinder);
 Attach(root.transform,Bone("Head"),"Cap visor",new Vector3(0,1.664f,.145f),new Vector3(.28f,.022f,.16f),black);

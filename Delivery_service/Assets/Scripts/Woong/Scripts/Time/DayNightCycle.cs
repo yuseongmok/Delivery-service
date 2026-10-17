@@ -173,7 +173,7 @@ public class DayNightCycle : MonoBehaviour
             }
         }
 
-        // Check before new-day resets, deliveries and respawns, for both closing paths.
+        // 두 마감 경로 모두 다음 날 초기화·납품·리스폰 전에 검사한다.
         if (DeliveryService.Mok.BankruptcyGameOver.TryEndDay(this)) yield break;
 
         currentDay++;

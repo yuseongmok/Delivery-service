@@ -61,7 +61,7 @@ try{Build();File.WriteAllText("Temp/Mok-topping-build.txt","PASS: Toppings and t
             if (existing == null) AssetDatabase.CreateAsset(mesh, path);
             else
             {
-                // Use Mesh setters so Unity also refreshes the GPU buffers of loaded prefabs.
+                // Mesh 설정 함수로 프리팹의 GPU 버퍼도 갱신한다.
                 existing.Clear(); existing.vertices = mesh.vertices; existing.subMeshCount = mesh.subMeshCount;
                 for (int i = 0; i < mesh.subMeshCount; i++) existing.SetTriangles(mesh.GetTriangles(i), i);
                 existing.normals = mesh.normals; existing.bounds = mesh.bounds;
@@ -72,13 +72,13 @@ try{Build();File.WriteAllText("Temp/Mok-topping-build.txt","PASS: Toppings and t
             return obj;
         }
 
-// Mesh geometry is baked into assets, with flat face normals and no runtime colliders.
+// 면별 음영을 가진 메시를 에셋에 저장하며 실행 중 콜라이더는 만들지 않는다.
 static void Cylinder(int mat,Vector3 c,float r,float height,int sides=12){
 Disc(mat,c+Vector3.up*height,r,1,sides);
 for(int i=0;i<sides;i++){float a=i*Mathf.PI*2/sides,b=(i+1)*Mathf.PI*2/sides;
 Face(mat,c+Ring(r,0,a),c+Ring(r,height,a),c+Ring(r,height,b),c+Ring(r,0,b));}}
 static Vector3 Turn(Vector3 p,float yaw)=>Quaternion.Euler(0,yaw,0)*p;
-// A raised, bevelled chocolate tile, flat shaded on every face.
+// 모서리를 깎은 도톰한 초콜릿 조각을 면별 음영으로 만든다.
 static void BevelBox(int mat,Vector3 c,Vector3 size,float yaw){
 Vector3 P(float x,float z,float h,float inset)=>c+Turn(new Vector3(x*(size.x/2-inset),h,z*(size.z/2-inset)),yaw);
 Face(mat,P(-1,-1,size.y,.003f),P(-1,1,size.y,.003f),P(1,1,size.y,.003f),P(1,-1,size.y,.003f));
@@ -95,7 +95,7 @@ case ToppingType.Pepperoni:
     if(baked)for(int i=0;i<3;i++)Disc(1,c+Turn(Ring(.035f,.010f,i*2.1f),yaw),.004f,1,5);
     break;
 case ToppingType.Pepper:
-    // Tapered curved red chilli with a contrasting green calyx and stem.
+    // 끝이 가늘고 휜 빨간 고추에 초록 꼭지와 줄기를 붙인다.
     var centers=new[]{new Vector3(-.012f,.013f,-.044f),new Vector3(-.005f,.016f,-.023f),new Vector3(.003f,.014f,.004f),new Vector3(.012f,.010f,.029f),new Vector3(.028f,.003f,.050f)};
     var radii=new[]{.012f,.016f,.014f,.009f,.0008f};
     for(int j=0;j<centers.Length-1;j++)for(int k=0;k<8;k++){
@@ -105,7 +105,7 @@ case ToppingType.Pepper:
     Box(4,c+Turn(new Vector3(-.019f,.018f,-.060f),yaw),new Vector3(.008f,.008f,.025f),yaw-22);
     break;
 case ToppingType.Pineapple:
-    // Curved wedge of fruit: broad yellow face, pale core, radial fibres and rind edge.
+    // 노란 과육, 옅은 심, 방사형 결, 껍질 테두리로 과일 조각을 만든다.
     float h=baked?.019f:.025f;
     Vector3 W(float radius,float angle,float y)=>c+Turn(new Vector3(-Mathf.Sin(angle)*radius,y,Mathf.Cos(angle)*radius-.038f),yaw);
     for(int j=0;j<8;j++){
@@ -119,7 +119,7 @@ case ToppingType.Pineapple:
     Face(6,W(.075f,.85f,0),W(.075f,.85f,h),W(.012f,.85f,h),W(.012f,.85f,0));
     break;
 case ToppingType.Chocolate:
-    // Six raised squares and deep seams read as a chocolate bar even at gameplay distance.
+    // 멀리서도 초콜릿으로 보이도록 여섯 칸과 깊은 홈을 만든다.
     if(baked)Disc(8,c+Vector3.up*.001f,.056f,.78f,12,.08f);
     Box(8,c+Vector3.up*.005f,new Vector3(.069f,.010f,.095f),yaw);
     for(int row=0;row<3;row++)for(int col=0;col<2;col++){
@@ -128,12 +128,12 @@ case ToppingType.Chocolate:
     }
     break;
 case ToppingType.Jelly:
-    // Face-up gummy bear: separate ears, muzzle, arms and feet preserve an unmistakable silhouette.
+    // 귀·주둥이·팔·발을 구분해 위를 향한 곰 젤리 모양을 만든다.
     int m=index%2==0?10:11;float squash=baked?.72f:1;
     void G(float x,float z,float rx,float rz,float height,int material){Gum(material,c+Turn(new Vector3(x,0,z),yaw),rx,rz,height*squash,yaw);}
-    G(0,.005f,.021f,.027f,.026f,m); // belly
+    G(0,.005f,.021f,.027f,.026f,m); // 배
     G(-.017f,-.045f,.012f,.012f,.025f,m);G(.017f,-.045f,.012f,.012f,.025f,m);
-    G(0,-.027f,.024f,.023f,.032f,m); // head
+    G(0,-.027f,.024f,.023f,.032f,m); // 머리
     G(-.027f,-.002f,.011f,.018f,.022f,m);G(.027f,-.002f,.011f,.018f,.022f,m);
     G(-.014f,.032f,.012f,.018f,.021f,m);G(.014f,.032f,.012f,.018f,.021f,m);
     foreach(float side in new[]{-1f,1f})Disc(8,c+Turn(new Vector3(side*.009f,.033f*squash,-.032f),yaw),.003f,1,6);
@@ -148,7 +148,7 @@ palette=new[]{Mat("ToppingPepperoni","#A74230"),Mat("ToppingRoastedRed","#743222
 var types=new[]{ToppingType.Pepperoni,ToppingType.Pepper,ToppingType.Pineapple,ToppingType.Chocolate,ToppingType.Jelly};
 foreach(var type in types)foreach(bool baked in new[]{false,true}){
 var root=new GameObject(type+(baked?"Baked":"Raw"));Begin();
-// Top of shredded cheese is 0.0095 m. Every topping starts above 0.016 m.
+// 치즈 높이는 0.0095m이며 토핑은 0.016m 위부터 배치한다.
 int count=type==ToppingType.Pepperoni?12:10;float phase=Array.IndexOf(types,type)*.63f;
 for(int i=0;i<count;i++){float a=i*2.39996f+phase;float r=.325f*Mathf.Sqrt((i+.5f)/count);Piece(type,Ring(r,.016f,a),i*71,baked,i);}
 Finish(root.name+"Mesh",root.transform);Save(root,root.name);
@@ -167,11 +167,11 @@ else if(type==ToppingType.Sauce){Box(18,new Vector3(0,.094f,0),new Vector3(.426f
 else if(type==ToppingType.Cheese||type==ToppingType.Pepperoni){int count=type==ToppingType.Cheese?140:32;
 for(int i=0;i<count;i++){float a=i*2.39996f,r=Mathf.Sqrt((i+.5f)/count);
 Piece(type,new Vector3(Mathf.Cos(a)*r*.17f,.092f+(i%3)*.005f,Mathf.Sin(a)*r*.1f),i*71,false,i);}}
-else { // Fewer, separated pieces make the silhouette readable in the supply tray.
+else { // 트레이에서 모양이 잘 보이도록 조각 수를 줄이고 간격을 둔다.
 for(int i=0;i<8;i++)Piece(type,new Vector3((i%4-1.5f)*.098f,.092f,(i/4-.5f)*.133f),(i%3-1)*9,false,i);
 }
 Finish(root.name+"Mesh",root.transform);Save(root,root.name);
-// The carried tray uses the same new artwork, so the ingredient remains recognisable.
+// 들고 있는 트레이에도 같은 모델을 사용해 재료를 알아보기 쉽게 한다.
 if(type!=ToppingType.Dough){var held=new GameObject("Held"+type);var tray=UnityEngine.Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(Folder+"/Tray"+type+".prefab"),held.transform);tray.transform.localScale=Vector3.one*.65f;Save(held,held.name);}
 }
 AssetDatabase.SaveAssets();

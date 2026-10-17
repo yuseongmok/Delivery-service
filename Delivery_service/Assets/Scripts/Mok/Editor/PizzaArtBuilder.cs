@@ -71,7 +71,7 @@ namespace DeliveryService.Mok.Editor
             if (existing == null) AssetDatabase.CreateAsset(mesh, path);
             else
             {
-                // Use Mesh setters so Unity also refreshes the GPU buffers of loaded prefabs.
+                // Mesh 설정 함수로 프리팹의 GPU 버퍼도 갱신한다.
                 existing.Clear(); existing.vertices = mesh.vertices; existing.subMeshCount = mesh.subMeshCount;
                 for (int i = 0; i < mesh.subMeshCount; i++) existing.SetTriangles(mesh.GetTriangles(i), i);
                 existing.normals = mesh.normals; existing.bounds = mesh.bounds;
@@ -133,14 +133,14 @@ namespace DeliveryService.Mok.Editor
                 Box(11,new Vector3(0,.019f,0),new Vector3(.97f,.002f,.97f));
                 Box(10,new Vector3(-.49f,.054f,0),new Vector3(.02f,.09f,1)); Box(10,new Vector3(.49f,.054f,0),new Vector3(.02f,.09f,1));
                 Box(10,new Vector3(0,.054f,-.49f),new Vector3(.96f,.09f,.02f)); Box(10,new Vector3(0,.054f,.49f),new Vector3(.96f,.09f,.02f));
-                // Small printed front stripe and side vents.
+                // 앞쪽 인쇄 띠와 옆면 통풍구를 만든다.
                 Box(12,new Vector3(0,.055f,-.501f),new Vector3(.48f,.018f,.001f));
                 for(int i=0;i<3;i++) Box(5,new Vector3(.501f,.06f,-.16f+i*.16f),new Vector3(.001f,.018f,.055f));
                 Finish("BoxBase",box.transform);
                 var hinge = new GameObject("LidHinge").transform; hinge.SetParent(box.transform,false); hinge.localPosition=new Vector3(0,.105f,.495f);
                 Begin(); Box(10,new Vector3(0,0,-.495f),new Vector3(1.016f,.014f,1.016f));
                 Box(11,new Vector3(0,-.008f,-.495f),new Vector3(.98f,.002f,.98f));
-                // Printed emblem: a low-poly pizza slice, framed by clean red bands.
+                // 빨간 띠 안에 로우폴리 피자 조각 문양을 넣는다.
                 Box(12,new Vector3(0,.008f,-.12f),new Vector3(.85f,.001f,.018f)); Box(12,new Vector3(0,.008f,-.87f),new Vector3(.85f,.001f,.018f));
                 Disc(12,new Vector3(0,.009f,-.49f),.255f,1,28);
                 Face(13,new Vector3(-.15f,.010f,-.36f),new Vector3(.15f,.010f,-.36f),new Vector3(0,.010f,-.69f));

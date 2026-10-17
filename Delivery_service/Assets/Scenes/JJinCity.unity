@@ -29538,7 +29538,7 @@ GameObject:
   - component: {fileID: 118700757}
   - component: {fileID: 118700756}
   m_Layer: 0
-  m_Name: Hide Dumpster 01
+  m_Name: Hide_Dumpster 01
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -76993,8 +76993,7 @@ MonoBehaviour:
   dayNightCycle: {fileID: 1230112709}
   robberPrefab: {fileID: 2119448736634818676, guid: 92d9ed46210e5c74b8dcd7fcab1957bb, type: 3}
   playerTarget: {fileID: 2136636698}
-  despawnTime: 20
-  spawnChancePercent: 100
+  spawnChancePercent: 50
 --- !u!4 &311146126
 Transform:
   m_ObjectHideFlags: 0
@@ -110606,7 +110605,7 @@ GameObject:
   - component: {fileID: 430791479}
   - component: {fileID: 430791478}
   m_Layer: 0
-  m_Name: Mok Hospital Blackout
+  m_Name: Hospital_Blackout
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -354677,7 +354676,7 @@ GameObject:
   - component: {fileID: 1411949999}
   - component: {fileID: 1411949998}
   m_Layer: 0
-  m_Name: Hide Dumpster 03
+  m_Name: Hide_Dumpster 03
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -408639,7 +408638,7 @@ GameObject:
   - component: {fileID: 1620952308}
   - component: {fileID: 1620952307}
   m_Layer: 0
-  m_Name: Hide Dumpster 06
+  m_Name: Hide_Dumpster 06
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -497101,7 +497100,7 @@ GameObject:
   - component: {fileID: 1963766675}
   - component: {fileID: 1963766674}
   m_Layer: 0
-  m_Name: Hide Dumpster 02
+  m_Name: Hide_Dumpster 02
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -499730,7 +499729,7 @@ GameObject:
   - component: {fileID: 1972895889}
   - component: {fileID: 1972895888}
   m_Layer: 0
-  m_Name: Hide Dumpster 04
+  m_Name: Hide_Dumpster 04
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -509419,7 +509418,7 @@ GameObject:
   - component: {fileID: 2014734167}
   - component: {fileID: 2014734166}
   m_Layer: 0
-  m_Name: Hide Dumpster 05
+  m_Name: Hide_Dumpster 05
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -515471,7 +515470,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2037013062}
   m_Layer: 0
-  m_Name: Mok Hiding Dumpsters
+  m_Name: Hiding_Dumpsters
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

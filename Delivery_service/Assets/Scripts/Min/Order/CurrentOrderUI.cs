@@ -18,7 +18,7 @@ public class CurrentOrderUI : MonoBehaviour
 
     private void SetText(string value)
     {
-        // Destination is now part of the left order block.
+        // 배달지는 왼쪽 주문 영역에 함께 표시한다.
         if (locationText != null) locationText.text = "";
         if (currrentOrderText == null) return;
         currrentOrderText.verticalOverflow = VerticalWrapMode.Overflow;
@@ -37,7 +37,7 @@ public class CurrentOrderUI : MonoBehaviour
         SetText(OrderHeading(order) + "\n주문 취소\n피자를 폐기하세요");
     }
 
-    // Retain the legacy entry point for other scenes.
+    // 다른 씬에서 사용하는 기존 호출 경로를 유지한다.
     public void DisplayOrders(List<PizzaOrder> orders, string targetLocation = "")
     {
         if (orders == null || orders.Count == 0) { ClearOrder(); return; }

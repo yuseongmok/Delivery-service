@@ -8,6 +8,10 @@ public class BikePizzaStorage : MonoBehaviour, IInteractable
     public GameObject pizzaBoxVisual;
     private List<PizzaData> storedPizzas = new List<PizzaData>();
     public int StoredCount => storedPizzas.Count;
+    // 저장 피자를 외부에 노출하지 않고 가장 많은 추가 토핑 수만 반환한다.
+    public int MaxExtraToppingCount {
+        get { int count=0; foreach(var pizza in storedPizzas) count=Mathf.Max(count,RobberyManager.CountExtraToppings(pizza)); return count; }
+    }
 
     [Header("피자 흔들림 게이지")]
     public GameObject pizzaUIGroup;
@@ -141,6 +145,13 @@ public class BikePizzaStorage : MonoBehaviour, IInteractable
     }
 
     // 적재 피자 스틸
+    // 잠금을 가진 강도에게 첫 상자 하나만 넘기고 나머지 상태는 보존한다.
+    public PizzaData TakeOneForRobber(UnityEngine.Object owner)
+    {
+        var cargo=GetComponent<DeliveryService.Mok.BikeCargoVisual>();
+        if(cargo==null||!cargo.IsRobberyBy(owner)||storedPizzas.Count==0)return null;
+        var pizza=storedPizzas[0];storedPizzas.RemoveAt(0);cargo.Refresh();UpdateUI();return pizza;
+    }
     public bool TryStealPizzas()
     {
         if (storedPizzas != null && storedPizzas.Count > 0)

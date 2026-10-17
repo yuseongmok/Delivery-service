@@ -22,7 +22,7 @@ Physics.SyncTransforms();Check(!Physics.CapsuleCast(new Vector3(141.25f,.65f,64)
 var target=sw.GetComponent<Collider>().bounds.center;var from=target+Vector3.left*.8f;
 Check(Physics.Raycast(from,(target-from).normalized,out var hit,1.5f,Get<LayerMask>(interaction,"interactLayer"))&&hit.collider.GetComponent<ShopLightSwitch>()==sw,"E interaction ray hits wall switch");
 Aim(from,target);Check(!sw.LightsOn&&sw.lights.All(l=>!l.enabled),"existing player interaction switches all six lights off");Aim(from,target);Check(sw.LightsOn&&sw.lights.All(l=>l.enabled),"existing player interaction switches lights on again");
-// Existing ingredient acquisition and workbench flow after shell/material replacement.
+// 건물과 재질 교체 후 재료 획득과 제작 과정을 확인한다.
 var dough=UnityEngine.Object.FindObjectsByType<Topping>(FindObjectsSortMode.None).Single(t=>Get<PizzaToppingData>(t,"toppingData").toppingType==ToppingType.Dough);
 var d=dough.GetComponent<Collider>().bounds.center;Aim(d+Vector3.forward*1.2f+Vector3.up*.45f,d);Check(inv.HasTopping()&&inv.CurrentItem.toppingType==ToppingType.Dough,"dough tray is reachable and supplies paid dough");
 var maker=UnityEngine.Object.FindFirstObjectByType<PizzaMaker>();var m=maker.GetComponent<Collider>().bounds.center;Aim(m+Vector3.forward*1.2f+Vector3.up*1.0f,m);Check(!inv.HasItem()&&Get<Pizza>(maker,"currentPizza")!=null,"dough can still be placed on original workbench");

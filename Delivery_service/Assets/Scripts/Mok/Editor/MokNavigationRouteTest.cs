@@ -30,7 +30,7 @@ public static string RunCore(){
   log.AppendLine("OUT "+p.DeliveryPointID+" target="+p.transform.position+" sample="+(found?hit.position.ToString():"NONE")+" nav="+nav.RouteStatus+" corners="+nav.DisplayPath.Count);
  }
  foreach(var p in points){origin.transform.position=p.transform.position;nav.SelectPlace(shop);if(nav.DisplayPath.Count==0)returnFailures++;log.AppendLine("RETURN "+p.DeliveryPointID+" nav="+nav.RouteStatus+" corners="+nav.DisplayPath.Count);}
- // Sample road positions throughout the city to detect disconnected starting islands.
+ // 도시의 도로 위치를 검사해 끊어진 출발 구역을 찾는다.
  int failures=0,total=0;for(int x=-180;x<=180;x+=20)for(int z=-180;z<=180;z+=20){var v=new Vector3(x,0,z);if(!NavMesh.SamplePosition(v,out var h,3,filter))continue;origin.transform.position=h.position;nav.SelectPlace(shop);total++;if(nav.DisplayPath.Count==0&&Vector3.Distance(h.position,shop.Destination.position)>5){failures++;if(failures<35)log.AppendLine("GRID_FAIL "+h.position+" "+nav.RouteStatus);}}
  log.AppendLine("GRID total="+total+" failures="+failures);
  log.AppendLine("Delivery failures="+deliveryFailures+" return failures="+returnFailures+" total elapsed ms="+watch.ElapsedMilliseconds);

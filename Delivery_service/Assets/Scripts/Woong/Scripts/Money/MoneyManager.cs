@@ -18,7 +18,7 @@ public class MoneyManager : MonoBehaviour
     public int expenseFuel = 0;
 
     public event Action<int> OnMoneyChanged;
-    // Signed amount: income positive, expense negative. Emitted only for completed transactions.
+    // 수입은 양수, 지출은 음수이며 완료된 거래만 알린다.
     public event Action<int, ExpenseType> TransactionRecorded;
     private string saveFilePath;
     private int lastCheckedMoney;
@@ -30,7 +30,7 @@ public class MoneyManager : MonoBehaviour
             Instance = this;
             DontDestroyOnLoad(gameObject);
             saveFilePath = Path.Combine(Application.persistentDataPath, "economySave.json");
-            // Each new game session starts with the same capital, including existing players.
+            // 기존 플레이어도 새 게임마다 같은 초기 자금으로 시작한다.
             currentMoney = StartingMoney;
             ResetDailyStats();
             SaveMoney();
@@ -99,7 +99,7 @@ public class MoneyManager : MonoBehaviour
         if (amount <= 0) return;
         currentMoney -= amount;
         lastCheckedMoney = currentMoney;
-        dailyTotalExpense += amount; // Fines and theft are expenses, not negative sales.
+        dailyTotalExpense += amount; // 벌금과 도난은 매출 감소가 아닌 지출로 기록한다.
 
         SaveMoney();
         OnMoneyChanged?.Invoke(currentMoney);

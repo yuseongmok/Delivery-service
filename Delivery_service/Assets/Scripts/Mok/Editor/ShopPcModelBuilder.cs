@@ -48,11 +48,11 @@ string[] names={"CharcoalHousing","SlateTrim","ScreenGlass","ScreenInk","TealAcc
 Material[] mats;
 if(mesh==null){
 mats=new[]{MakeMaterial(names[0],"#29383F",.12f,.22f),MakeMaterial(names[1],"#52656A",.18f,.28f),MakeMaterial(names[2],"#283D48",0,.25f),MakeMaterial(names[3],"#B9C8BD",0,.15f),MakeMaterial(names[4],"#448D87",0,.22f),MakeMaterial(names[5],"#949D95",0,.16f)};
-// Only the display has a restrained glow; the housing remains fully light-driven.
+// 화면만 은은하게 발광하고 본체는 주변 조명을 받는다.
 mats[2].EnableKeyword("_EMISSION");mats[2].SetColor("_EmissionColor",new Color(.012f,.021f,.026f));
 mats[3].EnableKeyword("_EMISSION");mats[3].SetColor("_EmissionColor",new Color(.035f,.044f,.038f));
 vertices.Clear();uvs.Clear();indices=Enumerable.Range(0,mats.Length).Select(_=>new List<int>()).ToArray();
-// Countertop POS terminal. Authored front is local -Z; asset is rotated to original +Z; same footprint and bottom as original.
+// 탁상형 POS. 정면 -Z를 기존 +Z에 맞추고 바닥 위치와 크기를 유지한다.
 Box(0,new Vector3(0,.023f,.015f),new Vector3(.46f,.046f,.36f),.035f);
 Box(1,new Vector3(0,.053f,.075f),new Vector3(.24f,.014f,.19f),.018f);
 Box(0,new Vector3(0,.168f,.075f),new Vector3(.10f,.23f,.10f),.014f);
@@ -60,7 +60,7 @@ Box(1,new Vector3(0,.27f,.067f),new Vector3(.20f,.045f,.11f),.01f);
 Box(0,new Vector3(0,.46f,.035f),new Vector3(.69f,.44f,.105f),.022f);
 Box(1,new Vector3(0,.46f,-.022f),new Vector3(.656f,.405f,.014f),.014f);
 Box(2,new Vector3(0,.471f,-.032f),new Vector3(.598f,.338f,.009f),.007f);
-// Minimal order dashboard: sidebar, heading, three receipt rows and status blocks.
+// 사이드바, 제목, 주문 세 줄과 상태 표시로 화면을 구성한다.
 Box(4,new Vector3(-.258f,.471f,-.038f),new Vector3(.046f,.30f,.004f),.002f);
 Box(3,new Vector3(-.11f,.60f,-.038f),new Vector3(.18f,.013f,.004f),.002f);
 for(int row=0;row<3;row++){
@@ -72,7 +72,7 @@ Box(4,new Vector3(.191f,y,-.041f),new Vector3(.047f,.024f,.003f),.003f);
 }
 Box(4,new Vector3(.278f,.273f,-.035f),new Vector3(.018f,.008f,.008f),.002f);
 Box(1,new Vector3(-.20f,.274f,-.035f),new Vector3(.065f,.007f,.008f),.001f);
-// Integrated compact keyboard, visibly separated keys, rear vents.
+// 작은 키보드와 분리된 키, 뒤쪽 통풍구를 만든다.
 Box(1,new Vector3(0,.058f,-.095f),new Vector3(.39f,.026f,.125f),.012f);
 for(int row=0;row<3;row++)for(int col=0;col<9;col++)
 Box(col==8?4:5,new Vector3(-.158f+col*.0395f,.076f,-.136f+row*.035f),new Vector3(.031f,.011f,.025f),.003f);
@@ -83,13 +83,13 @@ mesh.RecalculateNormals();mesh.RecalculateBounds();AssetDatabase.CreateAsset(mes
 var visual=new GameObject("Mok Shop PC Visual");visual.AddComponent<MeshFilter>().sharedMesh=mesh;visual.AddComponent<MeshRenderer>().sharedMaterials=mats;
 PrefabUtility.SaveAsPrefabAsset(visual,Folder+"/ShopPCVisual.prefab");UnityEngine.Object.DestroyImmediate(visual);AssetDatabase.SaveAssets();
 }else mats=names.Select(n=>AssetDatabase.LoadAssetAtPath<Material>(Folder+"/"+n+".mat")).ToArray();
-// Persist emissive display settings after URP material import/validation.
+// URP 재질을 불러오고 검사한 뒤에도 화면 발광 설정을 저장한다.
 foreach(int slot in new[]{2,3,4}) {
 var material=mats[slot];material.SetColor("_EmissionColor",slot==2?new Color(.025f,.045f,.055f):slot==3?new Color(.24f,.31f,.27f):new Color(.025f,.11f,.09f));
 material.globalIlluminationFlags=MaterialGlobalIlluminationFlags.BakedEmissive;material.EnableKeyword("_EMISSION");EditorUtility.SetDirty(material);
 }
 AssetDatabase.SaveAssets();
-// Match the original register's +Z screen without rotating its gameplay transform.
+// 게임 Transform을 돌리지 않고 기존 계산대의 +Z 화면 방향에 맞춘다.
 if(mesh.name!="Mok_ShopPC_LowPoly_FrontPositiveZ") {
 var rotation=Quaternion.Euler(0,180,0);mesh.vertices=mesh.vertices.Select(v=>rotation*v).ToArray();mesh.normals=mesh.normals.Select(n=>rotation*n).ToArray();mesh.RecalculateBounds();mesh.name="Mok_ShopPC_LowPoly_FrontPositiveZ";EditorUtility.SetDirty(mesh);AssetDatabase.SaveAssets();
 }

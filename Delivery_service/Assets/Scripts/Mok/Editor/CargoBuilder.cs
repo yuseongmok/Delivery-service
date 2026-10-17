@@ -54,7 +54,7 @@ static void Poll(){if(EditorApplication.isCompiling||EditorApplication.isUpdatin
             if (existing == null) AssetDatabase.CreateAsset(mesh, path);
             else
             {
-                // Use Mesh setters so Unity also refreshes the GPU buffers of loaded prefabs.
+                // Mesh 설정 함수로 프리팹의 GPU 버퍼도 갱신한다.
                 existing.Clear(); existing.vertices = mesh.vertices; existing.subMeshCount = mesh.subMeshCount;
                 for (int i = 0; i < mesh.subMeshCount; i++) existing.SetTriangles(mesh.GetTriangles(i), i);
                 existing.normals = mesh.normals; existing.bounds = mesh.bounds;
@@ -89,7 +89,7 @@ Beam(new Vector3(side*.22f,-.045f,-.23f),new Vector3(side*.17f,-.27f,.27f),.035f
 Box(4,new Vector3(side*.23f,.12f,-.322f),new Vector3(.10f,.045f,.006f));}
 Box(2,new Vector3(0,-.045f,0),new Vector3(.58f,.04f,.04f));
 Box(2,new Vector3(0,.40f,-.328f),new Vector3(.12f,.07f,.02f));
-// Large cream pizza-slice emblem faces the rear.
+// 뒤쪽에 크림색 피자 조각 문양을 배치한다.
 Face(1,new Vector3(-.10f,.31f,-.322f),new Vector3(.10f,.31f,-.322f),new Vector3(0,.16f,-.322f));
 Box(1,new Vector3(0,.33f,-.324f),new Vector3(.23f,.024f,.004f));
 Finish("CargoShell",root.transform);

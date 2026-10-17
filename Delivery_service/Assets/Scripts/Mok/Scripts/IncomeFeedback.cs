@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 namespace DeliveryService.Mok {
-// Presentation only. MoneyManager remains the sole owner of money and statistics.
+// 표시 연출만 담당하며 잔액과 통계는 MoneyManager가 관리한다.
 public sealed class IncomeFeedback : MonoBehaviour {
     public Text balanceText, popupText;
     public AudioClip incomeSound;

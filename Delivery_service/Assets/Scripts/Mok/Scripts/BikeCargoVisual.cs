@@ -10,6 +10,20 @@ public sealed class BikeCargoVisual : MonoBehaviour {
     GameObject handDisplay;
     public bool IsBusy {get;private set;}
     public Transform Lid => lid;
+    UnityEngine.Object robberyOwner;
+    public bool IsRobberyBy(UnityEngine.Object owner) => owner!=null && robberyOwner==owner && IsBusy;
+    // 물건 이동과 강탈이 같은 배달통을 동시에 조작하지 않도록 잠근다.
+    public bool BeginRobbery(UnityEngine.Object owner){
+        if(owner==null||IsBusy||!isActiveAndEnabled||lid==null||contents==null)return false;
+        robberyOwner=owner;IsBusy=true;return true;
+    }
+    public void RobberyProgress(UnityEngine.Object owner,float progress){
+        if(IsRobberyBy(owner)&&lid!=null)lid.localRotation=Quaternion.Euler(Mathf.Lerp(0,105,Mathf.Clamp01(progress)),0,0);
+    }
+    public void EndRobbery(UnityEngine.Object owner){
+        if(!IsRobberyBy(owner))return;
+        robberyOwner=null;IsBusy=false;if(lid!=null)lid.localRotation=Quaternion.identity;Refresh();
+    }
     public void Configure(Transform hinge,Transform inside){lid=hinge;contents=inside;}
     void Awake(){storage=GetComponent<BikePizzaStorage>();}
     void Start(){Refresh();}
@@ -34,7 +48,7 @@ public sealed class BikeCargoVisual : MonoBehaviour {
         if(!storing)contents.gameObject.SetActive(false);
         moving=Stack(transform,count);
         Vector3 inside=new Vector3(0,.04f,0),outside=transform.InverseTransformPoint(hand);
-        // Lift above the rim before moving sideways, then lower into the compartment.
+        // 테두리 위로 들어 올려 옆으로 옮긴 뒤 통 안으로 내린다.
         Vector3 above=new Vector3(0,.72f,0);
         Vector3 approach=new Vector3(outside.x,Mathf.Max(.72f,outside.y),outside.z);
         for(float t=0;t<.85f;t+=Time.deltaTime){
@@ -56,7 +70,7 @@ public sealed class BikeCargoVisual : MonoBehaviour {
         if(storage!=null&&storage.StoredCount>0)Stack(contents,storage.StoredCount);
     }
     void OnDisable(){
-        StopAllCoroutines();if(moving!=null){moving.SetActive(false);Destroy(moving);}moving=null;
+        robberyOwner=null;StopAllCoroutines();if(moving!=null){moving.SetActive(false);Destroy(moving);}moving=null;
         if(handDisplay!=null)handDisplay.SetActive(true);handDisplay=null;
         if(lid!=null)lid.localRotation=Quaternion.identity;if(contents!=null)contents.gameObject.SetActive(true);
         IsBusy=false;

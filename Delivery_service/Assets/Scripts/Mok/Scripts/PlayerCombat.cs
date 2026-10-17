@@ -42,9 +42,9 @@ public sealed class PlayerCombat : MonoBehaviour {
         if(kickVisual!=null)kickVisual.gameObject.SetActive(false);IsKicking=false;
     }
     public bool ResolveKick(){
-        // Nearest solid object wins; a wall must block a kick just like it blocks interaction.
+        // 가장 가까운 물체를 우선해 벽 너머로 발차기하지 못하게 한다.
         var hits=Physics.SphereCastAll(view.transform.position,.22f,view.transform.forward,kickReach,~0,QueryTriggerInteraction.Ignore).OrderBy(h=>h.distance);
-        foreach(var h in hits){if(h.transform.IsChildOf(transform))continue;var npc=h.collider.GetComponentInParent<CitizenCombat>();return npc!=null&&npc.ReceiveKick(this,view.transform.forward,kickDamage);}return false;
+        foreach(var h in hits){if(h.transform.IsChildOf(transform))continue;var robber=h.collider.GetComponentInParent<RobberAI>();if(robber!=null)return robber.ReceiveKick(view.transform.forward);var npc=h.collider.GetComponentInParent<CitizenCombat>();return npc!=null&&npc.ReceiveKick(this,view.transform.forward,kickDamage);}return false;
     }
     public void ReceivePunch(int damage,Vector3 direction){
         if(!CanReceiveHit||Time.time<recoveryUntil)return;
@@ -58,7 +58,7 @@ public sealed class PlayerCombat : MonoBehaviour {
         if(respawn)foreach(var citizen in FindObjectsByType<CitizenCombat>(FindObjectsSortMode.None))citizen.EndFight();
         Coroutine blackout=respawn&&hospitalFade!=null?StartCoroutine(hospitalFade.DarkenAfter(1.5f)):null;
         yield return PlayerKnockdown.Roll(gameObject,3.5f,direction,respawn?hospital:null);
-        // Charge once after arrival, including when the balance cannot cover treatment.
+        // 치료비가 부족해도 병원 도착 후 한 번만 청구한다.
         if(respawn&&hospital!=null&&MoneyManager.Instance!=null)MoneyManager.Instance.AccidentMoney(20000);
         if(respawn&&hospitalFade!=null){
             bool wasMoving=move!=null&&move.enabled;var look=GetComponentInChildren<CameraMove>();bool wasLooking=look!=null&&look.enabled;

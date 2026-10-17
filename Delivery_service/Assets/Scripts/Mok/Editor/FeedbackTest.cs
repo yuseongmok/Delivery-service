@@ -25,7 +25,7 @@ var n=UnityEngine.Object.Instantiate(prefab,spot.position,Quaternion.identity).G
 original=money.currentMoney;Check(!n.CanBePickpocketed&&!n.Pickpocket(p),"Before opening: hint eligibility and theft disabled",log);Check(money.currentMoney==original&&float.IsNegativeInfinity(n.RobberyReadyAt),"Blocked theft changes neither money nor cooldown",log);clock.isShopOpen=true;Check(n.CanBePickpocketed,"Opening enables pickpocket hint",log);Check(n.Pickpocket(p),"First pickpocket accepted",log);int gain=money.currentMoney-original;Check(gain>=100&&gain<=5000,"Pickpocket reward in 100..5000",log);
 Check(!n.Pickpocket(p),"Immediate repeat rejected",log);clock.currentTime=6.49f;Check(!n.Pickpocket(p),"Repeat rejected before game 30 minutes",log);clock.currentTime=6.5f;Check(n.Pickpocket(p),"Same civilian can be robbed at game 30 minutes",log);
 clock.currentTime=23.9f;Check(n.Pickpocket(p),"Later same-day theft accepted",log);clock.currentDay=2;clock.currentTime=6;Check(n.Pickpocket(p),"Day rollover counts toward cooldown",log);
-// Natural/non-player death must not dispatch police.
+// 플레이어가 원인이 아닌 사망에는 경찰이 출동하지 않는다.
 int initial=UnityEngine.Object.FindObjectsByType<PoliceControl>(FindObjectsSortMode.None).Length;n.Npc.Die();Check(UnityEngine.Object.FindObjectsByType<PoliceControl>(FindObjectsSortMode.None).Length==initial,"NPC death alone does not report player crime",log);
 var rng=UnityEngine.Random.state;int no=Seed(false),yes=Seed(true);
 UnityEngine.Random.InitState(no);Check(!CitizenCrime.ReportPlayerKill(n.Npc),"Probability miss does not dispatch",log);UnityEngine.Random.InitState(yes);Check(!CitizenCrime.ReportPlayerKill(n.Npc),"Same death never rerolls probability",log);

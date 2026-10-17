@@ -49,7 +49,7 @@ public class OrderManager : MonoBehaviour
     // 현재 진행 중인 배달 주문
     private PizzaOrder activeOrder;
     private string currentTargetDeliveryID;
-    // Code-owned balance value; old serialized Inspector values cannot override it.
+    // 코드의 밸런스 값을 사용하며 이전 Inspector 저장값은 무시한다.
     private const float deliveryTimeLimitMinutes = 80f;
     private double deliveryDeadlineMinutes;
     private double GameMinutes => dayNightCycle == null ? 0d
@@ -80,7 +80,7 @@ public class OrderManager : MonoBehaviour
     // 코루틴 및 영업 상태 감시 변수
     private bool prevShopOpenState = false;
 
-    // UI observes the existing queue; generation and delivery remain owned here.
+    // UI는 기존 대기열을 표시하고 주문 생성과 배달은 여기서 관리한다.
     private int nextOrderNumber = 1;
     private int orderNumberDay = -1;
     public event System.Action OrdersChanged;
@@ -164,7 +164,7 @@ public class OrderManager : MonoBehaviour
             // [상태 감지 2] 마감 및 다음 날 리셋 (true -> false)
             else if (!dayNightCycle.isShopOpen && prevShopOpenState)
             {
-                // Preserve orders and cooldown if the closing confirmation is cancelled.
+                // 마감 확인을 취소하면 주문과 대기시간을 유지한다.
             }
 
             prevShopOpenState = dayNightCycle.isShopOpen;
@@ -222,7 +222,7 @@ public class OrderManager : MonoBehaviour
             order.orderName = $"주문 {nextOrderNumber++:D2}";
             pendingOrders.Add(order);
             generatedToday++;
-            break; // One opportunity per cycle, even if a generator returns multiple entries.
+            break; // 생성기가 여러 주문을 반환해도 한 주기에는 한 번만 처리한다.
         }
 
         if (orderUI != null)
@@ -280,7 +280,7 @@ public class OrderManager : MonoBehaviour
     // 배달 완료 검사 및 정산
     public bool TryDeliverPackagedStack(List<PizzaData> pizzaDataList, string deliveryPointID)
     {
-        // Check synchronously so delivery cannot win a race against the next Update.
+        // 다음 Update 전에 배달이 처리되지 않도록 즉시 검사한다.
         UpdateDeliveryDeadline();
         if (pizzaDataList == null || pizzaDataList.Count == 0 || !HasActiveOrder)
             return false;
@@ -342,6 +342,7 @@ public class OrderManager : MonoBehaviour
             currentOrderUI.ClearOrder();
         }
 
+        RobberyManager.NotifyDeliveryCompleted();
         ScheduleNextOrder();
         OrdersChanged?.Invoke();
         return true;

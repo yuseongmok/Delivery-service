@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 namespace DeliveryService.Mok.ShopUI
 {
-    // Presents the one existing OrderManager queue. No separate timer or order list.
+    // 별도 타이머나 주문 목록 없이 기존 OrderManager 대기열을 표시한다.
     public sealed class ShopPcOrderQueue : MonoBehaviour
     {
         public OrderManager manager;
@@ -59,7 +59,7 @@ namespace DeliveryService.Mok.ShopUI
             }
             for (int i = orders.Count; i < rows.Count; i++) rows[i].gameObject.SetActive(false);
             LayoutRebuilder.ForceRebuildLayoutImmediate(content);
-            // New arrivals do not pull the player away from the row being read.
+            // 새 주문이 들어와도 읽고 있던 행의 위치를 유지한다.
             offset.y = Mathf.Clamp(offset.y, 0, Mathf.Max(0, content.rect.height - scroll.viewport.rect.height));
             content.anchoredPosition = offset;
         }

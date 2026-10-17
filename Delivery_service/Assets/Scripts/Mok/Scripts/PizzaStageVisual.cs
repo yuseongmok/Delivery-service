@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace DeliveryService.Mok
 {
-    // Presentation only: the Pizza component remains the authority for recipe/baking data.
+    // 외형만 담당하며 레시피와 굽기 상태는 Pizza가 관리한다.
     public sealed class PizzaStageVisual : MonoBehaviour
     {
         Transform model;

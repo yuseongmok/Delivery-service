@@ -1,6 +1,6 @@
 using UnityEngine;
 namespace DeliveryService.Mok {
-// Dynamic fonts can rebuild their atlas after loading; preserve depth-tested sign text.
+// 동적 글꼴 아틀라스 갱신 후에도 간판 글자의 깊이 판정을 유지한다.
 [ExecuteAlways]
 public sealed class GarageTextAtlas : MonoBehaviour {
 void OnEnable(){Font.textureRebuilt+=Rebind;Refresh();}

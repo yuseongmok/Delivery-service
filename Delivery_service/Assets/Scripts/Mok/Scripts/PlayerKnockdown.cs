@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 namespace DeliveryService.Mok {
-// Shared by motorcycle bail-out and combat: the original capsule/body rolling motion.
+// 오토바이 이탈과 전투에서 기존 캡슐·몸체 구르기를 함께 사용한다.
 public static class PlayerKnockdown {
     public static IEnumerator Roll(GameObject player,float speed,Vector3 direction,Transform destination=null){
         var cc=player.GetComponent<CharacterController>();var move=player.GetComponent<PlayerMove>();

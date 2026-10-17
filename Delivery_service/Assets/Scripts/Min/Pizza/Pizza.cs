@@ -24,7 +24,7 @@ public class Pizza : MonoBehaviour, IInteractable
         stageVisual.Initialize();
         if (stageVisual.Ready && doughCollider is BoxCollider box)
         {
-            // Match the new 0.95 m visual; retain the previous topping spread (~0.38 m).
+            // 새 모델 크기 0.95m에 맞추고 기존 토핑 범위 약 0.38m는 유지한다.
             box.size = new Vector3(.95f, .1f, .95f);
             box.center = new Vector3(0, -.015f, 0);
             toppingRadiusRatio = .8f;

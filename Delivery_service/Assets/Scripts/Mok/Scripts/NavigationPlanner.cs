@@ -4,11 +4,11 @@ using UnityEngine.UI;
 
 namespace DeliveryService.Mok.Navigation
 {
-    // Renders inside the existing phone texture, shared by the hand and bike screens.
+    // 손과 오토바이가 공유하는 기존 휴대폰 화면 안에 표시한다.
     public sealed class NavigationPlanner : MonoBehaviour
     {
         public NavigationManager manager;
-        public Camera overviewCamera; // Retained for existing scene serialization; never enabled.
+        public Camera overviewCamera; // 기존 씬 참조 유지를 위한 필드이며 활성화하지 않는다.
         public Font font;
         public RenderTexture overviewTexture;
         public enum Screen { Home, Destinations, Map }
@@ -129,7 +129,7 @@ namespace DeliveryService.Mok.Navigation
         { var g=Rect(name,parent,x,y,w,h);g.AddComponent<Image>().color=color;g.GetComponent<Image>().raycastTarget=false;return g; }
         void Build(RectTransform display)
         {
-            // A fixed logical layout scales within the existing display; no change to either physical phone.
+            // 실제 휴대폰 크기는 유지하고 화면 내부 배치만 크기에 맞춘다.
             var root = Rect("Phone Apps",display,0,0,540,960);
             root.transform.localScale = new Vector3(display.rect.width/540f,display.rect.height/960f,1);
             font=DeliveryService.Mok.MokUIFont.Font;

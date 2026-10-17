@@ -5,10 +5,10 @@ using UnityEngine.Rendering.Universal;
 
 namespace DeliveryService.Mok
 {
-    // Renderer-only previews. Never instantiate ingredient gameplay scripts in the player's hand.
+    // 손에는 외형만 표시하며 재료의 게임 기능 스크립트는 생성하지 않는다.
     public sealed class CarriedItemVisual : MonoBehaviour
     {
-        // Reserved for this first-person display; contains no colliders or gameplay objects.
+        // 1인칭 표시 전용이며 콜라이더나 게임 기능 오브젝트는 포함하지 않는다.
         public const int DisplayLayer = 22;
         ToppingInventory inventory;
         Camera viewCamera;
@@ -134,7 +134,7 @@ namespace DeliveryService.Mok
         {
             var renderers = model.GetComponentsInChildren<Renderer>();
             if (renderers.Length == 0) return;
-            // Measure in anchor space, so looking up/down never changes the apparent item size.
+            // 시선을 위아래로 움직여도 크기가 달라지지 않도록 기준점 좌표로 측정한다.
             var bounds = new Bounds(); bool first = true;
             foreach (var renderer in renderers)
             {

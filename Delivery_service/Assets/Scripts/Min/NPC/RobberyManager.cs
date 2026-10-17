@@ -1,144 +1,109 @@
-using System.Collections;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.AI;
+using DeliveryService.Mok;
 
 public class RobberyManager : MonoBehaviour
 {
-    [SerializeField] private DayNightCycle dayNightCycle;
-
-    [Header("¼³Á¤")]
-    [SerializeField] private GameObject robberPrefab;       // °­µµ ÇÁ¸®ÆÕ
-    [SerializeField] private Transform playerTarget;        // ÇÃ·¹ÀÌ¾î
-    [SerializeField] private float despawnTime = 20f;       // °­µµ À¯Áö ½Ã°£
-
-    [Header("½ºÆù È®·ü ¼³Á¤")]
-    [Range(0f, 100f)]
-    [SerializeField] private float spawnChancePercent = 20f; // ±âº» È®·ü
-
-    private bool checkedFirstSlot = false;  // 18~21½Ã Ã¼Å© ¿©ºÎ
-    private bool checkedSecondSlot = false; // 21~24½Ã Ã¼Å© ¿©ºÎ
-
-    private void Start()
-    {
-        if (dayNightCycle == null)
-        {
-            dayNightCycle = FindObjectOfType<DayNightCycle>();
-        }
-
-        FindPlayerTarget();
-    }
-
-    private void FindPlayerTarget()
-    {
-        PlayerMove playerMove = FindObjectOfType<PlayerMove>(true);
-        if (playerMove != null)
-        {
-            playerTarget = playerMove.transform;
-            Debug.Log($"[RobberyManager] PlayerMove ¹ß°ß : {playerTarget.name}");
-            return;
-        }
-
-        GameObject player = GameObject.FindGameObjectWithTag("Player");
-        if (player != null)
-        {
-            playerTarget = player.transform;
-            Debug.Log($"[RobberyManager] ÇÃ·¹ÀÌ¾î ¹ß°ß : {playerTarget.name}");
+    [SerializeField] DayNightCycle dayNightCycle;
+    [SerializeField] GameObject robberPrefab;
+    [SerializeField] Transform playerTarget;
+    [Header("í† í•‘ë³„ ì¶œëª° ì„¤ì • Â· í˜„ì‹¤ ì´ˆ")]
+    [SerializeField] float lowInterval=60f, mediumInterval=45f, highInterval=30f;
+    [SerializeField] float lowChance=15f, mediumChance=25f, highChance=35f;
+    [SerializeField] float encounterCooldown=90f;
+    float encounterProgress;
+    BoxCollider shopFloor;
+    public static bool HasCompletedDelivery {get;private set;}
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    static void ResetSession(){HasCompletedDelivery=false;}
+    public static void NotifyDeliveryCompleted(){HasCompletedDelivery=true;}
+    int currentDay=-1;
+    float protectedUntil;
+    PlayerCombat player;
+    RobberAI active;
+    bool CanOperate => RobberAI.RiddenCargo!=null?RobberAI.RiderCanAct(RobberAI.RiddenCargo):player!=null&&player.CanAct;
+    public int CarriedToppingCount {
+        get {
+            var cargo=RobberAI.RiddenCargo;
+            if(cargo!=null)return cargo.MaxExtraToppingCount;
+            var pizzas=player!=null?player.GetComponent<ToppingInventory>().GetHeldPackagedPizzas():null;
+            return pizzas==null?0:pizzas.Select(CountExtraToppings).DefaultIfEmpty(0).Max();
         }
     }
-
-    private void Update()
-    {
-        if (dayNightCycle == null) return;
-
-        float time = dayNightCycle.currentTime;
-
-        if (time < 18f)
-        {
-            checkedFirstSlot = false;
-            checkedSecondSlot = false;
-        }
-        else if (time >= 18f && time < 21f && !checkedFirstSlot)
-        {
-            checkedFirstSlot = true;
-            TrySpawnRobber("18~21½Ã");
-        }
-        else if (time >= 21f && time < 24f && !checkedSecondSlot)
-        {
-            checkedSecondSlot = true;
-            TrySpawnRobber("21~00½Ã");
+    public static int CountExtraToppings(PizzaData pizza) => pizza?.toppings==null?0:pizza.toppings
+        .Where(t=>!string.IsNullOrWhiteSpace(t)).Select(t=>t.Trim().ToLowerInvariant())
+        .Where(t=>t!="ë„ìš°"&&t!="ì†ŒìŠ¤"&&t!="ì¹˜ì¦ˆ"&&t!="dough"&&t!="sauce"&&t!="cheese").Distinct().Count();
+    public float CheckInterval => CarriedToppingCount>=4?highInterval:CarriedToppingCount>=2?mediumInterval:lowInterval;
+    public float SpawnChance => CarriedToppingCount>=4?highChance:CarriedToppingCount>=2?mediumChance:lowChance;
+    bool HasTargetPizza => RobberAI.RiddenCargo!=null?RobberAI.RiddenCargo.StoredCount>0:player!=null&&player.GetComponent<ToppingInventory>().HasPackagedPizzas();
+    void Start(){
+        dayNightCycle=dayNightCycle!=null?dayNightCycle:FindFirstObjectByType<DayNightCycle>();
+        player=FindFirstObjectByType<PlayerCombat>(FindObjectsInactive.Include);
+        shopFloor=GameObject.Find("PizzaStore")?.transform.Find("Mok Pizza Shop/Foundation")?.GetComponent<BoxCollider>();
+    }
+    public bool IsInsideShop {
+        get {
+            if(shopFloor==null||player==null)return false;
+            var cargo=RobberAI.RiddenCargo;
+            var position=cargo!=null?cargo.transform.position:player.transform.position;
+            var local=shopFloor.transform.InverseTransformPoint(position)-shopFloor.center;
+            return Mathf.Abs(local.x)<=shopFloor.size.x*.5f&&Mathf.Abs(local.z)<=shopFloor.size.z*.5f&&Mathf.Abs(local.y)<5;
         }
     }
-
-    private void TrySpawnRobber(string timeSlotName)
-    {
-        float randomValue = Random.Range(0f, 100f);
-
-        if (randomValue <= spawnChancePercent)
-        {
-            SpawnRobber();
-        }
+    public bool CanSpawnNow => dayNightCycle!=null && dayNightCycle.isShopOpen
+        && Time.timeScale>0 && FindFirstObjectByType<RobberAI>()==null
+        && player!=null && CanOperate && Time.unscaledTime>=protectedUntil && HasTargetPizza && !IsInsideShop
+        && !FindObjectsByType<PoliceControl>(FindObjectsSortMode.None).Any(p=>p.RemainingChaseSeconds>0);
+    public static void NotifyEncounterEnded(){
+        var manager=FindFirstObjectByType<RobberyManager>();
+        if(manager!=null){manager.protectedUntil=Time.unscaledTime+manager.encounterCooldown;manager.encounterProgress=0;}
     }
-
-    private void SpawnRobber()
-    {
-        if (robberPrefab == null) return;
-
-        if (playerTarget == null)
-        {
-            FindPlayerTarget();
-        }
-
-        MotorcycleController bike = FindObjectOfType<MotorcycleController>(true);
-        Transform currentActiveTarget = playerTarget;
-
-        if (bike != null && bike.isDriven)
-        {
-            currentActiveTarget = bike.transform;
-        }
-
-        if (currentActiveTarget == null) return;
-
-        // ¼öÆò ¿øÇü 12m ÁöÁ¡ ÁÂÇ¥ °è»ê
-        Vector2 randomCircle = Random.insideUnitCircle.normalized * 12f;
-        Vector3 desiredSpawnPos = currentActiveTarget.position + new Vector3(randomCircle.x, 0f, randomCircle.y);
-
-        NavMeshHit hit;
-        Vector3 finalSpawnPos = desiredSpawnPos;
-
-        // NavMesh »óÀÇ À¯È¿ ÁÂÇ¥ Å½»ö
-        if (NavMesh.SamplePosition(desiredSpawnPos, out hit, 15f, NavMesh.AllAreas))
-        {
-            finalSpawnPos = hit.position;
-        }
-
-        // °­µµ »ı¼º
-        GameObject robberInstance = Instantiate(robberPrefab, finalSpawnPos, Quaternion.identity);
-
-        // NavMeshAgent ÃÊ±âÈ­ ¹× ÁÂÇ¥ °­Á¦ µ¿±âÈ­
-        NavMeshAgent agent = robberInstance.GetComponent<NavMeshAgent>();
-        if (agent != null)
-        {
-            agent.Warp(finalSpawnPos);
-            agent.isStopped = false;
-        }
-
-        RobberAI robberAI = robberInstance.GetComponent<RobberAI>();
-        if (robberAI != null)
-        {
-            robberAI.SetTarget(currentActiveTarget);
-            Debug.Log($"[RobberyManager] °­µµ ½ºÆù ¿Ï·á! À§Ä¡: {finalSpawnPos}, ÃßÀû ´ë»ó: {currentActiveTarget.name}");
-        }
-
-        StartCoroutine(DespawnRoutine(robberInstance, despawnTime));
+    void Update(){
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        if(Input.GetKeyDown(KeyCode.F8)){TrySpawnForTesting();return;}
+#endif
+        if(dayNightCycle!=null&&currentDay!=dayNightCycle.currentDay){currentDay=dayNightCycle.currentDay;encounterProgress=0;}
+        if(player!=null&&player.IsDown)protectedUntil=Mathf.Max(protectedUntil,Time.unscaledTime+30);
+        if(!CanSpawnNow)return;
+        // ë“¤ê¸°Â·ìŠ¹í•˜ì°¨ë¡œ ì§„í–‰ë¥ ì„ ì´ˆê¸°í™”í•˜ì§€ ì•Šê³ , ì•ˆì „í•œ ì¥ì†Œì—ì„œëŠ” ì ì‹œ ë©ˆì¶˜ë‹¤.
+        encounterProgress+=Time.unscaledDeltaTime/Mathf.Max(1,CheckInterval);
+        if(encounterProgress<1)return;
+        encounterProgress=0;
+        if(Random.Range(0f,100f)<SpawnChance)TrySpawn();
     }
-
-    private IEnumerator DespawnRoutine(GameObject robber, float duration)
-    {
-        yield return new WaitForSecondsRealtime(duration);
-
-        if (robber != null)
-        {
-            Destroy(robber);
+    #if UNITY_EDITOR || DEVELOPMENT_BUILD
+    // í…ŒìŠ¤íŠ¸ ì†Œí™˜ì€ ë“±ì¥ ê°„ê²©Â·í™•ë¥ Â·ë³´í˜¸ì‹œê°„ì„ ë°”ê¾¸ì§€ ì•ŠëŠ”ë‹¤.
+    public bool TrySpawnForTesting(){
+        if(Time.timeScale<=0){Debug.Log("[ê°•ë„ í…ŒìŠ¤íŠ¸] ì¼ì‹œì •ì§€ë¥¼ í•´ì œí•´ ì£¼ì„¸ìš”.");return false;}
+        if(player==null)player=FindFirstObjectByType<PlayerCombat>(FindObjectsInactive.Include);
+        if(player==null||!CanOperate){Debug.Log("[ê°•ë„ í…ŒìŠ¤íŠ¸] ì¡°ì‘ ê°€ëŠ¥í•œ ìƒíƒœì—ì„œ ì°½ì„ ë‹«ê³  F8ì„ ëˆŒëŸ¬ì£¼ì„¸ìš”.");return false;}
+        if(FindFirstObjectByType<RobberAI>()!=null){Debug.Log("[ê°•ë„ í…ŒìŠ¤íŠ¸] ì´ë¯¸ ê°•ë„ê°€ ìˆìŠµë‹ˆë‹¤.");return false;}
+        bool result=TrySpawn(true);
+        Debug.Log(result?"[ê°•ë„ í…ŒìŠ¤íŠ¸] ì†Œí™˜ ì™„ë£Œ. ì† ë˜ëŠ” ë°°ë‹¬í†µì˜ í¬ì¥ í”¼ìë¥¼ ë…¸ë¦½ë‹ˆë‹¤.":"[ê°•ë„ í…ŒìŠ¤íŠ¸] ì†Œí™˜ ê°€ëŠ¥í•œ ë„ë¡œê°€ ì—†ìŠµë‹ˆë‹¤. ë°”ê¹¥ ë„ë¡œì—ì„œ ë‹¤ì‹œ ëˆŒëŸ¬ì£¼ì„¸ìš”.");
+        return result;
+    }
+#endif
+    bool TrySpawn(bool testSpawn=false){
+        if(robberPrefab==null||player==null)return false;
+        var ridden=RobberAI.RiddenCargo;
+        playerTarget=ridden!=null?ridden.bikeController.transform:player.transform;
+        var filter=new NavMeshQueryFilter{agentTypeID=0,areaMask=NavMesh.AllAreas};
+        if(!NavMesh.SamplePosition(playerTarget.position,out var target,3f,filter))return false;
+        for(int i=0;i<24;i++){
+            Vector2 circle=Random.insideUnitCircle.normalized*Random.Range(12f,18f);
+            if(!NavMesh.SamplePosition(target.position+new Vector3(circle.x,0,circle.y),out var point,4f,filter))continue;
+            if(Vector3.Distance(point.position,target.position)<10f||Mathf.Abs(point.position.y-target.position.y)>2)continue;
+            var path=new NavMeshPath();if(!NavMesh.CalculatePath(point.position,target.position,filter,path)||path.status!=NavMeshPathStatus.PathComplete)continue;
+            // í™”ë©´ì— ë³´ì´ëŠ” ìœ„ì¹˜ì—ì„œëŠ” ê°‘ìê¸° ìƒì„±í•˜ì§€ ì•ŠëŠ”ë‹¤.
+            var camera=ridden!=null&&ridden.bikeController.bikeCamera!=null?ridden.bikeController.bikeCamera.GetComponentInChildren<Camera>():player.View;
+            if(camera==null)return false;
+            var screen=camera.WorldToViewportPoint(point.position+Vector3.up);
+            if(!testSpawn&&screen.z>0&&screen.x>-.1f&&screen.x<1.1f&&screen.y>-.1f&&screen.y<1.1f)continue;
+            active=Instantiate(robberPrefab,point.position,Quaternion.identity).GetComponent<RobberAI>();
+            active.IsTestSpawn=testSpawn;
+            active.GetComponent<NavMeshAgent>().Warp(point.position);active.SetTarget(playerTarget);return true;
         }
+        return false;
     }
 }

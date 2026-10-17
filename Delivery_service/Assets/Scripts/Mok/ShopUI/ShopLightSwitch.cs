@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace DeliveryService.Mok.ShopUI
 {
-    // Uses the game's existing E-key / IInteractable path, including occupied hands.
+    // 물건을 들고 있을 때도 기존 E키와 IInteractable 경로를 사용한다.
     public sealed class ShopLightSwitch : MonoBehaviour, IInteractable
     {
         public Light[] lights;

@@ -18,12 +18,12 @@ var rt=new RenderTexture(1400,1000,24,RenderTextureFormat.ARGB32);rt.Create();va
 
 public static string RunCore(){log="Repair garage Play Mode verification\n";
 var marker=GameObject.Find("repair_shop");var root=marker.transform.Find("Mok Repair Garage");Check(root!=null,"garage loaded from saved scene at repair_shop");Check(!marker.GetComponent<Collider>().enabled,"original solid cube collider disabled");Check(root.GetComponent<Renderer>().sharedMaterials.All(m=>m.shader.name=="Universal Render Pipeline/Lit"),"garage materials respond to city lighting");
-// Remove random pedestrian traffic only for the deterministic driving test.
+// 일정한 주행 시험을 위해 테스트에서만 임의 보행자를 제거한다.
 foreach(var agent in UnityEngine.Object.FindObjectsByType<UnityEngine.AI.NavMeshAgent>(FindObjectsSortMode.None))agent.gameObject.SetActive(false);
 Physics.SyncTransforms();
 foreach(float x in new[]{-3f,0f,3f}){var start=root.TransformPoint(new Vector3(x,1.4f,7));bool hit=Physics.BoxCast(start,new Vector3(.6f,1.2f,1.45f),-root.forward,out var h,root.rotation,6.7f,~0,QueryTriggerInteraction.Ignore);Check(!hit,"bike-and-rider clearance from street into garage at lane "+x+(hit?" blocked by "+h.collider.name:""));}
 foreach(int angle in new[]{0,45,90,135,180}){var overlaps=Physics.OverlapBox(root.TransformPoint(new Vector3(0,1.6f,-.45f)),new Vector3(.6f,1.2f,1.45f),Quaternion.Euler(0,angle,0),~0,QueryTriggerInteraction.Ignore);Check(overlaps.Length==0,"service pad clearance at heading "+angle+" hits="+string.Join(",",overlaps.Select(c=>c.name+"/"+c.GetType().Name+"/"+c.bounds)));}
-// Drive the existing motorcycle through real physics using its unchanged Movement/LateUpdate routines.
+// 기존 Movement/LateUpdate와 실제 물리로 오토바이를 주행한다.
 var bike=UnityEngine.Object.FindFirstObjectByType<MotorcycleController>();Check(bike!=null&&bike.sphereRB!=null,"existing motorcycle controller available");
 var oldMode=Physics.simulationMode;bool wasEnabled=bike.enabled;try{
 Physics.simulationMode=SimulationMode.Script;bike.enabled=false;bike.maxSpeed=8f;bike.reverseSpeed=8f;Set(bike,"currentSpeed",0f);Set(bike,"moveInput",1f);Set(bike,"isBraking",false);

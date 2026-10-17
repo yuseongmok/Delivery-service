@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace DeliveryService.Mok
 {
-    // Keeps the actual pizza visible until closing completes. No recipe reconstruction.
+    // 상자가 완전히 닫힐 때까지 실제 피자를 보여주며 레시피를 재구성하지 않는다.
     public sealed class PizzaBoxStation : MonoBehaviour
     {
         Transform box, hinge;
@@ -19,7 +19,7 @@ namespace DeliveryService.Mok
             if (prefab == null) return false;
             foreach (var r in GetComponentsInChildren<Renderer>()) r.enabled = false;
             box = Instantiate(prefab, transform, false).transform;
-            // Existing packing station is a flattened cube. Keep its footprint and floor height.
+            // 기존 포장대는 납작한 큐브이므로 바닥 면적과 높이를 유지한다.
             var scale = transform.lossyScale;
             float width = Mathf.Abs(scale.x);
             box.localScale = new Vector3(1, width / Mathf.Max(.001f, Mathf.Abs(scale.y)), width / Mathf.Max(.001f, Mathf.Abs(scale.z)));
@@ -87,7 +87,7 @@ namespace DeliveryService.Mok
         void OnDisable()
         {
             StopAllCoroutines(); busy = false;
-            // An interrupted close keeps the pizza available for finishing the packaging.
+            // 닫기가 중단돼도 피자를 보존해 포장을 마칠 수 있게 한다.
             if (containedPizza != null)
             {
                 opened = true;

@@ -317,7 +317,6 @@ public class PoliceControl : MonoBehaviour
         Vector3 destination = NavMesh.SamplePosition(targetPosition, out NavMeshHit hit, 3f, NavMesh.AllAreas)
             ? hit.position : (targetHidden ? lastKnownPosition : target.position);
         if (agent.hasPath && (agent.destination - destination).sqrMagnitude < .0625f) return;
-        // Reuse a completed path so repeated asynchronous requests cannot starve movement.
         if (chasePath == null) chasePath = new NavMeshPath();
         var filter = new NavMeshQueryFilter { agentTypeID = agent.agentTypeID, areaMask = agent.areaMask };
         if (NavMesh.CalculatePath(agent.nextPosition, destination, filter, chasePath) && chasePath.corners.Length > 1)

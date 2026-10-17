@@ -25,7 +25,7 @@ if(File.Exists("Temp/Mok-PC-run-request")&&!SessionState.GetBool(Key,false))Edit
 [MenuItem("Tools/Delivery Service/Mok/Verify Low Poly PC")]
 public static void Start(){
 if(EditorApplication.isPlayingOrWillChangePlaymode)throw new Exception("Exit Play mode first.");
-// Verify the installed model without modifying it.
+// 설치된 모델을 수정하지 않고 검사한다.
 EditorSceneManager.SaveScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
 var list=PlayerPrefs.GetString("PendingToppingList","");
 var names=AssetDatabase.FindAssets("t:PizzaToppingData").Select(g=>AssetDatabase.LoadAssetAtPath<PizzaToppingData>(AssetDatabase.GUIDToAssetPath(g)).toppingName).Concat(list.Split(',')).Where(n=>!string.IsNullOrEmpty(n)).Distinct();
@@ -61,7 +61,7 @@ Check(pc.GetComponentInChildren<OrderManager>(true)!=null,"original child OrderM
 var cycle=UnityEngine.Object.FindObjectsByType<DayNightCycle>(FindObjectsSortMode.None).Single(c=>c.pcUIPanel==pc.pcUIPanel);
 cycle.currentTime=6;Invoke(cycle,"UpdateLighting");Capture(pc,"Mok-PC-dawn.png");
 cycle.currentTime=12;Invoke(cycle,"UpdateLighting");Capture(pc,"Mok-PC-day.png");cycle.currentTime=6;Invoke(cycle,"UpdateLighting");
-// The source raycast requires the collider on the exact ShopPC GameObject.
+// 기존 레이 검사는 ShopPC 오브젝트 자체의 콜라이더를 요구한다.
 var target=pc.transform.TransformPoint(new Vector3(0,.47f,0));var origin=target+pc.transform.forward*.9f;
 Physics.SyncTransforms();Check(Physics.Raycast(origin,-pc.transform.forward,out var hit,pc.interactRange)&&hit.collider.gameObject==pc.gameObject,"original-distance raycast hits the exact ShopPC GameObject");
 pc.playerCamera.position=origin;pc.playerCamera.rotation=Quaternion.LookRotation(-pc.transform.forward,pc.transform.up);
@@ -70,7 +70,7 @@ Check(pc.pcUIPanel.activeSelf&&Cursor.visible&&Cursor.lockState==CursorLockMode.
 var buttons=view.GetComponentsInChildren<Button>(true);
 for(int i=0;i<3;i++){buttons.Single(b=>b.name=="Tab_"+i).onClick.Invoke();Check(view.SelectedTab==i,"UI tab "+i+" switches correctly");}
 Check(pc.pcUIPanel.GetComponentInChildren<DeliveryService.Mok.ShopUI.ShopPcOrderQueue>(true)!=null,"order queue remains connected (separate order regression tests actions)");
-// Real purchase through UI using temporary funds and backed-up stock keys.
+// 재고를 백업하고 임시 자금으로 UI 구매를 검사한다.
 var money=MoneyManager.Instance;Check(money!=null,"existing economy manager available");
 typeof(MoneyManager).GetField("saveFilePath",Flags).SetValue(money,Path.GetFullPath("Temp/Mok-PC-test-economy.json"));money.currentMoney=100000;
 int index=0;var row=view.ingredients[index];var catalog=Resources.Load<ShopSupplyCatalog>("YunShopSupplyCatalog");

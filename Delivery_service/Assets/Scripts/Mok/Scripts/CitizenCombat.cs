@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.AI;
 
 namespace DeliveryService.Mok {
-// Lives on civilian prefabs; police and robbers keep their existing behavior.
+// 시민 프리팹에만 적용하며 경찰과 강도의 기존 동작은 유지한다.
 [RequireComponent(typeof(NPCControl))]
 public sealed class CitizenCombat : MonoBehaviour {
     public int maximumHealth = 100;
@@ -50,7 +50,7 @@ public sealed class CitizenCombat : MonoBehaviour {
     }
     IEnumerator GetUp() {
         yield return new WaitForSeconds(knockdownSeconds);
-        // Retry when a landing point is temporarily outside the baked navigation surface.
+        // 착지점이 일시적으로 NavMesh 밖이면 다시 시도한다.
         while(!npc.IsDead && !npc.RecoverFromKnockDown())yield return new WaitForSeconds(.5f);
         if(!npc.IsDead){nextPunch=Time.time+1f;repath=0;}
     }
@@ -85,7 +85,7 @@ public sealed class CitizenCombat : MonoBehaviour {
     bool ClearLine(Vector3 from,Vector3 to) {
         return !Physics.RaycastAll(from,(to-from).normalized,(to-from).magnitude,~0,QueryTriggerInteraction.Ignore).Any(h=>!h.transform.IsChildOf(transform)&&!h.transform.IsChildOf(target.transform));
     }
-    // Aim the existing rig; no replacement of the team's walking Animator/controller.
+    // 기존 뼈대를 조정하며 팀원의 걷기 Animator와 컨트롤러는 교체하지 않는다.
     void LateUpdate(){
         if(!IsAggressive||npc.IsKnockedDown||npc.IsDead||animator==null||!animator.enabled)return;
         float t=punching?Time.time-punchStarted:0;

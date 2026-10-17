@@ -31,7 +31,7 @@ Check(p.HitsTaken==0&&!p.IsDown&&p.Health==p.maximumHealth,"Third hit resets com
 Check(Vector3.Distance(p.transform.position,p.hospital.position)<.1f,"Third hit respawns exactly at HOSPITAL",log);
 Check(!n.IsAggressive&&cc.enabled&&p.GetComponent<Rigidbody>()==null,"Hospital clears aggression and temporary physics",log);
 Check(Quaternion.Angle(p.transform.rotation,Quaternion.Euler(0,p.hospital.eulerAngles.y,0))<1,"Hospital restores upright orientation",log);
-// Exercise the actual motorcycle entry point that now uses the shared rolling implementation.
+// 공통 구르기 처리를 사용하는 실제 오토바이 진입 경로를 검사한다.
 var bike=UnityEngine.Object.FindFirstObjectByType<MotorcycleController>();
 var method=typeof(MotorcycleController).GetMethod("BailOutRoutine",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic);
 var routine=(IEnumerator)method.Invoke(bike,new object[]{p.gameObject,2f,Vector3.forward});bike.StartCoroutine(routine);

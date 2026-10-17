@@ -10,7 +10,7 @@ using UnityEngine.SceneManagement;
 
 namespace DeliveryService.Mok.Editor
 {
-    // Opt-in check in an isolated, unsaved scene; never starts the city managers.
+    // 분리된 미저장 씬에서 수동 검사하며 도시 매니저는 실행하지 않는다.
     [InitializeOnLoad]
     public static class PizzaWorkbenchFunctionalCheck
     {

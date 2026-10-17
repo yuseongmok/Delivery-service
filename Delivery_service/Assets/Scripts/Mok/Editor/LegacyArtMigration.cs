@@ -29,7 +29,7 @@ for(int i=0;i<verts.Length;i++){var v=verts[i]-from.center;verts[i]=to.center+ne
 mesh.vertices=verts;mesh.RecalculateNormals();mesh.RecalculateBounds();AssetDatabase.CreateAsset(mesh,output);return mesh;
 }
 static void Clean(GameObject root){
-// Unpack only instances whose sources depend on retired assets, retaining script object references.
+// 삭제 대상 에셋에 의존하는 프리팹만 해제하고 스크립트 참조는 유지한다.
 for(int iteration=0;iteration<30;iteration++){
 var instance=root.GetComponentsInChildren<Transform>(true).Select(t=>PrefabUtility.GetOutermostPrefabInstanceRoot(t.gameObject)).Where(g=>g!=null).Distinct().FirstOrDefault(g=>AssetDatabase.GetDependencies(PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(g),true).Any(Legacy));
 if(instance==null)break;PrefabUtility.UnpackPrefabInstance(instance,PrefabUnpackMode.OutermostRoot,InteractionMode.AutomatedAction);
@@ -45,12 +45,12 @@ if(!EditorSceneManager.SaveScene(current,"Temp/JJinCity-before-legacy-migration.
 Directory.CreateDirectory(Folder);AssetDatabase.Refresh();
 var prefabs=AssetDatabase.FindAssets("t:Prefab").Select(AssetDatabase.GUIDToAssetPath).Where(p=>p.EndsWith(".prefab")&&!Legacy(p)&&AssetDatabase.GetDependencies(p,true).Any(Legacy)).ToArray();
 foreach(var path in prefabs){var go=PrefabUtility.LoadPrefabContents(path);try{Clean(go);PrefabUtility.SaveAsPrefabAsset(go,path);log.AppendLine("MIGRATED prefab "+path);}finally{PrefabUtility.UnloadPrefabContents(go);}}
-// Remove retired texture dependencies from the converted shop materials.
+// 변환된 매장 재질에서 삭제 대상 텍스처 참조를 제거한다.
 foreach(var guid in AssetDatabase.FindAssets("t:Material")){var path=AssetDatabase.GUIDToAssetPath(guid);if(Legacy(path))continue;var m=AssetDatabase.LoadAssetAtPath<Material>(path);bool changed=false;foreach(var name in m.GetTexturePropertyNames()){var texture=m.GetTexture(name);if(texture!=null&&Legacy(AssetDatabase.GetAssetPath(texture))){m.SetTexture(name,null);changed=true;}}if(changed){EditorUtility.SetDirty(m);log.AppendLine("CLEARED legacy texture "+path);}}
 AssetDatabase.SaveAssets();
 var scenes=AssetDatabase.FindAssets("t:Scene").Select(AssetDatabase.GUIDToAssetPath).Where(p=>AssetDatabase.GetDependencies(p,true).Any(Legacy)).ToList();
 if(!scenes.Contains(current.path))scenes.Add(current.path);
-// Keep the user's open scene loaded, including their unsaved work.
+// 저장하지 않은 변경을 포함해 현재 열린 씬을 유지한다.
 foreach(var path in scenes){bool active=path==current.path;var scene=active?current:EditorSceneManager.OpenScene(path,OpenSceneMode.Additive);foreach(var root in scene.GetRootGameObjects())Clean(root);EditorSceneManager.MarkSceneDirty(scene);EditorSceneManager.SaveScene(scene);if(!active)EditorSceneManager.CloseScene(scene,true);log.AppendLine("MIGRATED scene "+path);}
 SceneManager.SetActiveScene(current);AssetDatabase.SaveAssets();
 var remaining=AssetDatabase.GetAllAssetPaths().Where(p=>p.StartsWith("Assets/")&&!Legacy(p)&&!AssetDatabase.IsValidFolder(p)&&new[]{".unity",".prefab",".mat",".asset"}.Contains(Path.GetExtension(p))).Where(p=>AssetDatabase.GetDependencies(p,true).Any(Legacy)).ToArray();

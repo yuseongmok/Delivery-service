@@ -20,7 +20,7 @@ public class NavigationManager : MonoBehaviour {
  DayNightCycle cycle;
  public float RemainingDistance {get;private set;}
  public IReadOnlyList<Vector3> DisplayPath=>displayPath;
- // Keep the delivery-only API for existing delivery highlighting and order scripts.
+ // 기존 배달 강조 표시와 주문 코드가 쓰는 배달 전용 API를 유지한다.
  public DeliveryPoint CurrentDestination=>orderManager==null?null:orderManager.CurrentTargetDeliveryPoint;
  public Transform NavigationTarget=>playerTransform;
  public NavigationPlace SelectedPlace=>selectedPlace;
@@ -34,7 +34,7 @@ public class NavigationManager : MonoBehaviour {
  public void SelectPlace(NavigationPlace place){if(place==null||!place.IsAvailable)return;selectedPlace=place;stopped=false;RefreshRoute();}
  public void ResumeDelivery(){selectedPlace=null;stopped=false;RefreshRoute();}
  public void StopGuidance(){selectedPlace=null;stopped=true;ClearNavigationPath();RouteStatus="안내를 종료했습니다";RouteRevision++;}
- // Called both on day changes and completed/expired orders. Preserve an independent POI route within the same day.
+ // 일차 변경·주문 완료·시간 초과 시 호출하며 같은 날의 시설 안내 경로는 유지한다.
  public void ResetNavigationForNewDay(){int day=cycle==null?knownDay:cycle.currentDay;if(day!=knownDay){selectedPlace=null;stopped=false;knownDay=day;}ClearNavigationPath();lastDestination=null;nextUpdate=0;}
  void Update(){
  if(CurrentDestination!=lastOrder){lastOrder=CurrentDestination;if(lastOrder!=null)stopped=false;RefreshRoute();}
@@ -57,9 +57,9 @@ public class NavigationManager : MonoBehaviour {
  if(road<0||sidewalk<0||NavMesh.GetSettingsCount()==0){RouteStatus="도로 정보를 찾을 수 없습니다";return;}
  int mask=(1<<road)|(1<<sidewalk);
  var filter=new NavMeshQueryFilter{agentTypeID=NavMesh.GetSettingsByIndex(0).agentTypeID,areaMask=mask};filter.SetAreaCost(road,1);filter.SetAreaCost(sidewalk,2);
- // The nearest sidewalk polygon may be a disconnected entrance or an upper floor.
- // Keep a complete existing route; otherwise try nearby road anchors without drawing
- // an invented straight connection through buildings or accepting a partial path.
+ // 가까운 보도 영역이 끊어진 입구나 위층일 수 있다.
+ // 완전한 기존 경로를 유지하고 없으면 주변 도로 기준점을 탐색한다.
+ // 건물을 가로지르는 직선이나 목적지에 닿지 않는 경로는 사용하지 않는다.
  var starts = new List<Vector3>(); var ends = new List<Vector3>();
  AddAnchor(lastPosition, 30, filter, starts);
  AddAnchor(lastDestinationPosition, 20, filter, ends);
@@ -71,8 +71,8 @@ public class NavigationManager : MonoBehaviour {
  for(int i=0;i<starts.Count&&!complete;i++)for(int j=0;j<ends.Count&&!complete;j++)
   complete=NavMesh.CalculatePath(starts[i],ends[j],filter,path)&&path.status==NavMeshPathStatus.PathComplete;
  if(!complete){
-  // A curb, entrance or overlapping surface can also split the nearest road anchor.
-  // Search a bounded neighborhood only after the cheap nearest-anchor attempts fail.
+  // 보도 턱·입구·겹친 표면 때문에 가장 가까운 도로 기준점도 끊길 수 있다.
+  // 가까운 기준점 탐색에 실패한 경우에만 제한된 주변 범위를 검사한다.
   AddNearbyAnchors(lastDestinationPosition,roadFilter,ends);
   for(int i=0;i<starts.Count&&!complete;i++)for(int j=0;j<ends.Count&&!complete;j++)
    complete=NavMesh.CalculatePath(starts[i],ends[j],filter,path)&&path.status==NavMeshPathStatus.PathComplete;
@@ -84,7 +84,7 @@ public class NavigationManager : MonoBehaviour {
  }
  if(!complete){RouteStatus="목적지까지 연결된 도로가 없습니다";return;}
  if(path.corners.Length<2){RouteStatus="목적지 근처입니다";return;}
- // Preserve actual navigable corners: adding artificial right-angle bends can cut through buildings.
+ // 건물을 가로지르지 않도록 실제 통행 가능한 경로 모서리를 유지한다.
  for(int i=0;i<path.corners.Length;i++){displayPath.Add(path.corners[i]);if(i>0)RemainingDistance+=Vector3.Distance(path.corners[i-1],path.corners[i]);}
  if(pathLineRenderer!=null){pathLineRenderer.positionCount=displayPath.Count;for(int i=0;i<displayPath.Count;i++){var point=displayPath[i];point.y=pathLineHeight;pathLineRenderer.SetPosition(i,point);}}
  RouteStatus="안내 중";

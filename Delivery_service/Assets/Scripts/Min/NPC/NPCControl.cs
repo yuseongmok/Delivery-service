@@ -31,7 +31,7 @@ public class NPCControl : MonoBehaviour
     // NPC 사망 시 매니저에 알릴 이벤트
     public event Action<NPCControl> OnNPCDeath;
 
-    // Combat can borrow the existing ragdoll without firing the death/respawn event.
+    // 전투에서 사망·리스폰 이벤트 없이 기존 레그돌을 사용한다.
     public bool ExternalControl { get; set; }
     public bool IsKnockedDown { get; private set; }
     public bool IsDead => isDead;

@@ -18,12 +18,12 @@ namespace DeliveryService.Mok.ShopUI
         private void OnEnable() { Refresh(); }
         private void Update() { Refresh(); }
 
-        // Called by the existing business bridge instead of duplicating its listener.
+        // 이벤트를 중복 등록하지 않고 기존 영업 연결 코드에서 호출한다.
         public void OpenShop()
         {
             if (cycle == null || cycle.isShopOpen) return;
             cycle.OnClick_OpenShop();
-            if (!cycle.isShopOpen) return; // Preserve the transition guard.
+            if (!cycle.isShopOpen) return; // 중복 전환 방지를 유지한다.
             if (!ledger.HasOpenedToday && MoneyManager.Instance != null)
                 MoneyManager.Instance.ResetDailyStats();
             ledger.BeginDay();

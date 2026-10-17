@@ -1,170 +1,241 @@
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.AI;
+using DeliveryService.Mok;
 
-[RequireComponent(typeof(NavMeshAgent))]
+[RequireComponent(typeof(NavMeshAgent), typeof(NPCControl))]
 public class RobberAI : MonoBehaviour
 {
-    private NavMeshAgent agent;
+    public enum Phase { Approach, Windup, Miss, StolenPause, Escape, Down }
+    [Header("ê°•íƒˆê³¼ ë„ì£¼")]
+    [SerializeField] float attackDistance = 1.5f;
+    [SerializeField] float moveSpeed = 5f;
+    [SerializeField] float escapeSpeed = 6f;
+    [SerializeField] float windupSeconds = 1f;
+    [Header("ê°•íƒˆ í›„ íšŒìˆ˜ ì œí•œ Â· í˜„ì‹¤ ì´ˆ")]
+    [SerializeField] float stolenPizzaEscapeSeconds = 45f;
+    float stolenElapsed;
+    public float RecoverySecondsRemaining => stolen.Count>0?Mathf.Max(0,stolenPizzaEscapeSeconds-stolenElapsed):0;
+    public static BikePizzaStorage RiddenCargo => FindObjectsByType<BikePizzaStorage>(FindObjectsSortMode.None).FirstOrDefault(s=>s.bikeController!=null&&s.bikeController.isDriven);
+    public static bool RiderCanAct(BikePizzaStorage s) => s!=null&&s.bikeController.IsControlAvailable&&Time.timeScale>0&&Cursor.lockState==CursorLockMode.Locked&&!PoliceControl.IsArrestInProgress;
+    Vector3 VictimPosition => RiddenCargo!=null?RiddenCargo.transform.position:player.transform.position;
+    Camera ViewCamera {get{var cargo=RiddenCargo;return cargo!=null&&cargo.bikeController.bikeCamera!=null?cargo.bikeController.bikeCamera.GetComponentInChildren<Camera>():player!=null?player.View:null;}}
+    public Phase State { get; private set; }
+    public bool IsTestSpawn { get; set; }
+    public float StateAge => Time.time - stateStarted;
+    public int StolenCount => stolen.Count;
+    public bool CanBeKicked => npc != null && !npc.IsDead && !npc.IsKnockedDown;
+    NavMeshAgent agent;
+    NPCControl npc;
+    PlayerCombat player;
+    ToppingInventory inventory;
+    DayNightCycle clock;
+    readonly List<PizzaData> stolen = new List<PizzaData>();
+    float stateStarted, born, nextPath;
+    int day;
+    Vector3 exit;
+    bool hasExit;
+    bool encounterEnded;
+    void EndEncounter(){if(encounterEnded)return;encounterEnded=true;RobberyManager.NotifyEncounterEnded();}
+    RobberTheftFeedback feedback;
 
-    [Header("°­Å» ¼³Á¤")]
-    [SerializeField] private int stealAmount = 200;
-    [SerializeField] private float attackDistance = 2.5f; // °­Å» »ç°Å¸® (2.5m·Î »óÇâ)
-
-    [Header("ÀÌµ¿ ¼³Á¤")]
-    [SerializeField] private float moveSpeed = 5f;
-
-    private MotorcycleController bikeCache;
-    private PlayerMove playerCache;
-    private bool hasStolen = false;
-
-    private Vector3 lastDestination = Vector3.positiveInfinity;
-
-    private void Awake()
+    void Awake()
     {
-        agent = GetComponent<NavMeshAgent>();
-
-        // Rigidbody Ãæµ¹·Î ÀÎÇÑ ¸ØÃã ¹æÁö
-        Rigidbody rb = GetComponent<Rigidbody>();
-        if (rb != null)
-        {
-            rb.isKinematic = true;
+        feedback=GetComponent<RobberTheftFeedback>();if(feedback==null)feedback=gameObject.AddComponent<RobberTheftFeedback>();
+        agent = GetComponent<NavMeshAgent>(); npc = GetComponent<NPCControl>();
+        npc.ExternalControl = true;
+        agent.speed = moveSpeed; agent.acceleration = 20; agent.angularSpeed = 540;
+        agent.stoppingDistance = .9f; agent.autoBraking = true;
+        var animator = GetComponent<Animator>(); if(animator != null) animator.applyRootMotion = false;
+    }
+    void Start()
+    {
+        SetTarget(null); clock = FindFirstObjectByType<DayNightCycle>();
+        day = clock != null ? clock.currentDay : 0; born = Time.time;
+        Change(Phase.Approach);
+    }
+    // ê¸°ì¡´ ìŠ¹í•˜ì°¨ ì½”ë“œì˜ í˜¸ì¶œ ê²½ë¡œë¥¼ ìœ ì§€í•œë‹¤.
+    public void SetTarget(Transform target)
+    {
+        player = FindFirstObjectByType<PlayerCombat>(FindObjectsInactive.Include);
+        inventory = player != null ? player.GetComponent<ToppingInventory>() : null;
+    }
+    void Change(Phase phase)
+    {
+        State = phase; stateStarted = Time.time;
+        if(phase==Phase.Down||phase==Phase.Escape)EndEncounter();
+        if(agent.enabled && agent.isOnNavMesh) agent.isStopped = phase != Phase.Approach && phase != Phase.Escape;
+    }
+    bool Available => player != null && player.CanReceiveHit && inventory != null && inventory.HasPackagedPizzas();
+    public bool CanReachVictim()
+    {
+        if(!Available) return false;
+        Vector3 delta = player.transform.position - transform.position;
+        if(Mathf.Abs(delta.y) > 1.6f || new Vector2(delta.x,delta.z).magnitude > attackDistance) return false;
+        Vector3 start = transform.position + Vector3.up * 1.1f;
+        Vector3 end = player.transform.position + Vector3.up * 1.1f;
+        return !Physics.RaycastAll(start,(end-start).normalized,(end-start).magnitude,~0,QueryTriggerInteraction.Ignore)
+            .Any(h=>!h.transform.IsChildOf(transform) && !h.transform.IsChildOf(player.transform));
+    }
+    void Update()
+    {
+        if(Time.timeScale <= 0) return;
+        if(clock != null && (clock.currentDay != day || (!IsTestSpawn && !clock.isShopOpen))) { DropLoot(); Destroy(gameObject); return; }
+        if(npc.IsDead) { DropLoot(); return; }
+        // ì‹œì•¼ë‚˜ ê²½ë¡œ ë„ì°© ì—¬ë¶€ì™€ ë¬´ê´€í•˜ê²Œ ê°•íƒˆ ì‹œì ë¶€í„° íšŒìˆ˜ ê¸°íšŒë¥¼ ì¤€ë‹¤.
+        if(stolen.Count>0){
+            stolenElapsed+=Time.unscaledDeltaTime;
+            if(stolenElapsed>=stolenPizzaEscapeSeconds){stolen.Clear();Destroy(gameObject);return;}
         }
-
-        // NavMeshAgent ¼³Á¤
-        agent.speed = moveSpeed;
-        agent.acceleration = 20f;
-        agent.angularSpeed = 360f;
-        agent.stoppingDistance = 0.8f;      // µµ´Ş Àü ¸ØÃßÁö ¾Êµµ·Ï 0.8m·Î Á¶Á¤
-        agent.autoBraking = false;
-
-        Animator animator = GetComponent<Animator>();
-        if (animator != null)
+        if(State == Phase.Down || !agent.enabled || !agent.isOnNavMesh) return;
+        if(player == null) { SetTarget(null); return; }
+        var ridden=RiddenCargo;
+        // ì£¼ìœ Â·ìˆ˜ë¦¬Â·ë©”ë‰´ë¡œ ì¡°ì‘í•  ìˆ˜ ì—†ëŠ” ë™ì•ˆ ì¤€ë¹„ ì‹œê°„ì„ ì§„í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
+        bool inputBlocked=Cursor.lockState!=CursorLockMode.Locked || (ridden!=null&&!RiderCanAct(ridden));
+        if(inputBlocked && (State==Phase.Approach||State==Phase.Windup)){
+            agent.isStopped=true;born+=Time.deltaTime;stateStarted+=Time.deltaTime;return;
+        }
+        // ì‹œë¯¼ ì´ˆê¸°í™”ì˜ ë³´í–‰ ì†ë„ ëŒ€ì‹  ê°•ë„ ìƒíƒœë³„ ì†ë„ë¥¼ ìœ ì§€í•œë‹¤.
+        agent.speed = State == Phase.Escape ? escapeSpeed : moveSpeed;
+        switch(State)
         {
-            animator.applyRootMotion = false;
+            case Phase.Approach:
+                bool hasTarget=ridden!=null?ridden.StoredCount>0:Available;
+                if(!hasTarget || Vector3.Distance(transform.position,VictimPosition)>25 || Time.time-born>30) { BeginEscape(); break; }
+                agent.isStopped=false;
+                Navigate(ridden!=null?CargoApproach(ridden):player.transform.position);
+                if(ridden!=null){
+                    if(CanReachCargo(ridden))TakeCargo(ridden);
+                }else if(CanReachVictim()) { Change(Phase.Windup); }
+                break;
+            case Phase.Windup:
+                FacePlayer();
+                if(StateAge>=windupSeconds) {
+                    if(CanReachVictim()) TakePackage();
+                    else { Change(Phase.Miss); }
+                }
+                break;
+            case Phase.Miss:
+                if(StateAge>.9f) BeginEscape();
+                break;
+            case Phase.StolenPause:
+                if(StateAge>=1f) BeginEscape();
+                break;
+            case Phase.Escape:
+                if(!hasExit || (!agent.pathPending && agent.remainingDistance<1.2f)) {
+                    if(stolen.Count==0 && !VisibleToPlayer() && StateAge>1f) { stolen.Clear(); Destroy(gameObject); return; }
+                    FindExit();
+                }
+                if(hasExit) Navigate(exit);
+                // í™”ë©´ ì•ì—ì„œ ê°‘ìê¸° ì‚¬ë¼ì§€ì§€ ì•Šë„ë¡ ì‹œì•¼ ë°–ì—ì„œë§Œ í‡´ì¥í•œë‹¤.
+                if(stolen.Count==0 && StateAge>45f && !VisibleToPlayer()) { stolen.Clear(); Destroy(gameObject); }
+                break;
         }
     }
-
-    private void Start()
-    {
-        FindReferences();
+    Vector3 CargoApproach(BikePizzaStorage storage) => storage.transform.position-storage.bikeController.transform.forward*.75f;
+    public bool CanReachCargo(BikePizzaStorage storage){
+        if(storage==null||storage.StoredCount==0||storage.bikeController==null)return false;
+        var visual=storage.GetComponent<BikeCargoVisual>();
+        if(visual==null||!visual.isActiveAndEnabled||(visual.IsBusy&&!visual.IsRobberyBy(this)))return false;
+        var delta=storage.transform.position-transform.position;
+        if(new Vector2(delta.x,delta.z).magnitude>1.7f||Mathf.Abs(delta.y)>2.2f)return false;
+        var from=transform.position+Vector3.up*1.1f;var to=storage.transform.position+Vector3.up*.15f;
+        return !Physics.RaycastAll(from,(to-from).normalized,(to-from).magnitude,~0,QueryTriggerInteraction.Ignore).Any(h=>!h.transform.IsChildOf(transform)&&h.collider!=storage.bikeController.sphereCollider&&!h.transform.IsChildOf(storage.bikeController.transform)&&!h.transform.IsChildOf(player.transform));
     }
-
-    private void FindReferences()
+    // ì ‘ê·¼í•œ í”„ë ˆì„ì— í•œ ìƒìë¥¼ ì˜®ê¸´ë‹¤. ëšœê»‘ ë™ì‘ê³¼ ì†ë„ ëŒ€ê¸°ëŠ” ì—†ë‹¤.
+    void TakeCargo(BikePizzaStorage storage){
+        var visual=storage.GetComponent<BikeCargoVisual>();
+        if(!visual.BeginRobbery(this))return;
+        PizzaData pizza;
+        try { pizza=storage.TakeOneForRobber(this); }
+        finally { visual.EndRobbery(this); }
+        if(pizza==null)return;
+        stolen.Add(pizza);
+        stolenElapsed=0;
+        feedback.NotifyTheft();
+        BeginEscape();
+       
+    }
+    void OnDisable(){EndEncounter();}
+    void FacePlayer(){FacePoint(player.transform.position);}
+    void FacePoint(Vector3 point)
     {
-        if (bikeCache == null)
+        var d=point-transform.position; d.y=0;
+        if(d.sqrMagnitude>.01f) transform.rotation=Quaternion.RotateTowards(transform.rotation,Quaternion.LookRotation(d),360*Time.deltaTime);
+    }
+    void TakePackage()
+    {
+        // í”¼ì ë°ì´í„°ë¥¼ ê·¸ëŒ€ë¡œ ì˜®ê²¨ ë ˆì‹œí”¼ì™€ ì¡°ë¦¬ ìƒíƒœë¥¼ ë³´ì¡´í•œë‹¤. ë°°ë‹¬í†µì€ ê±´ë“œë¦¬ì§€ ì•ŠëŠ”ë‹¤.
+        stolen.AddRange(inventory.ClearPackagedPizzas());
+        stolenElapsed=0;
+        feedback.NotifyTheft();
+        Change(Phase.StolenPause);
+    }
+    void BeginEscape()
+    {
+        Change(Phase.Escape); agent.speed=escapeSpeed; agent.stoppingDistance=.25f;
+        FindExit();
+    }
+    bool SetPath(Vector3 destination)
+    {
+        if(!NavMesh.SamplePosition(destination,out var hit,3f,agent.areaMask)) return false;
+        if(agent.hasPath && !agent.pathPending && (agent.destination-hit.position).sqrMagnitude<.0625f) return true;
+        var path = new NavMeshPath();
+        var filter = new NavMeshQueryFilter {agentTypeID=agent.agentTypeID,areaMask=agent.areaMask};
+        if(!NavMesh.CalculatePath(agent.nextPosition,hit.position,filter,path) || path.status!=NavMeshPathStatus.PathComplete || path.corners.Length<2) return false;
+        agent.isStopped=false; return agent.SetPath(path);
+    }
+    void Navigate(Vector3 destination)
+    {
+        if(Time.time<nextPath) return; nextPath=Time.time+.35f;
+        SetPath(destination);
+    }
+    void FindExit()
+    {
+        hasExit=false;
+        Vector3 away=player!=null?transform.position-VictimPosition:transform.forward; away.y=0;
+        if(away.sqrMagnitude<.1f) away=transform.forward;
+        foreach(float angle in new[]{0f,45f,-45f,90f,-90f,135f,-135f,180f})
         {
-            bikeCache = FindObjectOfType<MotorcycleController>(true);
-        }
-        if (playerCache == null)
-        {
-            playerCache = FindObjectOfType<PlayerMove>(true);
+            Vector3 wanted=transform.position+Quaternion.Euler(0,angle,0)*away.normalized*22f;
+            if(NavMesh.SamplePosition(wanted,out var hit,8f,agent.areaMask) && Vector3.Distance(transform.position,hit.position)>8f && SetPath(hit.position)) {exit=hit.position;hasExit=true;break;}
         }
     }
-
-    public void SetTarget(Transform newTarget)
+    bool VisibleToPlayer()
     {
-        FindReferences();
+        if(player==null || ViewCamera==null) return false;
+        var camera=ViewCamera; Vector3 point=transform.position+Vector3.up;
+        Vector3 v=camera.WorldToViewportPoint(point);
+        if(v.z<=0 || v.x<0 || v.x>1 || v.y<0 || v.y>1) return false;
+        var start=camera.transform.position;
+        return !Physics.RaycastAll(start,(point-start).normalized,Vector3.Distance(start,point),~0,QueryTriggerInteraction.Ignore)
+            .Any(h=>!h.transform.IsChildOf(transform)&&!h.transform.IsChildOf(player.transform));
     }
-
-    private void Update()
-    {
-        if (agent == null) return;
-        if (!agent.isOnNavMesh) return;
-
-        Vector3 targetPosition = GetCurrentTargetPosition();
-
-        // 0.3m ÀÌ»ó ÀÌµ¿ÇßÀ» ¶§ °æ·Î °»½Å
-        if (Vector3.Distance(lastDestination, targetPosition) > 0.3f || !agent.hasPath)
-        {
-            lastDestination = targetPosition;
-            agent.isStopped = false;
-            agent.SetDestination(targetPosition);
-        }
-
-        // °­Å» Á¶°Ç Ã¼Å©
-        if (!hasStolen)
-        {
-            // ³ôÀÌ(YÃà) Â÷ÀÌ¸¦ Á¦¿ÜÇÑ ¼ø¼ö ¼öÆò °Å¸® °è»ê
-            float flatDistance = GetFlatDistance(transform.position, targetPosition);
-
-            // ¼öÆò °Å¸®°¡ attackDistance ÀÌ³»ÀÌ°Å³ª NavMeshAgent°¡ ¸ñÀûÁö¿¡ ÃæºĞÈ÷ ´Ù°¡°¬À» ¶§
-            if (flatDistance <= attackDistance || (agent.hasPath && agent.remainingDistance <= attackDistance))
-            {
-                StealMoney();
-            }
-        }
+    // ì°¨ëŸ‰ ì¶©ëŒì€ ê¸°ì¡´ ì‹œë¯¼ ë ˆê·¸ëŒì„ ì‚¬ìš©í•˜ê³  í›”ì¹œ í”¼ìëŠ” íšŒìˆ˜ ê°€ëŠ¥í•˜ê²Œ ë‚¨ê¸´ë‹¤.
+    public bool ReceiveBikeImpact(Vector3 direction,float speed){
+        if(npc==null||npc.IsDead||npc.IsKnockedDown||speed<2f)return false;
+        DropLoot();Change(Phase.Down);
+        npc.Die(direction,Mathf.Clamp(speed*3f,15f,60f));return true;
     }
-
-    // YÃà ³ôÀÌ¸¦ ¹«½ÃÇÏ°í X, Z Æò¸é »óÀÇ °Å¸® °è»ê
-    private float GetFlatDistance(Vector3 pos1, Vector3 pos2)
+    public bool ReceiveKick(Vector3 direction)
     {
-        Vector3 p1 = new Vector3(pos1.x, 0f, pos1.z);
-        Vector3 p2 = new Vector3(pos2.x, 0f, pos2.z);
-        return Vector3.Distance(p1, p2);
+        if(!CanBeKicked) return false;
+        DropLoot(); Change(Phase.Down);
+        npc.KnockDown(direction,5f); StartCoroutine(Recover()); return true;
     }
-
-    private Vector3 GetCurrentTargetPosition()
+    IEnumerator Recover()
     {
-        if (bikeCache == null || playerCache == null)
-        {
-            FindReferences();
-        }
-
-        bool isPlayerInBike = (bikeCache != null && bikeCache.isDriven) ||
-                              (playerCache != null && !playerCache.gameObject.activeInHierarchy);
-
-        if (isPlayerInBike && bikeCache != null)
-        {
-            return bikeCache.transform.position;
-        }
-
-        if (playerCache != null && playerCache.gameObject.activeInHierarchy)
-        {
-            return playerCache.transform.position;
-        }
-
-        if (bikeCache != null) return bikeCache.transform.position;
-        if (playerCache != null) return playerCache.transform.position;
-
-        return transform.position;
+        yield return new WaitForSeconds(2.5f);
+        while(!npc.IsDead && !npc.RecoverFromKnockDown()) yield return new WaitForSeconds(.5f);
+        if(!npc.IsDead) BeginEscape();
     }
-
-    private void StealMoney()
+    public void DropLoot()
     {
-        if (hasStolen) return;
-        hasStolen = true;
-
-        ToppingInventory inventory = FindToppingInventory();
-        BikePizzaStorage bikeStorage = FindObjectOfType<BikePizzaStorage>(true);
-
-        bool playerPizzaStolen = inventory != null && inventory.TryStealAllPizzas();
-        bool bikePizzaStolen = bikeStorage != null && bikeStorage.TryStealPizzas();
-
-        if (playerPizzaStolen || bikePizzaStolen)
-        {
-            Debug.Log("[RobberAI] ÇÇÀÚ¸¦ ¸ğµÎ °­Å»ÇÏ°í µµ¸ÁÄ¨´Ï´Ù!");
-        }
-        else
-        {
-            if (MoneyManager.Instance != null)
-            {
-                MoneyManager.Instance.AccidentMoney(stealAmount);
-                Debug.Log($"[RobberAI] ÇÇÀÚ°¡ ¾ø¾î {stealAmount}¿øÀ» ÈÉÄ¡°í µµ¸ÁÄ¨´Ï´Ù!");
-            }
-        }
-
-        Destroy(gameObject);
-    }
-
-    private ToppingInventory FindToppingInventory()
-    {
-        ToppingInventory[] inventories = FindObjectsOfType<ToppingInventory>(true);
-        return inventories.Length > 0 ? inventories[0] : null;
-    }
-
-    private void OnDrawGizmosSelected()
-    {
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, attackDistance);
+        if(stolen.Count==0) return;
+        Vector3 position=transform.position+transform.forward*.9f;
+        if(NavMesh.SamplePosition(position,out var hit,3f,NavMesh.AllAreas)) position=hit.position;
+        RobberLoot.Create(position,stolen); stolen.Clear();
     }
 }
