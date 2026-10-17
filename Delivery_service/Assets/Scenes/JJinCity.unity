@@ -222673,7 +222673,7 @@ MonoBehaviour:
   status: {fileID: 291704833}
   settingsWindow: {fileID: 49081857}
   achievementsPage: {fileID: 308755294}
-  lobbyScenePath: 
+  lobbyScenePath: Assets/Scenes/Lobby.unity
 --- !u!114 &865979794
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -443928,6 +443928,28 @@ MonoBehaviour:
   kind: 3
   mapAnchor: {fileID: 1745745549}
   entrance: {fileID: 1745745549}
+--- !u!114 &1745745554
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 146860201}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cfac5c8156e342040bf022e8b048510c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DeliveryService.Yun.Audio.MotorcycleDrivingAudio
+  motorcycle: {fileID: 0}
+  minimumSpeed: 0.3
+  pitchRange: {x: 0.8, y: 1.35}
+  lowSpeedVolume: 0.25
+  fadeInSeconds: 0.45
+  fadeOutSeconds: 0.6
+  pitchResponse: 3
+  brakeArmSpeed: 6
+  brakeStartSpeed: 4
+  brakeMaximumSeconds: 1.5
 --- !u!33 &1745784220
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -782297,28 +782319,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1745745554
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 146860201}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cfac5c8156e342040bf022e8b048510c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DeliveryService.Yun.Audio.MotorcycleDrivingAudio
-  motorcycle: {fileID: 0}
-  minimumSpeed: 0.3
-  pitchRange: {x: 0.8, y: 1.35}
-  lowSpeedVolume: 0.25
-  fadeInSeconds: 0.45
-  fadeOutSeconds: 0.6
-  pitchResponse: 3
-  brakeArmSpeed: 6
-  brakeStartSpeed: 4
-  brakeMaximumSeconds: 1.5
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

@@ -9,7 +9,10 @@ namespace DeliveryService.Mok
         // 게임 또는 에디터 플레이 시작 시 재고를 읽기 전에 한 번 호출한다.
         // 씬 이동이나 다음 영업일 전환에는 호출하지 않는다.
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-        private static void ResetStock()
+        private static void ResetStock() => ResetForNewGame();
+
+        // 로비에서 새 게임을 시작할 때에도 같은 초기화 절차를 사용한다.
+        public static void ResetForNewGame()
         {
             var names = new HashSet<string>();
             var library = Resources.Load<PizzaIngredientLibrary>("MokPizzaArt/Ingredients");
