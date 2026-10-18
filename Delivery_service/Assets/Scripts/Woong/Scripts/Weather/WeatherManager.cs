@@ -10,6 +10,9 @@ public class WeatherManager : MonoBehaviour
     public bool isSnowing = false;
     public int snowStartDay = 5;
 
+    public bool isTyphoon = false;
+    public int typhoonStartDay = 7;
+
     [Header("시야 방해 (빗물 UI)")]
     public Image waterDropletUI;
     public float dropletFillRate = 0.5f;
@@ -25,6 +28,8 @@ public class WeatherManager : MonoBehaviour
 
     [Header("어지러움 효과 (눈덩이)")]
     public Image dizzyOverlayUI;
+
+    public Image tornadoFadeUI; // 토네이도
 
     [Header("참조 스크립트")]
     public DayNightCycle dayNightCycle;
