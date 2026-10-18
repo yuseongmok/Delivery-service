@@ -69,7 +69,6 @@ public class Tornado : MonoBehaviour
                 }
             }
 
-            // 중심부에 닿았을 때 텔레포트 시퀀스 시작
             if (distance <= coreRadius)
             {
                 manager.StartTeleportSequence(bike, player);

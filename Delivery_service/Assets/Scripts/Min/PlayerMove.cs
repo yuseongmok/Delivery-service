@@ -29,7 +29,7 @@ public class PlayerMove : MonoBehaviour
             ApplyGravityOnly();
             return;
         }
-
+        if (GetComponent<CharacterController>() != null && !GetComponent<CharacterController>().enabled) return;
         Move();
     }
 
@@ -46,6 +46,7 @@ public class PlayerMove : MonoBehaviour
 
     private void Move()
     {
+
         float horizontal = Input.GetAxisRaw("Horizontal");
 
         float vertical = Input.GetAxisRaw("Vertical");
