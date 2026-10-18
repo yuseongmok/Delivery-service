@@ -329,7 +329,7 @@ public class MotorcycleController : MonoBehaviour
         float crashSpeed = customSpeed >= 0f ? customSpeed : Mathf.Abs(currentSpeed);
 
         ExitBike();
-        ApplyImpactDeceleration(0.1f);  
+        ApplyImpactDeceleration(0.1f);
 
         StartCoroutine(EjectPlayerRoutine(flyingRider, crashSpeed, customDirection));
     }
@@ -371,7 +371,33 @@ public class MotorcycleController : MonoBehaviour
         Vector3 force = (flyDirection * speed * 1.2f) + (Vector3.up * 8f);
         tempRb.AddForce(force, ForceMode.VelocityChange);
 
-        yield return new WaitForSeconds(2.5f);
+        tempRb.AddTorque(Random.insideUnitSphere * speed * 2f, ForceMode.VelocityChange);
+
+        GameObject ragdollCamObj = new GameObject("RagdollActionCamera");
+        Camera ragdollCam = ragdollCamObj.AddComponent<Camera>();
+        ragdollCam.depth = 99; 
+
+        float ejectDuration = 2.5f;
+        float timer = 0f;
+        Vector3 cameraOffset = (-flyDirection * 5f) + (Vector3.up * 3f);  
+
+        while (timer < ejectDuration)
+        {
+            timer += Time.deltaTime;
+
+            if (playerToFly != null)
+            {
+                // 카메라 이동 및 회전
+                Vector3 targetCamPos = playerToFly.transform.position + cameraOffset;
+                ragdollCamObj.transform.position = Vector3.Lerp(ragdollCamObj.transform.position, targetCamPos, Time.deltaTime * 6f);
+                ragdollCamObj.transform.LookAt(playerToFly.transform.position + Vector3.up * 1f);
+            }
+
+            yield return null;  
+        }
+
+        //연출이 끝나면 관전 카메라 파괴
+        Destroy(ragdollCamObj);
 
         if (tempRb != null) Destroy(tempRb);
         if (addedCol && tempCol != null) Destroy(tempCol);
@@ -392,7 +418,7 @@ public class MotorcycleController : MonoBehaviour
         float bailSpeed = Mathf.Abs(currentSpeed);
         Vector3 bailDirection = transform.forward * Mathf.Sign(currentSpeed);
 
-        ExitBike(); 
+        ExitBike();
         StartCoroutine(BailOutRoutine(flyingRider, bailSpeed, bailDirection));
     }
 
@@ -420,11 +446,11 @@ public class MotorcycleController : MonoBehaviour
 
             Vector3 safePosition = spawnTransform.position + Vector3.up * 1.5f;
             Vector3 targetSpherePos = safePosition - (spawnTransform.rotation * localOffset);
-             
+
             sphereRB.position = targetSpherePos;
             sphereRB.transform.position = targetSpherePos;
 
-            Physics.SyncTransforms(); 
+            Physics.SyncTransforms();
             sphereRB.isKinematic = false;
         }
 
