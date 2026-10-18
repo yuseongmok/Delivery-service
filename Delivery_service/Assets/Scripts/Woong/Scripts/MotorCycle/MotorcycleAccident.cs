@@ -3,9 +3,13 @@ using UnityEngine;
 public class MotorcycleAccident : MonoBehaviour
 {
     [SerializeField] private float minImpactSpeed = 2f;             // 사고 발생 최소 속도
-    [SerializeField] private float speedMultiplierOnImpact = 0.2f;  // 사고 났을 때 속도 줄어드는 퍼센트
-    [SerializeField] private GameObject accidentPanel;
+    [SerializeField] private float speedMultiplierOnImpact = 0.2f;  // 사고 발생 시 감속 비율
     [SerializeField] private LayerMask npcLayer;
+
+    [Header("사고 처리 설정")]
+    [SerializeField] private int accidentFine = 3000;               // 합의금
+    [Range(0f, 1f)]
+    [SerializeField] private float policeSpawnChance = 0.7f;        // 경찰 출동 확률
 
     private MotorcycleController controller;
 
@@ -17,14 +21,17 @@ public class MotorcycleAccident : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         if (controller == null) return;
-        // 강도는 사고 대화창 없이 제압하고 훔친 피자를 떨어뜨린다.
-        var robber=other.GetComponentInParent<RobberAI>();
-        if(robber!=null){
-            if(controller.isDriven&&robber.ReceiveBikeImpact(controller.transform.forward*Mathf.Sign(controller.CurrentSpeed),Mathf.Abs(controller.CurrentSpeed)))
+
+        // 강도 충돌 처리
+        var robber = other.GetComponentInParent<RobberAI>();
+        if (robber != null)
+        {
+            if (controller.isDriven && robber.ReceiveBikeImpact(controller.transform.forward * Mathf.Sign(controller.CurrentSpeed), Mathf.Abs(controller.CurrentSpeed)))
                 controller.ApplyImpactDeceleration(speedMultiplierOnImpact);
             return;
         }
 
+        // 일반 NPC 사고 처리
         if (((1 << other.gameObject.layer) & npcLayer) != 0)
         {
             float absoluteSpeed = Mathf.Abs(controller.CurrentSpeed);
@@ -34,56 +41,31 @@ public class MotorcycleAccident : MonoBehaviour
             NPCControl npc = other.GetComponentInParent<NPCControl>();
             if (npc != null)
             {
+                // NPC 사망 처리 및 신고 접수
                 Vector3 hitDirection = controller.transform.forward;
                 float hitForce = absoluteSpeed * 30f;
                 npc.Die(hitDirection, Mathf.Clamp(hitForce, 15f, 60f));
                 DeliveryService.Mok.CitizenCrime.ReportPlayerKill(npc);
 
+                // 오토바이 충격 감속
                 controller.ApplyImpactDeceleration(speedMultiplierOnImpact);
 
-                if (accidentPanel != null)
+                // 돈 차감
+                if (MoneyManager.Instance != null)
                 {
-                    accidentPanel.SetActive(true);
-                    SetUIState(true);
+                    MoneyManager.Instance.AccidentMoney(accidentFine);
+                }
+
+                // 70% 확률 검사 후 경찰 출동
+                if (Random.value <= policeSpawnChance)
+                {
+                    PoliceManager policeManager = FindObjectOfType<PoliceManager>();
+                    if (policeManager != null)
+                    {
+                        policeManager.SpawnPoliceOnAccidentRefused();
+                    }
                 }
             }
-        }
-    }
-
-    public void OnClickNoButton()
-    {
-        if (accidentPanel != null)
-        {
-            accidentPanel.SetActive(false);
-        }
-
-        SetUIState(false);
-    }
-
-    public void OnClickYesButton()
-    {
-        if (accidentPanel != null)
-        {
-            accidentPanel.SetActive(false);
-        }
-        SetUIState(false);
-    }
-
-    private void SetUIState(bool isUIActive)
-    {
-        if (isUIActive)
-        {
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
-
-            if (controller != null) controller.SetControllable(false);
-        }
-        else
-        {
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
-
-            if (controller != null) controller.SetControllable(true);
         }
     }
 }
