@@ -19,7 +19,8 @@ public class PoliceControl : MonoBehaviour
     [SerializeField] private float maxOutOfSightTime = 60f;
 
     [Header("체포")]
-    [SerializeField] private float arrestDistance = 2.0f;
+    [SerializeField] private float arrestDistance = 2.5f;
+    [SerializeField] private float hiddenArrestDistance = 10f;
     [SerializeField] private float fadeDuration = 1.0f;
     [SerializeField] private int fineAmount = 500;
 
@@ -30,13 +31,17 @@ public class PoliceControl : MonoBehaviour
     private float nextPathUpdateTime;
     private NavMeshPath chasePath;
 
-    public float RemainingChaseSeconds => Mathf.Max(0f,totalChaseTimer);
-    public bool HasVisualContact => isActiveAndEnabled && !isArresting && isInSight && RemainingChaseSeconds>0;
+    public float RemainingChaseSeconds => Mathf.Max(0f, totalChaseTimer);
+    public bool HasVisualContact => isActiveAndEnabled && !isArresting && isInSight && RemainingChaseSeconds > 0;
     private Vector3 lastKnownPosition;
     private bool targetHidden;
     private float totalChaseTimer;
     private float outOfSightTimer;
     private bool isInSight;
+
+    private bool wasHiddenLastFrame;
+    private bool wasInSightLastFrame;
+    private bool sawPlayerHide;
 
     private static bool isArresting = false;
     public static bool IsArrestInProgress => isArresting;
@@ -66,7 +71,7 @@ public class PoliceControl : MonoBehaviour
 
         ResetChaseTimers();
         FindAllTargets();
-        if(playerOnFootTarget!=null)lastKnownPosition=playerOnFootTarget.position;
+        if (playerOnFootTarget != null) lastKnownPosition = playerOnFootTarget.position;
         FindUIAndSpawnPoint();
     }
 
@@ -140,31 +145,63 @@ public class PoliceControl : MonoBehaviour
 
         Transform activeTarget = GetActivePlayerTarget();
         if (activeTarget == null) return;
+
         var combat = playerOnFootTarget != null ? playerOnFootTarget.GetComponent<DeliveryService.Mok.PlayerCombat>() : null;
-        if (combat != null && combat.IsDown) {
+        if (combat != null && combat.IsDown)
+        {
             if (agent != null && agent.enabled && agent.isOnNavMesh) agent.isStopped = true;
             pausedForKnockdown = true; return;
         }
-        if (pausedForKnockdown) {
+        if (pausedForKnockdown)
+        {
             if (agent != null && agent.enabled && agent.isOnNavMesh) agent.isStopped = false;
             pausedForKnockdown = false;
         }
 
-        var hiding=activeTarget.GetComponent<DeliveryService.Mok.PlayerHiding>();
-        targetHidden=hiding!=null&&hiding.IsHidden;
-        isInSight = CheckLineOfSight(activeTarget);
-        if(isInSight)lastKnownPosition=activeTarget.position;
-        UpdateTimers();
+        var hiding = activeTarget.GetComponent<DeliveryService.Mok.PlayerHiding>();
+        bool isCurrentlyHidden = hiding != null && hiding.IsHidden;
+
+        if (!wasHiddenLastFrame && isCurrentlyHidden)
+        {
+            sawPlayerHide = wasInSightLastFrame;
+            if (sawPlayerHide)
+            {
+                lastKnownPosition = activeTarget.position;
+            }
+        }
+        else if (!isCurrentlyHidden)
+        {
+            sawPlayerHide = false;
+        }
+
+        wasHiddenLastFrame = isCurrentlyHidden;
+
+        if (!isCurrentlyHidden)
+        {
+            isInSight = CheckLineOfSightToPosition(activeTarget.position);
+            if (isInSight) lastKnownPosition = activeTarget.position;
+        }
+        else
+        {
+            isInSight = sawPlayerHide;
+        }
+
+        wasInSightLastFrame = isInSight;
+        targetHidden = isCurrentlyHidden && !sawPlayerHide;
+
+        bool fastTimerDecay = isCurrentlyHidden && !sawPlayerHide;
+        UpdateTimers(fastTimerDecay);
 
         if (Time.time >= nextPathUpdateTime)
         {
             nextPathUpdateTime = Time.time + pathUpdateInterval;
-            MoveToFlankPosition(activeTarget);
+            MoveToFlankPosition(activeTarget, sawPlayerHide);
         }
 
-        // 체포 거리 검사
+        float currentArrestDistance = (isCurrentlyHidden && sawPlayerHide) ? hiddenArrestDistance : arrestDistance;
+
         float flatDistance = GetFlatDistance(transform.position, activeTarget.position);
-        if (!targetHidden && flatDistance <= arrestDistance)
+        if ((!isCurrentlyHidden || sawPlayerHide) && flatDistance <= currentArrestDistance)
         {
             StartCoroutine(ArrestRoutine(activeTarget));
             return;
@@ -188,6 +225,44 @@ public class PoliceControl : MonoBehaviour
         if (isArresting) yield break;
         isArresting = true;
 
+        Transform playerToTeleport = target;
+
+        if (bikeController != null && bikeController.isDriven)
+        {
+            bikeController.ExitBike();
+
+            if (playerOnFootTarget != null)
+            {
+                playerToTeleport = playerOnFootTarget;
+            }
+        }
+
+        // 쓰레기통에서 복귀시킨 뒤, 체포 진행 중 떨이지지 않도록 물리/이동 컴포넌트를 즉시 비활성화
+        if (playerToTeleport != null)
+        {
+            var hiding = playerToTeleport.GetComponent<DeliveryService.Mok.PlayerHiding>();
+            if (hiding != null && hiding.IsHidden)
+            {
+                hiding.Leave(false);
+            }
+
+            // 플레이어 조작, 콜라이더, 중력 비활성화 (바닥 뚫림 방지)
+            CharacterController cc = playerToTeleport.GetComponent<CharacterController>();
+            if (cc != null) cc.enabled = false;
+
+            PlayerMove pm = playerToTeleport.GetComponent<PlayerMove>();
+            if (pm != null) pm.enabled = false;
+
+            Rigidbody rb = playerToTeleport.GetComponent<Rigidbody>();
+            if (rb != null)
+            {
+                rb.linearVelocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+                rb.isKinematic = true;
+            }
+        }
+
+        // 모든 경찰 이동 정지
         PoliceControl[] allPolice = FindObjectsOfType<PoliceControl>();
         foreach (var p in allPolice)
         {
@@ -197,7 +272,7 @@ public class PoliceControl : MonoBehaviour
             }
         }
 
-        // 페이드 아웃
+        // 화면 페이드 아웃
         if (fadeScreen != null)
         {
             fadeScreen.gameObject.SetActive(true);
@@ -212,44 +287,33 @@ public class PoliceControl : MonoBehaviour
             }
         }
 
-        Transform playerToTeleport = target;
-
-        if (bikeController != null && bikeController.isDriven)
-        {
-            bikeController.ExitBike();
-
-            if (playerOnFootTarget != null)
-            {
-                playerToTeleport = playerOnFootTarget;
-            }
-        }
-
-        // 경찰서로 이동
+        // 경찰서 위치로 플레이어 이동
         if (policeStationSpawn != null && playerToTeleport != null)
         {
-            CharacterController cc = playerToTeleport.GetComponent<CharacterController>();
-            if (cc != null) cc.enabled = false;
-
-            Rigidbody rb = playerToTeleport.GetComponent<Rigidbody>();
-            if (rb != null)
-            {
-                rb.linearVelocity = Vector3.zero;
-                rb.angularVelocity = Vector3.zero;
-            }
-
             playerToTeleport.position = policeStationSpawn.position;
             playerToTeleport.rotation = policeStationSpawn.rotation;
-
-            if (cc != null) cc.enabled = true;
         }
 
-        // 벌금
+        // 경찰서에 도착했으므로 플레이어 상태 원복
+        if (playerToTeleport != null)
+        {
+            CharacterController cc = playerToTeleport.GetComponent<CharacterController>();
+            if (cc != null) cc.enabled = true;
+
+            PlayerMove pm = playerToTeleport.GetComponent<PlayerMove>();
+            if (pm != null) pm.enabled = true;
+
+            Rigidbody rb = playerToTeleport.GetComponent<Rigidbody>();
+            if (rb != null) rb.isKinematic = false;
+        }
+
+        // 벌금 차감
         if (MoneyManager.Instance != null)
         {
             MoneyManager.Instance.AccidentMoney(fineAmount);
         }
 
-        // 추격중인 경찰 삭제
+        // 추격 중인 나머지 경찰 제거
         foreach (var p in allPolice)
         {
             if (p != null && p != this)
@@ -258,7 +322,7 @@ public class PoliceControl : MonoBehaviour
             }
         }
 
-        // 페이드 인
+        // 화면 페이드 인
         if (fadeScreen != null)
         {
             Color c = fadeScreen.color;
@@ -278,23 +342,26 @@ public class PoliceControl : MonoBehaviour
         Destroy(gameObject);
     }
 
-    private bool CheckLineOfSight(Transform target)
+    private bool CheckLineOfSightToPosition(Vector3 targetPos)
     {
-        var hiding=target.GetComponent<DeliveryService.Mok.PlayerHiding>();
-        if(hiding!=null&&hiding.IsHidden)return false;
-        Vector3 dirToPlayer = (target.position - transform.position).normalized;
-        float distToPlayer = Vector3.Distance(transform.position, target.position);
+        Vector3 targetEyePos = targetPos + Vector3.up * 1.0f;
+        Vector3 policeEyePos = transform.position + Vector3.up * 1.0f;
 
-        if (distToPlayer > viewDistance) return false;
-        if (Vector3.Angle(transform.forward, dirToPlayer) > viewAngle / 2f) return false;
-        if (Physics.Raycast(transform.position + Vector3.up * 0.5f, dirToPlayer, distToPlayer, obstacleMask)) return false;
+        Vector3 dirToTarget = (targetEyePos - policeEyePos).normalized;
+        float distToTarget = Vector3.Distance(policeEyePos, targetEyePos);
+
+        if (distToTarget > viewDistance) return false;
+        if (Vector3.Angle(transform.forward, dirToTarget) > viewAngle / 2f) return false;
+        if (Physics.Raycast(policeEyePos, dirToTarget, distToTarget, obstacleMask)) return false;
 
         return true;
     }
 
-    private void UpdateTimers()
+    private void UpdateTimers(bool fastDecay)
     {
-        totalChaseTimer -= Time.deltaTime;
+        float multiplier = fastDecay ? 3f : 1f;
+
+        totalChaseTimer -= Time.deltaTime * multiplier;
 
         if (isInSight)
         {
@@ -302,20 +369,34 @@ public class PoliceControl : MonoBehaviour
         }
         else
         {
-            outOfSightTimer -= Time.deltaTime;
+            outOfSightTimer -= Time.deltaTime * multiplier;
         }
     }
 
-    private void MoveToFlankPosition(Transform target)
+    private void MoveToFlankPosition(Transform target, bool sawHide)
     {
         if (agent == null || !agent.isOnNavMesh) return;
 
-        Vector3 targetForward = target.forward;
-        Vector3 offsetDirection = Quaternion.Euler(0, flankAngle, 0) * targetForward;
-        Vector3 targetPosition = targetHidden?lastKnownPosition:target.position + (offsetDirection * flankDistance);
+        Vector3 destination;
 
-        Vector3 destination = NavMesh.SamplePosition(targetPosition, out NavMeshHit hit, 3f, NavMesh.AllAreas)
-            ? hit.position : (targetHidden ? lastKnownPosition : target.position);
+        if (sawHide)
+        {
+            destination = target.position;
+        }
+        else if (targetHidden)
+        {
+            destination = lastKnownPosition;
+        }
+        else
+        {
+            Vector3 targetForward = target.forward;
+            Vector3 offsetDirection = Quaternion.Euler(0, flankAngle, 0) * targetForward;
+            Vector3 targetPosition = target.position + (offsetDirection * flankDistance);
+
+            destination = NavMesh.SamplePosition(targetPosition, out NavMeshHit hit, 3f, NavMesh.AllAreas)
+                ? hit.position : target.position;
+        }
+
         if (agent.hasPath && (agent.destination - destination).sqrMagnitude < .0625f) return;
         if (chasePath == null) chasePath = new NavMeshPath();
         var filter = new NavMeshQueryFilter { agentTypeID = agent.agentTypeID, areaMask = agent.areaMask };
