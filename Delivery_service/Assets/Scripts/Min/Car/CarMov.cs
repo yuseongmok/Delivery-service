@@ -16,6 +16,7 @@ public class CarMov : MonoBehaviour
     [SerializeField] private float detectionRadius = 1.2f;
     [SerializeField] private Vector3 rayOffset = new Vector3(0f, 0.5f, 0.5f);
 
+    public float CurrentTravelSpeed { get; private set; }
     private float initialY;
     private bool isObstacleDetected = false;
 
@@ -28,8 +29,8 @@ public class CarMov : MonoBehaviour
     {
         CheckForObstacles();
 
-        if (isObstacleDetected) return;
-        if (currentTarget == null) return;
+        if (isObstacleDetected) { CurrentTravelSpeed = 0f; return; }
+        if (currentTarget == null) { CurrentTravelSpeed = 0f; return; }
 
         // 목표 방향 계산
         Vector3 targetPosition = currentTarget.transform.position;
@@ -55,7 +56,10 @@ public class CarMov : MonoBehaviour
         }
 
         // 직선 이동
-        transform.position = Vector3.MoveTowards(transform.position, targetPosition, speed * Time.deltaTime);
+        float travelSpeed = DeliveryService.Mok.TrafficSpacing.TravelSpeed(this, speed, Time.deltaTime);
+        Vector3 previousPosition = transform.position;
+        transform.position = Vector3.MoveTowards(transform.position, targetPosition, travelSpeed * Time.deltaTime);
+        CurrentTravelSpeed = Vector3.Distance(previousPosition, transform.position) / Mathf.Max(Time.deltaTime, .001f);
 
         // 다음 노드 갱신
         float distance = Vector3.Distance(transform.position, targetPosition);
@@ -67,6 +71,7 @@ public class CarMov : MonoBehaviour
 
     private void CheckForObstacles()
     {
+
         Vector3 origin = transform.TransformPoint(rayOffset);
         Vector3 direction = transform.forward;
 
@@ -107,8 +112,7 @@ public class CarMov : MonoBehaviour
         }
 
         // 사거리일 경우 다음 노드 중 무작위 1개 선택
-        int randomIndex = Random.Range(0, currentTarget.nextWaypoints.Count);
-        currentTarget = currentTarget.nextWaypoints[randomIndex];
+        currentTarget = DeliveryService.Mok.TrafficSpacing.ChooseNext(this, currentTarget);
     }
 
     private void OnDrawGizmosSelected()

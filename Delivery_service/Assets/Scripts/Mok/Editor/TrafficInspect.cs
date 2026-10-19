@@ -1,0 +1,10 @@
+#if UNITY_EDITOR
+using System;using System.IO;using System.Linq;using System.Text;using UnityEditor;using UnityEditor.SceneManagement;using UnityEngine;using UnityEngine.SceneManagement;
+namespace DeliveryService.Mok.Editor {
+[InitializeOnLoad]public static class TrafficInspect {
+static TrafficInspect(){EditorApplication.update+=Poll;}
+static void Poll(){if(EditorApplication.isCompiling||EditorApplication.isUpdating||EditorApplication.isPlayingOrWillChangePlaymode||!File.Exists("Temp/Mok-traffic-inspect"))return;File.Delete("Temp/Mok-traffic-inspect");var scene=SceneManager.GetSceneByPath("Assets/Scenes/JJinCity.unity");bool opened=!scene.isLoaded;if(opened)scene=EditorSceneManager.OpenScene("Assets/Scenes/JJinCity.unity",OpenSceneMode.Additive);try{var sb=new StringBuilder();var all=scene.GetRootGameObjects().SelectMany(g=>g.GetComponentsInChildren<Transform>(true)).ToArray();foreach(var c in all.Select(t=>t.GetComponent<CarMov>()).Where(c=>c!=null)){sb.AppendLine("CAR "+c.name+" pos="+c.transform.position+" scale="+c.transform.lossyScale);foreach(var col in c.GetComponentsInChildren<Collider>())sb.AppendLine("COL "+col.name+" "+col.GetType().Name+" trigger="+col.isTrigger+" size="+col.bounds.size);}
+foreach(var w in all.Select(t=>t.GetComponent<WayPoint>()).Where(w=>w!=null))sb.AppendLine("WAY "+w.name+" "+w.transform.position+" -> "+string.Join(",",w.nextWaypoints.Select(n=>n.name)));
+foreach(var type in new[]{"Sedan","Small","Muscle","Taxi","Medium","Van"}){var p=AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Synty/PolygonCity/Prefabs/Vehicles/SM_Veh_Car_"+type+"_01.prefab");sb.AppendLine("PREFAB "+type+" wheels="+p.GetComponentsInChildren<Transform>().Count(t=>t.name.Contains("_Wheel_"))+" colliders="+p.GetComponentsInChildren<Collider>().Length+" materials="+string.Join(",",p.GetComponentsInChildren<Renderer>().SelectMany(r=>r.sharedMaterials).Where(m=>m!=null).Select(m=>AssetDatabase.GetAssetPath(m)).Distinct()));}File.WriteAllText("Temp/Mok-traffic-inspect.txt",sb.ToString());}finally{if(opened)EditorSceneManager.CloseScene(scene,true);}}
+}}
+#endif

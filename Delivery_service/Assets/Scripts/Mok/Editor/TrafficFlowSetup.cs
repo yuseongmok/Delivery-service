@@ -1,0 +1,9 @@
+#if UNITY_EDITOR
+using System;using System.IO;using System.Linq;using UnityEngine;using UnityEditor;using UnityEditor.SceneManagement;using UnityEngine.SceneManagement;
+namespace DeliveryService.Mok.Editor {
+[InitializeOnLoad]public static class TrafficFlowSetup {
+static TrafficFlowSetup(){EditorApplication.update+=Poll;}
+static void Poll(){if(EditorApplication.isCompiling||EditorApplication.isUpdating||EditorApplication.isPlayingOrWillChangePlaymode||!File.Exists("Temp/Mok-flow-setup"))return;File.Delete("Temp/Mok-flow-setup");try{Run();}catch(Exception e){File.WriteAllText("Temp/Mok-flow-setup.txt",e.ToString());}}
+static void Run(){string stamp=DateTime.Now.ToString("yyyyMMdd-HHmmss");for(int i=0;i<SceneManager.sceneCount;i++){var s=SceneManager.GetSceneAt(i);if(s.isLoaded&&!EditorSceneManager.SaveScene(s,"Temp/Before-flow-"+stamp+"-"+i+".unity",true))throw new Exception("Backup failed");}var scene=SceneManager.GetSceneByPath("Assets/Scenes/JJinCity.unity");bool opened=!scene.isLoaded;if(opened)scene=EditorSceneManager.OpenScene("Assets/Scenes/JJinCity.unity",OpenSceneMode.Additive);try{if(!EditorSceneManager.SaveScene(scene,"Temp/JJinCity-before-flow-"+stamp+".unity",true))throw new Exception("Backup failed");var cars=scene.GetRootGameObjects().SelectMany(g=>g.GetComponentsInChildren<CarMov>(true)).OrderBy(c=>c.name).ToArray();if(cars.Length!=50)throw new Exception("Expected 50 cars");for(int i=0;i<cars.Length;i++){var so=new SerializedObject(cars[i]);so.FindProperty("speed").floatValue=7.5f+i/(float)(cars.Length-1);so.ApplyModifiedPropertiesWithoutUndo();PrefabUtility.RecordPrefabInstancePropertyModifications(cars[i]);}EditorSceneManager.MarkSceneDirty(scene);if(!EditorSceneManager.SaveScene(scene))throw new Exception("Save failed");File.WriteAllText("Temp/Mok-flow-setup.txt","PASS: 50 cars, speed 7.5–8.5, positions and models retained.");}finally{if(opened)EditorSceneManager.CloseScene(scene,true);}}
+}}
+#endif

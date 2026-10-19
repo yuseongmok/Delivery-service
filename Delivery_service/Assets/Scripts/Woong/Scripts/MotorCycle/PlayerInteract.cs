@@ -1,90 +1,37 @@
 using UnityEngine;
-
-public class PlayerInteract : MonoBehaviour
-{
-    public float interactRange = 3f;
+public class PlayerInteract : MonoBehaviour {
+    public float interactRange=3f;
     public LayerMask motorcycleLayer;
     public Transform playerCameraTransform;
-
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.E))
-        {
-            TryInteract();
-        }
-    }
-
-    private void TryInteract()
-    {
-        Vector3 origin = playerCameraTransform != null ? playerCameraTransform.position : transform.position;
-        Vector3 direction = playerCameraTransform != null ? playerCameraTransform.forward : transform.forward;
-        Ray ray = new Ray(origin, direction);
-        RaycastHit hit;
-
-        Debug.DrawRay(origin, direction * interactRange, Color.red, 2f);
-        if (Physics.Raycast(ray, out RaycastHit interactHit, interactRange))
-        {
-            if (interactHit.collider.GetComponentInParent<IInteractable>() != null)
-            {
-                return;
+    void Update(){if(Input.GetKeyDown(KeyCode.E))TryInteract();}
+    void TryInteract(){
+        var combat=GetComponent<DeliveryService.Mok.PlayerCombat>();if(combat!=null&&!combat.CanAct)return;
+        Vector3 origin=playerCameraTransform!=null?playerCameraTransform.position:transform.position;
+        Vector3 direction=playerCameraTransform!=null?playerCameraTransform.forward:transform.forward;
+        if(!Physics.Raycast(origin,direction,out var hit,interactRange,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore))return;
+        FuelNozzle held=null;foreach(var n in FindObjectsByType<FuelNozzle>(FindObjectsSortMode.None))if(n.currentState==FuelNozzle.NozzleState.InHand){held=n;break;}
+        var target=hit.collider;
+        // ÎÖ∏Ï¶êÏùÑ Îì§Í≥† ÏûàÏúºÎ©¥ ÏûëÏùÄ Ï£ºÏú†Íµ¨ ÎåÄÏã† Ï∞®Ï≤¥ Ïñ¥ÎîîÎ•º Í∞ÄÎ¶¨ÏºúÎèÑ Ïó∞Í≤∞ÌïúÎã§.
+        var bike=target.GetComponentInParent<MotorcycleController>();
+        var cap=target.GetComponentInParent<FuelCap>();
+        // Ïó∞Í≤∞Ìï† ÎïåÏôÄ ÎßàÏ∞¨Í∞ÄÏßÄÎ°ú Ï∞®Ï≤¥Î•º Ï°∞Ï§ÄÌï¥ÏÑú Ïû•Ï∞©Îêú ÎÖ∏Ï¶êÏùÑ ÌöåÏàòÌïúÎã§.
+        if(bike==null&&cap!=null&&cap.bikeFuelSystem!=null)bike=cap.bikeFuelSystem.GetComponent<MotorcycleController>();
+        if(held==null&&bike!=null){
+            foreach(var attached in FindObjectsByType<FuelNozzle>(FindObjectsSortMode.None)){
+                if(attached.currentState!=FuelNozzle.NozzleState.Refueling||attached.currentTargetCap==null)continue;
+                var fuel=attached.currentTargetCap.bikeFuelSystem;
+                if(fuel!=null&&fuel.GetComponent<MotorcycleController>()==bike){attached.PickUpNozzle();return;}
             }
         }
-        FuelNozzle heldNozzle = null;
-        FuelNozzle[] allNozzles = FindObjectsOfType<FuelNozzle>();
-        foreach (FuelNozzle n in allNozzles)
-        {
-            if (n.currentState == FuelNozzle.NozzleState.InHand)
-            {
-                heldNozzle = n;
-                break;
-            }
+        if(held!=null&&(cap!=null||bike!=null)){
+            if(cap==null)cap=bike.GetComponentInChildren<FuelCap>();
+            if(cap!=null)held.AttachToBike(cap);return;
         }
-        if (Physics.Raycast(ray, out hit, interactRange, motorcycleLayer))
-        {
-            GameObject target = hit.collider.gameObject;
-
-            // ≥Î¡Ò ≈¨∏Ø 
-            FuelNozzle nozzle = target.GetComponent<FuelNozzle>();
-            if (nozzle != null)
-            {
-                if (heldNozzle == null)
-                {
-                    nozzle.PickUpNozzle();
-                }
-                return;
-            }
-
-            // ¡÷¿Ø±∏ ≈¨∏Ø 
-            FuelCap cap = target.GetComponent<FuelCap>();
-            if (cap != null)
-            {
-                if (heldNozzle != null)
-                {
-                    heldNozzle.AttachToBike(cap);
-                }
-                return;
-            }
-
-            // ¡÷¿Ø±‚∞Ë ≈¨∏Ø 
-            if (target.CompareTag("GasPump"))
-            {
-                if (heldNozzle != null)
-                {
-                    heldNozzle.ReturnPump();
-                }
-                return;
-            }
-
-            // ø¿≈‰πŸ¿Ã ≈æΩ¬ 
-            MotorcycleController bike = hit.collider.GetComponentInParent<MotorcycleController>();
-            if (bike != null && heldNozzle == null && !bike.isRefueling)
-            {
-                // ≈æΩ¬ø° º∫∞¯«ﬂ¿ª ∂ß∏∏ «√∑π¿ÃæÓ ∫Ò»∞º∫»≠
-                if (bike.EnterBike(this.gameObject))
-                {
-                    this.gameObject.SetActive(false);
-                }
-            }
-        }
+        if(target.GetComponentInParent<IInteractable>()!=null)return;
+        if((motorcycleLayer.value&(1<<target.gameObject.layer))==0)return;
+        var nozzle=target.GetComponentInParent<FuelNozzle>();
+        if(nozzle!=null){if(held==null)nozzle.PickUpNozzle();return;}
+        if(target.CompareTag("GasPump")){if(held!=null)held.ReturnPump();else{var mounted=target.GetComponentInChildren<FuelNozzle>();if(mounted!=null&&mounted.currentState==FuelNozzle.NozzleState.OnPump)mounted.PickUpNozzle();}return;}
+        if(bike!=null&&held==null&&!bike.isRefueling&&bike.EnterBike(gameObject))gameObject.SetActive(false);
     }
 }
