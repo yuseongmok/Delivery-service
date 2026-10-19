@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace DeliveryService.Mok.ShopUI
 {
@@ -12,7 +12,9 @@ namespace DeliveryService.Mok.ShopUI
         public long Ingredients { get; private set; }
         public long Fuel { get; private set; }
         public long Loss { get; private set; }
-        public long Other => Expense - Ingredients - Fuel - Loss;
+        public long Interest { get; private set; }
+        public long Rent { get; private set; }
+        public long Other => Expense - Ingredients - Fuel - Loss - Interest - Rent;
         public long Profit => Income - Expense;
         public bool HasOpenedToday => cycle != null && Day == cycle.currentDay;
         private MoneyManager money;
@@ -35,12 +37,13 @@ namespace DeliveryService.Mok.ShopUI
             Bind();
             if (cycle == null || HasOpenedToday) return;
             Day = cycle.currentDay;
-            Income = Expense = Ingredients = Fuel = Loss = 0;
+            Income = Expense = Ingredients = Fuel = Loss = Interest = Rent = 0;
         }
         private void Record(int amount, ExpenseType type)
         {
+            if(type==ExpenseType.LoanBorrow||type==ExpenseType.LoanRepayment)return;
             // 개점 버튼을 누르기 전 거래는 오늘 통계에 포함하지 않는다.
-            if (cycle == null || !cycle.isShopOpen) return;
+            if (cycle == null || (!cycle.isShopOpen && type!=ExpenseType.LoanInterest && type!=ExpenseType.Rent)) return;
             BeginDay();
             if (amount > 0) Income += amount;
             else
@@ -50,6 +53,8 @@ namespace DeliveryService.Mok.ShopUI
                 if (type == ExpenseType.PizzaTopping) Ingredients += cost;
                 else if (type == ExpenseType.Fuel) Fuel += cost;
                 else if (type == ExpenseType.Loss) Loss += cost;
+                else if (type == ExpenseType.LoanInterest) Interest += cost;
+                else if (type == ExpenseType.Rent) Rent += cost;
             }
         }
         private void OnDisable()

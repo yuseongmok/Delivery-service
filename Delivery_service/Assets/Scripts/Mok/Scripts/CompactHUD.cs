@@ -50,7 +50,7 @@ public sealed class CompactHUD : MonoBehaviour {
     static MotorcycleDurability Durability(MotorcycleController bike)=>bike.durabilitySystem!=null?bike.durabilitySystem:bike.GetComponentInChildren<MotorcycleDurability>(true);
     static void Hide(Graphic g){if(g!=null)g.enabled=false;}
     static void HideGauge(Image image){if(image==null)return;image.enabled=false;if(image.transform.parent!=null)foreach(var text in image.transform.parent.GetComponentsInChildren<Text>(true))text.enabled=false;}
-    void LateUpdate(){
+    void LateUpdate(){using(DeliveryService.Mok.PerformanceMarkers.HUD.Auto()){
         if(timeLabel==null||clock==null)return;
         int minutes=Mathf.FloorToInt(clock.currentTime*60);timeLabel.text=$"DAY {clock.currentDay}  ·  {minutes/60:00}:{minutes%60:00}";
         string value=sourceOrder!=null?sourceOrder.text:"";var lines=value.Split('\n');
@@ -73,7 +73,7 @@ public sealed class CompactHUD : MonoBehaviour {
         bool loaded=current.isDriven&&cargo!=null&&cargo.StoredCount>0;
         gauges[2].SetActive(loaded);((RectTransform)vehicle.transform).sizeDelta=new Vector2(270,loaded?150:106);
         if(loaded)SetGauge(2,cargo.currentShake/Mathf.Max(.001f,cargo.maxShake),true);
-    }
+    }}
     void SetGauge(int i,float ratio,bool highDanger){ratio=Mathf.Clamp01(ratio);fills[i].rectTransform.sizeDelta=new Vector2(190*ratio,8);fills[i].color=(highDanger?ratio>.7f:ratio<.25f)?Danger:Orange;}
     RectTransform Card(string name,Vector2 anchor,Vector2 pos,Vector2 size){
         var r=Rect(transform,name,0,0,(int)size.x,(int)size.y);r.anchorMin=r.anchorMax=anchor;r.pivot=anchor;r.anchoredPosition=pos;

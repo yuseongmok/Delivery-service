@@ -14,6 +14,8 @@ public class OrderUI : MonoBehaviour
 
     public void RefreshOrderList(List<PizzaOrder> pendingOrders)
     {
+        // 교체된 주문 화면의 빈 연결이 게임 진행을 중단하지 않도록 한다.
+        if (contentTransform == null || orderItemPrefab == null || pendingOrders == null) return;
         // 기존 UI 제거
         foreach (Transform child in contentTransform)
         {

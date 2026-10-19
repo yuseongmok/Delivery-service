@@ -14,7 +14,14 @@ public sealed class PhoneAppIcon : MaskableGraphic {
         Color bg=App==0?new Color(.22f,.59f,.51f):App==1||App==3?new Color(.87f,.49f,.22f):new Color(.32f,.47f,.65f);
         Round(.055f,.055f,.89f,.89f,.18f,bg);
         Color paper=new Color(.97f,.95f,.85f);
-        if(App==3){
+        if(App==5){
+            for(int i=0;i<3;i++)Quad(.22f+i*.25f,.20f,.28f+i*.25f,.80f,paper);
+            Quad(.24f,.63f,.52f,.69f,paper);Quad(.49f,.46f,.77f,.52f,paper);Quad(.24f,.30f,.52f,.36f,paper);
+        }else if(App==4){
+            Poly(paper,new Vector2(.15f,.64f),new Vector2(.5f,.84f),new Vector2(.85f,.64f));
+            Quad(.17f,.22f,.83f,.29f,paper);
+            for(int i=0;i<3;i++)Quad(.24f+i*.21f,.31f,.34f+i*.21f,.59f,paper);
+        }else if(App==3){
  var inner=new Vector2[5];
  for(int i=0;i<5;i++){float a=(90+i*72)*Mathf.Deg2Rad;float b=a-36*Mathf.Deg2Rad;float c=a+36*Mathf.Deg2Rad;
  var center=new Vector2(.5f,.5f);inner[i]=center+new Vector2(Mathf.Cos(b),Mathf.Sin(b))*.15f;

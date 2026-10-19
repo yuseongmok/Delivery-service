@@ -6,21 +6,21 @@ public sealed class TrafficSpacing : MonoBehaviour {
     static readonly List<TrafficSpacing> active=new List<TrafficSpacing>();
     public float bodyLength=5f;
     public float followingGap=1.4f;
-    CarMov car;
-    void OnEnable(){car=GetComponent<CarMov>();if(!active.Contains(this))active.Add(this);}
+    CarMov car;Transform cachedTransform;
+    void OnEnable(){cachedTransform=transform;car=GetComponent<CarMov>();if(!active.Contains(this))active.Add(this);}
     void OnDisable(){active.Remove(this);}
-    static TrafficSpacing Leader(CarMov car,out float gap){
+    static TrafficSpacing Leader(CarMov car,out float gap){using(DeliveryService.Mok.PerformanceMarkers.Traffic.Auto()){
         gap=float.PositiveInfinity;var self=car.GetComponent<TrafficSpacing>();if(self==null)return null;
-        TrafficSpacing leader=null;
+        TrafficSpacing leader=null;var forward=self.cachedTransform.forward;var worldToLocal=self.cachedTransform.worldToLocalMatrix;
         foreach(var other in active){
             if(other==null||other==self||!other.isActiveAndEnabled||other.car==null)continue;
-            if(Vector3.Dot(car.transform.forward,other.transform.forward)<.65f)continue;
-            Vector3 offset=car.transform.InverseTransformPoint(other.transform.position);
+            if(Vector3.Dot(forward,other.cachedTransform.forward)<.65f)continue;
+            Vector3 offset=worldToLocal.MultiplyPoint3x4(other.cachedTransform.position);
             float clearance=offset.z-(self.bodyLength+other.bodyLength)*.5f;
             if(offset.z>.1f&&clearance<gap&&Mathf.Abs(offset.x)<1.7f&&Mathf.Abs(offset.y)<2f){gap=clearance;leader=other;}
         }
         return leader;
-    }
+    }}
     public static bool IsBlocked(CarMov car){var leader=Leader(car,out float gap);return leader!=null&&gap<=car.GetComponent<TrafficSpacing>().followingGap;}
     public static float TravelSpeed(CarMov car,float cruise,float deltaTime){
         var self=car.GetComponent<TrafficSpacing>();if(self==null)return cruise;

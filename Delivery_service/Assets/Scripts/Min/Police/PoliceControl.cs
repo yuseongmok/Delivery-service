@@ -50,9 +50,13 @@ public class PoliceControl : MonoBehaviour
     private float flankAngle;
     private float flankDistance;
 
+    bool ownsArrest;
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    static void ResetArrest(){isArresting=false;}
+    void OnDestroy(){DeliveryService.Mok.SceneActors.Remove(this);if(ownsArrest)isArresting=false;}
     private void Awake()
     {
-        isArresting = false;
+        DeliveryService.Mok.SceneActors.Register(this);
     }
 
     public void Initialize(Transform targetPlayer, float angleOffset, float distOffset, Transform stationSpawn = null, Image fadeUI = null)
@@ -224,12 +228,14 @@ public class PoliceControl : MonoBehaviour
     {
         if (isArresting) yield break;
         isArresting = true;
+        ownsArrest = true;
         DeliveryService.Mok.ShopReputation.Instance.Penalize(true);
 
         Transform playerToTeleport = target;
 
         if (bikeController != null && bikeController.isDriven)
         {
+            bikeController.ApplyImpactDeceleration(0f);
             bikeController.ExitBike();
 
             if (playerOnFootTarget != null)
@@ -237,6 +243,8 @@ public class PoliceControl : MonoBehaviour
                 playerToTeleport = playerOnFootTarget;
             }
         }
+
+        bool controllerEnabled=false, moveEnabled=false, bodyKinematic=true;
 
         // 쓰레기통에서 복귀시킨 뒤, 체포 진행 중 떨이지지 않도록 물리/이동 컴포넌트를 즉시 비활성화
         if (playerToTeleport != null)
@@ -249,16 +257,19 @@ public class PoliceControl : MonoBehaviour
 
             // 플레이어 조작, 콜라이더, 중력 비활성화 (바닥 뚫림 방지)
             CharacterController cc = playerToTeleport.GetComponent<CharacterController>();
-            if (cc != null) cc.enabled = false;
+            if (cc != null){controllerEnabled=cc.enabled;cc.enabled = false;}
 
             PlayerMove pm = playerToTeleport.GetComponent<PlayerMove>();
-            if (pm != null) pm.enabled = false;
+            if (pm != null){moveEnabled=pm.enabled;pm.enabled = false;}
 
             Rigidbody rb = playerToTeleport.GetComponent<Rigidbody>();
             if (rb != null)
             {
+                bodyKinematic=rb.isKinematic;
+                if(!rb.isKinematic){
                 rb.linearVelocity = Vector3.zero;
                 rb.angularVelocity = Vector3.zero;
+                }
                 rb.isKinematic = true;
             }
         }
@@ -273,6 +284,10 @@ public class PoliceControl : MonoBehaviour
             }
         }
 
+        var presentation=gameObject.AddComponent<DeliveryService.Mok.PoliceArrestPresentation>();
+        presentation.Begin(playerToTeleport,transform);
+        yield return presentation.FaceOfficer();
+
         // 화면 페이드 아웃
         if (fadeScreen != null)
         {
@@ -281,7 +296,7 @@ public class PoliceControl : MonoBehaviour
             float t = 0f;
             while (t < fadeDuration)
             {
-                t += Time.deltaTime;
+                t += Time.unscaledDeltaTime;
                 c.a = Mathf.Lerp(0f, 1f, t / fadeDuration);
                 fadeScreen.color = c;
                 yield return null;
@@ -295,18 +310,7 @@ public class PoliceControl : MonoBehaviour
             playerToTeleport.rotation = policeStationSpawn.rotation;
         }
 
-        // 경찰서에 도착했으므로 플레이어 상태 원복
-        if (playerToTeleport != null)
-        {
-            CharacterController cc = playerToTeleport.GetComponent<CharacterController>();
-            if (cc != null) cc.enabled = true;
-
-            PlayerMove pm = playerToTeleport.GetComponent<PlayerMove>();
-            if (pm != null) pm.enabled = true;
-
-            Rigidbody rb = playerToTeleport.GetComponent<Rigidbody>();
-            if (rb != null) rb.isKinematic = false;
-        }
+        presentation.AlignAtStation();
 
         // 벌금 차감
         if (MoneyManager.Instance != null)
@@ -330,7 +334,7 @@ public class PoliceControl : MonoBehaviour
             float t = 0f;
             while (t < fadeDuration)
             {
-                t += Time.deltaTime;
+                t += Time.unscaledDeltaTime;
                 c.a = Mathf.Lerp(1f, 0f, t / fadeDuration);
                 fadeScreen.color = c;
                 yield return null;
@@ -338,7 +342,22 @@ public class PoliceControl : MonoBehaviour
             fadeScreen.gameObject.SetActive(false);
         }
 
+        // 경찰서에 도착했으므로 플레이어 상태 원복
+        if (playerToTeleport != null)
+        {
+            CharacterController cc = playerToTeleport.GetComponent<CharacterController>();
+            if (cc != null) cc.enabled = controllerEnabled;
+
+            PlayerMove pm = playerToTeleport.GetComponent<PlayerMove>();
+            if (pm != null) pm.enabled = moveEnabled;
+
+            Rigidbody rb = playerToTeleport.GetComponent<Rigidbody>();
+            if (rb != null) rb.isKinematic = bodyKinematic;
+        }
+
+        presentation.Finish();
         isArresting = false;
+        ownsArrest = false;
 
         Destroy(gameObject);
     }

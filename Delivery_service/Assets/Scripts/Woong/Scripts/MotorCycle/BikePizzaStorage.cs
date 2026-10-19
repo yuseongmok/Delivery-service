@@ -28,6 +28,9 @@ public class BikePizzaStorage : MonoBehaviour, IInteractable
 
     public MotorcycleController bikeController;
 
+    void OnDestroy(){DeliveryService.Mok.SceneActors.Remove(this);}
+    void Awake(){DeliveryService.Mok.SceneActors.Register(this);}
+
     private void Start()
     {
         //if (pizzaBoxVisual != null) pizzaBoxVisual.SetActive(false);

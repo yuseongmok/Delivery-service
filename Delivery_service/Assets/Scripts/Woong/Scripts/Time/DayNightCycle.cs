@@ -124,7 +124,7 @@ public class DayNightCycle : MonoBehaviour
         if (MoneyManager.Instance != null)
         {
             if (summaryIncomeText != null) summaryIncomeText.text = $"오늘의 수익: {MoneyManager.Instance.dailyIncome}원";
-            if (summaryExpenseText != null) summaryExpenseText.text = $"오늘의 지출: {MoneyManager.Instance.dailyTotalExpense}원";
+            if (summaryExpenseText != null) summaryExpenseText.text = $"오늘의 지출: {MoneyManager.Instance.dailyTotalExpense:N0}원\n{DeliveryService.Mok.DailyRent.Preview(currentDay)}";
         }
     }
 
@@ -174,6 +174,9 @@ public class DayNightCycle : MonoBehaviour
         }
 
         // 두 마감 경로 모두 다음 날 초기화·납품·리스폰 전에 검사한다.
+        DeliveryService.Mok.LadderGame.Current?.CompleteRound();
+        DeliveryService.Mok.LoanAccount.Current?.SettleDay(currentDay);
+        DeliveryService.Mok.DailyRent.Current?.SettleDay(currentDay);
         yield return DeliveryService.Mok.Stocks.StockDebtPrompt.Resolve();
         if (DeliveryService.Mok.BankruptcyGameOver.TryEndDay(this)) yield break;
 

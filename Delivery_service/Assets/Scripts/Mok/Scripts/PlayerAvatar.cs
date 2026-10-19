@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Rendering;
 namespace DeliveryService.Mok {
 // 기존 플레이어 물리에는 관여하지 않고 사람형 모델과 카메라별 표시만 담당한다.
@@ -11,8 +11,8 @@ public sealed class PlayerAvatar : MonoBehaviour {
     Vector3 restFoot;Quaternion restFootRotation;float kickTime;bool kicking;Vector3 previous;bool wasPhysical;
     public bool IsPhysical {get{if(ragdoll!=null&&ragdoll.IsActive)return true;var rb=GetComponentInParent<Rigidbody>();return rb!=null&&!rb.isKinematic;}}
     void OnEnable(){RenderPipelineManager.beginCameraRendering+=BeforeCamera;RenderPipelineManager.endCameraRendering+=AfterCamera;previous=transform.position;}
-    public void PoseKick(float seconds){if(!kicking){var foot=animator.GetBoneTransform(HumanBodyBones.RightFoot);restFoot=transform.InverseTransformPoint(foot.position);restFootRotation=Quaternion.Inverse(transform.rotation)*foot.rotation;}kickTime=seconds;kicking=true;}
-    public void StopKick(){kicking=false;if(animator!=null&&animator.isActiveAndEnabled)animator.Play("Idle",0,0);}
+    public void PoseKick(float seconds){if(animator==null||!animator.isHuman)return;if(!kicking){var foot=animator.GetBoneTransform(HumanBodyBones.RightFoot);restFoot=transform.InverseTransformPoint(foot.position);restFootRotation=Quaternion.Inverse(transform.rotation)*foot.rotation;}kickTime=seconds;kicking=true;}
+    public void StopKick(){bool wasKicking=kicking;kicking=false;if(wasKicking&&animator!=null&&animator.isActiveAndEnabled&&!IsPhysical)animator.CrossFadeInFixedTime("Idle",.1f,0);}
     void LateUpdate(){
         if(animator==null)return;if(ragdoll!=null&&ragdoll.IsActive){kicking=false;return;}
         bool physical=IsPhysical;
@@ -26,16 +26,24 @@ public sealed class PlayerAvatar : MonoBehaviour {
         var hip=animator.GetBoneTransform(HumanBodyBones.RightUpperLeg);
         var knee=animator.GetBoneTransform(HumanBodyBones.RightLowerLeg);
         var foot=animator.GetBoneTransform(HumanBodyBones.RightFoot);
-        float t=kickTime;Vector3 tuck=new Vector3(restFoot.x,.78f,.23f),extended=new Vector3(restFoot.x,1.35f,.85f);
+        // 체형 기준으로 무릎 들기 → 뻗기 → 다시 접기 → 착지한다.
+        float length=Vector3.Distance(hip.position,knee.position)+Vector3.Distance(knee.position,foot.position);
+        float scale=Mathf.Max(.001f,transform.lossyScale.y);float leg=length/scale;
+        Vector3 hipLocal=transform.InverseTransformPoint(hip.position);
+        float t=kickTime;Vector3 tuck=new Vector3(restFoot.x,hipLocal.y-leg*.32f,hipLocal.z+leg*.32f);
+        Vector3 extended=new Vector3(restFoot.x,hipLocal.y+leg*.08f,hipLocal.z+leg*.90f);
         Vector3 local=t<.12f?Vector3.Lerp(restFoot,tuck,Mathf.SmoothStep(0,1,t/.12f)):
-            t<.22f?Vector3.Lerp(tuck,extended,Mathf.SmoothStep(0,1,(t-.12f)/.1f)):
-            t<.30f?extended:Vector3.Lerp(extended,restFoot,Mathf.SmoothStep(0,1,(t-.30f)/.35f));
+            t<HitTime?Vector3.Lerp(tuck,extended,Mathf.SmoothStep(0,1,(t-.12f)/(HitTime-.12f))):
+            t<.29f?extended:t<.46f?Vector3.Lerp(extended,tuck,Mathf.SmoothStep(0,1,(t-.29f)/.17f)):
+            Vector3.Lerp(tuck,restFoot,Mathf.SmoothStep(0,1,(t-.46f)/(KickDuration-.46f)));
         Vector3 target=transform.TransformPoint(local),origin=hip.position;
         float a=Vector3.Distance(origin,knee.position),b=Vector3.Distance(knee.position,foot.position);
         Vector3 direction=(target-origin).normalized;float d=Mathf.Clamp(Vector3.Distance(target,origin),.02f,a+b-.001f);
         target=origin+direction*d;
         float along=(a*a-b*b+d*d)/(2*d),height=Mathf.Sqrt(Mathf.Max(0,a*a-along*along));
-        Vector3 bend=Vector3.ProjectOnPlane(transform.up,direction).normalized;
+        Vector3 bend=Vector3.ProjectOnPlane(transform.forward+transform.up,direction);
+        if(bend.sqrMagnitude<.001f)bend=Vector3.ProjectOnPlane(transform.up,direction);
+        bend.Normalize();
         Vector3 joint=origin+direction*along+bend*height;
         hip.rotation=Quaternion.FromToRotation(knee.position-origin,joint-origin)*hip.rotation;
         knee.rotation=Quaternion.FromToRotation(foot.position-knee.position,target-knee.position)*knee.rotation;

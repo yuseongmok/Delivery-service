@@ -37,6 +37,12 @@ public class CameraMove : MonoBehaviour
         player.Rotate(Vector3.up * mouseX);
     }
 
+    // 연출로 바뀐 시선을 마우스 조작 각도에 반영한다.
+    public void SyncViewFromTransform()
+    {
+        xRotation = Mathf.Clamp(Mathf.DeltaAngle(0f, transform.localEulerAngles.x), minLookAngle, maxLookAngle);
+    }
+
     public void SetControl(bool enable)
     {
         isControllable = enable;

@@ -21,7 +21,7 @@ public class RobberAI : MonoBehaviour
     public int StolenCash => stolenCash;
     public bool HasStolenLoot => stolen.Count>0||stolenCash>0;
     public float RecoverySecondsRemaining => HasStolenLoot?Mathf.Max(0,stolenPizzaEscapeSeconds-stolenElapsed):0;
-    public static BikePizzaStorage RiddenCargo => FindObjectsByType<BikePizzaStorage>(FindObjectsSortMode.None).FirstOrDefault(s=>s.bikeController!=null&&s.bikeController.isDriven);
+    public static BikePizzaStorage RiddenCargo {get{foreach(var s in DeliveryService.Mok.SceneActors.Cargo)if(s!=null&&s.gameObject.activeInHierarchy&&s.bikeController!=null&&s.bikeController.isDriven)return s;return null;}}
     public static bool RiderCanAct(BikePizzaStorage s) => s!=null&&s.bikeController.IsControlAvailable&&Time.timeScale>0&&Cursor.lockState==CursorLockMode.Locked&&!PoliceControl.IsArrestInProgress;
     Vector3 VictimPosition => RiddenCargo!=null?RiddenCargo.transform.position:player.transform.position;
     Camera ViewCamera {get{var cargo=RiddenCargo;return cargo!=null&&cargo.bikeController.bikeCamera!=null?cargo.bikeController.bikeCamera.GetComponentInChildren<Camera>():player!=null?player.View:null;}}
@@ -44,8 +44,10 @@ public class RobberAI : MonoBehaviour
     void EndEncounter(){if(encounterEnded)return;encounterEnded=true;RobberyManager.NotifyEncounterEnded();}
     RobberTheftFeedback feedback;
 
+    void OnDestroy(){DeliveryService.Mok.SceneActors.Remove(this);}
     void Awake()
     {
+        DeliveryService.Mok.SceneActors.Register(this);
         feedback=GetComponent<RobberTheftFeedback>();if(feedback==null)feedback=gameObject.AddComponent<RobberTheftFeedback>();
         agent = GetComponent<NavMeshAgent>(); npc = GetComponent<NPCControl>();
         npc.ExternalControl = true;

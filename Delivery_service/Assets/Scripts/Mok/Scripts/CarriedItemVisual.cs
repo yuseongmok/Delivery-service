@@ -28,9 +28,14 @@ namespace DeliveryService.Mok
             inventory.ContentsChanged += Refresh;
         }
         void Start() { Refresh(); }
-        void OnEnable() { if (anchor != null) anchor.gameObject.SetActive(true); if (overlayCamera != null) overlayCamera.enabled = true; }
+        void OnEnable() { if (anchor != null) anchor.gameObject.SetActive(true); if (overlayCamera != null) overlayCamera.enabled = display != null && display.activeInHierarchy; }
         void OnDisable() { if (anchor != null) anchor.gameObject.SetActive(false); if (overlayCamera != null) overlayCamera.enabled = false; }
-        void LateUpdate() { if (overlayCamera != null && viewCamera != null) overlayCamera.fieldOfView = viewCamera.fieldOfView; }
+        void LateUpdate() {
+            if (overlayCamera == null || viewCamera == null) return;
+            // 빈손일 때는 그릴 물체가 없으므로 전용 카메라도 쉬게 한다.
+            overlayCamera.enabled = display != null && display.activeInHierarchy;
+            if (overlayCamera.enabled) overlayCamera.fieldOfView = viewCamera.fieldOfView;
+        }
         void OnDestroy()
         {
             if (inventory != null) inventory.ContentsChanged -= Refresh;

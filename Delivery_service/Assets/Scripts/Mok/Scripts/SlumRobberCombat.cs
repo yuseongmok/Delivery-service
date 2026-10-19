@@ -2,9 +2,10 @@ using UnityEngine;
 namespace DeliveryService.Mok {
 // 빈민촌에서 생성된 강도는 시민 전투를 사용하고 접촉 강탈 AI는 정지한다.
 public sealed class SlumRobberCombat : MonoBehaviour {
+ [SerializeField, Min(0f)] float chaseSpeed=5.75f;
  CitizenCombat combat;PlayerCombat player;DayNightCycle clock;RobberyDistrict district;int day;bool ended;
  public CitizenCombat Combat=>combat;
- void Awake(){GetComponent<RobberAI>().enabled=false;combat=GetComponent<CitizenCombat>();if(combat==null)combat=gameObject.AddComponent<CitizenCombat>();}
+ void Awake(){GetComponent<RobberAI>().enabled=false;combat=GetComponent<CitizenCombat>();if(combat==null)combat=gameObject.AddComponent<CitizenCombat>();combat.chaseSpeed=chaseSpeed;}
  void Start(){player=FindFirstObjectByType<PlayerCombat>();clock=FindFirstObjectByType<DayNightCycle>();district=FindFirstObjectByType<RobberyDistrict>();day=clock!=null?clock.currentDay:0;if(player!=null)combat.Provoke(player);}
  void Update(){if(ended)return;if(player==null||clock==null||clock.currentDay!=day||(!GetComponent<RobberAI>().IsTestSpawn&&!clock.isShopOpen)||district==null||!district.Contains(player.transform.position))EndFight();}
  public bool ReceiveKick(Vector3 direction){return !ended&&player!=null&&combat.ReceiveKick(player,direction,player.kickDamage);}

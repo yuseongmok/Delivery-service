@@ -48,7 +48,7 @@ public class NavigationManager : MonoBehaviour {
  }
  public void RefreshRoute(){RouteRevision++;CalculateNavigationPath();nextUpdate=0;}
  public void DebugCurrentDestination(){Debug.Log("[Navigation] "+DestinationName+" / "+RouteStatus);}
- void CalculateNavigationPath(){
+ void CalculateNavigationPath(){using(DeliveryService.Mok.PerformanceMarkers.Route.Auto()){
  var destination=RouteDestination;ClearNavigationPath();
  if(playerTransform==null||destination==null){RouteStatus="목적지를 선택하세요";return;}
  lastDestination=destination;lastPosition=playerTransform.position;lastDestinationPosition=destination.position;
@@ -60,7 +60,7 @@ public class NavigationManager : MonoBehaviour {
  for(int i=0;i<routeCorners.Length;i++){displayPath.Add(routeCorners[i]);if(i>0)RemainingDistance+=Vector3.Distance(routeCorners[i-1],routeCorners[i]);}
  if(pathLineRenderer!=null){pathLineRenderer.positionCount=displayPath.Count;for(int i=0;i<displayPath.Count;i++){var point=displayPath[i];point.y=pathLineHeight;pathLineRenderer.SetPosition(i,point);}}
  RouteStatus="안내 중";
- }
+ }}
  // 배달 시간과 화면 안내가 동일한 실제 도로 경로를 사용한다.
  public static bool TryMeasureTravelDistance(Vector3 start,Vector3 end,out float distance){
   distance=0;var corners=FindTravelRoute(start,end);if(corners==null||corners.Length==0)return false;
