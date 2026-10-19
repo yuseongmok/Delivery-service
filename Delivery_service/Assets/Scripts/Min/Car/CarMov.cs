@@ -29,7 +29,7 @@ public class CarMov : MonoBehaviour
     {
         CheckForObstacles();
 
-        if (isObstacleDetected) { CurrentTravelSpeed = 0f; return; }
+        if (isObstacleDetected && GetComponent<DeliveryService.Mok.EastRecklessDriver>() == null) { CurrentTravelSpeed = 0f; return; }
         if (currentTarget == null) { CurrentTravelSpeed = 0f; return; }
 
         // 목표 방향 계산
@@ -56,7 +56,9 @@ public class CarMov : MonoBehaviour
         }
 
         // 직선 이동
-        float travelSpeed = DeliveryService.Mok.TrafficSpacing.TravelSpeed(this, speed, Time.deltaTime);
+        var reckless = GetComponent<DeliveryService.Mok.EastRecklessDriver>();
+        float cruise = reckless != null ? reckless.Speed(targetPosition) : speed;
+        float travelSpeed = DeliveryService.Mok.TrafficSpacing.TravelSpeed(this, cruise, Time.deltaTime);
         Vector3 previousPosition = transform.position;
         transform.position = Vector3.MoveTowards(transform.position, targetPosition, travelSpeed * Time.deltaTime);
         CurrentTravelSpeed = Vector3.Distance(previousPosition, transform.position) / Mathf.Max(Time.deltaTime, .001f);
@@ -129,11 +131,13 @@ public class CarMov : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
+        float impactSpeed = CurrentTravelSpeed;
+        if (impactSpeed < 1f) return;
         NPCControl npc = other.GetComponentInParent<NPCControl>();
         if (npc != null)
         {
             Vector3 hitDirection = transform.forward;
-            float hitForce = speed * 2.5f;
+            float hitForce = impactSpeed * 2.5f;
             npc.Die(hitDirection, Mathf.Clamp(hitForce, 15f, 50f));
             return;
         }
@@ -143,19 +147,20 @@ public class CarMov : MonoBehaviour
         {
             if (bike.isDriven)
             {
-                bike.CrashAndEject(speed, transform.forward);
+                bike.CrashAndEject(impactSpeed, transform.forward);
             }
 
             if (bike.sphereRB != null)
             {
-                bike.sphereRB.AddForce(transform.forward * speed * 2f, ForceMode.VelocityChange);
+                bike.sphereRB.AddForce(transform.forward * impactSpeed * 2f, ForceMode.VelocityChange);
             }
             return;
         }
 
-        if (other.CompareTag("Player"))
+        var player = other.GetComponentInParent<PlayerMove>();
+        if (player != null && DeliveryService.Mok.TrafficRecovery.Get(player.gameObject).TryBegin())
         {
-            StartCoroutine(KnockbackPlayerRoutine(other.gameObject));
+            StartCoroutine(KnockbackPlayerRoutine(player.gameObject));
         }
     }
     private IEnumerator KnockbackPlayerRoutine(GameObject player)
@@ -164,7 +169,7 @@ public class CarMov : MonoBehaviour
         var ragdoll = player.GetComponentInChildren<DeliveryService.Mok.PlayerRagdoll>();
         if (ragdoll != null && ragdoll.IsReady)
         {
-            ragdoll.Launch(transform.forward * speed * 1.5f + Vector3.up * 8f);
+            ragdoll.Launch(transform.forward * CurrentTravelSpeed * 1.5f + Vector3.up * 8f);
             yield break;
         }
         CharacterController cc = player.GetComponent<CharacterController>();

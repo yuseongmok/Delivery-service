@@ -1,31 +1,17 @@
 using System.Collections.Generic;
 using UnityEngine;
-
-public class DeliveryPoint : MonoBehaviour, IInteractable
-{
-    [SerializeField] private string deliveryPointID = "HouseA";
-
-    [SerializeField] private OrderManager orderManager;
-
-    public string DeliveryPointID => deliveryPointID;
-
-    public void Interact(ToppingInventory inventory)
-    {
-        if (inventory.HasPackagedPizzas())
-        {
-            List<PizzaData> pizzaDataList = inventory.GetHeldPackagedPizzas();
-
-            // º»ÀÎÀÇ deliveryPointID¸¦ ÇÔ²² Àü´ŞÇÏ¿© Àå¼Ò °Ë»ç±îÁö ÁøÇà
-            bool success = orderManager.TryDeliverPackagedStack(pizzaDataList, deliveryPointID);
-
-            if (success)
-            {
-                inventory.ClearPackagedPizzas();
-            }
-        }
-        else
-        {
-            Debug.Log("¹è´ŞÇÒ Æ÷Àå ÇÇÀÚ°¡ ¾ø½À´Ï´Ù.");
-        }
-    }
+public class DeliveryPoint : MonoBehaviour, IInteractable {
+ [SerializeField] private string deliveryPointID="HouseA";
+ [SerializeField] private OrderManager orderManager;
+ public string DeliveryPointID=>deliveryPointID;
+ public void Interact(ToppingInventory inventory){
+  if(orderManager==null||inventory==null)return;
+  var pizzas=inventory.GetHeldPackagedPizzas();
+  if(!orderManager.TryDeliverPackagedStack(pizzas,deliveryPointID)){
+   DeliveryService.Mok.DeliveryRequestNotice.Show(orderManager.LastDeliveryFailure);return;
+  }
+  // ì£¼ë¬¸ì— ë§ëŠ” í•œ ìƒìë§Œ ì „ë‹¬í•˜ê³  ë‚˜ë¨¸ì§€ëŠ” ì†ì— ë‚¨ê¸´ë‹¤.
+  var remaining=new List<PizzaData>(pizzas);remaining.RemoveAt(orderManager.LastDeliveredPizzaIndex);
+  inventory.ClearPackagedPizzas();if(remaining.Count>0)inventory.AddPackagedDataStack(remaining);
+ }
 }

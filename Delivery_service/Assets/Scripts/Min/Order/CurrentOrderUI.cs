@@ -28,8 +28,9 @@ public class CurrentOrderUI : MonoBehaviour
     public void DisplayTimedOrder(PizzaOrder order, string destination, float minutes)
     {
         if (order == null) { ClearOrder(); return; }
-        int seconds = Mathf.Max(0, Mathf.CeilToInt(minutes * 60f - 0.01f));
-        SetText(OrderHeading(order) + "\n" + destination + "\n" + $"{seconds / 60:00}:{seconds % 60:00}");
+        int seconds = Mathf.Max(0, Mathf.CeilToInt(Mathf.Abs(minutes) * 60f - 0.01f));
+        string discount=minutes<0?$" (-{(1f-DeliveryService.Mok.DeliveryPricing.LateMultiplier(DeliveryService.Mok.DeliveryPricing.PromisedMinutes-minutes))*100f:0}%)":"";
+        SetText(OrderHeading(order) + "\n" + DeliveryService.Mok.PizzaRecipes.Title(order) + "\n" + destination + "\n" + (minutes<0?"Áö¿¬ ":"") + $"{seconds / 60:00}:{seconds % 60:00}" + discount);
     }
 
     public void DisplayCancelledOrder(PizzaOrder order)

@@ -11,7 +11,7 @@ namespace DeliveryService.Mok.Navigation
         public Camera overviewCamera; // 기존 씬 참조 유지를 위한 필드이며 활성화하지 않는다.
         public Font font;
         public RenderTexture overviewTexture;
-        public enum Screen { Home, Destinations, Map, Stocks, News }
+        public enum Screen { Home, Destinations, Map, Stocks, News, Reviews }
         public Screen CurrentScreen { get; private set; } = Screen.Map;
         public int Selection { get; private set; }
         public bool IsRiding => bikes != null && bikes.Any(b => b != null && b.isDriven);
@@ -21,6 +21,7 @@ namespace DeliveryService.Mok.Navigation
         GameObject home, destinations;
         DeliveryService.Mok.Stocks.StockPhoneApp stocks;
         DeliveryService.Mok.Stocks.StockPhoneNews news;
+        DeliveryService.Mok.ReviewPhoneApp reviews;
         Text[] apps, rows;
         PhoneAppIcon[] appIcons;
         Text notice, hint;
@@ -51,6 +52,20 @@ namespace DeliveryService.Mok.Navigation
             wasOpen = open;
             if (IsOpen && Time.timeScale > 0 && Cursor.lockState == CursorLockMode.Locked)
             {
+                if(CurrentScreen==Screen.Reviews){
+                    if(Input.GetKeyDown(KeyCode.UpArrow))reviews.Move(-1);
+                    if(Input.GetKeyDown(KeyCode.DownArrow))reviews.Move(1);
+                    if(Input.GetKeyDown(KeyCode.Backspace))Show(Screen.Home);
+                    return;
+                }
+                if(CurrentScreen==Screen.Home){
+                    if(Input.GetKeyDown(KeyCode.UpArrow))MoveSelection(-2);
+                    else if(Input.GetKeyDown(KeyCode.DownArrow))MoveSelection(2);
+                    else if(Input.GetKeyDown(KeyCode.LeftArrow))MoveSelection(-1);
+                    else if(Input.GetKeyDown(KeyCode.RightArrow))MoveSelection(1);
+                    if(Input.GetKeyDown(KeyCode.Return)||Input.GetKeyDown(KeyCode.KeypadEnter))Confirm();
+                    return;
+                }
                 if(CurrentScreen==Screen.News){
                     if(Input.GetKeyDown(KeyCode.UpArrow))news.Move(-1);
                     if(Input.GetKeyDown(KeyCode.DownArrow))news.Move(1);
@@ -77,7 +92,7 @@ namespace DeliveryService.Mok.Navigation
         public void MoveSelection(int direction)
         {
             if (CurrentScreen == Screen.Map) { Show(Screen.Destinations); return; }
-            int count = CurrentScreen == Screen.Home ? 3 : names.Length;
+            int count = CurrentScreen == Screen.Home ? 4 : names.Length;
             Selection = (Selection + direction + count) % count;
             if (notice != null) notice.text = "";
             Refresh();
@@ -88,7 +103,7 @@ namespace DeliveryService.Mok.Navigation
             if (CurrentScreen == Screen.Home)
             {
                 if (Selection == 0) Show(Screen.Destinations);
-                else Show(Selection==1?Screen.Stocks:Screen.News);
+                else Show(Selection==1?Screen.Stocks:Selection==2?Screen.News:Screen.Reviews);
                 return;
             }
             if (manager == null) return;
@@ -113,7 +128,7 @@ namespace DeliveryService.Mok.Navigation
         NavigationPlace SelectedPlace(int i) => places == null ? null : places.FirstOrDefault(p => p != null && p.kind == kinds[i]);
         public void Show(Screen screen)
         {
-            if (IsRiding && (screen == Screen.Home || screen == Screen.Stocks || screen == Screen.News)) screen = Screen.Map;
+            if (IsRiding && (screen == Screen.Home || screen == Screen.Stocks || screen == Screen.News || screen == Screen.Reviews)) screen = Screen.Map;
             CurrentScreen = screen; Selection = 0;
             if (home == null) return;
             places = FindObjectsByType<NavigationPlace>(FindObjectsSortMode.None);
@@ -121,6 +136,7 @@ namespace DeliveryService.Mok.Navigation
             destinations.SetActive(screen == Screen.Destinations);
             stocks.gameObject.SetActive(screen==Screen.Stocks);if(screen==Screen.Stocks)stocks.Open();
             news.gameObject.SetActive(screen==Screen.News);if(screen==Screen.News)news.Open();
+            reviews.gameObject.SetActive(screen==Screen.Reviews);if(screen==Screen.Reviews)reviews.Open();
             notice.text = "";
             Refresh();
         }
@@ -160,17 +176,17 @@ namespace DeliveryService.Mok.Navigation
             Label("DELIVERY",home.transform,36,48,470,45,27);
             Label("내 휴대폰",home.transform,36,160,470,70,48);
             Label("도시 생활의 모든 것",home.transform,36,236,470,42,25).color=new Color(.62f,.74f,.79f);
-            // 3개 앱은 한 줄에 배치하고 기존 방향키 순서를 유지한다.
-            apps=new Text[3];appIcons=new PhoneAppIcon[3];
-            for(int i=0;i<3;i++){
-                var tile=Rect("App "+i,home.transform,36+i*160,366,148,192);
+            // 네 앱을 두 줄로 배치하고 방향키로 이동한다.
+            apps=new Text[4];appIcons=new PhoneAppIcon[4];
+            for(int i=0;i<4;i++){
+                var tile=Rect("App "+i,home.transform,86+(i%2)*220,330+(i/2)*210,148,192);
                 appIcons[i]=Rect("App icon",tile.transform,8,0,132,132).AddComponent<PhoneAppIcon>();
                 appIcons[i].App=i;appIcons[i].raycastTarget=false;
-                apps[i]=Label(i==0?"지도":i==1?"주식":"뉴스",tile.transform,0,144,148,44,28);
+                apps[i]=Label(i==0?"지도":i==1?"주식":i==2?"뉴스":"별점",tile.transform,0,144,148,44,28);
                 apps[i].alignment=TextAnchor.MiddleCenter;
             }
             // 배경의 도시 실루엣은 앱 선택과 겹치지 않는 하단에 둔다.
-            for(int i=0;i<8;i++)Panel("Wallpaper city",home.transform,i*72,770-(i%3)*38,64,190+(i%3)*38,new Color(.075f,.16f,.22f));
+            for(int i=0;i<8;i++)Panel("Wallpaper city",home.transform,i*72,850-(i%3)*24,64,110+(i%3)*24,new Color(.075f,.16f,.22f));
             Panel("Home indicator",home.transform,210,924,120,5,new Color(.55f,.67f,.71f));
             destinations=Panel("Destinations",root.transform,14,350,512,530,new Color(.06f,.10f,.14f,.98f));
             Label("목적지 선택",destinations.transform,24,12,460,60,34);
@@ -181,6 +197,7 @@ namespace DeliveryService.Mok.Navigation
             hint=Label("",footer.transform,22,0,496,70,23);footer.SetActive(false);
             stocks=DeliveryService.Mok.Stocks.StockPhoneApp.Build(root.transform,font);
             news=DeliveryService.Mok.Stocks.StockPhoneNews.Build(root.transform,font);
+            reviews=DeliveryService.Mok.ReviewPhoneApp.Build(root.transform,font);
         }
     }
 }

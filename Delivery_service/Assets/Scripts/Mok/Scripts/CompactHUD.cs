@@ -25,7 +25,7 @@ public sealed class CompactHUD : MonoBehaviour {
         var canvas=gameObject.AddComponent<Canvas>();canvas.renderMode=RenderMode.ScreenSpaceOverlay;canvas.sortingOrder=-1;
         var scaler=gameObject.AddComponent<CanvasScaler>();scaler.uiScaleMode=CanvasScaler.ScaleMode.ScaleWithScreenSize;scaler.referenceResolution=new Vector2(1920,1080);scaler.matchWidthOrHeight=.5f;
         orderCard=Card("Order",new Vector2(0,1),new Vector2(28,-28),new Vector2(290,126));
-        orderTitle=Label(orderCard,18,12,254,30,25);orderBody=Label(orderCard,18,48,254,68,23);
+        orderTitle=Label(orderCard,18,12,254,30,25);orderBody=Label(orderCard,18,48,254,98,23);
         var time=Card("Time",Vector2.one,new Vector2(-28,-28),new Vector2(264,58));timeLabel=Label(time,16,12,232,34,26);timeLabel.alignment=TextAnchor.MiddleCenter;
         var balance=Card("Balance",Vector2.one,new Vector2(-28,-94),new Vector2(264,64));
         var currency=Label(balance,16,12,36,40,32);currency.text="$";currency.color=Orange;currency.alignment=TextAnchor.MiddleCenter;cash=Label(balance,56,13,190,38,29);cash.alignment=TextAnchor.MiddleRight;
@@ -58,9 +58,9 @@ public sealed class CompactHUD : MonoBehaviour {
         bool cancelled=value.Contains("주문 취소");
         orderTitle.text=active?orders.ActiveOrder.orderName:cancelled?"주문 취소":"주문 대기 중";
         orderTitle.color=cancelled?Danger:Orange;
-        orderBody.text=active?orders.CurrentTargetDeliveryID+"\n"+(lines.Length>2?lines[2]:""):cancelled?"피자를 폐기하세요":"";
+        orderBody.text=active?PizzaRecipes.Title(orders.ActiveOrder)+"\n"+orders.CurrentTargetDeliveryID+"\n"+(lines.Length>3?lines[3]:""):cancelled?"피자를 폐기하세요":"";
         orderBody.color=active&&orders.RemainingDeliveryMinutes<15?Danger:Cream;
-        orderCard.sizeDelta=new Vector2(290,active?126:cancelled?92:54);
+        orderCard.sizeDelta=new Vector2(290,active?154:cancelled?92:54);
         cash.text=$"{Mathf.RoundToInt(feedback!=null?feedback.DisplayedBalance:MoneyManager.Instance!=null?MoneyManager.Instance.currentMoney:0):N0}원";
         cash.color=MoneyManager.Instance!=null&&MoneyManager.Instance.currentMoney<0?Danger:Cream;
         popup.text=feedback!=null&&feedback.PopupVisible?$"{feedback.PopupAmount:+#,0;-#,0;0}원":"";

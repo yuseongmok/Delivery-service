@@ -3,14 +3,17 @@ namespace DeliveryService.Mok {
 // 강탈 성공 후에만 경고와 추적 표시를 제공한다.
 public sealed class RobberTheftFeedback : MonoBehaviour {
     public const string WarningText="피자를 강탈당했습니다.";
+    string warningMessage=WarningText;
     RobberAI robber;
     PlayerCombat player;
     AudioSource source;
     AudioClip alarm;
     Texture2D arrow;
+    static RobberTheftFeedback visibleWarning;
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]static void ResetWarning(){visibleWarning=null;}
     float warningUntil=-1;
-    public bool WarningVisible => Time.unscaledTime<warningUntil;
-    public bool MarkerVisible => robber!=null&&robber.StolenCount>0;
+    public bool WarningVisible => visibleWarning==this&&Time.unscaledTime<warningUntil;
+    public bool MarkerVisible => robber!=null&&robber.HasStolenLoot;
     public int AlertCount {get;private set;}
     public bool AlarmPlaying => source!=null&&source.isPlaying;
     void Awake(){
@@ -32,6 +35,8 @@ public sealed class RobberTheftFeedback : MonoBehaviour {
     }
     public void NotifyTheft(){
         if(!MarkerVisible)return;
+        visibleWarning=this;
+        warningMessage=robber.StolenCash>0?$"{robber.StolenCash:N0}원을 강탈당했습니다.":WarningText;
         warningUntil=Time.unscaledTime+4f;AlertCount++;source.PlayOneShot(alarm);
     }
     void OnGUI(){
@@ -43,7 +48,7 @@ public sealed class RobberTheftFeedback : MonoBehaviour {
             GUI.color=new Color(.12f,.025f,.02f,.88f*alpha);GUI.DrawTexture(rect,Texture2D.whiteTexture);
             GUI.color=new Color(1,1,1,alpha);
             var style=new GUIStyle(GUI.skin.label){font=MokUIFont.Font,fontSize=Mathf.Clamp(Screen.height/28,22,38),alignment=TextAnchor.MiddleCenter};
-            style.normal.textColor=new Color(1,.38f,.22f);GUI.Label(rect,WarningText,style);
+            style.normal.textColor=new Color(1,.38f,.22f);GUI.Label(rect,warningMessage,style);
         }
         if(MarkerVisible){
             if(player==null)player=FindFirstObjectByType<PlayerCombat>(FindObjectsInactive.Include);
@@ -78,3 +83,5 @@ public sealed class RobberTheftFeedback : MonoBehaviour {
     }
     void OnDestroy(){if(alarm!=null)Destroy(alarm);if(arrow!=null)Destroy(arrow);}
 }}
+
+

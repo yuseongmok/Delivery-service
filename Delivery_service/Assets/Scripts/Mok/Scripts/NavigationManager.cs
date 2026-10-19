@@ -82,12 +82,30 @@ public class NavigationManager : MonoBehaviour {
     complete=NavMesh.CalculatePath(starts[i],ends[j],filter,path)&&path.status==NavMeshPathStatus.PathComplete;
   }
  }
- if(!complete){RouteStatus="목적지까지 연결된 도로가 없습니다";return;}
- if(path.corners.Length<2){RouteStatus="목적지 근처입니다";return;}
+ Vector3[] routeCorners = complete ? path.corners : TryTransitRoute(starts, ends, filter);
+ if(routeCorners==null){RouteStatus="목적지까지 연결된 도로가 없습니다";return;}
+ if(routeCorners.Length<2){RouteStatus="목적지 근처입니다";return;}
  // 건물을 가로지르지 않도록 실제 통행 가능한 경로 모서리를 유지한다.
- for(int i=0;i<path.corners.Length;i++){displayPath.Add(path.corners[i]);if(i>0)RemainingDistance+=Vector3.Distance(path.corners[i-1],path.corners[i]);}
+ for(int i=0;i<routeCorners.Length;i++){displayPath.Add(routeCorners[i]);if(i>0)RemainingDistance+=Vector3.Distance(routeCorners[i-1],routeCorners[i]);}
  if(pathLineRenderer!=null){pathLineRenderer.positionCount=displayPath.Count;for(int i=0;i<displayPath.Count;i++){var point=displayPath[i];point.y=pathLineHeight;pathLineRenderer.SetPosition(i,point);}}
  RouteStatus="안내 중";
+ }
+ // 확장 구역의 긴 경로가 한 번에 계산되지 않으면 등록된 입구를 경유한다.
+ // 양쪽 구간이 모두 연결된 경우에만 표시하며 직선으로 빈 구간을 잇지 않는다.
+ static Vector3[] TryTransitRoute(List<Vector3> starts,List<Vector3> ends,NavMeshQueryFilter filter){
+  foreach(var place in Object.FindObjectsByType<NavigationPlace>(FindObjectsSortMode.None)){
+   if(place.kind!=NavigationPlaceKind.Other||!place.IsAvailable)continue;
+   if(!NavMesh.SamplePosition(place.Destination.position,out var hit,3,filter))continue;
+   foreach(var start in starts)foreach(var end in ends){
+    var first=new NavMeshPath();var second=new NavMeshPath();
+    if(!NavMesh.CalculatePath(start,hit.position,filter,first)||first.status!=NavMeshPathStatus.PathComplete)continue;
+    if(!NavMesh.CalculatePath(hit.position,end,filter,second)||second.status!=NavMeshPathStatus.PathComplete)continue;
+    var result=new List<Vector3>(first.corners);
+    foreach(var corner in second.corners)if(result.Count==0||(result[result.Count-1]-corner).sqrMagnitude>.001f)result.Add(corner);
+    return result.ToArray();
+   }
+  }
+  return null;
  }
  static void AddNearbyAnchors(Vector3 position,NavMeshQueryFilter filter,List<Vector3> anchors){
   for(int radius=4;radius<=12;radius+=4)for(int direction=0;direction<8;direction++){
@@ -103,4 +121,5 @@ public class NavigationManager : MonoBehaviour {
  }
  void ClearNavigationPath(){displayPath.Clear();RemainingDistance=0;if(pathLineRenderer!=null)pathLineRenderer.positionCount=0;}
 }
+
 

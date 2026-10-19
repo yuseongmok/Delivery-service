@@ -12,10 +12,14 @@ namespace DeliveryService.Mok.ShopUI
         public void Bind(PizzaOrder order, bool canAccept, Action<PizzaOrder> onAccept, Action<PizzaOrder> onDecline)
         {
             Order = order;
+            var layout=GetComponent<LayoutElement>();if(layout!=null)layout.preferredHeight=112;
+            number.rectTransform.anchorMin=new Vector2(.035f,.65f);
+            number.rectTransform.anchorMax=new Vector2(.56f,.97f);
+            number.resizeTextForBestFit=true;number.resizeTextMinSize=20;number.resizeTextMaxSize=26;
+            description.rectTransform.anchorMax=new Vector2(.60f,.60f);
+            description.resizeTextForBestFit=true;description.resizeTextMinSize=18;description.resizeTextMaxSize=23;
             number.text = order.orderName;
-            description.text = order.toppings != null && order.toppings.Count > 0
-                ? "피자 1판 · " + string.Join(", ", order.toppings)
-                : "피자 1판 · 자유 토핑";
+            description.text = $"{PizzaRecipes.Title(order)} · 예상 {order.quotedPrice:N0}원\n{order.districtName} · {order.destinationID}";
             accept.interactable = canAccept;
             accept.onClick.RemoveAllListeners();
             decline.onClick.RemoveAllListeners();

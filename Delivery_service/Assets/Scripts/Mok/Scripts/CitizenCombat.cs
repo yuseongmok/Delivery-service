@@ -17,7 +17,7 @@ public sealed class CitizenCombat : MonoBehaviour {
     DayNightCycle clock;
     public float GameMinute => clock!=null?((clock.currentDay-1)*24f+clock.currentTime)*60f:0;
     public bool WasRobbed => clock!=null&&GameMinute<RobberyReadyAt;
-    public bool CanBePickpocketed => clock!=null&&clock.isShopOpen&&!WasRobbed&&Health>0&&!npc.IsDead&&!npc.IsKnockedDown;
+    public bool CanBePickpocketed => GetComponent<SlumRobberCombat>()==null&&clock!=null&&clock.isShopOpen&&!WasRobbed&&Health>0&&!npc.IsDead&&!npc.IsKnockedDown;
     public bool IsAggressive => target != null && Health > 0 && !npc.IsDead;
     public bool IsPunching => punching;
     public NPCControl Npc => npc;
@@ -35,7 +35,7 @@ public sealed class CitizenCombat : MonoBehaviour {
     public bool Pickpocket(PlayerCombat player) {
         if(!CanBePickpocketed || player==null || !player.CanAct || MoneyManager.Instance==null)return false;
         if(Vector3.Distance(player.transform.position,transform.position)>2.6f)return false;
-        RobberyReadyAt=GameMinute+30f;int reward=Random.Range(100,5001);IncomeFeedback.AddPickpocketIncome(reward);
+        RobberyReadyAt=GameMinute+30f;int reward=Random.Range(100,5001);IncomeFeedback.AddPickpocketIncome(reward);ShopReputation.Instance.Penalize(false);
         Provoke(player);return true;
     }
     public void Provoke(PlayerCombat player) {
@@ -45,7 +45,7 @@ public sealed class CitizenCombat : MonoBehaviour {
     public bool ReceiveKick(PlayerCombat player,Vector3 direction,int damage) {
         if(Health<=0||npc.IsDead||npc.IsKnockedDown)return false;
         Health=Mathf.Max(0,Health-damage);punching=false;Provoke(player);
-        if(Health==0){target=null;npc.Die(direction,22f);CitizenCrime.ReportPlayerKill(npc);return true;}
+        if(Health==0){target=null;npc.Die(direction,22f);if(GetComponent<SlumRobberCombat>()==null)CitizenCrime.ReportPlayerKill(npc);return true;}
         npc.KnockDown(direction,5f);StartCoroutine(GetUp());return true;
     }
     IEnumerator GetUp() {
@@ -69,7 +69,7 @@ public sealed class CitizenCombat : MonoBehaviour {
         }
         if(distance<punchRange+.4f){Vector3 dir=target.transform.position-transform.position;dir.y=0;if(dir.sqrMagnitude>.01f)transform.rotation=Quaternion.RotateTowards(transform.rotation,Quaternion.LookRotation(dir),540f*Time.deltaTime);}
         if(!punching&&distance<=attackStartRange&&Time.time>=nextPunch&&target.CanReceiveHit)StartCoroutine(Punch());
-        if(animator!=null){animator.speed=1;animator.SetBool("IsWalking",!punching&&agent.velocity.sqrMagnitude>.05f);}
+        if(animator!=null){animator.speed=1;if(GetComponent<SlumRobberCombat>()!=null)animator.SetFloat("MoveSpeed",!punching?agent.velocity.magnitude:0);else animator.SetBool("IsWalking",!punching&&agent.velocity.sqrMagnitude>.05f);}
     }
     IEnumerator Punch() {
         punching=true;punchStarted=Time.time;nextPunch=Time.time+punchCooldown;agent.isStopped=true;
@@ -77,7 +77,7 @@ public sealed class CitizenCombat : MonoBehaviour {
         if(punching&&!npc.IsKnockedDown&&!npc.IsDead&&target!=null&&target.CanReceiveHit){
             Vector3 start=transform.position+Vector3.up*1.2f,end=target.transform.position+Vector3.up*1.1f;
             Vector3 delta=end-start;
-            if(delta.magnitude<=punchRange&&Vector3.Dot(transform.forward,delta.normalized)>.3f&&ClearLine(start,end))target.ReceivePunch(punchDamage,transform.forward);
+            if(delta.magnitude<=punchRange&&Vector3.Dot(transform.forward,delta.normalized)>.3f&&ClearLine(start,end))target.ReceivePunch(punchDamage,transform.forward,GetComponent<SlumRobberCombat>()!=null);
         }
         yield return new WaitForSeconds(.4f);punching=false;
         if(agent.enabled&&agent.isOnNavMesh)agent.isStopped=false;
@@ -105,3 +105,4 @@ public sealed class CitizenCombat : MonoBehaviour {
     }
 }
 }
+

@@ -43,14 +43,16 @@ public sealed class PlayerCombat : MonoBehaviour {
         }
         if(kickVisual!=null)kickVisual.gameObject.SetActive(false);if(avatar!=null)avatar.StopKick();IsKicking=false;
     }
+    bool IsHeldObject(Transform target){var inv=GetComponent<ToppingInventory>();return target.IsChildOf(transform)||(inv!=null&&((inv.HoldPoint!=null&&target.IsChildOf(inv.HoldPoint))||(inv.HeldPizza!=null&&target.IsChildOf(inv.HeldPizza.transform))));}
     public bool ResolveKick(){
         // 가장 가까운 물체를 우선해 벽 너머로 발차기하지 못하게 한다.
         var hits=Physics.SphereCastAll(view.transform.position,.22f,view.transform.forward,kickReach,~0,QueryTriggerInteraction.Ignore).OrderBy(h=>h.distance);
-        foreach(var h in hits){if(h.transform.IsChildOf(transform))continue;var robber=h.collider.GetComponentInParent<RobberAI>();if(robber!=null)return robber.ReceiveKick(view.transform.forward);var npc=h.collider.GetComponentInParent<CitizenCombat>();return npc!=null&&npc.ReceiveKick(this,view.transform.forward,kickDamage);}return false;
+        foreach(var h in hits){if(IsHeldObject(h.transform))continue;var robber=h.collider.GetComponentInParent<RobberAI>();if(robber!=null)return robber.ReceiveKick(view.transform.forward);var npc=h.collider.GetComponentInParent<CitizenCombat>();return npc!=null&&npc.ReceiveKick(this,view.transform.forward,kickDamage);}return false;
     }
-    public void ReceivePunch(int damage,Vector3 direction){
+    public void ReceivePunch(int damage,Vector3 direction,bool slumRobber=false){
         if(!CanReceiveHit||Time.time<recoveryUntil)return;
         HitsTaken++;Health=Mathf.Max(0,maximumHealth-HitsTaken*34);
+        if(HitsTaken>=3&&slumRobber)SlumRobberCombat.ApplyDefeatLoss(this);
         StartCoroutine(RecoverPlayer(direction));
     }
     IEnumerator RecoverPlayer(Vector3 direction){
@@ -82,3 +84,4 @@ public sealed class PlayerCombat : MonoBehaviour {
     }
 }
 }
+

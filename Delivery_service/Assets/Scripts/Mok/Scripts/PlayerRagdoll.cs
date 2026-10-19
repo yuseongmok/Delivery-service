@@ -23,6 +23,7 @@ public sealed class PlayerRagdoll : MonoBehaviour {
     public void Launch(Vector3 velocity,float duration=2.5f){if(!IsReady||IsActive||!isActiveAndEnabled)return;StartCoroutine(Fly(velocity,duration));}
     IEnumerator Fly(Vector3 velocity,float duration){
         IsActive=true;rootRotation=root.rotation;
+        TrafficRecovery.Get(root.gameObject).Protect(duration);
         moveEnabled=move!=null&&move.enabled;lookEnabled=look!=null&&look.enabled;controllerEnabled=controller!=null&&controller.enabled;
         viewEnabled=view!=null&&view.enabled;animatorEnabled=avatar.animator.enabled;
         avatar.StopKick();
@@ -33,6 +34,7 @@ public sealed class PlayerRagdoll : MonoBehaviour {
         foreach(var joint in GetComponentsInChildren<CharacterJoint>())if(joint.connectedBody!=null){joint.autoConfigureConnectedAnchor=false;joint.connectedAnchor=joint.connectedBody.transform.InverseTransformPoint(joint.transform.TransformPoint(joint.anchor));}
         Physics.SyncTransforms();
         foreach(var col in colliders)col.enabled=true;
+        TrafficRecovery.Get(root.gameObject).Protect(duration);
         foreach(var body in bodies){body.isKinematic=false;body.useGravity=true;body.linearVelocity=velocity;body.angularVelocity=Vector3.zero;}
         hips.GetComponent<Rigidbody>().AddTorque(root.right*3f,ForceMode.VelocityChange);
         Vector3 horizontal=Vector3.ProjectOnPlane(velocity,Vector3.up).normalized;
@@ -76,7 +78,7 @@ public sealed class PlayerRagdoll : MonoBehaviour {
         if(actionCamera!=null)Destroy(actionCamera.gameObject);
         if(view!=null)view.enabled=viewEnabled;
         if(controller!=null)controller.enabled=controllerEnabled;if(move!=null)move.enabled=moveEnabled;if(look!=null)look.enabled=lookEnabled;
-        IsActive=false;
+        IsActive=false;TrafficRecovery.Get(root.gameObject).Recovered();
     }
     void OnDisable(){StopAllCoroutines();Restore();}
 }

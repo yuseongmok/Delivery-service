@@ -159,6 +159,12 @@ public class NPCControl : MonoBehaviour
     {
         if (agent == null || !agent.isActiveAndEnabled || !agent.isOnNavMesh) return;
 
+        if (DeliveryService.Mok.EastJaywalking.TryDestination(this, agent))
+        {
+            currentWaitTime = UnityEngine.Random.Range(.4f, 1.5f);
+            return;
+        }
+
         Vector3 targetPoint = Vector3.zero;
         bool foundValidPoint = false;
         float minDistance = 3f;

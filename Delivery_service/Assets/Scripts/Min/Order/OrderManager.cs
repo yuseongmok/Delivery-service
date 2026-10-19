@@ -1,397 +1,115 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
+using DeliveryService.Mok;
 
-public class OrderManager : MonoBehaviour
-{
-    [Header("UI")]
+public class OrderManager : MonoBehaviour {
     [SerializeField] private OrderUI orderUI;
     [SerializeField] private CurrentOrderUI currentOrderUI;
     [SerializeField] private PlayerMove playerMove;
     [SerializeField] private CameraMove cameraMove;
-
-    [Header("¡÷πÆ ª˝º∫ π◊ ≈∏¿Ã∏”")]
     [SerializeField] private OrderGenerator orderGenerator;
     [SerializeField] private DayNightCycle dayNightCycle;
-    private const float orderIntervalSeconds = 30f;
-    private const int dailyOrderLimit = 7;
-    private int generatedToday;
-    private float nextOrderWait = -1f;
-    public int OrdersGeneratedToday => generatedToday;
-    public int DailyOrderLimit => dailyOrderLimit;
-    public bool DailyOrdersExhausted => generatedToday >= dailyOrderLimit && !HasActiveOrder && pendingOrders.Count == 0;
-
-    private void ScheduleNextOrder()
-    {
-        if (generatedToday < dailyOrderLimit && !HasActiveOrder && pendingOrders.Count == 0)
-            nextOrderWait = orderIntervalSeconds;
-    }
-
-    private void AdvanceOrderWait(float realSeconds)
-    {
-        if (dayNightCycle == null || !dayNightCycle.isShopOpen || nextOrderWait < 0f) return;
-        if (HasActiveOrder || pendingOrders.Count != 0) return;
-        nextOrderWait -= realSeconds;
-        if (nextOrderWait > 0f) return;
-        nextOrderWait = -1f;
-        GenerateSingleOrder();
-    }
-
-    [Header("¡§ªÍ º≥¡§")]
-    [SerializeField] private int basePizzaPrice = 10000;
-
-    [Header("≈‰«Œ µ•¿Ã≈Õ ∏Ò∑œ")]
-    [SerializeField] private List<PizzaToppingData> toppingDataList = new List<PizzaToppingData>();
-    [SerializeField] private List<DeliveryPoint> deliveryPoints = new List<DeliveryPoint>();
-
-    // ¥©¿˚ ¥Î±‚ ¡÷πÆ ∏Ò∑œ
-    private List<PizzaOrder> pendingOrders = new List<PizzaOrder>();
-
-    // «ˆ¿Á ¡¯«‡ ¡ﬂ¿Œ πË¥ﬁ ¡÷πÆ
+    [SerializeField] private int basePizzaPrice=10000;
+    [SerializeField] private List<PizzaToppingData> toppingDataList=new();
+    [SerializeField] private List<DeliveryPoint> deliveryPoints=new();
+    private List<PizzaOrder> pendingOrders=new();
     private PizzaOrder activeOrder;
     private string currentTargetDeliveryID;
-    // ƒ⁄µÂ¿« πÎ∑±Ω∫ ∞™¿ª ªÁøÎ«œ∏Á ¿Ã¿¸ Inspector ¿˙¿Â∞™¿∫ π´Ω√«—¥Ÿ.
-    private const float deliveryTimeLimitMinutes = 80f;
+    private int generatedToday,nextOrderNumber=1,orderNumberDay=-1;
+    private bool prevShopOpenState;
     private double deliveryDeadlineMinutes;
-    private double GameMinutes => dayNightCycle == null ? 0d
-        : dayNightCycle.currentDay * 1440d + dayNightCycle.currentTime * 60d;
-    public float RemainingDeliveryMinutes => !HasActiveOrder ? 0f
-        : (float)System.Math.Max(0d, deliveryDeadlineMinutes - GameMinutes);
-
-    private void UpdateDeliveryDeadline()
-    {
-        if (!HasActiveOrder || dayNightCycle == null) return;
-        if (GameMinutes >= deliveryDeadlineMinutes)
-        {
-            PizzaOrder expired = activeOrder;
-            activeOrder = null;
-            currentTargetDeliveryID = "";
-            deliveryDeadlineMinutes = 0;
-            if (currentOrderUI != null) currentOrderUI.DisplayCancelledOrder(expired);
-            var navigation = FindObjectOfType<NavigationManager>();
-            if (navigation != null) navigation.ResetNavigationForNewDay();
-            ScheduleNextOrder();
-            OrdersChanged?.Invoke();
-            return;
-        }
-        if (currentOrderUI != null)
-            currentOrderUI.DisplayTimedOrder(activeOrder, currentTargetDeliveryID, RemainingDeliveryMinutes);
-    }
-
-    // ƒ⁄∑Á∆æ π◊ øµæ˜ ªÛ≈¬ ∞®Ω√ ∫Øºˆ
-    private bool prevShopOpenState = false;
-
-    // UI¥¬ ±‚¡∏ ¥Î±‚ø≠¿ª «•Ω√«œ∞Ì ¡÷πÆ ª˝º∫∞˙ πË¥ﬁ¿∫ ø©±‚º≠ ∞¸∏Æ«—¥Ÿ.
-    private int nextOrderNumber = 1;
-    private int orderNumberDay = -1;
+    private readonly List<double> refillAt=new();
+    public const int PendingCapacity=3;
+    public const double RefillGameSeconds=5;
+    private const float deliveryTimeLimitMinutes=DeliveryPricing.PromisedMinutes;
+    private double GameMinutes=>dayNightCycle==null?0:dayNightCycle.currentDay*1440d+dayNightCycle.currentTime*60d;
+    public int OrdersGeneratedToday=>generatedToday;
+    public int DailyOrderLimit=>0; // 0ÏùÄ Î¨¥Ï†úÌïúÏù¥Îã§. Í∏∞Ï°¥ Ï∞∏Ï°∞ÏôÄ Ìò∏ÌôòÌïòÍ∏∞ ÏúÑÌï¥ ÎÇ®Í∏¥Îã§.
+    public bool DailyOrdersExhausted=>false;
+    public bool HasActiveOrder=>activeOrder!=null;
+    public PizzaOrder ActiveOrder=>activeOrder;
+    public string CurrentTargetDeliveryID=>currentTargetDeliveryID;
+    public DeliveryPoint CurrentTargetDeliveryPoint=>deliveryPoints.Find(p=>p!=null&&p.DeliveryPointID==currentTargetDeliveryID);
+    public System.Collections.ObjectModel.ReadOnlyCollection<PizzaOrder> PendingOrders=>pendingOrders.AsReadOnly();
+    public float RemainingDeliveryMinutes=>!HasActiveOrder?0:(float)System.Math.Max(0,deliveryDeadlineMinutes-GameMinutes);
+    public float ElapsedDeliveryMinutes=>HasActiveOrder?(float)System.Math.Max(0,GameMinutes-(deliveryDeadlineMinutes-deliveryTimeLimitMinutes)):0;
+    public float SignedDeliveryMinutes=>HasActiveOrder?(float)(deliveryDeadlineMinutes-GameMinutes):0;
+    public string LastDeliveryFailure {get;private set;}
+    public int LastDeliveredPizzaIndex {get;private set;}=-1;
     public event System.Action OrdersChanged;
-    public System.Collections.ObjectModel.ReadOnlyCollection<PizzaOrder> PendingOrders => pendingOrders.AsReadOnly();
-    public PizzaOrder ActiveOrder => activeOrder;
-
-    public bool TryAcceptOrder(PizzaOrder order)
-    {
-        if (order == null || HasActiveOrder || !pendingOrders.Contains(order)) return false;
-        HandleAccept(order);
-        return activeOrder == order;
-    }
-
-    public bool TryDeclineOrder(PizzaOrder order)
-    {
-        if (order == null || !pendingOrders.Contains(order)) return false;
-        HandleDecline(order);
-        return true;
-    }
-
-    private void UpdateOrderNumberDay()
-    {
-        int day = dayNightCycle != null ? dayNightCycle.currentDay : 1;
-        if (orderNumberDay == day) return;
-        orderNumberDay = day;
-        nextOrderNumber = 1;
-        generatedToday = 0;
-        nextOrderWait = -1f;
-    }
-
-    public string CurrentTargetDeliveryID => currentTargetDeliveryID;
-    public bool HasActiveOrder => activeOrder != null;
-
-    public DeliveryPoint CurrentTargetDeliveryPoint
-    {
-        get
-        {
-            if (string.IsNullOrEmpty(currentTargetDeliveryID) || deliveryPoints == null)
-                return null;
-
-            return deliveryPoints.Find(dp => dp != null && dp.DeliveryPointID == currentTargetDeliveryID);
+    void Start(){if(orderGenerator==null)orderGenerator=FindFirstObjectByType<OrderGenerator>();if(dayNightCycle==null)dayNightCycle=FindFirstObjectByType<DayNightCycle>();}
+    void OnEnable(){ShopReputation.Changed+=RefreshPrices;if(orderUI!=null){orderUI.OnOrderAccepted+=HandleAccept;orderUI.OnOrderDeclined+=HandleDecline;}}
+    void OnDisable(){ShopReputation.Changed-=RefreshPrices;if(orderUI!=null){orderUI.OnOrderAccepted-=HandleAccept;orderUI.OnOrderDeclined-=HandleDecline;}}
+    void Update(){
+        if(dayNightCycle==null)dayNightCycle=FindFirstObjectByType<DayNightCycle>();
+        if(dayNightCycle==null)return;
+        if(dayNightCycle.isShopOpen&&!prevShopOpenState)OnShopOpened();
+        prevShopOpenState=dayNightCycle.isShopOpen;
+        if(dayNightCycle.isShopOpen){
+            for(int i=refillAt.Count-1;i>=0;i--)if(GameMinutes+0.000001>=refillAt[i]){refillAt.RemoveAt(i);GenerateSingleOrder();}
         }
-    }
-
-    private void Start()
-    {
-        if (orderGenerator == null) orderGenerator = FindObjectOfType<OrderGenerator>();
-        if (dayNightCycle == null) dayNightCycle = FindObjectOfType<DayNightCycle>();
-    }
-
-    private void OnEnable()
-    {
-        if (orderUI != null)
-        {
-            orderUI.OnOrderAccepted += HandleAccept;
-            orderUI.OnOrderDeclined += HandleDecline;
-        }
-    }
-
-    private void OnDisable()
-    {
-        if (orderUI != null)
-        {
-            orderUI.OnOrderAccepted -= HandleAccept;
-            orderUI.OnOrderDeclined -= HandleDecline;
-        }
-    }
-
-    private void Update()
-    {
-        // DayNightCycle ¿⁄µø ∞®¡ˆ π◊ ∞®Ω√
-        if (dayNightCycle == null) dayNightCycle = FindObjectOfType<DayNightCycle>();
-
-        if (dayNightCycle != null)
-        {
-            // [ªÛ≈¬ ∞®¡ˆ 1] øµæ˜ Ω√¿€ (false -> true)
-            if (dayNightCycle.isShopOpen && !prevShopOpenState)
-            {
-                OnShopOpened();
-            }
-            // [ªÛ≈¬ ∞®¡ˆ 2] ∏∂∞® π◊ ¥Ÿ¿Ω ≥Ø ∏Æº¬ (true -> false)
-            else if (!dayNightCycle.isShopOpen && prevShopOpenState)
-            {
-                // ∏∂∞® »Æ¿Œ¿ª √Îº“«œ∏È ¡÷πÆ∞˙ ¥Î±‚Ω√∞£¿ª ¿Ø¡ˆ«—¥Ÿ.
-            }
-
-            prevShopOpenState = dayNightCycle.isShopOpen;
-        }
-        AdvanceOrderWait(Time.unscaledDeltaTime);
         UpdateDeliveryDeadline();
     }
-
-    // øµæ˜ Ω√¿€ Ω√ ¿⁄µø »£√‚ (1¿œ¬˜, 2¿œ¬˜ µÓ ∏≈¿œ øµæ˜ Ω√¿€ ∂ß∏∂¥Ÿ Ω««‡)
-    public void OnShopOpened()
-    {
-        UpdateOrderNumberDay();
-        if (generatedToday == 0) GenerateSingleOrder();
-        else if (!HasActiveOrder && pendingOrders.Count == 0 && nextOrderWait < 0f)
-            ScheduleNextOrder();
+    void RefreshPrices(){foreach(var order in pendingOrders){var point=deliveryPoints.Find(p=>p!=null&&p.DeliveryPointID==order.destinationID);order.quotedPrice=Quote(order,point);}Changed();}
+    void Changed(){if(orderUI!=null)orderUI.RefreshOrderList(pendingOrders);OrdersChanged?.Invoke();}
+    void UpdateOrderNumberDay(){if(dayNightCycle==null)return;if(orderNumberDay==dayNightCycle.currentDay)return;orderNumberDay=dayNightCycle.currentDay;nextOrderNumber=1;generatedToday=0;refillAt.Clear();}
+    public void OnShopOpened(){
+        if(dayNightCycle==null)dayNightCycle=FindFirstObjectByType<DayNightCycle>();
+        if(orderGenerator==null)orderGenerator=FindFirstObjectByType<OrderGenerator>();
+        UpdateOrderNumberDay();int missing=PendingCapacity-pendingOrders.Count-refillAt.Count;
+        for(int i=0;i<missing;i++)GenerateSingleOrder();
     }
-
-    // ∏∂∞® ∂«¥¬ ≥Ø¬• ¿¸»Ø Ω√ ¿⁄µø »£√‚µ«¥¬ ∏Æº¬ ∏ﬁº≠µÂ
-    public void ResetOrdersForNewDay()
-    {
-        nextOrderWait = -1f;
-        prevShopOpenState = false;
-
-        UpdateOrderNumberDay();
-        pendingOrders.Clear();
-        activeOrder = null;
-        currentTargetDeliveryID = "";
-
-        if (orderUI != null) orderUI.RefreshOrderList(pendingOrders);
-        if (currentOrderUI != null) currentOrderUI.ClearOrder();
-        OrdersChanged?.Invoke();
-
-        // ≥ª∫Ò∞‘¿Ãº«µµ µøΩ√ ∏Æº¬
-        NavigationManager navManager = FindObjectOfType<NavigationManager>();
-        if (navManager != null)
-        {
-            navManager.ResetNavigationForNewDay();
-        }
-
-        Debug.Log("[OrderManager] ∏∂∞® ∞®¡ˆ: ¡÷πÆ/πË¥ﬁ≈∏∞Ÿ/≥◊∫Ò∞‘¿Ãº«¿Ã øœ¿¸»˜ √ ±‚»≠µ«æ˙Ω¿¥œ¥Ÿ.");
+    void ScheduleNextOrder(){if(pendingOrders.Count+refillAt.Count<PendingCapacity)refillAt.Add(GameMinutes+RefillGameSeconds/60d);}
+    void GenerateSingleOrder(){
+        if(dayNightCycle==null||!dayNightCycle.isShopOpen||pendingOrders.Count>=PendingCapacity||orderGenerator==null)return;
+        var policy=GetComponent<DistrictDeliveryPolicy>();
+        var destination=policy!=null?policy.Choose(deliveryPoints):deliveryPoints.FirstOrDefault(p=>p!=null&&p.isActiveAndEnabled);
+        if(destination==null){ScheduleNextOrder();return;}
+        var order=orderGenerator.GenerateSinglePizzaOrder().FirstOrDefault();if(order==null)return;
+        // Ìïú Î≤àÏóê Îú®Îäî Î©îÎâ¥Í∞Ä Í∞ÄÍ∏âÏ†Å ÏÑúÎ°ú Îã§Î•¥Í≤å Î≥¥Ïù¥ÎèÑÎ°ù Í≥†Î•∏Îã§.
+        for(int i=0;i<12&&pendingOrders.Any(p=>p.recipeName==order.recipeName);i++)order=orderGenerator.GenerateSinglePizzaOrder()[0];
+        order.orderName=$"Ï£ºÎ¨∏ {nextOrderNumber++:D2}";
+        order.destinationID=destination.DeliveryPointID;
+        order.districtName=policy!=null?policy.Region(destination):"Í∏∞Ï°¥ ÎèÑÏãú";
+        order.quotedPrice=Quote(order,destination);
+        pendingOrders.Add(order);generatedToday++;Changed();
     }
-
-    private void GenerateSingleOrder()
-    {
-        UpdateOrderNumberDay();
-        if (orderGenerator == null || generatedToday >= dailyOrderLimit || HasActiveOrder || pendingOrders.Count != 0) return;
-        if (dayNightCycle == null || !dayNightCycle.isShopOpen) return;
-
-        List<PizzaOrder> newOrders = orderGenerator.GenerateSinglePizzaOrder();
-        if (newOrders == null) return;
-
-        UpdateOrderNumberDay();
-        foreach (var order in newOrders)
-        {
-            order.orderName = $"¡÷πÆ {nextOrderNumber++:D2}";
-            pendingOrders.Add(order);
-            generatedToday++;
-            break; // ª˝º∫±‚∞° ø©∑Ø ¡÷πÆ¿ª π›»Ø«ÿµµ «— ¡÷±‚ø°¥¬ «— π¯∏∏ √≥∏Æ«—¥Ÿ.
-        }
-
-        if (orderUI != null)
-        {
-            orderUI.RefreshOrderList(pendingOrders);
-        }
-        OrdersChanged?.Invoke();
+    public int Quote(PizzaOrder order,DeliveryPoint destination){
+        int price=basePizzaPrice;
+        foreach(var type in PizzaRecipes.Types(order.toppings).Where(t=>!PizzaRecipes.IsBase(t))){var data=toppingDataList.Find(d=>d!=null&&d.toppingType==type);if(data!=null)price+=Mathf.Max(0,data.sellingPrice);}
+        var policy=GetComponent<DistrictDeliveryPolicy>();return Mathf.RoundToInt(price*(policy!=null?policy.Multiplier(destination):1)*ShopReputation.Instance.Multiplier);
     }
-
-    private void HandleAccept(PizzaOrder acceptedOrder)
-    {
-        if (acceptedOrder == null || !pendingOrders.Contains(acceptedOrder)) return;
-        if (HasActiveOrder)
-        {
-            Debug.Log("¿ÃπÃ ¡¯«‡ ¡ﬂ¿Œ πË¥ﬁ ¡÷πÆ¿Ã ¿÷Ω¿¥œ¥Ÿ! ∏’¿˙ πË¥ﬁ¿ª øœ∑·«ÿ¡÷ººø‰.");
-            return;
-        }
-
-        if (dayNightCycle == null) dayNightCycle = FindObjectOfType<DayNightCycle>();
-        if (dayNightCycle == null) return;
-        deliveryDeadlineMinutes = GameMinutes + deliveryTimeLimitMinutes;
-        activeOrder = acceptedOrder;
-        pendingOrders.Remove(acceptedOrder);
-
-        if (deliveryPoints != null && deliveryPoints.Count > 0)
-        {
-            int randomIndex = Random.Range(0, deliveryPoints.Count);
-            currentTargetDeliveryID = deliveryPoints[randomIndex].DeliveryPointID;
-        }
-
-        if (currentOrderUI != null)
-        {
-            currentOrderUI.DisplayTimedOrder(activeOrder, currentTargetDeliveryID, RemainingDeliveryMinutes);
-        }
-
-        if (orderUI != null)
-        {
-            orderUI.RefreshOrderList(pendingOrders);
-        }
-        OrdersChanged?.Invoke();
+    public bool TryAcceptOrder(PizzaOrder order){if(order==null||HasActiveOrder||!pendingOrders.Contains(order)||dayNightCycle==null||!dayNightCycle.isShopOpen)return false;HandleAccept(order);return activeOrder==order;}
+    public bool TryDeclineOrder(PizzaOrder order){if(order==null||!pendingOrders.Contains(order)||dayNightCycle==null||!dayNightCycle.isShopOpen)return false;HandleDecline(order);return true;}
+    void HandleAccept(PizzaOrder order){
+        if(order==null||HasActiveOrder||!pendingOrders.Contains(order)||dayNightCycle==null||!dayNightCycle.isShopOpen)return;
+        if(!deliveryPoints.Any(p=>p!=null&&p.isActiveAndEnabled&&p.DeliveryPointID==order.destinationID))return;
+        activeOrder=order;currentTargetDeliveryID=order.destinationID;deliveryDeadlineMinutes=GameMinutes+deliveryTimeLimitMinutes;pendingOrders.Remove(order);ScheduleNextOrder();
+        if(currentOrderUI!=null)currentOrderUI.DisplayTimedOrder(activeOrder,currentTargetDeliveryID,SignedDeliveryMinutes);Changed();
     }
-
-    private void HandleDecline(PizzaOrder declinedOrder)
-    {
-        if (declinedOrder == null || !pendingOrders.Remove(declinedOrder)) return;
-
-        if (orderUI != null)
-        {
-            orderUI.RefreshOrderList(pendingOrders);
-        }
-        ScheduleNextOrder();
-        OrdersChanged?.Invoke();
+    void HandleDecline(PizzaOrder order){if(dayNightCycle==null||!dayNightCycle.isShopOpen||!pendingOrders.Remove(order))return;ShopReputation.Instance.Declined();ScheduleNextOrder();Changed();}
+    void UpdateDeliveryDeadline(){
+        if(!HasActiveOrder||dayNightCycle==null)return;
+        if(currentOrderUI!=null)currentOrderUI.DisplayTimedOrder(activeOrder,currentTargetDeliveryID,SignedDeliveryMinutes);
     }
-
-    // πË¥ﬁ øœ∑· ∞ÀªÁ π◊ ¡§ªÍ
-    public bool TryDeliverPackagedStack(List<PizzaData> pizzaDataList, string deliveryPointID)
-    {
-        // ¥Ÿ¿Ω Update ¿¸ø° πË¥ﬁ¿Ã √≥∏Æµ«¡ˆ æ µµ∑œ ¡ÔΩ√ ∞ÀªÁ«—¥Ÿ.
-        UpdateDeliveryDeadline();
-        if (pizzaDataList == null || pizzaDataList.Count == 0 || !HasActiveOrder)
-            return false;
-
-        if (deliveryPointID != currentTargetDeliveryID)
-        {
-            Debug.Log("ø©±‚∞° æ∆¥’¥œ¥Ÿ.");
-            return false;
-        }
-
-        PizzaData deliveredPizza = pizzaDataList[0];
-        bool isBaked = deliveredPizza.isBaked;
-        bool isBaseValid = HasBaseIngredients(deliveredPizza.toppings);
-        bool isRuined = deliveredPizza.isRuined;
-
-        if (!isRuined && isBaked && isBaseValid)
-        {
-            int totalEarnedMoney = basePizzaPrice;
-
-            // √ﬂ∞° ≈‰«Œ ¡§ªÍ (±‚∫ª ¿Á∑· ¡¶ø‹)
-            if (deliveredPizza.toppings != null)
-            {
-                foreach (string toppingName in deliveredPizza.toppings)
-                {
-                    if (IsBaseIngredient(toppingName)) continue;
-
-                    PizzaToppingData matchedTopping = GetToppingData(toppingName);
-                    if (matchedTopping != null)
-                    {
-                        totalEarnedMoney += matchedTopping.sellingPrice;
-                    }
-                }
-            }
-
-            if (MoneyManager.Instance != null)
-            {
-                MoneyManager.Instance.AddMoney(totalEarnedMoney);
-            }
-
-            Debug.Log($"πË¥ﬁ º∫∞¯ {totalEarnedMoney}ø¯");
-        }
-        else
-        {
-            if (isRuined)
-            {
-                Debug.Log("∏¡∞°¡¯ ««¿⁄∏¶ πË¥ﬁ«ÿº≠ 0ø¯");
-            }
-            else
-            {
-                Debug.Log("æ»±∏øˆº≠ 0ø¯");
-            }
-        }
-
-        activeOrder = null;
-        currentTargetDeliveryID = "";
-
-        if (currentOrderUI != null)
-        {
-            currentOrderUI.ClearOrder();
-        }
-
-        RobberyManager.NotifyDeliveryCompleted();
-        DeliveryService.Mok.Stocks.StockMarket.Instance?.DeliveryClue();
-        ScheduleNextOrder();
-        OrdersChanged?.Invoke();
-        return true;
-    }
-
-    // « ºˆ ±‚∫ª ¿Á∑·(µµøÏ, º“Ω∫, ƒ°¡Ó) ∆˜«‘ ø©∫Œ ∞ÀªÁ
-    private bool HasBaseIngredients(List<string> toppings)
-    {
-        if (toppings == null || toppings.Count == 0) return false;
-
-        bool hasDough = false;
-        bool hasSauce = false;
-        bool hasCheese = false;
-
-        foreach (string t in toppings)
-        {
-            if (string.IsNullOrEmpty(t)) continue;
-            string lower = t.ToLower().Trim();
-
-            if (lower.Contains("dough") || lower.Contains("µµøÏ")) hasDough = true;
-            if (lower.Contains("sauce") || lower.Contains("º“Ω∫")) hasSauce = true;
-            if (lower.Contains("cheese") || lower.Contains("ƒ°¡Ó")) hasCheese = true;
-        }
-
-        return hasDough && hasSauce && hasCheese;
-    }
-
-    private bool IsBaseIngredient(string toppingIdentifier)
-    {
-        if (string.IsNullOrEmpty(toppingIdentifier)) return false;
-        string lower = toppingIdentifier.ToLower().Trim();
-        return lower.Contains("dough") || lower.Contains("µµøÏ") ||
-               lower.Contains("sauce") || lower.Contains("º“Ω∫") ||
-               lower.Contains("cheese") || lower.Contains("ƒ°¡Ó");
-    }
-
-    private PizzaToppingData GetToppingData(string toppingIdentifier)
-    {
-        if (toppingDataList == null || string.IsNullOrEmpty(toppingIdentifier)) return null;
-
-        string lowerTarget = toppingIdentifier.ToLower().Trim();
-
-        return toppingDataList.Find(data =>
-        {
-            if (data == null) return false;
-            if (!string.IsNullOrEmpty(data.toppingName) && lowerTarget.Contains(data.toppingName.ToLower().Trim())) return true;
-            if (lowerTarget.Contains(data.toppingType.ToString().ToLower().Trim())) return true;
-            return false;
-        });
+    public void ResetOrdersForNewDay(){refillAt.Clear();prevShopOpenState=false;UpdateOrderNumberDay();pendingOrders.Clear();activeOrder=null;currentTargetDeliveryID="";deliveryDeadlineMinutes=0;LastDeliveredPizzaIndex=-1;if(currentOrderUI!=null)currentOrderUI.ClearOrder();FindFirstObjectByType<NavigationManager>()?.ResetNavigationForNewDay();Changed();}
+    public bool TryDeliverPackagedStack(List<PizzaData> pizzas,string destination){
+        UpdateDeliveryDeadline();LastDeliveredPizzaIndex=-1;LastDeliveryFailure="";
+        if(!HasActiveOrder){LastDeliveryFailure="ÏßÑÌñâ Ï§ëÏù∏ Ï£ºÎ¨∏Ïù¥ ÏóÜÏäµÎãàÎã§.";return false;}
+        if(destination!=currentTargetDeliveryID){LastDeliveryFailure="Ï£ºÎ¨∏Ìïú Î∞∞Îã¨ÏßÄÍ∞Ä ÏïÑÎãôÎãàÎã§.";return false;}
+        if(pizzas==null||pizzas.Count==0){LastDeliveryFailure="Ìè¨Ïû•Ìïú ÌîºÏûêÍ∞Ä ÌïÑÏöîÌï©ÎãàÎã§.";return false;}
+        int match=pizzas.FindIndex(p=>p!=null&&p.isBaked&&!p.isRuined&&PizzaRecipes.Matches(p.toppings,activeOrder.toppings));
+        if(match<0)match=pizzas.FindIndex(p=>p!=null);
+        if(match<0){LastDeliveryFailure="Ï†ÑÎã¨Ìï† ÌîºÏûêÍ∞Ä ÏóÜÏäµÎãàÎã§.";return false;}
+        if(MoneyManager.Instance==null){LastDeliveryFailure="Ï†ïÏÇ∞ÏùÑ Ï§ÄÎπÑ Ï§ëÏûÖÎãàÎã§.";return false;}
+        var delivered=pizzas[match];bool correct=PizzaRecipes.Matches(delivered.toppings,activeOrder.toppings);
+        // Ïù¥Î≤à Î¶¨Î∑∞ ÏßÅÏ†Ñ ÌèâÏ†êÏúºÎ°ú Ï†ïÏÇ∞ÌïòÍ≥† Îã§Ïùå Î∞∞Îã¨Î∂ÄÌÑ∞ ÏÉà ÌèâÏ†êÏùÑ Î∞òÏòÅÌïúÎã§.
+        int price=DeliveryPricing.ApplyDelay(Quote(activeOrder,CurrentTargetDeliveryPoint),ElapsedDeliveryMinutes);
+        if(!correct)price=Mathf.RoundToInt(price*.25f);if(!delivered.isBaked||delivered.isRuined)price=0;
+        MoneyManager.Instance.AddMoney(price);LastDeliveredPizzaIndex=match;
+        ShopReputation.Instance.Record(currentTargetDeliveryID,PizzaRecipes.Title(activeOrder),ElapsedDeliveryMinutes,correct,delivered.isBaked,delivered.isRuined,price,dayNightCycle.currentDay);
+        activeOrder=null;currentTargetDeliveryID="";deliveryDeadlineMinutes=0;if(currentOrderUI!=null)currentOrderUI.ClearOrder();
+        RobberyManager.NotifyDeliveryCompleted();DeliveryService.Mok.Stocks.StockMarket.Instance?.DeliveryClue();Changed();return true;
     }
 }

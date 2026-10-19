@@ -35,15 +35,8 @@ namespace DeliveryService.Mok.ShopUI
             activeLabel.text = manager.HasActiveOrder
                 ? $"진행 중  ·  {manager.ActiveOrder.orderName} 배달을 완료해 주세요"
                 : "진행 중인 주문 없음  ·  대기 주문을 수락해 주세요";
-            hintLabel.text = manager.HasActiveOrder
-                ? "배달을 완료하면 다음 주문을 수락할 수 있습니다."
-                : "새 주문은 목록 아래에 추가됩니다. 수락하면 배달 주문으로 등록됩니다.";
-            emptyLabel.text = manager.DailyOrdersExhausted
-                ? "오늘의 주문 접수가 모두 끝났습니다.\n마감 탭에서 영업을 마감할 수 있습니다."
-                : manager.HasActiveOrder
-                    ? "현재 배달을 완료하면\n30초 뒤 다음 주문이 들어옵니다."
-                    : "다음 주문을 기다리고 있습니다.\n배달 완료·거절·취소 후 30초 뒤 접수됩니다.";
-            hintLabel.text = $"오늘 접수 {manager.OrdersGeneratedToday}/{manager.DailyOrderLimit}건  ·  배달 제한: 게임 시간 80분";
+            emptyLabel.text = "새 주문을 기다리고 있습니다.";
+            hintLabel.text = "접수 횟수 무제한 · 수락/거절 후 게임 시간 5초 뒤 보충 · 권장 배달 30분 · 지연 시 평점 하락";
             emptyLabel.gameObject.SetActive(orders.Count == 0);
             Vector2 offset = content.anchoredPosition;
             for (int i = 0; i < orders.Count; i++)

@@ -17,7 +17,10 @@ public class RobberAI : MonoBehaviour
     [Header("강탈 후 회수 제한 · 현실 초")]
     [SerializeField] float stolenPizzaEscapeSeconds = 45f;
     float stolenElapsed;
-    public float RecoverySecondsRemaining => stolen.Count>0?Mathf.Max(0,stolenPizzaEscapeSeconds-stolenElapsed):0;
+    int stolenCash;
+    public int StolenCash => stolenCash;
+    public bool HasStolenLoot => stolen.Count>0||stolenCash>0;
+    public float RecoverySecondsRemaining => HasStolenLoot?Mathf.Max(0,stolenPizzaEscapeSeconds-stolenElapsed):0;
     public static BikePizzaStorage RiddenCargo => FindObjectsByType<BikePizzaStorage>(FindObjectsSortMode.None).FirstOrDefault(s=>s.bikeController!=null&&s.bikeController.isDriven);
     public static bool RiderCanAct(BikePizzaStorage s) => s!=null&&s.bikeController.IsControlAvailable&&Time.timeScale>0&&Cursor.lockState==CursorLockMode.Locked&&!PoliceControl.IsArrestInProgress;
     Vector3 VictimPosition => RiddenCargo!=null?RiddenCargo.transform.position:player.transform.position;
@@ -68,7 +71,7 @@ public class RobberAI : MonoBehaviour
         if(phase==Phase.Down||phase==Phase.Escape)EndEncounter();
         if(agent.enabled && agent.isOnNavMesh) agent.isStopped = phase != Phase.Approach && phase != Phase.Escape;
     }
-    bool Available => player != null && player.CanReceiveHit && inventory != null && inventory.HasPackagedPizzas();
+    bool Available => player != null && player.CanReceiveHit && inventory != null && (inventory.HasPackagedPizzas()||RobberyMoney.CanTake);
     public bool CanReachVictim()
     {
         if(!Available) return false;
@@ -85,9 +88,9 @@ public class RobberAI : MonoBehaviour
         if(clock != null && (clock.currentDay != day || (!IsTestSpawn && !clock.isShopOpen))) { DropLoot(); Destroy(gameObject); return; }
         if(npc.IsDead) { DropLoot(); return; }
         // 시야나 경로 도착 여부와 무관하게 강탈 시점부터 회수 기회를 준다.
-        if(stolen.Count>0){
+        if(HasStolenLoot){
             stolenElapsed+=Time.unscaledDeltaTime;
-            if(stolenElapsed>=stolenPizzaEscapeSeconds){stolen.Clear();Destroy(gameObject);return;}
+            if(stolenElapsed>=stolenPizzaEscapeSeconds){stolen.Clear();stolenCash=0;Destroy(gameObject);return;}
         }
         if(State == Phase.Down || !agent.enabled || !agent.isOnNavMesh) return;
         if(player == null) { SetTarget(null); return; }
@@ -102,7 +105,7 @@ public class RobberAI : MonoBehaviour
         switch(State)
         {
             case Phase.Approach:
-                bool hasTarget=ridden!=null?ridden.StoredCount>0:Available;
+                bool hasTarget=ridden!=null?(ridden.StoredCount>0||RobberyMoney.CanTake):Available;
                 if(!hasTarget || Vector3.Distance(transform.position,VictimPosition)>25 || Time.time-born>30) { BeginEscape(); break; }
                 agent.isStopped=false;
                 Navigate(ridden!=null?CargoApproach(ridden):player.transform.position);
@@ -125,18 +128,18 @@ public class RobberAI : MonoBehaviour
                 break;
             case Phase.Escape:
                 if(!hasExit || (!agent.pathPending && agent.remainingDistance<1.2f)) {
-                    if(stolen.Count==0 && !VisibleToPlayer() && StateAge>1f) { stolen.Clear(); Destroy(gameObject); return; }
+                    if(!HasStolenLoot && !VisibleToPlayer() && StateAge>1f) { stolen.Clear(); Destroy(gameObject); return; }
                     FindExit();
                 }
                 if(hasExit) Navigate(exit);
                 // 화면 앞에서 갑자기 사라지지 않도록 시야 밖에서만 퇴장한다.
-                if(stolen.Count==0 && StateAge>45f && !VisibleToPlayer()) { stolen.Clear(); Destroy(gameObject); }
+                if(!HasStolenLoot && StateAge>45f && !VisibleToPlayer()) { stolen.Clear(); Destroy(gameObject); }
                 break;
         }
     }
     Vector3 CargoApproach(BikePizzaStorage storage) => storage.transform.position-storage.bikeController.transform.forward*.75f;
     public bool CanReachCargo(BikePizzaStorage storage){
-        if(storage==null||storage.StoredCount==0||storage.bikeController==null)return false;
+        if(storage==null||(storage.StoredCount==0&&!RobberyMoney.CanTake)||storage.bikeController==null)return false;
         var visual=storage.GetComponent<BikeCargoVisual>();
         if(visual==null||!visual.isActiveAndEnabled||(visual.IsBusy&&!visual.IsRobberyBy(this)))return false;
         var delta=storage.transform.position-transform.position;
@@ -146,6 +149,7 @@ public class RobberAI : MonoBehaviour
     }
     // 접근한 프레임에 한 상자를 옮긴다. 뚜껑 동작과 속도 대기는 없다.
     void TakeCargo(BikePizzaStorage storage){
+        if(storage.StoredCount==0){TakeCash();return;}
         var visual=storage.GetComponent<BikeCargoVisual>();
         if(!visual.BeginRobbery(this))return;
         PizzaData pizza;
@@ -167,11 +171,18 @@ public class RobberAI : MonoBehaviour
     }
     void TakePackage()
     {
+        if(!inventory.HasPackagedPizzas()){TakeCash();return;}
         // 피자 데이터를 그대로 옮겨 레시피와 조리 상태를 보존한다. 배달통은 건드리지 않는다.
         stolen.AddRange(inventory.ClearPackagedPizzas());
         stolenElapsed=0;
         feedback.NotifyTheft();
         Change(Phase.StolenPause);
+    }
+    void TakeCash(){
+        if(HasStolenLoot)return;
+        stolenCash=RobberyMoney.TryTake();
+        if(stolenCash<=0){BeginEscape();return;}
+        stolenElapsed=0;feedback.NotifyTheft();BeginEscape();
     }
     void BeginEscape()
     {
@@ -221,6 +232,7 @@ public class RobberAI : MonoBehaviour
     }
     public bool ReceiveKick(Vector3 direction)
     {
+        var fighter=GetComponent<SlumRobberCombat>();if(fighter!=null)return fighter.ReceiveKick(direction);
         if(!CanBeKicked) return false;
         DropLoot(); Change(Phase.Down);
         npc.KnockDown(direction,5f); StartCoroutine(Recover()); return true;
@@ -233,9 +245,12 @@ public class RobberAI : MonoBehaviour
     }
     public void DropLoot()
     {
-        if(stolen.Count==0) return;
+        if(!HasStolenLoot) return;
         Vector3 position=transform.position+transform.forward*.9f;
         if(NavMesh.SamplePosition(position,out var hit,3f,NavMesh.AllAreas)) position=hit.position;
-        RobberLoot.Create(position,stolen); stolen.Clear();
+        if(stolen.Count>0){RobberLoot.Create(position,stolen);stolen.Clear();}
+        if(stolenCash>0){RobberLoot.CreateCash(position,stolenCash);stolenCash=0;}
     }
 }
+
+

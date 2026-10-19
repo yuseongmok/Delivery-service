@@ -224,6 +224,7 @@ public class PoliceControl : MonoBehaviour
     {
         if (isArresting) yield break;
         isArresting = true;
+        DeliveryService.Mok.ShopReputation.Instance.Penalize(true);
 
         Transform playerToTeleport = target;
 

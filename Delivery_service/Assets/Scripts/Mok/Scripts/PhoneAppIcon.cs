@@ -11,10 +11,16 @@ public sealed class PhoneAppIcon : MaskableGraphic {
     protected override void OnPopulateMesh(VertexHelper vh){
         mesh=vh;vh.Clear();
         if(selected)Round(.01f,.01f,.98f,.98f,.21f,new Color(.96f,.85f,.60f));
-        Color bg=App==0?new Color(.22f,.59f,.51f):App==1?new Color(.87f,.49f,.22f):new Color(.32f,.47f,.65f);
+        Color bg=App==0?new Color(.22f,.59f,.51f):App==1||App==3?new Color(.87f,.49f,.22f):new Color(.32f,.47f,.65f);
         Round(.055f,.055f,.89f,.89f,.18f,bg);
         Color paper=new Color(.97f,.95f,.85f);
-        if(App==0){
+        if(App==3){
+ var inner=new Vector2[5];
+ for(int i=0;i<5;i++){float a=(90+i*72)*Mathf.Deg2Rad;float b=a-36*Mathf.Deg2Rad;float c=a+36*Mathf.Deg2Rad;
+ var center=new Vector2(.5f,.5f);inner[i]=center+new Vector2(Mathf.Cos(b),Mathf.Sin(b))*.15f;
+ Poly(paper,inner[i],center+new Vector2(Mathf.Cos(a),Mathf.Sin(a))*.34f,center+new Vector2(Mathf.Cos(c),Mathf.Sin(c))*.15f);}
+ Poly(paper,inner);
+ }else if(App==0){
             Poly(paper,new Vector2(.18f,.25f),new Vector2(.37f,.20f),new Vector2(.37f,.64f),new Vector2(.18f,.70f));
             Poly(new Color(.72f,.86f,.72f),new Vector2(.37f,.20f),new Vector2(.58f,.27f),new Vector2(.58f,.71f),new Vector2(.37f,.64f));
             Poly(paper,new Vector2(.58f,.27f),new Vector2(.80f,.22f),new Vector2(.80f,.66f),new Vector2(.58f,.71f));

@@ -1,0 +1,11 @@
+#if UNITY_EDITOR
+using System;using System.IO;using System.Linq;using UnityEngine;using UnityEditor;using UnityEditor.SceneManagement;using UnityEngine.SceneManagement;
+namespace DeliveryService.Mok.Editor {
+[InitializeOnLoad]public static class CityRoadSurfaceFix {
+static CityRoadSurfaceFix(){EditorApplication.update+=Poll;}
+static void Poll(){if(EditorApplication.isCompiling||EditorApplication.isUpdating||EditorApplication.isPlayingOrWillChangePlaymode||!File.Exists("Temp/Mok-road-surface-fix"))return;File.Delete("Temp/Mok-road-surface-fix");try{Run();}catch(Exception e){File.WriteAllText("Temp/Mok-road-surface-fix.txt",e.ToString());}}
+static void Run(){string stamp=DateTime.Now.ToString("yyyyMMdd-HHmmss");for(int i=0;i<SceneManager.sceneCount;i++)if(!EditorSceneManager.SaveScene(SceneManager.GetSceneAt(i),"Temp/Before-road-fix-"+stamp+"-"+i+".unity",true))throw new Exception("Backup failed");var scene=SceneManager.GetSceneByPath("Assets/Scenes/JJinCity.unity");bool opened=!scene.isLoaded;if(opened)scene=EditorSceneManager.OpenScene("Assets/Scenes/JJinCity.unity",OpenSceneMode.Additive);try{if(!EditorSceneManager.SaveScene(scene,"Temp/JJinCity-before-road-fix-"+stamp+".unity",true))throw new Exception("Backup failed");var root=scene.GetRootGameObjects().First(g=>g.name=="Mok East City").transform;int count=0;foreach(Transform t in root)if(t.name=="North south avenue"||t.name=="East west avenue"){foreach(var c in t.GetComponents<Collider>()){c.enabled=false;count++;}}
+// 교차로의 겹친 상자 모서리를 없애고 같은 높이의 단일 바닥으로 받친다.
+var surface=root.Find("Continuous road collision");if(surface==null){var g=new GameObject("Continuous road collision");g.transform.SetParent(root,false);surface=g.transform;g.AddComponent<BoxCollider>();g.isStatic=true;}surface.position=new Vector3(325,-.08f,-5);var box=surface.GetComponent<BoxCollider>();box.size=new Vector3(260,.16f,250);EditorSceneManager.MarkSceneDirty(scene);if(!EditorSceneManager.SaveScene(scene))throw new Exception("Save failed");File.WriteAllText("Temp/Mok-road-surface-fix.txt","PASS: replaced "+count+" overlapping road colliders with one continuous support surface; visuals and navigation unchanged.");}finally{if(opened)EditorSceneManager.CloseScene(scene,true);}}
+}}
+#endif
