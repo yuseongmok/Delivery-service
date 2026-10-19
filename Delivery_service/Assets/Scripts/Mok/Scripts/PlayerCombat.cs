@@ -20,7 +20,7 @@ public sealed class PlayerCombat : MonoBehaviour {
     public Camera View => view;
     void Awake(){Health=maximumHealth;view=GetComponent<PlayerInteraction>().InteractionCamera;if(avatar!=null&&view!=null)view.nearClipPlane=Mathf.Min(view.nearClipPlane,.05f);move=GetComponent<PlayerMove>();controller=GetComponent<CharacterController>();}
     void Start(){phone=FindFirstObjectByType<PhoneController>();bikes=FindObjectsByType<MotorcycleController>(FindObjectsSortMode.None);font=MokUIFont.Font;if(kickVisual!=null)kickVisual.gameObject.SetActive(false);}
-    void Update(){if(CanAct&&Input.GetMouseButtonDown(0))TryKick();}
+    void Update(){if(CanAct&&Input.GetMouseButtonDown(0)&&(GetComponent<PlayerWeapon>()==null||!GetComponent<PlayerWeapon>().HasInHand))TryKick();}
 
     public CitizenCombat FocusCitizen(float distance=2.5f){
         if(view==null)return null;

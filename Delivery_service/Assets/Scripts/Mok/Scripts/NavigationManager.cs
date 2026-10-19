@@ -53,42 +53,52 @@ public class NavigationManager : MonoBehaviour {
  if(playerTransform==null||destination==null){RouteStatus="목적지를 선택하세요";return;}
  lastDestination=destination;lastPosition=playerTransform.position;lastDestinationPosition=destination.position;
  if(Vector2.Distance(new Vector2(lastPosition.x,lastPosition.z),new Vector2(lastDestinationPosition.x,lastDestinationPosition.z))<4){RouteStatus="목적지에 도착했습니다";return;}
- int road=NavMesh.GetAreaFromName("Road"),sidewalk=NavMesh.GetAreaFromName("SideWalk");
- if(road<0||sidewalk<0||NavMesh.GetSettingsCount()==0){RouteStatus="도로 정보를 찾을 수 없습니다";return;}
- int mask=(1<<road)|(1<<sidewalk);
- var filter=new NavMeshQueryFilter{agentTypeID=NavMesh.GetSettingsByIndex(0).agentTypeID,areaMask=mask};filter.SetAreaCost(road,1);filter.SetAreaCost(sidewalk,2);
- // 가까운 보도 영역이 끊어진 입구나 위층일 수 있다.
- // 완전한 기존 경로를 유지하고 없으면 주변 도로 기준점을 탐색한다.
- // 건물을 가로지르는 직선이나 목적지에 닿지 않는 경로는 사용하지 않는다.
- var starts = new List<Vector3>(); var ends = new List<Vector3>();
- AddAnchor(lastPosition, 30, filter, starts);
- AddAnchor(lastDestinationPosition, 20, filter, ends);
- var roadFilter = filter; roadFilter.areaMask = 1 << road;
- AddAnchor(lastPosition, 30, roadFilter, starts);
- AddAnchor(lastDestinationPosition, 20, roadFilter, ends);
- if(starts.Count==0||ends.Count==0){RouteStatus="이 위치에서는 경로를 찾을 수 없습니다";return;}
- var path=new NavMeshPath(); bool complete=false;
- for(int i=0;i<starts.Count&&!complete;i++)for(int j=0;j<ends.Count&&!complete;j++)
-  complete=NavMesh.CalculatePath(starts[i],ends[j],filter,path)&&path.status==NavMeshPathStatus.PathComplete;
- if(!complete){
-  // 보도 턱·입구·겹친 표면 때문에 가장 가까운 도로 기준점도 끊길 수 있다.
-  // 가까운 기준점 탐색에 실패한 경우에만 제한된 주변 범위를 검사한다.
-  AddNearbyAnchors(lastDestinationPosition,roadFilter,ends);
-  for(int i=0;i<starts.Count&&!complete;i++)for(int j=0;j<ends.Count&&!complete;j++)
-   complete=NavMesh.CalculatePath(starts[i],ends[j],filter,path)&&path.status==NavMeshPathStatus.PathComplete;
-  if(!complete){
-   AddNearbyAnchors(lastPosition,roadFilter,starts);
-   for(int i=0;i<starts.Count&&!complete;i++)for(int j=0;j<ends.Count&&!complete;j++)
-    complete=NavMesh.CalculatePath(starts[i],ends[j],filter,path)&&path.status==NavMeshPathStatus.PathComplete;
-  }
- }
- Vector3[] routeCorners = complete ? path.corners : TryTransitRoute(starts, ends, filter);
+ var routeCorners=FindTravelRoute(lastPosition,lastDestinationPosition);
  if(routeCorners==null){RouteStatus="목적지까지 연결된 도로가 없습니다";return;}
  if(routeCorners.Length<2){RouteStatus="목적지 근처입니다";return;}
  // 건물을 가로지르지 않도록 실제 통행 가능한 경로 모서리를 유지한다.
  for(int i=0;i<routeCorners.Length;i++){displayPath.Add(routeCorners[i]);if(i>0)RemainingDistance+=Vector3.Distance(routeCorners[i-1],routeCorners[i]);}
  if(pathLineRenderer!=null){pathLineRenderer.positionCount=displayPath.Count;for(int i=0;i<displayPath.Count;i++){var point=displayPath[i];point.y=pathLineHeight;pathLineRenderer.SetPosition(i,point);}}
  RouteStatus="안내 중";
+ }
+ // 배달 시간과 화면 안내가 동일한 실제 도로 경로를 사용한다.
+ public static bool TryMeasureTravelDistance(Vector3 start,Vector3 end,out float distance){
+  distance=0;var corners=FindTravelRoute(start,end);if(corners==null||corners.Length==0)return false;
+  distance=Vector3.Distance(start,corners[0])+Vector3.Distance(corners[corners.Length-1],end);
+  for(int i=1;i<corners.Length;i++)distance+=Vector3.Distance(corners[i-1],corners[i]);return true;
+ }
+ static Vector3[] FindTravelRoute(Vector3 startPosition,Vector3 endPosition){
+ int road=NavMesh.GetAreaFromName("Road"),sidewalk=NavMesh.GetAreaFromName("SideWalk");
+ if(road<0||sidewalk<0||NavMesh.GetSettingsCount()==0){return null;}
+ int mask=(1<<road)|(1<<sidewalk);
+ var filter=new NavMeshQueryFilter{agentTypeID=NavMesh.GetSettingsByIndex(0).agentTypeID,areaMask=mask};filter.SetAreaCost(road,1);filter.SetAreaCost(sidewalk,2);
+ // 가까운 보도 영역이 끊어진 입구나 위층일 수 있다.
+ // 완전한 기존 경로를 유지하고 없으면 주변 도로 기준점을 탐색한다.
+ // 건물을 가로지르는 직선이나 목적지에 닿지 않는 경로는 사용하지 않는다.
+ var starts = new List<Vector3>(); var ends = new List<Vector3>();
+ AddAnchor(startPosition, 30, filter, starts);
+ AddAnchor(endPosition, 20, filter, ends);
+ var roadFilter = filter; roadFilter.areaMask = 1 << road;
+ AddAnchor(startPosition, 30, roadFilter, starts);
+ AddAnchor(endPosition, 20, roadFilter, ends);
+ if(starts.Count==0||ends.Count==0){return null;}
+ var path=new NavMeshPath(); bool complete=false;
+ for(int i=0;i<starts.Count&&!complete;i++)for(int j=0;j<ends.Count&&!complete;j++)
+  complete=NavMesh.CalculatePath(starts[i],ends[j],filter,path)&&path.status==NavMeshPathStatus.PathComplete;
+ if(!complete){
+  // 보도 턱·입구·겹친 표면 때문에 가장 가까운 도로 기준점도 끊길 수 있다.
+  // 가까운 기준점 탐색에 실패한 경우에만 제한된 주변 범위를 검사한다.
+  AddNearbyAnchors(endPosition,roadFilter,ends);
+  for(int i=0;i<starts.Count&&!complete;i++)for(int j=0;j<ends.Count&&!complete;j++)
+   complete=NavMesh.CalculatePath(starts[i],ends[j],filter,path)&&path.status==NavMeshPathStatus.PathComplete;
+  if(!complete){
+   AddNearbyAnchors(startPosition,roadFilter,starts);
+   for(int i=0;i<starts.Count&&!complete;i++)for(int j=0;j<ends.Count&&!complete;j++)
+    complete=NavMesh.CalculatePath(starts[i],ends[j],filter,path)&&path.status==NavMeshPathStatus.PathComplete;
+  }
+ }
+ Vector3[] routeCorners = complete ? path.corners : TryTransitRoute(starts, ends, filter);
+ return routeCorners;
  }
  // 확장 구역의 긴 경로가 한 번에 계산되지 않으면 등록된 입구를 경유한다.
  // 양쪽 구간이 모두 연결된 경우에만 표시하며 직선으로 빈 구간을 잇지 않는다.

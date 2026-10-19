@@ -20,9 +20,12 @@ public class OrderManager : MonoBehaviour {
     private bool prevShopOpenState;
     private double deliveryDeadlineMinutes;
     private readonly List<double> refillAt=new();
-    public const int PendingCapacity=3;
+    public static int CapacityForRating(float rating)=>Mathf.RoundToInt(rating*100)>=500?5:rating>=4?4:3;
+    public static int PendingCapacity=>CapacityForRating(ShopReputation.Instance.Rating);
     public const double RefillGameSeconds=5;
-    private const float deliveryTimeLimitMinutes=DeliveryPricing.PromisedMinutes;
+    public float RecommendedDeliveryMinutes {get;private set;}=90f;
+    public float DeliveryRouteMeters {get;private set;}
+    private float deliveryTimeLimitMinutes=>RecommendedDeliveryMinutes;
     private double GameMinutes=>dayNightCycle==null?0:dayNightCycle.currentDay*1440d+dayNightCycle.currentTime*60d;
     public int OrdersGeneratedToday=>generatedToday;
     public int DailyOrderLimit=>0; // 0은 무제한이다. 기존 참조와 호환하기 위해 남긴다.
@@ -49,9 +52,10 @@ public class OrderManager : MonoBehaviour {
         if(dayNightCycle.isShopOpen){
             for(int i=refillAt.Count-1;i>=0;i--)if(GameMinutes+0.000001>=refillAt[i]){refillAt.RemoveAt(i);GenerateSingleOrder();}
         }
+        if(dayNightCycle.isShopOpen)SyncPendingCapacity();
         UpdateDeliveryDeadline();
     }
-    void RefreshPrices(){foreach(var order in pendingOrders){var point=deliveryPoints.Find(p=>p!=null&&p.DeliveryPointID==order.destinationID);order.quotedPrice=Quote(order,point);}Changed();}
+    void RefreshPrices(){SyncPendingCapacity();foreach(var order in pendingOrders){var point=deliveryPoints.Find(p=>p!=null&&p.DeliveryPointID==order.destinationID);order.quotedPrice=Quote(order,point);}Changed();}
     void Changed(){if(orderUI!=null)orderUI.RefreshOrderList(pendingOrders);OrdersChanged?.Invoke();}
     void UpdateOrderNumberDay(){if(dayNightCycle==null)return;if(orderNumberDay==dayNightCycle.currentDay)return;orderNumberDay=dayNightCycle.currentDay;nextOrderNumber=1;generatedToday=0;refillAt.Clear();}
     public void OnShopOpened(){
@@ -60,15 +64,20 @@ public class OrderManager : MonoBehaviour {
         UpdateOrderNumberDay();int missing=PendingCapacity-pendingOrders.Count-refillAt.Count;
         for(int i=0;i<missing;i++)GenerateSingleOrder();
     }
+    // 평점 하락 시 기존 주문은 유지하고 예약된 보충만 현재 한도에 맞춘다.
+    void SyncPendingCapacity(){
+        if(dayNightCycle==null||!dayNightCycle.isShopOpen)return;
+        int available=Mathf.Max(0,PendingCapacity-pendingOrders.Count);
+        while(refillAt.Count>available)refillAt.RemoveAt(refillAt.Count-1);
+        while(refillAt.Count<available)refillAt.Add(GameMinutes+RefillGameSeconds/60d);
+    }
     void ScheduleNextOrder(){if(pendingOrders.Count+refillAt.Count<PendingCapacity)refillAt.Add(GameMinutes+RefillGameSeconds/60d);}
     void GenerateSingleOrder(){
         if(dayNightCycle==null||!dayNightCycle.isShopOpen||pendingOrders.Count>=PendingCapacity||orderGenerator==null)return;
         var policy=GetComponent<DistrictDeliveryPolicy>();
         var destination=policy!=null?policy.Choose(deliveryPoints):deliveryPoints.FirstOrDefault(p=>p!=null&&p.isActiveAndEnabled);
         if(destination==null){ScheduleNextOrder();return;}
-        var order=orderGenerator.GenerateSinglePizzaOrder().FirstOrDefault();if(order==null)return;
-        // 한 번에 뜨는 메뉴가 가급적 서로 다르게 보이도록 고른다.
-        for(int i=0;i<12&&pendingOrders.Any(p=>p.recipeName==order.recipeName);i++)order=orderGenerator.GenerateSinglePizzaOrder()[0];
+        var order=PizzaRecipes.Create(toppingDataList,ShopReputation.Instance.Rating);
         order.orderName=$"주문 {nextOrderNumber++:D2}";
         order.destinationID=destination.DeliveryPointID;
         order.districtName=policy!=null?policy.Region(destination):"기존 도시";
@@ -85,13 +94,13 @@ public class OrderManager : MonoBehaviour {
     void HandleAccept(PizzaOrder order){
         if(order==null||HasActiveOrder||!pendingOrders.Contains(order)||dayNightCycle==null||!dayNightCycle.isShopOpen)return;
         if(!deliveryPoints.Any(p=>p!=null&&p.isActiveAndEnabled&&p.DeliveryPointID==order.destinationID))return;
-        activeOrder=order;currentTargetDeliveryID=order.destinationID;deliveryDeadlineMinutes=GameMinutes+deliveryTimeLimitMinutes;pendingOrders.Remove(order);ScheduleNextOrder();
-        if(currentOrderUI!=null)currentOrderUI.DisplayTimedOrder(activeOrder,currentTargetDeliveryID,SignedDeliveryMinutes);Changed();
+        activeOrder=order;currentTargetDeliveryID=order.destinationID;RecommendedDeliveryMinutes=DeliveryTravelTime.Recommend(CurrentTargetDeliveryPoint,out float routeMeters);DeliveryRouteMeters=routeMeters;deliveryDeadlineMinutes=GameMinutes+deliveryTimeLimitMinutes;pendingOrders.Remove(order);ScheduleNextOrder();
+        if(currentOrderUI!=null)currentOrderUI.DisplayElapsedOrder(activeOrder,currentTargetDeliveryID,ElapsedDeliveryMinutes,RecommendedDeliveryMinutes);Changed();
     }
     void HandleDecline(PizzaOrder order){if(dayNightCycle==null||!dayNightCycle.isShopOpen||!pendingOrders.Remove(order))return;ShopReputation.Instance.Declined();ScheduleNextOrder();Changed();}
     void UpdateDeliveryDeadline(){
         if(!HasActiveOrder||dayNightCycle==null)return;
-        if(currentOrderUI!=null)currentOrderUI.DisplayTimedOrder(activeOrder,currentTargetDeliveryID,SignedDeliveryMinutes);
+        if(currentOrderUI!=null)currentOrderUI.DisplayElapsedOrder(activeOrder,currentTargetDeliveryID,ElapsedDeliveryMinutes,RecommendedDeliveryMinutes);
     }
     public void ResetOrdersForNewDay(){refillAt.Clear();prevShopOpenState=false;UpdateOrderNumberDay();pendingOrders.Clear();activeOrder=null;currentTargetDeliveryID="";deliveryDeadlineMinutes=0;LastDeliveredPizzaIndex=-1;if(currentOrderUI!=null)currentOrderUI.ClearOrder();FindFirstObjectByType<NavigationManager>()?.ResetNavigationForNewDay();Changed();}
     public bool TryDeliverPackagedStack(List<PizzaData> pizzas,string destination){
@@ -105,10 +114,10 @@ public class OrderManager : MonoBehaviour {
         if(MoneyManager.Instance==null){LastDeliveryFailure="정산을 준비 중입니다.";return false;}
         var delivered=pizzas[match];bool correct=PizzaRecipes.Matches(delivered.toppings,activeOrder.toppings);
         // 이번 리뷰 직전 평점으로 정산하고 다음 배달부터 새 평점을 반영한다.
-        int price=DeliveryPricing.ApplyDelay(Quote(activeOrder,CurrentTargetDeliveryPoint),ElapsedDeliveryMinutes);
+        int price=DeliveryPricing.ApplyDelay(Quote(activeOrder,CurrentTargetDeliveryPoint),ElapsedDeliveryMinutes,RecommendedDeliveryMinutes);
         if(!correct)price=Mathf.RoundToInt(price*.25f);if(!delivered.isBaked||delivered.isRuined)price=0;
         MoneyManager.Instance.AddMoney(price);LastDeliveredPizzaIndex=match;
-        ShopReputation.Instance.Record(currentTargetDeliveryID,PizzaRecipes.Title(activeOrder),ElapsedDeliveryMinutes,correct,delivered.isBaked,delivered.isRuined,price,dayNightCycle.currentDay);
+        ShopReputation.Instance.Record(currentTargetDeliveryID,PizzaRecipes.Title(activeOrder),ElapsedDeliveryMinutes,correct,delivered.isBaked,delivered.isRuined,price,dayNightCycle.currentDay,RecommendedDeliveryMinutes);
         activeOrder=null;currentTargetDeliveryID="";deliveryDeadlineMinutes=0;if(currentOrderUI!=null)currentOrderUI.ClearOrder();
         RobberyManager.NotifyDeliveryCompleted();DeliveryService.Mok.Stocks.StockMarket.Instance?.DeliveryClue();Changed();return true;
     }

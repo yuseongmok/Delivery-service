@@ -33,6 +33,15 @@ public class CurrentOrderUI : MonoBehaviour
         SetText(OrderHeading(order) + "\n" + DeliveryService.Mok.PizzaRecipes.Title(order) + "\n" + destination + "\n" + (minutes<0?"지연 ":"") + $"{seconds / 60:00}:{seconds % 60:00}" + discount);
     }
 
+    // 경과와 권장 시간은 모두 게임 시간의 분:초로 표시한다.
+    public void DisplayElapsedOrder(PizzaOrder order,string destination,float elapsed,float recommended){
+        if(order==null){ClearOrder();return;}
+        int seconds=Mathf.Max(0,Mathf.FloorToInt(elapsed*60f));
+        string time=$"경과 {seconds/60:00}:{seconds%60:00} / 권장 {recommended:00}:00";
+        if(elapsed>recommended)time=$"<color=#FF963F>{time} · 배달 지연 (-{(1f-DeliveryService.Mok.DeliveryPricing.LateMultiplier(elapsed,recommended))*100f:0}%)</color>";
+        SetText(OrderHeading(order)+"\n"+DeliveryService.Mok.PizzaRecipes.Title(order)+"\n"+destination+"\n"+time);
+    }
+
     public void DisplayCancelledOrder(PizzaOrder order)
     {
         SetText(OrderHeading(order) + "\n주문 취소\n피자를 폐기하세요");

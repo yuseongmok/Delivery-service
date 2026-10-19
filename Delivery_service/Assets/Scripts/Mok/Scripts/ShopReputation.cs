@@ -17,7 +17,7 @@ public sealed class ShopReputation : MonoBehaviour {
  void OnDestroy(){if(instance==this)instance=null;}
  public static float PriceMultiplier(float rating){rating=Mathf.Clamp(rating,1,5);float[] levels={.15f,.5f,1f,1.35f,1.8f};int i=Mathf.Min(3,Mathf.FloorToInt(rating)-1);return Mathf.Lerp(levels[i],levels[i+1],rating-(i+1));}
  public float Multiplier=>PriceMultiplier(Rating);
- public static int DeliveryStars(float minutes,bool correct,bool baked,bool ruined){if(!correct||!baked||ruined)return 1;return minutes<=15?5:minutes<=30?4:minutes<=40?3:minutes<=50?2:1;}
+ public static int DeliveryStars(float minutes,bool correct,bool baked,bool ruined,float promisedMinutes=30){if(!correct||!baked||ruined)return 1;return minutes<=promisedMinutes*.5f?5:minutes<=promisedMinutes?4:minutes<=promisedMinutes+10?3:minutes<=promisedMinutes+20?2:1;}
  public void Penalize(bool arrest)=>ApplyPenalty(arrest?.2f:.1f,arrest?"경찰 체포":"소매치기");
  public void Declined()=>ApplyPenalty(.05f,"주문 거절");
  void ApplyPenalty(float amount,string reason){Rating=Mathf.Clamp(Rating-amount,1,5);LastNotice=reason+$" · 평점 -{amount:0.00}";Notify();DeliveryRequestNotice.Show(LastNotice);}
@@ -27,13 +27,13 @@ public sealed class ShopReputation : MonoBehaviour {
   new[]{"조금 늦었지만 주문한 피자는 잘 받았어요.","맛은 괜찮았는데 배달이 살짝 아쉽네요.","무난했어요. 다음에는 시간도 지켜 주세요."},
   new[]{"주문한 피자가 제시간에 도착했어요. 잘 먹겠습니다!","약속을 지켜 주셔서 좋았어요. 또 주문할게요.","원하던 피자를 잘 받았어요. 만족합니다!"},
   new[]{"이렇게 빨리 오다니! 다음에도 여기서 주문할게요.","빠른 배달에 주문도 정확해요. 별 다섯 개!","기다릴 틈도 없이 도착했어요. 정말 만족해요!"}};
- public Review Record(string address,string pizza,float minutes,bool correct,bool baked,bool ruined,int payment,int day){
-  int stars=DeliveryStars(minutes,correct,baked,ruined);string text;
+ public Review Record(string address,string pizza,float minutes,bool correct,bool baked,bool ruined,int payment,int day,float promisedMinutes=30){
+  int stars=DeliveryStars(minutes,correct,baked,ruined,promisedMinutes);string text;
   if(!correct)text=new[]{"제가 주문한 피자가 아니에요. 정말 실망했습니다.","다른 피자가 왔어요. 주문 확인부터 해 주세요.","기다렸는데 주문과 다른 피자라니요. 다시 주문하기 어렵겠어요."}[UnityEngine.Random.Range(0,3)];
   else if(!baked)text="피자가 제대로 구워지지 않았어요. 먹을 수가 없네요.";
   else if(ruined)text="피자가 엉망으로 도착했어요. 배달 상태가 너무 나빠요.";
   else text=Comments[stars-1][UnityEngine.Random.Range(0,3)];
-  if(!correct&&minutes>30)text+=" 배달도 늦었어요.";
+  if(!correct&&minutes>promisedMinutes)text+=" 배달도 늦었어요.";
   var review=new Review{address=address,pizza=pizza,minutes=minutes,stars=stars,text=text,payment=payment,day=day};Reviews.Insert(0,review);if(Reviews.Count>100)Reviews.RemoveAt(100);
   float next=Mathf.Lerp(Rating,stars,.25f);if(!correct||!baked||ruined)next=Mathf.Min(next,Rating-.8f);Rating=Mathf.Clamp(next,1,5);
   LastNotice=$"{address} · {stars}점 리뷰 도착";Notify();DeliveryRequestNotice.Show(LastNotice);return review;

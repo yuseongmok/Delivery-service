@@ -1,0 +1,4 @@
+#if UNITY_EDITOR
+using UnityEditor;using UnityEditor.SceneManagement;using UnityEngine;using System.IO;using System.Linq;
+namespace DeliveryService.Mok.Editor{[InitializeOnLoad] public static class WeaponInspect{static WeaponInspect(){EditorApplication.update+=Poll;}static void Poll(){if(EditorApplication.isCompiling||EditorApplication.isPlayingOrWillChangePlaymode||!File.Exists("Temp/Mok-weapon-inspect"))return;File.Delete("Temp/Mok-weapon-inspect");var s=UnityEngine.SceneManagement.SceneManager.GetActiveScene();EditorSceneManager.SaveScene(s,"Temp/JJinCity-before-weapons-unsaved.unity",true);File.WriteAllText("Temp/Mok-weapon-inspect.txt",string.Join("\n",s.GetRootGameObjects().SelectMany(g=>g.GetComponentsInChildren<Transform>(true)).Where(t=>t.name.ToLower().Contains("weapon")).Select(t=>$"{t.name} pos={t.position} rot={t.eulerAngles} scale={t.lossyScale} children={t.childCount}")));}}}
+#endif

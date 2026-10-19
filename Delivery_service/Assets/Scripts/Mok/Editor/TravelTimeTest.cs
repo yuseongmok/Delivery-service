@@ -1,0 +1,15 @@
+#if UNITY_EDITOR
+using System;using System.Collections;using System.Collections.Generic;using System.Linq;using System.Reflection;using UnityEngine;
+namespace DeliveryService.Mok.Editor {public static class TravelTimeTest {
+public static IEnumerator RunCore(Action<string> log){
+ void Check(bool b,string s){if(!b)throw new Exception(s);log("PASS: "+s);}
+ Check(DeliveryTravelTime.MinutesForDistance(250)==50&&DeliveryTravelTime.MinutesForDistance(251)==70&&DeliveryTravelTime.MinutesForDistance(500)==70&&DeliveryTravelTime.MinutesForDistance(501)==90,"Distance band boundaries 250/500 meters");
+ var points=UnityEngine.Object.FindObjectsByType<DeliveryPoint>(FindObjectsSortMode.None);int[] counts=new int[3];int failures=0;foreach(var point in points){float limit=DeliveryTravelTime.Recommend(point,out var distance);if(distance<0)failures++;else counts[limit==50?0:limit==70?1:2]++;log($"ROUTE {point.DeliveryPointID}: {distance:0.0}m / {limit} minutes");}Check(failures==0,"All scene destinations have measured road paths");log($"Near/Middle/Far: {counts[0]}/{counts[1]}/{counts[2]}");
+ var manager=UnityEngine.Object.FindFirstObjectByType<OrderManager>();var clock=UnityEngine.Object.FindFirstObjectByType<DayNightCycle>();clock.enabled=false;clock.currentTime=6;clock.isShopOpen=true;var update=typeof(OrderManager).GetMethod("Update",BindingFlags.Instance|BindingFlags.NonPublic);
+ foreach(float promised in new[]{50f,70f,90f}){Check(DeliveryPricing.ApplyDelay(10000,promised,promised)==10000&&DeliveryPricing.ApplyDelay(10000,promised+15,promised)==6500&&DeliveryPricing.ApplyDelay(10000,promised+500,promised)==3000,"Price threshold and cap for "+promised);Check(ShopReputation.DeliveryStars(promised,true,true,false,promised)==4&&ShopReputation.DeliveryStars(promised+11,true,true,false,promised)==2,"Review timing for "+promised);}
+ foreach(float late in new[]{0f,15f,30f}){manager.ResetOrdersForNewDay();update.Invoke(manager,null);var order=manager.PendingOrders[0];Check(manager.TryAcceptOrder(order),"Accept order");float limit=manager.RecommendedDeliveryMinutes;Check(manager.ElapsedDeliveryMinutes<.01f,"Elapsed starts at zero");clock.currentTime+=(limit+late)/60f;update.Invoke(manager,null);Check(manager.HasActiveOrder&&Mathf.Abs(manager.ElapsedDeliveryMinutes-limit-late)<.01f,"Elapsed increases; delayed order stays active");
+ var ui=UnityEngine.Object.FindFirstObjectByType<CurrentOrderUI>();var label=(UnityEngine.UI.Text)typeof(CurrentOrderUI).GetField("currrentOrderText",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(ui);Check(label.text.Contains("경과")&&label.text.Contains("권장 "+limit.ToString("00")+":00"),"HUD uses elapsed and per-order recommended game minutes");int quote=manager.Quote(order,manager.CurrentTargetDeliveryPoint);int expected=DeliveryPricing.ApplyDelay(quote,manager.ElapsedDeliveryMinutes,limit),before=MoneyManager.Instance.currentMoney;
+ Check(manager.TryDeliverPackagedStack(new List<PizzaData>{new PizzaData(order.toppings,true)},order.destinationID)&&MoneyManager.Instance.currentMoney==before+expected,"Actual payout follows accepted route deadline");}
+ yield return null;
+}}}
+#endif

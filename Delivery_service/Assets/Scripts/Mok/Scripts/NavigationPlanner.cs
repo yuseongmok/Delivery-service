@@ -27,8 +27,8 @@ namespace DeliveryService.Mok.Navigation
         Text notice, hint;
         bool wasRiding, wasOpen;
         NavigationPlace[] places;
-        readonly string[] names = { "배달지", "매장", "수리점", "탈것" };
-        readonly NavigationPlaceKind[] kinds = { NavigationPlaceKind.Other, NavigationPlaceKind.Pizza, NavigationPlaceKind.Repair, NavigationPlaceKind.Bike };
+        readonly string[] names = { "배달지", "매장", "수리점", "탈것", "무기점" };
+        readonly NavigationPlaceKind[] kinds = { NavigationPlaceKind.Other, NavigationPlaceKind.Pizza, NavigationPlaceKind.Repair, NavigationPlaceKind.Bike, NavigationPlaceKind.Weapon };
         void Start()
         {
             phone = FindFirstObjectByType<PhoneController>();
@@ -190,8 +190,8 @@ namespace DeliveryService.Mok.Navigation
             Panel("Home indicator",home.transform,210,924,120,5,new Color(.55f,.67f,.71f));
             destinations=Panel("Destinations",root.transform,14,350,512,530,new Color(.06f,.10f,.14f,.98f));
             Label("목적지 선택",destinations.transform,24,12,460,60,34);
-            rows=new Text[4];
-            for(int i=0;i<4;i++){var row=Panel(names[i],destinations.transform,16,82+i*88,480,76,Color.gray);rows[i]=Label("",row.transform,12,0,458,76,32);}
+            rows=new Text[names.Length];
+            for(int i=0;i<names.Length;i++){var row=Panel(names[i],destinations.transform,16,82+i*72,480,64,Color.gray);rows[i]=Label("",row.transform,12,0,458,64,32);}
             notice=Label("",root.transform,30,818,480,64,24);
             var footer=Panel("Controls",root.transform,0,890,540,70,new Color(.045f,.08f,.12f));
             hint=Label("",footer.transform,22,0,496,70,23);footer.SetActive(false);
