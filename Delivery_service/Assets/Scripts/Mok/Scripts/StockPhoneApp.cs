@@ -87,16 +87,16 @@ public sealed class StockPhoneApp : MonoBehaviour {
             companyBoxes[i].gameObject.SetActive(list);var company=m.Companies[i];
             companyBoxes[i].color=i==selection?Teal:new Color(.94f,.97f,.96f);
             companyRows[i].color=i==selection?Color.white:Ink;
-            companyRows[i].text=$"{(i==selection?">  ":"")}{StockCatalog.Names[i]}   {company.price:N0}원\n보유 {company.shares}주";
+            companyRows[i].text=$"{(i==selection?">  ":"")}{StockCatalog.Names[i]}   {company.price:N0}원\n{StockCatalog.Risk[i]} · 보유 {company.shares}주";
         }
         notice.text=result;footer.text="";
         for(int i=0;i<3;i++)Choice(i,"",false,false);
         long gain=(long)c.price*c.shares-c.cost;
         string profit=gain>0?$"지금 팔면 {gain:N0}원 이득":gain<0?$"지금 팔면 {-gain:N0}원 손해":"산 가격과 같아요";
         if(page==Page.Companies){
-            Choice(0,"회사 선택",true);notice.text="회사 소식은 매장 PC 뉴스에서";footer.text="";
+            Choice(0,"회사 선택",true);notice.text="회사 소식은 핸드폰 · PC 뉴스에서";footer.text="";
         }else if(page==Page.Actions){
-            description.text=$"현재 {c.price:N0}원 · 보유 {c.shares}주";
+            description.text=$"{StockCatalog.Risk[selection]} · 현재 {c.price:N0}원\n보유 {c.shares}주";
             summary.text=c.shares>0?profit:"왼쪽은 과거, 오른쪽은 지금";
             DrawGraph(c);
             Choice(0,"사기",action==0);Choice(1,"팔기",action==1);footer.text="";

@@ -156,6 +156,13 @@ public class CarMov : MonoBehaviour
     }
     private IEnumerator KnockbackPlayerRoutine(GameObject player)
     {
+        // Mok 관절 레그돌이 있으면 캡슐 대신 뼈대에 충격을 전달한다.
+        var ragdoll = player.GetComponentInChildren<DeliveryService.Mok.PlayerRagdoll>();
+        if (ragdoll != null && ragdoll.IsReady)
+        {
+            ragdoll.Launch(transform.forward * speed * 1.5f + Vector3.up * 8f);
+            yield break;
+        }
         CharacterController cc = player.GetComponent<CharacterController>();
         PlayerMove pm = player.GetComponent<PlayerMove>();
 

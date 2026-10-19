@@ -6,18 +6,19 @@ public sealed class PlayerCombat : MonoBehaviour {
     public int maximumHealth=100, kickDamage=30;
     public float kickReach=2.1f, kickCooldown=.9f;
     public Transform kickVisual;
+    public PlayerAvatar avatar;
     public Transform hospital;
     public HospitalFade hospitalFade;
     public int HitsTaken {get;private set;}
     public int Health {get;private set;}
     public bool IsDown {get;private set;}
     public bool IsKicking {get;private set;}
-    public bool CanAct => CanReceiveHit && !IsDown && Time.timeScale>0 && Cursor.lockState==CursorLockMode.Locked && (move==null||move.isControllable) && (phone==null||!phone.IsPhoneOpen());
-    public bool CanReceiveHit => isActiveAndEnabled && !(GetComponent<PlayerHiding>()!=null&&GetComponent<PlayerHiding>().IsHidden) && !PoliceControl.IsArrestInProgress && !IsDown && (bikes==null||!bikes.Any(b=>b!=null&&b.isDriven));
+    public bool CanAct => CanReceiveHit && !IsDown && (avatar==null||!avatar.IsPhysical) && Time.timeScale>0 && Cursor.lockState==CursorLockMode.Locked && (move==null||move.isControllable) && (phone==null||!phone.IsPhoneOpen());
+    public bool CanReceiveHit => isActiveAndEnabled && (avatar==null||!avatar.IsPhysical) && !(GetComponent<PlayerHiding>()!=null&&GetComponent<PlayerHiding>().IsHidden) && !PoliceControl.IsArrestInProgress && !IsDown && (bikes==null||!bikes.Any(b=>b!=null&&b.isDriven));
     Camera view;PlayerMove move;PhoneController phone;MotorcycleController[] bikes;CharacterController controller;
     float nextKick, recoveryUntil; Font font;
     public Camera View => view;
-    void Awake(){Health=maximumHealth;view=GetComponent<PlayerInteraction>().InteractionCamera;move=GetComponent<PlayerMove>();controller=GetComponent<CharacterController>();}
+    void Awake(){Health=maximumHealth;view=GetComponent<PlayerInteraction>().InteractionCamera;if(avatar!=null&&view!=null)view.nearClipPlane=Mathf.Min(view.nearClipPlane,.05f);move=GetComponent<PlayerMove>();controller=GetComponent<CharacterController>();}
     void Start(){phone=FindFirstObjectByType<PhoneController>();bikes=FindObjectsByType<MotorcycleController>(FindObjectsSortMode.None);font=MokUIFont.Font;if(kickVisual!=null)kickVisual.gameObject.SetActive(false);}
     void Update(){if(CanAct&&Input.GetMouseButtonDown(0))TryKick();}
 
@@ -32,14 +33,15 @@ public sealed class PlayerCombat : MonoBehaviour {
     }
     public bool TryKick(){if(!CanAct||IsKicking||Time.time<nextKick)return false;nextKick=Time.time+kickCooldown;StartCoroutine(Kick());return true;}
     IEnumerator Kick(){
-        IsKicking=true;if(kickVisual!=null)kickVisual.gameObject.SetActive(true);bool hit=false;
-        for(float t=0;t<.65f;t+=Time.deltaTime){
+        IsKicking=true;if(avatar==null&&kickVisual!=null)kickVisual.gameObject.SetActive(true);bool hit=false;
+        for(float t=0;t<PlayerAvatar.KickDuration;t+=Time.deltaTime){
+            if(!CanAct)break;if(avatar!=null)avatar.PoseKick(t);
             float extension=t<.22f?Mathf.SmoothStep(0,1,t/.22f):1-Mathf.SmoothStep(0,1,(t-.28f)/.37f);
-            if(kickVisual!=null){kickVisual.localPosition=new Vector3(.18f,Mathf.Lerp(-.48f,-.22f,extension),Mathf.Lerp(.12f,.38f,extension));kickVisual.localRotation=Quaternion.Euler(Mathf.Lerp(65,0,extension),0,0);}
-            if(!hit&&t>=.22f){hit=true;if(CanAct)ResolveKick();}
+            if(avatar==null&&kickVisual!=null){kickVisual.localPosition=new Vector3(.18f,Mathf.Lerp(-.48f,-.22f,extension),Mathf.Lerp(.12f,.38f,extension));kickVisual.localRotation=Quaternion.Euler(Mathf.Lerp(65,0,extension),0,0);}
+            if(!hit&&t>=PlayerAvatar.HitTime){hit=true;if(CanAct)ResolveKick();}
             yield return null;
         }
-        if(kickVisual!=null)kickVisual.gameObject.SetActive(false);IsKicking=false;
+        if(kickVisual!=null)kickVisual.gameObject.SetActive(false);if(avatar!=null)avatar.StopKick();IsKicking=false;
     }
     public bool ResolveKick(){
         // 가장 가까운 물체를 우선해 벽 너머로 발차기하지 못하게 한다.
@@ -52,7 +54,7 @@ public sealed class PlayerCombat : MonoBehaviour {
         StartCoroutine(RecoverPlayer(direction));
     }
     IEnumerator RecoverPlayer(Vector3 direction){
-        IsDown=true;
+        IsDown=true;if(avatar!=null)avatar.StopKick();
         if(kickVisual!=null)kickVisual.gameObject.SetActive(false);
         bool respawn=HitsTaken>=3;
         if(respawn)foreach(var citizen in FindObjectsByType<CitizenCombat>(FindObjectsSortMode.None))citizen.EndFight();
@@ -70,7 +72,7 @@ public sealed class PlayerCombat : MonoBehaviour {
         if(respawn){HitsTaken=0;Health=maximumHealth;}
         IsDown=false;recoveryUntil=Time.time+1.25f;
     }
-    void OnDisable(){StopAllCoroutines();IsKicking=false;if(kickVisual!=null)kickVisual.gameObject.SetActive(false);}
+    void OnDisable(){if(avatar!=null)avatar.StopKick();StopAllCoroutines();IsKicking=false;if(kickVisual!=null)kickVisual.gameObject.SetActive(false);}
     void OnDestroy(){}
     void OnGUI(){
         if(Time.timeScale<=0)return;

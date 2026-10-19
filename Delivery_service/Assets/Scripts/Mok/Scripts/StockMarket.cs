@@ -9,7 +9,7 @@ public sealed class StockMarket : MonoBehaviour {
         public readonly List<int> history=new List<int>();
         public float Average => shares>0?(float)cost/shares:0;
     }
-    public sealed class Article {public int day,company;public string title,body;public bool followup;}
+    public sealed class Article {public int day,company;public string title,body;public bool followup;public float priceChange;}
     sealed class Story {public int eventIndex,due;public bool good;public float pressure;}
     public static StockMarket Instance {get;private set;}
     public readonly Company[] Companies=new Company[5];
@@ -20,7 +20,9 @@ public sealed class StockMarket : MonoBehaviour {
     System.Random random;
     DayNightCycle clock;
     int day,newsRound;
-    float tick,marketTrend;
+    float tick,marketTrend,newsTimer;
+    public event Action<Article> ArticlePublished;
+    public event Action NewsPublished;
     public long RealizedProfit {get;private set;}
     public string LastClue {get;private set;}="배달 중 얻은 기업 소식이 아직 없습니다.";
     public int Revision {get;private set;}
@@ -31,10 +33,11 @@ public sealed class StockMarket : MonoBehaviour {
     void Awake(){
         if(Instance!=null&&Instance!=this){Destroy(gameObject);return;}Instance=this;
         Initialize(Environment.TickCount);
+        gameObject.AddComponent<StockAlerts>();
     }
     void Start(){clock=FindFirstObjectByType<DayNightCycle>();if(clock!=null)AdvanceDay(clock.currentDay);}
     public void Initialize(int seed){
-        random=new System.Random(seed);Articles.Clear();lastUsed.Clear();day=0;newsRound=0;tick=0;RealizedProfit=0;
+        random=new System.Random(seed);Articles.Clear();lastUsed.Clear();day=0;newsRound=0;tick=0;newsTimer=0;marketTrend=0;RealizedProfit=0;LastClue="배달 중 얻은 기업 소식이 아직 없습니다.";
         for(int i=0;i<5;i++){Companies[i]=new Company{price=StockCatalog.StartingPrices[i],openingPrice=StockCatalog.StartingPrices[i]};Companies[i].history.Add(Companies[i].price);stories[i]=null;trends[i]=0;}
     }
     void Update(){
@@ -47,13 +50,15 @@ public sealed class StockMarket : MonoBehaviour {
 #endif
         if(day!=clock.currentDay)AdvanceDay(clock.currentDay);
         if(!MarketOpen)return;
+        newsTimer+=Time.deltaTime;
+        if(newsTimer>=StockCatalog.NewsInterval){newsTimer%=StockCatalog.NewsInterval;PublishRound();}
         tick+=Time.deltaTime;
         if(tick>=8){tick%=8;TickPrices();}
     }
     float Noise()=> (float)(random.NextDouble()*2-1);
     public void AdvanceDay(int nextDay){
         if(nextDay<=day)return;
-        day=nextDay;tick=0;marketTrend=Noise()*.00012f;
+        day=nextDay;tick=0;newsTimer=0;marketTrend=Noise()*.00012f;
         foreach(var c in Companies)c.openingPrice=c.price;
         PublishRound();
     }
@@ -63,14 +68,16 @@ public sealed class StockMarket : MonoBehaviour {
         // 만기가 된 사건을 먼저 보도하여 기사와 결과가 어긋나지 않게 한다.
         for(int i=0;i<5&&count<3;i++)if(stories[i]!=null&&stories[i].due<=newsRound){
             var story=stories[i];var e=StockCatalog.Events[story.eventIndex];
-            AddArticle(i,story.good?e.goodTitle:e.badTitle,story.good?e.goodBody:e.badBody,true);
-            trends[i]=(story.good?1:-1)*(.00035f+(float)random.NextDouble()*.0003f);stories[i]=null;count++;
+            float jump=(story.good?1:-1)*StockCatalog.NewsImpact[i]*(.75f+(float)random.NextDouble()*.5f);
+            float actual=ChangePrice(i,jump);
+            AddArticle(i,story.good?e.goodTitle:e.badTitle,story.good?e.goodBody:e.badBody,true,actual);
+            trends[i]=(story.good?1:-1)*(.0008f+(float)random.NextDouble()*.0006f);stories[i]=null;count++;
         }
         var candidates=Enumerable.Range(0,StockCatalog.Events.Length).Where(i=>stories[StockCatalog.Events[i].company]==null&&(!lastUsed.ContainsKey(i)||newsRound-lastUsed[i]>=5)).OrderBy(i=>random.Next()).ToList();
         foreach(int index in candidates){
             if(count>=3)break;var e=StockCatalog.Events[index];if(stories[e.company]!=null)continue;
             bool good=random.NextDouble()<.5;
-            stories[e.company]=new Story{eventIndex=index,due=newsRound+random.Next(1,4),good=good,pressure=Noise()*.00045f};lastUsed[index]=newsRound;
+            stories[e.company]=new Story{eventIndex=index,due=newsRound+random.Next(1,4),good=good,pressure=Noise()*.0008f};lastUsed[index]=newsRound;
             string headline=random.Next(2)==0?e.title:e.alternate;
             AddArticle(e.company,headline,e.body,false);count++;
         }
@@ -79,13 +86,15 @@ public sealed class StockMarket : MonoBehaviour {
             if(count>=2)break;var e=StockCatalog.Events[stories[i].eventIndex];
             AddArticle(i,e.title+"…후속 상황 확인 중","앞서 보도한 사안에 대해 회사가 추가 확인을 진행 중이다. "+e.body+" 구체적인 결과는 아직 발표되지 않았다.",false);count++;
         }
-        Revision++;
+        Revision++;NewsPublished?.Invoke();
     }
-    void AddArticle(int company,string title,string body,bool followup){
+    void AddArticle(int company,string title,string body,bool followup,float priceChange=0){
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
         if(publishingTest)title="[테스트] "+title;
 #endif
-        Articles.Insert(0,new Article{day=day,company=company,title=title,body=body,followup=followup});
+        var article=new Article{day=day,company=company,title=title,body=body,followup=followup,priceChange=priceChange};
+        if(followup)article.body+=$"\n\n발표 직후 주가 {priceChange*100:+0.0;-0.0;0.0}% (현재 가격과 다를 수 있음)";
+        Articles.Insert(0,article);ArticlePublished?.Invoke(article);
         if(Articles.Count>90)Articles.RemoveAt(Articles.Count-1);
     }
     public void TickPrices(){
@@ -93,10 +102,20 @@ public sealed class StockMarket : MonoBehaviour {
             var c=Companies[i];float pressure=stories[i]!=null?stories[i].pressure:0;
             // 전체 시장, 기업 흐름, 작은 잡음을 합친다. 매수 여부는 가격 계산에 사용하지 않는다.
             float change=marketTrend+trends[i]+pressure+Noise()*StockCatalog.Volatility[i];
-            c.price=Mathf.Clamp(Mathf.RoundToInt(c.price*(1+change)),Mathf.Max(10,Mathf.RoundToInt(c.openingPrice*.8f)),Mathf.RoundToInt(c.openingPrice*1.2f));
-            trends[i]*=.996f;c.history.Add(c.price);if(c.history.Count>100)c.history.RemoveAt(0);
+            ChangePrice(i,change);
+            trends[i]*=.97f;
         }
         Revision++;
+    }
+    // 하루 누적 변동과 장기 플레이의 정수 범위를 제한한다.
+    float ChangePrice(int index,float change){
+        var c=Companies[index];int previous=c.price;
+        float limit=StockCatalog.DailyLimit[index];
+        int lower=Mathf.Max(10,Mathf.RoundToInt(c.openingPrice*(1-limit)));
+        int upper=Mathf.Min(1000000,Mathf.RoundToInt(c.openingPrice*(1+limit)));
+        c.price=Mathf.Clamp(Mathf.RoundToInt(c.price*(1+change)),lower,upper);
+        c.history.Add(c.price);if(c.history.Count>100)c.history.RemoveAt(0);
+        return (float)c.price/previous-1;
     }
     public bool Trade(int index,int quantity,bool buy,int quotedPrice,out string message){
         message="거래할 수 없습니다.";
@@ -122,7 +141,7 @@ public sealed class StockMarket : MonoBehaviour {
         var money=MoneyManager.Instance;if(money==null||money.currentMoney>=0)return true;
         // 파산 직전에는 부족한 현금만큼 보유 주식을 처분한다.
         for(int i=0;i<5&&money.currentMoney<0;i++){
-            var c=Companies[i];int quantity=(int)Math.Min(c.shares,(-(long)money.currentMoney+c.price-1)/c.price);if(quantity==0)continue;
+            var c=Companies[i];int quantity=(int)Math.Min(Math.Min(c.shares,int.MaxValue/c.price),(-(long)money.currentMoney+c.price-1)/c.price);if(quantity==0)continue;
             long basis=quantity==c.shares?c.cost:(long)Math.Round((double)c.cost*quantity/c.shares);
             money.TransferInvestmentMoney(quantity*c.price);RealizedProfit+=(long)quantity*c.price-basis;c.cost-=basis;c.shares-=quantity;
         }
@@ -145,7 +164,7 @@ public sealed class StockMarket : MonoBehaviour {
         if(clock!=null&&day<clock.currentDay)AdvanceDay(clock.currentDay);
         publishingTest=true;
         try{PublishRound();}finally{publishingTest=false;}
-        ShowTestNotice("F9 · 새 기사/후속 보도 생성 — PC 뉴스에서 확인");
+        ShowTestNotice("F9 · 새 기사/후속 보도 생성 — PC 또는 핸드폰 뉴스에서 확인");
     }
     public void TestPriceTicks(){
         if(Time.timeScale<=0)return;

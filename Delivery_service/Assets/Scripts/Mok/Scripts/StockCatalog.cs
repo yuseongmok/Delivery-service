@@ -8,7 +8,12 @@ public static class StockCatalog {
     public static readonly string[] Names={"모터웍스","시티에너지","퀵박스","치즈팜","네온테크"};
     public static readonly string[] Sectors={"오토바이·부품","주유·연료","배달·물류","피자 식재료","전자기기"};
     public static readonly int[] StartingPrices={800,600,450,350,1100};
-    public static readonly float[] Volatility={.004f,.0025f,.004f,.002f,.007f};
+    // 회사별 위험도와 사건 변동 폭은 밸런스 조정용이다.
+    public static readonly string[] Risk={"성장형","성장형","투기형","안정형","투기형"};
+    public static readonly float[] Volatility={.008f,.007f,.014f,.003f,.017f};
+    public static readonly float[] NewsImpact={.20f,.17f,.34f,.07f,.40f};
+    public static readonly float[] DailyLimit={.40f,.35f,.65f,.15f,.75f};
+    public const float NewsInterval=180f, EmergencyThreshold=.20f;
     // 첫 보도와 두 가지 후속 결과가 같은 사건을 설명한다.
     public static readonly StockEvent[] Events={
         new StockEvent(0,"신형 바이크 예약 매진","새 바이크 주문 몰려…출고 일정 주목","신형 바이크의 초기 예약 물량이 소진됐다. 추가 생산을 검토 중이지만 핵심 부품 공급 일정은 확정되지 않았다.","추가 부품 확보…예약 차량 출고 시작","대체 공급 계약이 체결되며 출고가 시작됐다. 회사는 남은 예약 물량도 순차적으로 납품할 계획이다.","출고 연기에 예약 취소 증가","부품 입고 지연으로 출고가 연기됐다. 예약 취소가 늘면서 예상 매출 달성에 차질이 생겼다."),

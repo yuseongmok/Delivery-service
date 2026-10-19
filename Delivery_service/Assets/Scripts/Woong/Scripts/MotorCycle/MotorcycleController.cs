@@ -339,6 +339,15 @@ public class MotorcycleController : MonoBehaviour
         playerToFly.transform.position = transform.position + (transform.forward * 0.5f) + (Vector3.up * 1.5f);
         playerToFly.SetActive(true);
 
+        // 플레이어 모델의 관절 레그돌로 사고 연출과 복구를 위임한다.
+        var ragdoll = playerToFly.GetComponentInChildren<DeliveryService.Mok.PlayerRagdoll>();
+        if (ragdoll != null && ragdoll.IsReady)
+        {
+            Vector3 direction = customDirection == default ? transform.forward : customDirection.normalized;
+            ragdoll.Launch(direction * speed * 1.2f + Vector3.up * 8f);
+            rider = null;
+            yield break;
+        }
         yield return new WaitForFixedUpdate();
 
         CharacterController cc = playerToFly.GetComponent<CharacterController>();
