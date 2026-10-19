@@ -35,6 +35,13 @@ public class MotorcycleDurability : MonoBehaviour
         UpdateUI(); 
     }
 
+    public void RepairFull()
+    {
+        currentDurability = maxDurability;
+        if (smokeEffectObject != null) smokeEffectObject.SetActive(false);
+        UpdateUI();
+    }
+
     private void UpdateUI()
     {
         if (durabilityGaugeUI != null)  

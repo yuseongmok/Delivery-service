@@ -35,10 +35,15 @@ public class WeatherManager : MonoBehaviour
     public DayNightCycle dayNightCycle;
     public MotorcycleController motorcycle;
 
+
     private float currentDropletAlpha = 0f;
     private bool isWiping = false;
 
     private float currentDizzyAlpha = 0f;
+
+    private int lastUpdatedDay = -1;
+
+
     private void Start()
     {
         if (waterDropletUI != null)
@@ -59,11 +64,12 @@ public class WeatherManager : MonoBehaviour
 
     private void Update()
     {
-        if (dayNightCycle != null && dayNightCycle.currentDay < rainStartDay)
+        if (dayNightCycle != null && dayNightCycle.currentDay != lastUpdatedDay)
         {
-            if (dayNightCycle.currentDay < rainStartDay) isRaining = false;
-            if (dayNightCycle.currentDay < snowStartDay) isSnowing = false;
+            DetermineDailyWeather();
+            lastUpdatedDay = dayNightCycle.currentDay;
         }
+        HandleCheatCodes();
         if (motorcycle != null)
         {
             motorcycle.isSnowing = this.isSnowing;
@@ -72,6 +78,82 @@ public class WeatherManager : MonoBehaviour
         HandleRainState();
         HandleWaterDroplets();
         HandleDizzyEffect();
+    }
+
+    private void HandleCheatCodes()
+    {
+        if (motorcycle != null && motorcycle.isDriven)
+        {
+            if (Input.GetKeyDown(KeyCode.BackQuote))
+            {
+                isRaining = false;
+                isSnowing = false;
+                isTyphoon = false;
+                Debug.Log("¸¼À½");
+            }
+            else if (Input.GetKeyDown(KeyCode.Alpha1))
+            {
+                isRaining = true;
+                isSnowing = false;
+                isTyphoon = false;
+                Debug.Log("ºñ");
+            }
+            else if (Input.GetKeyDown(KeyCode.Alpha2))
+            {
+                isRaining = false;
+                isSnowing = true;
+                isTyphoon = false;
+                Debug.Log("´«");
+            }
+            else if (Input.GetKeyDown(KeyCode.Alpha3))
+            {
+                isRaining = false;
+                isSnowing = false;
+                isTyphoon = true;
+                Debug.Log("ÅÂÇ³");
+            }
+        }
+    }
+    private void DetermineDailyWeather()
+    {
+        int today = dayNightCycle.currentDay;
+
+        // ÀÏ´Ü ¸ðµç ³¯¾¾¸¦ ²ô±â
+        isRaining = false;
+        isSnowing = false;
+        isTyphoon = false;
+
+        if (today == rainStartDay) { isRaining = true; return; }
+        if (today == snowStartDay) { isSnowing = true; return; }
+        if (today == typhoonStartDay) { isTyphoon = true; return; }
+
+        // ±× ¿ÜÀÇ ³¯¿¡´Â ·£´ýÀ¸·Î °áÁ¤ (¿øÇÏ´Â È®·ü·Î Á¶Àý °¡´É)
+        int randomChance = Random.Range(0, 100);
+
+        if (randomChance < 40)
+        {
+            // 40% È®·ü·Î ¸¼À½ 
+        }
+        else if (randomChance < 60 && today >= rainStartDay)
+        {
+            // 20% È®·ü·Î ºñ
+            isRaining = true;
+        }
+        else if (randomChance < 80 && today >= snowStartDay)
+        {
+            // 20% È®·ü·Î ´«
+            isSnowing = true;
+        }
+        else if (today >= typhoonStartDay)
+        {
+            // 20% È®·ü·Î ÅÂÇ³
+            isTyphoon = true;
+        }
+        else if (today >= rainStartDay)
+        {
+            // ¾ÆÁ÷ ´«/ÅÂÇ³ÀÌ ÇØ±Ý ¾È µÈ ³¯Â¥¿¡ °É·È´Ù¸é ´ë½Å ºñ¸¦ ³»¸²
+            isRaining = true;
+        }
     }
     public void TriggerDizzyEffect()
     {
