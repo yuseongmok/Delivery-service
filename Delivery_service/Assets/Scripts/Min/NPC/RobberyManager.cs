@@ -11,7 +11,7 @@ public class RobberyManager : MonoBehaviour
     [SerializeField] Transform playerTarget;
     [Header("토핑별 출몰 설정 · 현실 초")]
     [SerializeField] float lowInterval=40f, mediumInterval=30f, highInterval=20f;
-    [SerializeField] float lowChance=30f, mediumChance=40f, highChance=50f;
+    [SerializeField] float lowChance=45f, mediumChance=55f, highChance=65f;
     [SerializeField] float encounterCooldown=45f;
     [Header("도보 출몰 보정 · 일반 지역")]
     [SerializeField, Range(.1f,1f)] float footIntervalMultiplier=.75f;
@@ -22,8 +22,9 @@ public class RobberyManager : MonoBehaviour
     RobberyDistrict district;
     float districtProtectedUntil;
     public bool InHighRiskDistrict => district!=null&&player!=null&&district.Contains(RobberAI.RiddenCargo!=null?RobberAI.RiddenCargo.transform.position:player.transform.position);
-    public int ActiveLimit => InHighRiskDistrict?Mathf.Max(2,districtMaxActive):1;
-    bool HasWaveCapacity => ActiveLimit-SceneActors.Robbers.Count()>=(InHighRiskDistrict?2:1);
+    public int ActiveLimit => InHighRiskDistrict?5:2;
+    int RandomRobberCount => SceneActors.Robbers.Count(r=>r.GetComponent<SlumRobberCombat>()==null||!r.GetComponent<SlumRobberCombat>().FixedGuard);
+    bool HasWaveCapacity => !InHighRiskDistrict&&RandomRobberCount==0;
     float encounterProgress;
     BoxCollider shopFloor;
     public static bool HasCompletedDelivery {get;private set;}
@@ -118,12 +119,12 @@ public class RobberyManager : MonoBehaviour
     }
 #endif
     bool TrySpawn(bool testSpawn=false){
-        bool inDistrict=InHighRiskDistrict;
-        int minimum=inDistrict?2:1;
-        int available=ActiveLimit-SceneActors.Robbers.Count();
+        // 빈민촌은 씬의 고정 5인 배치가 담당한다. 일반 강도 인원에는 포함하지 않는다.
+        if(InHighRiskDistrict)return false;
+        const int minimum=2;
+        int available=ActiveLimit-RandomRobberCount;
         if(available<minimum)return false;
-        int waveMin=Mathf.Max(2,districtWaveMin);
-        int count=inDistrict?Random.Range(waveMin,Mathf.Max(waveMin,districtWaveMax)+1):1;
+        const int count=2;
         var positions=new List<Vector3>(Mathf.Min(count,available));
         // 최소 인원 위치를 먼저 확보해, 한 명만 생성되는 일을 막는다.
         for(int n=0;n<Mathf.Min(count,available);n++){
@@ -134,9 +135,7 @@ public class RobberyManager : MonoBehaviour
             active=Instantiate(robberPrefab,position,Quaternion.identity).GetComponent<RobberAI>();
             active.IsTestSpawn=testSpawn;
             active.GetComponent<NavMeshAgent>().Warp(position);active.SetTarget(playerTarget);
-            if(inDistrict)active.gameObject.AddComponent<SlumRobberCombat>();
         }
-        if(inDistrict)districtProtectedUntil=Time.unscaledTime+districtCooldown;
         return true;
     }
     bool TryFindSpawnPoint(bool testSpawn,List<Vector3> planned,out Vector3 position){

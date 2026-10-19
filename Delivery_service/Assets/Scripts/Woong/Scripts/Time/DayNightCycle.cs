@@ -37,7 +37,7 @@ public class DayNightCycle : MonoBehaviour
     [Header("Time Settings")]
     [Range(0f, 24f)]
     public float currentTime = 6f;
-    public float timeMultiplier = 1000f;
+    public float timeMultiplier = 108f;
 
     [Header("Lights")]
     public Light sun;

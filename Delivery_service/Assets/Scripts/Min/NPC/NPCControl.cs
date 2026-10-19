@@ -33,6 +33,7 @@ public class NPCControl : MonoBehaviour
 
     // 전투에서 사망·리스폰 이벤트 없이 기존 레그돌을 사용한다.
     public bool ExternalControl { get; set; }
+    public void SetCombatRagdollCenter(Transform bone){mainBone=bone;}
     public bool IsKnockedDown { get; private set; }
     public bool IsDead => isDead;
     public Transform RagdollCenter => mainBone != null ? mainBone : transform;

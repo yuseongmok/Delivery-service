@@ -19,6 +19,9 @@ public class OrderManager : MonoBehaviour {
     private int generatedToday,nextOrderNumber=1,orderNumberDay=-1;
     private bool prevShopOpenState;
     private double deliveryDeadlineMinutes;
+    // 하루 길이와 무관하게 배달은 기존 20분 하루(54배속)의 실제 여유를 유지한다.
+    public const float DeliveryTimeMultiplier=54f;
+    private double deliveryClockMinutes;
     private readonly List<double> refillAt=new();
     public static int CapacityForRating(float rating)=>Mathf.RoundToInt(rating*100)>=500?5:rating>=4?4:3;
     public static int PendingCapacity=>CapacityForRating(ShopReputation.Instance.Rating);
@@ -35,9 +38,9 @@ public class OrderManager : MonoBehaviour {
     public string CurrentTargetDeliveryID=>currentTargetDeliveryID;
     public DeliveryPoint CurrentTargetDeliveryPoint=>deliveryPoints.Find(p=>p!=null&&p.DeliveryPointID==currentTargetDeliveryID);
     public System.Collections.ObjectModel.ReadOnlyCollection<PizzaOrder> PendingOrders=>pendingOrders.AsReadOnly();
-    public float RemainingDeliveryMinutes=>!HasActiveOrder?0:(float)System.Math.Max(0,deliveryDeadlineMinutes-GameMinutes);
-    public float ElapsedDeliveryMinutes=>HasActiveOrder?(float)System.Math.Max(0,GameMinutes-(deliveryDeadlineMinutes-deliveryTimeLimitMinutes)):0;
-    public float SignedDeliveryMinutes=>HasActiveOrder?(float)(deliveryDeadlineMinutes-GameMinutes):0;
+    public float RemainingDeliveryMinutes=>!HasActiveOrder?0:(float)System.Math.Max(0,deliveryDeadlineMinutes-deliveryClockMinutes);
+    public float ElapsedDeliveryMinutes=>HasActiveOrder?(float)System.Math.Max(0,deliveryClockMinutes-(deliveryDeadlineMinutes-deliveryTimeLimitMinutes)):0;
+    public float SignedDeliveryMinutes=>HasActiveOrder?(float)(deliveryDeadlineMinutes-deliveryClockMinutes):0;
     public string LastDeliveryFailure {get;private set;}
     public int LastDeliveredPizzaIndex {get;private set;}=-1;
     public event System.Action OrdersChanged;
@@ -47,6 +50,7 @@ public class OrderManager : MonoBehaviour {
     void Update(){
         if(dayNightCycle==null)dayNightCycle=FindFirstObjectByType<DayNightCycle>();
         if(dayNightCycle==null)return;
+        if(dayNightCycle.isShopOpen)deliveryClockMinutes+=Time.deltaTime*DeliveryTimeMultiplier/60d;
         if(dayNightCycle.isShopOpen&&!prevShopOpenState)OnShopOpened();
         prevShopOpenState=dayNightCycle.isShopOpen;
         if(dayNightCycle.isShopOpen){
@@ -94,7 +98,7 @@ public class OrderManager : MonoBehaviour {
     void HandleAccept(PizzaOrder order){
         if(order==null||HasActiveOrder||!pendingOrders.Contains(order)||dayNightCycle==null||!dayNightCycle.isShopOpen)return;
         if(!deliveryPoints.Any(p=>p!=null&&p.isActiveAndEnabled&&p.DeliveryPointID==order.destinationID))return;
-        activeOrder=order;currentTargetDeliveryID=order.destinationID;RecommendedDeliveryMinutes=DeliveryTravelTime.Recommend(CurrentTargetDeliveryPoint,out float routeMeters);DeliveryRouteMeters=routeMeters;deliveryDeadlineMinutes=GameMinutes+deliveryTimeLimitMinutes;pendingOrders.Remove(order);ScheduleNextOrder();
+        activeOrder=order;currentTargetDeliveryID=order.destinationID;RecommendedDeliveryMinutes=DeliveryTravelTime.Recommend(CurrentTargetDeliveryPoint,out float routeMeters);DeliveryRouteMeters=routeMeters;deliveryDeadlineMinutes=deliveryClockMinutes+deliveryTimeLimitMinutes;pendingOrders.Remove(order);ScheduleNextOrder();
         if(currentOrderUI!=null)currentOrderUI.DisplayElapsedOrder(activeOrder,currentTargetDeliveryID,ElapsedDeliveryMinutes,RecommendedDeliveryMinutes);Changed();
     }
     void HandleDecline(PizzaOrder order){if(dayNightCycle==null||!dayNightCycle.isShopOpen||!pendingOrders.Remove(order))return;ShopReputation.Instance.Declined();ScheduleNextOrder();Changed();}

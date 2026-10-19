@@ -21,6 +21,7 @@ public sealed class CitizenCombat : MonoBehaviour {
     public bool IsAggressive => target != null && Health > 0 && !npc.IsDead;
     public bool IsPunching => punching;
     public NPCControl Npc => npc;
+    public bool ExternalAttackControl {get;set;}
     NPCControl npc; NavMeshAgent agent; Animator animator; PlayerCombat target;
     float nextPunch, repath, punchStarted, oldSpeed, oldStopping; int oldMask;
     bool punching; Transform upper, lower, hand, leftUpper, leftLower, leftHand;
@@ -59,6 +60,7 @@ public sealed class CitizenCombat : MonoBehaviour {
         if(agent!=null){agent.speed=oldSpeed;agent.stoppingDistance=oldStopping;agent.areaMask=oldMask;if(agent.enabled&&agent.isOnNavMesh){agent.isStopped=false;agent.ResetPath();}}
     }
     void Update() {
+        if(ExternalAttackControl)return;
         if(npc.IsDead){punching=false;return;}
         if(!IsAggressive||npc.IsKnockedDown)return;
         if(target.IsDown){if(agent.enabled&&agent.isOnNavMesh)agent.isStopped=true;return;}
@@ -87,6 +89,7 @@ public sealed class CitizenCombat : MonoBehaviour {
     }
     // 기존 뼈대를 조정하며 팀원의 걷기 Animator와 컨트롤러는 교체하지 않는다.
     void LateUpdate(){
+        if(ExternalAttackControl)return;
         if(!IsAggressive||npc.IsKnockedDown||npc.IsDead||animator==null||!animator.enabled)return;
         float t=punching?Time.time-punchStarted:0;
         float thrust=punching?(t<.28f?0:t<.40f?Mathf.InverseLerp(.28f,.40f,t):1-Mathf.InverseLerp(.40f,.72f,t)):0;

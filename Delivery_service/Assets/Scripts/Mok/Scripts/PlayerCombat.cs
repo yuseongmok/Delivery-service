@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Linq;
 using UnityEngine;
 namespace DeliveryService.Mok {
@@ -10,11 +10,16 @@ public sealed class PlayerCombat : MonoBehaviour {
     public Transform hospital;
     public HospitalFade hospitalFade;
     public int HitsTaken {get;private set;}
+    public int BulletHitsTaken {get;private set;}
+    public bool CanReceiveBullet=>CanReceiveHit&&Time.time>=recoveryUntil;
+    public bool ReceiveBullet(Vector3 direction){if(!CanReceiveBullet)return false;BulletHitsTaken++;if(BulletHitsTaken>=3)HitsTaken=2;ReceivePunch(34,direction);return true;}
     public int Health {get;private set;}
     public bool IsDown {get;private set;}
     public bool IsKicking {get;private set;}
     public bool CanAct => CanReceiveHit && !IsDown && (avatar==null||!avatar.IsPhysical) && Time.timeScale>0 && Cursor.lockState==CursorLockMode.Locked && (move==null||move.isControllable) && (phone==null||!phone.IsPhoneOpen());
-    public bool CanReceiveHit => isActiveAndEnabled && (avatar==null||!avatar.IsPhysical) && !(GetComponent<PlayerHiding>()!=null&&GetComponent<PlayerHiding>().IsHidden) && !PoliceControl.IsArrestInProgress && !IsDown && (bikes==null||!bikes.Any(b=>b!=null&&b.isDriven));
+    public bool WaterRescueActive {get;set;}
+    public void ResetAfterWaterRescue(){HitsTaken=0;BulletHitsTaken=0;Health=maximumHealth;recoveryUntil=Time.time+2;}
+    public bool CanReceiveHit => !WaterRescueActive && isActiveAndEnabled && (avatar==null||!avatar.IsPhysical) && !(GetComponent<PlayerHiding>()!=null&&GetComponent<PlayerHiding>().IsHidden) && !PoliceControl.IsArrestInProgress && !IsDown && (bikes==null||!bikes.Any(b=>b!=null&&b.isDriven));
     Camera view;PlayerMove move;PhoneController phone;MotorcycleController[] bikes;CharacterController controller;
     float nextKick, recoveryUntil; Font font;
     public Camera View => view;
@@ -47,7 +52,15 @@ public sealed class PlayerCombat : MonoBehaviour {
     public bool ResolveKick(){
         // 가장 가까운 물체를 우선해 벽 너머로 발차기하지 못하게 한다.
         var hits=Physics.SphereCastAll(view.transform.position,.22f,view.transform.forward,kickReach,~0,QueryTriggerInteraction.Ignore).OrderBy(h=>h.distance);
-        foreach(var h in hits){if(IsHeldObject(h.transform))continue;var robber=h.collider.GetComponentInParent<RobberAI>();if(robber!=null)return robber.ReceiveKick(view.transform.forward);var npc=h.collider.GetComponentInParent<CitizenCombat>();return npc!=null&&npc.ReceiveKick(this,view.transform.forward,kickDamage);}return false;
+        foreach(var h in hits){
+            if(IsHeldObject(h.transform))continue;
+            var police=h.collider.GetComponentInParent<PoliceCombat>();
+            var robber=h.collider.GetComponentInParent<RobberAI>();
+            var npc=h.collider.GetComponentInParent<CitizenCombat>();
+            bool landed=police!=null?police.ReceiveHit(this,view.transform.forward,kickDamage):robber!=null?robber.ReceiveKick(view.transform.forward):npc!=null&&npc.ReceiveKick(this,view.transform.forward,kickDamage);
+            if(landed)KickImpactFeedback.Play(this);
+            return landed;
+        }return false;
     }
     public void ReceivePunch(int damage,Vector3 direction,bool slumRobber=false){
         if(!CanReceiveHit||Time.time<recoveryUntil)return;
@@ -59,6 +72,7 @@ public sealed class PlayerCombat : MonoBehaviour {
         IsDown=true;if(avatar!=null)avatar.StopKick();
         if(kickVisual!=null)kickVisual.gameObject.SetActive(false);
         bool respawn=HitsTaken>=3;
+        if(respawn)FindFirstObjectByType<PoliceManager>()?.CancelReplacements();
         if(respawn)foreach(var citizen in FindObjectsByType<CitizenCombat>(FindObjectsSortMode.None))citizen.EndFight();
         Coroutine blackout=respawn&&hospitalFade!=null?StartCoroutine(hospitalFade.DarkenAfter(1.5f)):null;
         yield return PlayerKnockdown.Roll(gameObject,3.5f,direction,respawn?hospital:null);
@@ -71,7 +85,7 @@ public sealed class PlayerCombat : MonoBehaviour {
             yield return hospitalFade.WakeUp();
             if(move!=null)move.enabled=wasMoving;if(look!=null)look.enabled=wasLooking;
         }
-        if(respawn){HitsTaken=0;Health=maximumHealth;}
+        if(respawn){HitsTaken=0;BulletHitsTaken=0;Health=maximumHealth;foreach(var officer in SceneActors.Police)Destroy(officer.gameObject);}
         IsDown=false;recoveryUntil=Time.time+1.25f;
     }
     void OnDisable(){if(avatar!=null)avatar.StopKick();StopAllCoroutines();IsKicking=false;if(kickVisual!=null)kickVisual.gameObject.SetActive(false);}

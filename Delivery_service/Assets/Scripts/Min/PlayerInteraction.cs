@@ -8,6 +8,8 @@ public class PlayerInteraction : MonoBehaviour
     [SerializeField] private LayerMask interactLayer;
 
     public Camera InteractionCamera => playerCamera;
+    public float InteractionDistance => interactDistance;
+    public int InteractionLayers => interactLayer.value;
 
     private ToppingInventory inventory;
 

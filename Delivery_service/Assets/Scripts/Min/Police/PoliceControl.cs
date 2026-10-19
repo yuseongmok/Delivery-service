@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.UI;
@@ -22,7 +22,8 @@ public class PoliceControl : MonoBehaviour
     [SerializeField] private float arrestDistance = 2.5f;
     [SerializeField] private float hiddenArrestDistance = 10f;
     [SerializeField] private float fadeDuration = 1.0f;
-    [SerializeField] private int fineAmount = 500;
+    [SerializeField] private int fineAmount = 500; // 이전 씬 직렬화 호환용
+    public static int RollFine()=>Random.Range(5000,15001);
 
     private Transform policeStationSpawn;
     private Image fadeScreen;
@@ -31,6 +32,7 @@ public class PoliceControl : MonoBehaviour
     private float nextPathUpdateTime;
     private NavMeshPath chasePath;
 
+    public void LimitChaseTime(float remaining){totalChaseTimer=Mathf.Min(totalChaseTimer,Mathf.Max(0,remaining));}
     public float RemainingChaseSeconds => Mathf.Max(0f, totalChaseTimer);
     public bool HasVisualContact => isActiveAndEnabled && !isArresting && isInSight && RemainingChaseSeconds > 0;
     private Vector3 lastKnownPosition;
@@ -57,6 +59,7 @@ public class PoliceControl : MonoBehaviour
     private void Awake()
     {
         DeliveryService.Mok.SceneActors.Register(this);
+        if(GetComponent<DeliveryService.Mok.PoliceCombat>()==null)gameObject.AddComponent<DeliveryService.Mok.PoliceCombat>();
     }
 
     public void Initialize(Transform targetPlayer, float angleOffset, float distOffset, Transform stationSpawn = null, Image fadeUI = null)
@@ -146,6 +149,8 @@ public class PoliceControl : MonoBehaviour
     private void Update()
     {
         if (isArresting) return;
+        var fighter=GetComponent<DeliveryService.Mok.PoliceCombat>();
+        if(fighter!=null&&fighter.IsDown)return;
 
         Transform activeTarget = GetActivePlayerTarget();
         if (activeTarget == null) return;
@@ -205,7 +210,7 @@ public class PoliceControl : MonoBehaviour
         float currentArrestDistance = (isCurrentlyHidden && sawPlayerHide) ? hiddenArrestDistance : arrestDistance;
 
         float flatDistance = GetFlatDistance(transform.position, activeTarget.position);
-        if ((!isCurrentlyHidden || sawPlayerHide) && flatDistance <= currentArrestDistance)
+        if ((fighter==null||!fighter.Armed) && (!isCurrentlyHidden || sawPlayerHide) && flatDistance <= currentArrestDistance)
         {
             StartCoroutine(ArrestRoutine(activeTarget));
             return;
@@ -228,6 +233,7 @@ public class PoliceControl : MonoBehaviour
     {
         if (isArresting) yield break;
         isArresting = true;
+        FindFirstObjectByType<PoliceManager>()?.CancelReplacements();
         ownsArrest = true;
         DeliveryService.Mok.ShopReputation.Instance.Penalize(true);
 
@@ -315,7 +321,7 @@ public class PoliceControl : MonoBehaviour
         // 벌금 차감
         if (MoneyManager.Instance != null)
         {
-            MoneyManager.Instance.AccidentMoney(fineAmount);
+            MoneyManager.Instance.AccidentMoney(RollFine());
         }
 
         // 추격 중인 나머지 경찰 제거
@@ -395,6 +401,8 @@ public class PoliceControl : MonoBehaviour
 
     private void MoveToFlankPosition(Transform target, bool sawHide)
     {
+        var fighter=GetComponent<DeliveryService.Mok.PoliceCombat>();
+        if(fighter!=null&&fighter.Armed&&fighter.HoldForShot(target))return;
         if (agent == null || !agent.isOnNavMesh) return;
 
         Vector3 destination;
@@ -426,6 +434,7 @@ public class PoliceControl : MonoBehaviour
 
     private void DespawnPolice()
     {
+        FindFirstObjectByType<PoliceManager>()?.ReportEscape(this);
         Destroy(gameObject);
     }
 }

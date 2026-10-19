@@ -30,12 +30,13 @@ public sealed class PlayerAvatar : MonoBehaviour {
         float length=Vector3.Distance(hip.position,knee.position)+Vector3.Distance(knee.position,foot.position);
         float scale=Mathf.Max(.001f,transform.lossyScale.y);float leg=length/scale;
         Vector3 hipLocal=transform.InverseTransformPoint(hip.position);
-        float t=kickTime;Vector3 tuck=new Vector3(restFoot.x,hipLocal.y-leg*.32f,hipLocal.z+leg*.32f);
-        Vector3 extended=new Vector3(restFoot.x,hipLocal.y+leg*.08f,hipLocal.z+leg*.90f);
+        // 정면 시야의 아래쪽에 신발이 들어오도록 무릎을 높이고 상단으로 뻗는다.
+        float t=kickTime;Vector3 tuck=new Vector3(restFoot.x,hipLocal.y-leg*.05f,hipLocal.z+leg*.40f);
+        Vector3 extended=new Vector3(restFoot.x,hipLocal.y+leg*.52f,hipLocal.z+leg*.84f);
         Vector3 local=t<.12f?Vector3.Lerp(restFoot,tuck,Mathf.SmoothStep(0,1,t/.12f)):
             t<HitTime?Vector3.Lerp(tuck,extended,Mathf.SmoothStep(0,1,(t-.12f)/(HitTime-.12f))):
-            t<.29f?extended:t<.46f?Vector3.Lerp(extended,tuck,Mathf.SmoothStep(0,1,(t-.29f)/.17f)):
-            Vector3.Lerp(tuck,restFoot,Mathf.SmoothStep(0,1,(t-.46f)/(KickDuration-.46f)));
+            t<.34f?extended:t<.49f?Vector3.Lerp(extended,tuck,Mathf.SmoothStep(0,1,(t-.34f)/.15f)):
+            Vector3.Lerp(tuck,restFoot,Mathf.SmoothStep(0,1,(t-.49f)/(KickDuration-.49f)));
         Vector3 target=transform.TransformPoint(local),origin=hip.position;
         float a=Vector3.Distance(origin,knee.position),b=Vector3.Distance(knee.position,foot.position);
         Vector3 direction=(target-origin).normalized;float d=Mathf.Clamp(Vector3.Distance(target,origin),.02f,a+b-.001f);

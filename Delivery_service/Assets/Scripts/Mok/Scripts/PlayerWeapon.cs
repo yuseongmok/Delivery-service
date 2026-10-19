@@ -25,17 +25,19 @@ public sealed class PlayerWeapon : MonoBehaviour {
   if(!throwing&&Equipped==WeaponKind.Pistol&&Ammo<=0){DeliveryRequestNotice.Show("탄약이 없습니다. 무기점에서 구매하세요.");return false;}
   nextAttack=Time.time+WeaponCatalog.Cooldown[i];animationStart=Time.time;animationEnd=Time.time+(Equipped==WeaponKind.Pistol?.15f:WeaponCatalog.Cooldown[i]*.65f);
   if(throwing){Throw();return true;}
-  if(Equipped==WeaponKind.Pistol){Ammo--;Resolve();StartCoroutine(ShotFlash());}else StartCoroutine(Swing(Equipped));return true;}
+  if(Equipped==WeaponKind.Pistol){Ammo--;GunshotSound.Play(gameObject,false);Resolve();StartCoroutine(ShotFlash());}else StartCoroutine(Swing(Equipped));return true;}
  IEnumerator Swing(WeaponKind kind){yield return new WaitForSeconds(WeaponCatalog.Cooldown[(int)kind]*.23f);if(Combat.CanAct&&Equipped==kind&&HasInHand)Resolve();}
  bool Ignore(Transform t){var inv=GetComponent<ToppingInventory>();return t.IsChildOf(transform)||(inv!=null&&((inv.HoldPoint!=null&&t.IsChildOf(inv.HoldPoint))||(inv.HeldPizza!=null&&t.IsChildOf(inv.HeldPizza.transform))));}
  public int Resolve(){if(Equipped==WeaponKind.None)return 0;var cam=Combat.View;int i=(int)Equipped;var seen=new HashSet<int>();int count=0;
   // 참치는 부채꼴 여러 광선으로 쓸어 치고, 각 광선은 첫 장애물에서 멈춘다.
   int rays=Equipped==WeaponKind.Tuna?9:1;for(int r=0;r<rays;r++){var dir=Quaternion.AngleAxis(rays==1?0:(r-4)*9,cam.transform.up)*cam.transform.forward;
    var hits=Physics.SphereCastAll(cam.transform.position,Equipped==WeaponKind.Pistol?.015f:.18f,dir,WeaponCatalog.Reach[i],~0,QueryTriggerInteraction.Ignore).OrderBy(h=>h.distance);
-   foreach(var h in hits){if(Ignore(h.transform))continue;var citizen=h.collider.GetComponentInParent<CitizenCombat>();var robber=h.collider.GetComponentInParent<RobberAI>();var target=citizen!=null?(Component)citizen:robber;
+   foreach(var h in hits){if(Ignore(h.transform))continue;var citizen=h.collider.GetComponentInParent<CitizenCombat>();var robber=h.collider.GetComponentInParent<RobberAI>();var police=h.collider.GetComponentInParent<PoliceCombat>();var target=police!=null?(Component)police:citizen!=null?(Component)citizen:robber;
     if(target!=null&&seen.Add(target.GetInstanceID())&&Hit(h.collider,dir,WeaponCatalog.Damage[i]))count++;break;}}
+  // 광역 무기가 여러 명을 맞혀도 한 번 휘두른 충격음과 흔들림은 한 번만 준다.
+  if(count>0&&Equipped!=WeaponKind.Pistol)KickImpactFeedback.Play(Combat,Equipped);
   return count;}
- public bool Hit(Collider collider,Vector3 direction,int damage){var citizen=collider.GetComponentInParent<CitizenCombat>();var robber=collider.GetComponentInParent<RobberAI>();
+ public bool Hit(Collider collider,Vector3 direction,int damage){var police=collider.GetComponentInParent<PoliceCombat>();if(police!=null)return police.ReceiveHit(Combat,direction,damage);var citizen=collider.GetComponentInParent<CitizenCombat>();var robber=collider.GetComponentInParent<RobberAI>();
   if(citizen!=null){if(robber!=null)robber.DropLoot();return citizen.ReceiveKick(Combat,direction,damage);}return robber!=null&&robber.ReceiveKick(direction);}
  void Throw(){var cam=Combat.View;var pos=cam.transform.position;
   var go=Instantiate(WeaponCatalog.Model(Equipped),pos,cam.transform.rotation);go.name="Thrown "+Equipped;
