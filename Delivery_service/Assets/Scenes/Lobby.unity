@@ -446330,7 +446330,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c2ca922dc853ee34ca8e68d8ffdba781, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DeliveryService.Mok.LobbyController
-  gameScene: Assets/Scenes/JJinCity.unity
+  gameScene: Assets/Scenes/BankPrologue.unity
   startButton: {fileID: 1090840174}
   settingsButton: {fileID: 2100503517}
   quitButton: {fileID: 1391520983}
