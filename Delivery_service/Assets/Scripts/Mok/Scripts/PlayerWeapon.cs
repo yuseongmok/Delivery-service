@@ -8,19 +8,21 @@ public sealed class PlayerWeapon : MonoBehaviour {
  public bool HasWeapon=>Equipped!=WeaponKind.None;
  public bool HasInHand=>HasWeapon&&Thrown==null;
  public PlayerCombat Combat {get;private set;}
+ PlayerTacticalStance stance;
  Transform held; float nextAttack,animationEnd,animationStart; Quaternion restRotation; Vector3 restPosition;
  void Awake(){Combat=GetComponent<PlayerCombat>();}
+ void Start(){stance=GetComponent<PlayerTacticalStance>();}
  public bool Purchase(WeaponKind kind){int i=(int)kind;if(i<0||i>3||MoneyManager.Instance==null)return false;
   if(!MoneyManager.Instance.SpendMoney(WeaponCatalog.Prices[i]))return false;
   Equip(kind);return true;}
  public bool BuyAmmo(){if(Equipped!=WeaponKind.Pistol||Ammo>989||MoneyManager.Instance==null||!MoneyManager.Instance.SpendMoney(3000))return false;Ammo+=10;return true;}
  public void Equip(WeaponKind kind){if(Thrown!=null)Destroy(Thrown.gameObject);Thrown=null;if(held!=null)Destroy(held.gameObject);Equipped=kind;Ammo=0;nextAttack=Time.time+.25f;
   if(kind==WeaponKind.None)return;var prefab=WeaponCatalog.Model(kind);if(prefab==null)return;
-  held=Instantiate(prefab,Combat.View.transform).transform;held.gameObject.name="Held "+kind;restPosition=new Vector3(.32f,-.35f,.55f);restRotation=Quaternion.Euler(-20,0,-18);held.localPosition=restPosition;held.localRotation=restRotation;
+  held=Instantiate(prefab,Combat.View.transform).transform;held.gameObject.name="Held "+kind;restPosition=kind==WeaponKind.Pistol?new Vector3(.23f,-.33f,.45f):new Vector3(.32f,-.35f,.55f);restRotation=kind==WeaponKind.Pistol?Quaternion.Euler(0,-4,0):Quaternion.Euler(-20,0,-18);held.localPosition=restPosition;held.localRotation=restRotation;
   foreach(var c in held.GetComponentsInChildren<Collider>())Destroy(c);foreach(var t in held.GetComponentsInChildren<Transform>())t.gameObject.layer=2;}
- void Update(){if(held!=null){held.gameObject.SetActive(HasInHand&&Combat.CanAct);float p=animationEnd>Time.time?Mathf.Clamp01((Time.time-animationStart)/(animationEnd-animationStart)):1;float arc=Mathf.Sin(p*Mathf.PI);
-   held.localRotation=restRotation*Quaternion.Euler(-arc*85,arc*25,arc*35);held.localPosition=restPosition+new Vector3(-arc*.2f,arc*.12f,arc*.18f);}
-  if(!Combat.CanAct||!HasInHand)return;if(Input.GetMouseButtonDown(0))Attack(false);else if(Input.GetMouseButtonDown(1))Attack(true);}
+ void Update(){if(held!=null){held.gameObject.SetActive(HasInHand&&Combat.CanAct);float p=animationEnd>Time.time?Mathf.Clamp01((Time.time-animationStart)/(animationEnd-animationStart)):1;float arc=Mathf.Sin(p*Mathf.PI);float aim=stance?stance.AimAmount:0;if(Equipped==WeaponKind.Pistol)arc*=.06f;
+   held.localRotation=Quaternion.Slerp(restRotation,Quaternion.identity,aim)*Quaternion.Euler(-arc*85,arc*25,arc*35);held.localPosition=Vector3.Lerp(restPosition,new Vector3(0,-.345f,.55f),aim)+new Vector3(-arc*.2f,arc*.12f,arc*.18f);}
+  if(!Combat.CanAct||!HasInHand)return;if(Input.GetMouseButtonDown(0))Attack(false);else if(Equipped!=WeaponKind.Pistol&&Input.GetMouseButtonDown(1))Attack(true);}
  public bool Attack(bool throwing){if(!Combat.CanAct||!HasInHand||Combat.IsKicking||Time.time<nextAttack)return false;int i=(int)Equipped;
   if(!throwing&&Equipped==WeaponKind.Pistol&&Ammo<=0){DeliveryRequestNotice.Show("탄약이 없습니다. 무기점에서 구매하세요.");return false;}
   nextAttack=Time.time+WeaponCatalog.Cooldown[i];animationStart=Time.time;animationEnd=Time.time+(Equipped==WeaponKind.Pistol?.15f:WeaponCatalog.Cooldown[i]*.65f);

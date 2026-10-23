@@ -1,0 +1,63 @@
+#if UNITY_EDITOR
+using System;using System.IO;using System.Linq;using UnityEngine;using UnityEngine.AI;using UnityEngine.UI;using UnityEditor;using UnityEditor.SceneManagement;
+namespace DeliveryService.Mok.Editor {
+public static class MechanicBuilder {
+ static Material Mat(string name,Color color){var path="Assets/Scripts/Mok/Art/StoryCharacters/"+name+".mat";var m=AssetDatabase.LoadAssetAtPath<Material>(path);if(!m){m=new Material(Shader.Find("Universal Render Pipeline/Lit"));AssetDatabase.CreateAsset(m,path);}m.color=color;EditorUtility.SetDirty(m);return m;}
+ static bool Ground(Vector3 p,out Vector3 result){result=default;if(!NavMesh.SamplePosition(p,out var hit,2,NavMesh.AllAreas))return false;if(Physics.OverlapCapsule(hit.position+Vector3.up*.6f,hit.position+Vector3.up*1.5f,.5f,~0,QueryTriggerInteraction.Ignore).Length>0)return false;result=hit.position;return true;}
+ static bool Connected(Vector3 a,Vector3 b){var p=new NavMeshPath();return NavMesh.CalculatePath(a,b,NavMesh.AllAreas,p)&&p.status==NavMeshPathStatus.PathComplete;}
+ public static void Approach(){var m=UnityEngine.Object.FindFirstObjectByType<MechanicMission>();var scene=m.gameObject.scene;if(!EditorSceneManager.SaveScene(scene,"Logs/JJinCity-before-mechanic-approach-"+DateTime.Now.ToString("yyyyMMdd-HHmmss")+".unity",true))throw new Exception("Backup failed");var garage=GameObject.Find("repair_shop").transform.Find("Mok Repair Garage");if(!Ground(garage.TransformPoint(new Vector3(2,0,4.2f)),out var at))throw new Exception("Approach blocked");m.approach.position=at;EditorSceneManager.MarkSceneDirty(scene);EditorSceneManager.SaveScene(scene);}
+ public static void Refine(){
+ var m=UnityEngine.Object.FindFirstObjectByType<MechanicMission>();var scene=m.gameObject.scene;
+ if(!EditorSceneManager.SaveScene(scene,"Logs/JJinCity-before-mechanic-refine-"+DateTime.Now.ToString("yyyyMMdd-HHmmss")+".unity",true))throw new Exception("Backup failed");
+ var pallet=m.transform.Find("Parts case pallet");bool safe=false;
+ for(int distance=1;distance<=5&&!safe;distance++)foreach(var axis in new[]{Vector3.right,Vector3.left,Vector3.forward,Vector3.back}){
+ var candidate=pallet.position+axis*distance;candidate.y=m.pickupStand.position.y;if(!Ground(candidate,out var at))continue;bool pavement=true;
+ foreach(float x in new[]{-.5f,.5f})foreach(float z in new[]{-.45f,.45f}){var hits=Physics.RaycastAll(at+new Vector3(x,1,z),Vector3.down,2,~0,QueryTriggerInteraction.Ignore).Where(h=>!h.transform.IsChildOf(m.transform)).OrderBy(h=>h.distance).ToArray();if(hits.Length==0||!hits[0].collider.name.Contains("Sidewalk"))pavement=false;}
+ if(!pavement)continue;Vector3 stand=default;bool reachable=false;foreach(var side in new[]{Vector3.forward,Vector3.back,Vector3.right,Vector3.left})if(Ground(at+side*2,out stand)&&Connected(m.approach.position,stand)){reachable=true;break;}if(!reachable)continue;
+ pallet.position=at+Vector3.up*.2f;m.caseRest.position=at+Vector3.up*.48f;m.parts.transform.position=m.caseRest.position;m.pickupStand.position=stand;safe=true;break;
+ }
+ if(!safe)throw new Exception("No full sidewalk footprint for parts case");
+ foreach(string name in new[]{"Parts case pallet","Mission parts bench"}){var t=m.transform.Find(name);var obstacle=t.GetComponent<NavMeshObstacle>();if(!obstacle)obstacle=t.gameObject.AddComponent<NavMeshObstacle>();obstacle.shape=NavMeshObstacleShape.Box;obstacle.carving=true;obstacle.size=name=="Parts case pallet"?Vector3.one:new Vector3(1.1f,1,.65f);obstacle.center=name=="Parts case pallet"?Vector3.zero:Vector3.up*.5f;}
+ m.preparation.debrief[m.preparation.debrief.Length-1]="민기: 정비사에게 연락해 뒀어. 휴대폰의 ‘빚진 정비사’에서 탈출 차량을 준비하자.";
+ EditorUtility.SetDirty(m.preparation);EditorSceneManager.MarkSceneDirty(scene);EditorSceneManager.SaveScene(scene);Preview();
+ }
+ public static void Preview(){
+ var m=UnityEngine.Object.FindFirstObjectByType<MechanicMission>();Physics.SyncTransforms();var evidence=new System.Collections.Generic.List<string>();
+ var pallet=m.transform.Find("Parts case pallet");foreach(float x in new[]{-.49f,.49f})foreach(float z in new[]{-.49f,.49f}){var p=pallet.TransformPoint(new Vector3(x,1,z));var hits=Physics.RaycastAll(p,Vector3.down,3,~0,QueryTriggerInteraction.Ignore).Where(h=>!h.transform.IsChildOf(m.transform)).OrderBy(h=>h.distance).ToArray();evidence.Add("pallet corner "+p+" ground "+(hits.Length>0?hits[0].collider.name:"NONE"));}
+ foreach(var r in m.supportVehicle.GetComponentsInChildren<Renderer>())foreach(var mat in r.sharedMaterials)evidence.Add("car material "+mat.name+" shader "+mat.shader.name);
+ File.WriteAllLines("Logs/Mechanic-layout.txt",evidence);
+ var go=new GameObject("Temporary mechanic preview");var cam=go.AddComponent<Camera>();var rt=new RenderTexture(1280,720,24);var prior=RenderTexture.active;
+ try{foreach(bool garage in new[]{true,false}){cam.transform.position=garage?m.approach.position+m.mechanic.forward*3+Vector3.up*2:m.pickupStand.position+Vector3.up*2+Vector3.forward*3;cam.transform.LookAt(garage?m.mechanic.position+Vector3.up: m.caseRest.position);cam.fieldOfView=65;cam.targetTexture=rt;cam.Render();RenderTexture.active=rt;var tex=new Texture2D(1280,720,TextureFormat.RGB24,false);tex.ReadPixels(new Rect(0,0,1280,720),0,0);tex.Apply();File.WriteAllBytes("Logs/Mechanic-"+(garage?"garage":"site")+".png",tex.EncodeToPNG());UnityEngine.Object.DestroyImmediate(tex);}}
+ finally{RenderTexture.active=prior;rt.Release();UnityEngine.Object.DestroyImmediate(rt);UnityEngine.Object.DestroyImmediate(go);}
+ }
+ public static void Install(){
+  var scene=UnityEngine.SceneManagement.SceneManager.GetActiveScene();if(scene.path!=StoryTutorialBuilder.Main||EditorApplication.isPlaying)throw new Exception("JJinCity edit mode required");if(UnityEngine.Object.FindFirstObjectByType<MechanicMission>())throw new Exception("Already installed");if(!EditorSceneManager.SaveScene(scene,"Logs/JJinCity-before-mechanic-"+DateTime.Now.ToString("yyyyMMdd-HHmmss")+".unity",true))throw new Exception("Backup failed");
+  var garage=GameObject.Find("repair_shop").transform.Find("Mok Repair Garage");var previous=UnityEngine.Object.FindFirstObjectByType<BackdoorMission>();var broker=previous.delivery.broker;Physics.SyncTransforms();
+  if(!Ground(garage.TransformPoint(new Vector3(2,0,5)),out var approach))throw new Exception("Garage approach blocked "+garage.position);
+  Vector3 pickup=default,stand=default,a=default,b=default;bool found=false;var policy=UnityEngine.Object.FindFirstObjectByType<DistrictDeliveryPolicy>();
+  foreach(var point in policy.oldCity){if(!point)continue;for(int i=0;i<16&&!found;i++){var wish=point.transform.position+Quaternion.Euler(0,i*22.5f,0)*Vector3.forward*5;if(!Ground(wish,out var at))continue;float d=Vector3.Distance(at,approach);if(d<55||d>180||Vector3.Distance(at,previous.delivery.approach.position)<25)continue;
+   if(!Physics.RaycastAll(at+Vector3.up*.3f,Vector3.down,1).Any(h=>h.collider.name.Contains("Sidewalk")))continue;
+   if(!Ground(at+Vector3.forward*2,out stand)||!Ground(at+Vector3.right*3,out a)||!Ground(at-Vector3.right*3,out b)||!Connected(approach,stand))continue;pickup=at;found=true;}if(found)break;}
+  if(!found)throw new Exception("No clear connected parts recovery site");
+  var root=new GameObject("Night Mission - Indebted Mechanic");var m=root.AddComponent<MechanicMission>();m.preparation=previous;m.enemyTemplate=broker.enemyTemplate;m.rendezvous=previous.standPoints[3];
+  Transform Anchor(string name,Vector3 p){var t=new GameObject(name).transform;t.SetParent(root.transform);t.position=p;return t;}
+  m.approach=Anchor("Mechanic approach",approach);m.pickupStand=Anchor("Parts pickup approach",stand);m.caseRest=Anchor("Parts resting point",pickup+Vector3.up*.48f);m.benchRest=Anchor("Recovered parts on bench",garage.TransformPoint(new Vector3(2,.97f,2.8f)));m.enemyPosts=new[]{Anchor("Parts guard A",a),Anchor("Parts guard B",b)};
+  var actor=UnityEngine.Object.Instantiate(previous.delivery.attendant.gameObject,root.transform);actor.name="Story mechanic";actor.transform.SetPositionAndRotation(garage.TransformPoint(new Vector3(2,0,1.9f)),garage.rotation);actor.SetActive(true);m.mechanic=actor.transform;
+  foreach(var t in actor.GetComponentsInChildren<Transform>(true).Where(t=>t.name=="Catering staff badge").ToArray())UnityEngine.Object.DestroyImmediate(t.gameObject);
+  var orange=Mat("Mechanic workwear",new Color(.65f,.34f,.12f));var dark=Mat("Mechanic case steel",new Color(.12f,.18f,.22f));var cream=Mat("Mechanic equipment marking",new Color(.94f,.78f,.39f));
+  foreach(var r in actor.GetComponentsInChildren<SkinnedMeshRenderer>()){var mats=r.sharedMaterials;if(mats.Length>0)mats[0]=orange;r.sharedMaterials=mats;}
+  GameObject Cube(string name,Transform parent,Vector3 p,Vector3 scale,Material material,bool solid=false){var go=GameObject.CreatePrimitive(PrimitiveType.Cube);go.name=name;go.transform.SetParent(parent,false);go.transform.localPosition=p;go.transform.localScale=scale;go.GetComponent<Renderer>().sharedMaterial=material;if(!solid)UnityEngine.Object.DestroyImmediate(go.GetComponent<Collider>());return go;}
+  var animator=actor.GetComponentInChildren<Animator>();var chest=animator.GetBoneTransform(HumanBodyBones.Chest)??animator.GetBoneTransform(HumanBodyBones.Spine);var strap=Cube("Mechanic tool apron",chest,new Vector3(0,-.12f,.13f),new Vector3(.27f,.32f,.04f),dark);Cube("Mechanic wrench",strap.transform,new Vector3(.2f,0,-.7f),new Vector3(.15f,.7f,1),cream);
+  var bench=new GameObject("Mission parts bench");bench.transform.SetParent(root.transform);bench.transform.SetPositionAndRotation(garage.TransformPoint(new Vector3(2,0,2.8f)),garage.rotation);Cube("Bench top",bench.transform,new Vector3(0,.8f,0),new Vector3(1.1f,.12f,.65f),dark,true);foreach(float x in new[]{-.45f,.45f})Cube("Bench leg",bench.transform,new Vector3(x,.39f,0),new Vector3(.08f,.78f,.5f),dark,true);
+  m.parts=new GameObject("Mechanic parts case");m.parts.transform.SetParent(root.transform);m.parts.transform.position=m.caseRest.position;Cube("Case",m.parts.transform,Vector3.zero,new Vector3(.52f,.26f,.36f),dark);Cube("Yellow ownership band",m.parts.transform,new Vector3(0,.135f,0),new Vector3(.16f,.012f,.36f),cream);Cube("Case handle",m.parts.transform,new Vector3(0,.2f,0),new Vector3(.22f,.06f,.05f),orange);
+  Cube("Parts case pallet",root.transform,pickup+Vector3.up*.2f,new Vector3(.75f,.35f,.6f),dark,true);
+  m.keys=Cube("Escape car spare key",root.transform,m.benchRest.position+Vector3.right*.35f,new Vector3(.13f,.025f,.04f),cream);m.keys.SetActive(false);
+  var car=(GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Synty/PolygonCity/Prefabs/Vehicles/SM_Veh_Car_Sedan_01.prefab"),root.transform);car.name="Reserved escape support sedan";car.transform.SetPositionAndRotation(garage.TransformPoint(new Vector3(-3,0,0)),garage.rotation);var bounds=car.GetComponentsInChildren<Renderer>().Select(r=>r.bounds).Aggregate((x,y)=>{x.Encapsulate(y);return x;});car.transform.position+=Vector3.up*(garage.position.y+.04f-bounds.min.y);m.supportVehicle=car.transform;
+  foreach(var c in car.GetComponentsInChildren<Collider>())UnityEngine.Object.DestroyImmediate(c);var collider=car.AddComponent<BoxCollider>();collider.center=new Vector3(0,.8f,0);collider.size=new Vector3(2,1.6f,4.6f);var nav=car.AddComponent<NavMeshObstacle>();nav.shape=NavMeshObstacleShape.Box;nav.center=collider.center;nav.size=collider.size;nav.carving=true;
+  m.sound=root.AddComponent<AudioSource>();m.sound.spatialBlend=0;m.pickupSound=previous.delivery.boxSound;m.repairSound=previous.warningSound;
+  m.ui=UnityEngine.Object.Instantiate(previous.ui,root.transform);m.ui.name="Mechanic mission UI";m.objective=m.ui.transform.Find("Objective").GetComponent<Text>();m.subtitle=m.ui.transform.Find("Dialogue").GetComponent<Text>();m.marker=m.ui.transform.Find("Destination").GetComponent<Text>();m.objective.text=m.subtitle.text=m.marker.text="";m.ui.SetActive(false);
+  var plan=AssetDatabase.LoadAssetAtPath<NightPreparationPlan>("Assets/Scripts/Mok/ShopUI/FirstChapterPreparation.asset");var entry=plan.missions.First(x=>x.id=="mechanic");entry.description="도시의 뒷문을 완료한 뒤 수리점의 정비사를 만나세요. 조직원들에게 빼앗긴 시동 제어기 상자를 회수하고 추격을 따돌려 전달하세요. 회수한 부품은 재시도에도 유지됩니다.";entry.result="행사장 탈출 차량·정비사 운전 지원 확보";EditorUtility.SetDirty(plan);
+  EditorUtility.SetDirty(m);EditorSceneManager.MarkSceneDirty(scene);EditorSceneManager.SaveScene(scene);AssetDatabase.SaveAssets();File.WriteAllText("Logs/Mechanic-install.txt","PASS scene saved\napproach "+approach+" pickup "+pickup+" stand "+stand+" garage "+garage.position);}
+}
+}
+#endif

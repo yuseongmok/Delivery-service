@@ -16,7 +16,7 @@ public static class InteractionOutlineTest {
   Physics.SyncTransforms();until=Time.time+.6f;while(Time.time<until)yield return null;
   Check(InteractionFocus.Find(input)==drop.transform&&hover.CurrentTarget==drop.transform,kind+" 회수 가능한 대상과 아웃라인 일치");
   Check(drop.GetComponent<Outline>()!=null&&drop.GetComponent<Outline>().enabled,kind+" 자식 모델 레이어와 무관하게 아웃라인 표시");
-  Check(hover.interactText.text=="E를 눌러 줍기"&&hover.interactText.gameObject.activeInHierarchy,kind+" 줍기 안내");
+  Check(hover.interactText.text=="F를 눌러 줍기"&&hover.interactText.gameObject.activeInHierarchy,kind+" 줍기 안내");
   if(kind==WeaponKind.Bat){ScreenCapture.CaptureScreenshot("Temp/Mok-weapon-marker.png");yield return null;}
   var wall=GameObject.CreatePrimitive(PrimitiveType.Cube);wall.transform.position=p.View.transform.position+Vector3.forward;wall.transform.localScale=new Vector3(2,2,.1f);Physics.SyncTransforms();
   until=Time.time+.12f;while(Time.time<until)yield return null;Check(hover.CurrentTarget==null,kind+" 벽 너머 강조 차단");UnityEngine.Object.Destroy(wall);yield return null;

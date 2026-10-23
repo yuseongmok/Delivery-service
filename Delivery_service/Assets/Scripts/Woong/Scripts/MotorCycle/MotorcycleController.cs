@@ -98,7 +98,7 @@ public class MotorcycleController : MonoBehaviour
         {
             HandleCameraLook();
 
-            if (Time.time - enterTime > 0.2f && Input.GetKeyDown(KeyCode.E))
+            if (Time.time - enterTime > 0.2f && DeliveryService.Mok.PrologueKeyboard.Pressed(UnityEngine.InputSystem.Key.F))
             {
                 if (Mathf.Abs(currentSpeed) >= 12f)
                 {
@@ -143,10 +143,14 @@ public class MotorcycleController : MonoBehaviour
 
     private void LateUpdate()
     {
+
         if (sphereRB != null)
         {
             transform.position = sphereRB.transform.position + (transform.rotation * localOffset);
         }
+
+        // 탑승 중에도 미션과 NPC가 현재 위치를 인식하도록 동기화한다.
+        if (isDriven && rider != null) rider.transform.position = transform.position;
 
         if (bikeBody != null)
         {

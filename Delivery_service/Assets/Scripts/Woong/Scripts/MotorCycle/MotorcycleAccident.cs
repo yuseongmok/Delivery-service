@@ -51,10 +51,7 @@ public class MotorcycleAccident : MonoBehaviour
                 controller.ApplyImpactDeceleration(speedMultiplierOnImpact);
 
                 // µ· Â÷°¨
-                if (MoneyManager.Instance != null)
-                {
-                    MoneyManager.Instance.AccidentMoney(accidentFine);
-                }
+                // No automatic collision fee in the story campaign.
 
                 // 70% È®·ü °Ë»ç ÈÄ °æÂû Ãâµ¿
                 if (Random.value <= policeSpawnChance)

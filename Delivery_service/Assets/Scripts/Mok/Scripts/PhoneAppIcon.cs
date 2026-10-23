@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 namespace DeliveryService.Mok.Navigation {
 // 작은 화면에서도 알아볼 수 있도록 단순한 도형으로 앱 아이콘을 그린다.
@@ -14,7 +14,18 @@ public sealed class PhoneAppIcon : MaskableGraphic {
         Color bg=App==0?new Color(.22f,.59f,.51f):App==1||App==3?new Color(.87f,.49f,.22f):new Color(.32f,.47f,.65f);
         Round(.055f,.055f,.89f,.89f,.18f,bg);
         Color paper=new Color(.97f,.95f,.85f);
-        if(App==5){
+        if(App==8){
+            Circle(.25f,.29f,.13f,paper);Circle(.75f,.29f,.13f,paper);Circle(.25f,.29f,.07f,bg);Circle(.75f,.29f,.07f,bg);
+            Line(new Vector2(.25f,.29f),new Vector2(.45f,.54f),.065f,paper);Line(new Vector2(.45f,.54f),new Vector2(.62f,.29f),.065f,paper);Line(new Vector2(.62f,.29f),new Vector2(.25f,.29f),.065f,paper);Line(new Vector2(.75f,.29f),new Vector2(.61f,.66f),.065f,paper);Quad(.30f,.52f,.51f,.59f,paper);Quad(.57f,.64f,.75f,.69f,paper);
+            Line(new Vector2(.25f,.85f),new Vector2(.25f,.67f),.05f,paper);Poly(paper,new Vector2(.15f,.72f),new Vector2(.35f,.72f),new Vector2(.25f,.59f));
+        }else if(App==7){
+            Round(.17f,.28f,.66f,.46f,.07f,paper);
+            Poly(paper,new Vector2(.25f,.33f),new Vector2(.25f,.17f),new Vector2(.43f,.33f));
+            for(int i=0;i<3;i++)Circle(.32f+i*.18f,.51f,.04f,bg);
+        }else if(App==6){
+            Poly(paper,new Vector2(.5f,.83f),new Vector2(.82f,.5f),new Vector2(.5f,.17f),new Vector2(.18f,.5f));
+            Quad(.47f,.42f,.53f,.68f,bg);Circle(.5f,.33f,.035f,bg);
+        }else if(App==5){
             for(int i=0;i<3;i++)Quad(.22f+i*.25f,.20f,.28f+i*.25f,.80f,paper);
             Quad(.24f,.63f,.52f,.69f,paper);Quad(.49f,.46f,.77f,.52f,paper);Quad(.24f,.30f,.52f,.36f,paper);
         }else if(App==4){

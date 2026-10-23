@@ -28,7 +28,7 @@ Box(a,"Top cap",new Vector3(0,1.94f,0),new Vector3(1.4f,.2f,.85f),dark);
 Box(a,"Display frame",new Vector3(0,1.51f,-.39f),new Vector3(1.03f,.51f,.08f),metal);
 Box(a,"Display",new Vector3(0,1.53f,-.44f),new Vector3(.91f,.37f,.025f),dark);
 Label(a,"4,000",new Vector3(0,1.55f,-.46f),.065f,new Color(.88f,.92f,.82f));Label(a,"완충 요금",new Vector3(0,1.20f,-.40f),.035f,Color.white);
-Label(a,"E  주유",new Vector3(0,.78f,-.40f),.055f,Color.white);
+Label(a,"F  주유",new Vector3(0,.78f,-.40f),.055f,Color.white);
 for(int side=-1;side<=1;side+=2){Box(a,"Canopy column",new Vector3(side*2.8f,1.86f,1.5f),new Vector3(.24f,3.72f,.24f),dark,true);Box(a,"Column base",new Vector3(side*2.8f,.22f,1.5f),new Vector3(.42f,.44f,.42f),metal,true);Box(a,"Parking stripe",new Vector3(side*2,.056f,-.8f),new Vector3(.07f,.012f,2.2f),orange);}
 Box(a,"Canopy roof",new Vector3(0,3.78f,0),new Vector3(6.4f,.25f,4.4f),dark,true);
 Box(a,"Canopy fascia",new Vector3(0,3.76f,-2.23f),new Vector3(6.4f,.43f,.12f),orange);

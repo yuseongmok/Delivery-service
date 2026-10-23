@@ -1,4 +1,4 @@
-using System.Linq;
+﻿using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -11,7 +11,8 @@ namespace DeliveryService.Mok.Navigation
         public Camera overviewCamera; // 기존 씬 참조 유지를 위한 필드이며 활성화하지 않는다.
         public Font font;
         public RenderTexture overviewTexture;
-        public enum Screen { Home, Destinations, Map, Stocks, News, Reviews, Loans, Ladder }
+        public enum Screen { Home, Destinations, Map, Stocks, News, Reviews, Loans, Ladder, Missions, Messages, Recall }
+        GameObject recallPanel;Text recallMessage;BikeRecall recall;
         public Screen CurrentScreen { get; private set; } = Screen.Map;
         public int Selection { get; private set; }
         public bool IsRiding => bikes != null && bikes.Any(b => b != null && b.isDriven);
@@ -24,6 +25,8 @@ namespace DeliveryService.Mok.Navigation
         DeliveryService.Mok.ReviewPhoneApp reviews;
         DeliveryService.Mok.LoanPhoneApp loans;
         DeliveryService.Mok.LadderPhoneApp ladderApp;
+        public StoryPhoneApp storyAppsPrefab;
+        StoryPhoneApp storyApp;
         Text[] apps, rows;
         PhoneAppIcon[] appIcons;
         Text notice, hint;
@@ -52,8 +55,17 @@ namespace DeliveryService.Mok.Navigation
             if (!riding && open && !wasOpen) Show(Screen.Home);
             if (!riding && !open && wasOpen) Show(Screen.Map);
             wasOpen = open;
+            if(CurrentScreen==Screen.Home&&apps.Length>7)apps[7].text="문자"+(StoryPhoneInbox.Current&&StoryPhoneInbox.Current.Unread>0?" ("+StoryPhoneInbox.Current.Unread+")":"");
             if (IsOpen && Time.timeScale > 0 && Cursor.lockState == CursorLockMode.Locked)
             {
+                if(CurrentScreen==Screen.Recall){if(PrologueKeyboard.Pressed(UnityEngine.InputSystem.Key.Enter)||PrologueKeyboard.Pressed(UnityEngine.InputSystem.Key.NumpadEnter)){if(recall){recall.Call();recallMessage.text=recall.Message;}else recallMessage.text="등록된 오토바이가 없습니다.";}if(PrologueKeyboard.Pressed(UnityEngine.InputSystem.Key.Backspace))Show(Screen.Home);return;}
+                if(CurrentScreen==Screen.Missions||CurrentScreen==Screen.Messages){
+                    if(PrologueKeyboard.Pressed(UnityEngine.InputSystem.Key.UpArrow))storyApp.Move(-1);
+                    if(PrologueKeyboard.Pressed(UnityEngine.InputSystem.Key.DownArrow))storyApp.Move(1);
+                    if(PrologueKeyboard.Pressed(UnityEngine.InputSystem.Key.Enter)||PrologueKeyboard.Pressed(UnityEngine.InputSystem.Key.NumpadEnter))storyApp.Confirm();
+                    if(PrologueKeyboard.Pressed(UnityEngine.InputSystem.Key.Backspace)&&!storyApp.Back())Show(Screen.Home);
+                    return;
+                }
                 if(CurrentScreen==Screen.Ladder){
                     if(Input.GetKeyDown(KeyCode.UpArrow))ladderApp.Move(1,false);
                     if(Input.GetKeyDown(KeyCode.DownArrow))ladderApp.Move(-1,false);
@@ -77,8 +89,8 @@ namespace DeliveryService.Mok.Navigation
                     return;
                 }
                 if(CurrentScreen==Screen.Home){
-                    if(Input.GetKeyDown(KeyCode.UpArrow))MoveSelection(-2);
-                    else if(Input.GetKeyDown(KeyCode.DownArrow))MoveSelection(2);
+                    if(Input.GetKeyDown(KeyCode.UpArrow))MoveSelection(-3);
+                    else if(Input.GetKeyDown(KeyCode.DownArrow))MoveSelection(3);
                     else if(Input.GetKeyDown(KeyCode.LeftArrow))MoveSelection(-1);
                     else if(Input.GetKeyDown(KeyCode.RightArrow))MoveSelection(1);
                     if(Input.GetKeyDown(KeyCode.Return)||Input.GetKeyDown(KeyCode.KeypadEnter))Confirm();
@@ -110,11 +122,11 @@ namespace DeliveryService.Mok.Navigation
         public void MoveSelection(int direction)
         {
             if (CurrentScreen == Screen.Map) { Show(Screen.Destinations); return; }
-            int count = CurrentScreen == Screen.Home ? 6 : names.Length;
-            if(CurrentScreen==Screen.Home&&Mathf.Abs(direction)==2){
-                int column=Selection%2, rowCount=(count-column+1)/2;
-                int row=(Selection/2+(direction>0?1:-1)+rowCount)%rowCount;
-                Selection=row*2+column;
+            int count = CurrentScreen == Screen.Home ? apps.Length : names.Length;
+            if(CurrentScreen==Screen.Home&&Mathf.Abs(direction)==3){
+                int column=Selection%3, rowCount=3;
+                int row=(Selection/3+(direction>0?1:-1)+rowCount)%rowCount;
+                Selection=row*3+column;
             }else Selection = (Selection + direction + count) % count;
             if (notice != null) notice.text = "";
             Refresh();
@@ -125,7 +137,7 @@ namespace DeliveryService.Mok.Navigation
             if (CurrentScreen == Screen.Home)
             {
                 if (Selection == 0) Show(Screen.Destinations);
-                else Show(Selection==1?Screen.Stocks:Selection==2?Screen.News:Selection==3?Screen.Reviews:Selection==4?Screen.Loans:Screen.Ladder);
+                else Show(Selection==1?Screen.Stocks:Selection==2?Screen.News:Selection==3?Screen.Reviews:Selection==4?Screen.Loans:Selection==5?Screen.Ladder:Selection==6?Screen.Missions:Selection==7?Screen.Messages:Screen.Recall);
                 return;
             }
             if (manager == null) return;
@@ -150,19 +162,29 @@ namespace DeliveryService.Mok.Navigation
         NavigationPlace SelectedPlace(int i) => places == null ? null : places.FirstOrDefault(p => p != null && p.kind == kinds[i]);
         public void Show(Screen screen)
         {
-            if (IsRiding && (screen == Screen.Home || screen == Screen.Stocks || screen == Screen.News || screen == Screen.Reviews || screen == Screen.Loans || screen == Screen.Ladder)) screen = Screen.Map;
+            if(IsRiding&&screen==Screen.Recall)screen=Screen.Map;
+            if (IsRiding && (screen == Screen.Home || screen == Screen.Stocks || screen == Screen.News || screen == Screen.Reviews || screen == Screen.Loans || screen == Screen.Ladder || screen == Screen.Missions || screen == Screen.Messages)) screen = Screen.Map;
             CurrentScreen = screen; Selection = 0;
             if (home == null) return;
             places = FindObjectsByType<NavigationPlace>(FindObjectsSortMode.None);
             home.SetActive(screen == Screen.Home);
+            if(recallPanel){recallPanel.SetActive(screen==Screen.Recall);if(screen==Screen.Recall)recallMessage.text="앞쪽의 빈 공간으로\n내 오토바이를 부릅니다.";}
             destinations.SetActive(screen == Screen.Destinations);
             stocks.gameObject.SetActive(screen==Screen.Stocks);if(screen==Screen.Stocks)stocks.Open();
             news.gameObject.SetActive(screen==Screen.News);if(screen==Screen.News)news.Open();
             reviews.gameObject.SetActive(screen==Screen.Reviews);if(screen==Screen.Reviews)reviews.Open();
             loans.gameObject.SetActive(screen==Screen.Loans);if(screen==Screen.Loans)loans.Open();
             ladderApp.gameObject.SetActive(screen==Screen.Ladder);if(screen==Screen.Ladder)ladderApp.Open();
+            if(storyApp){storyApp.gameObject.SetActive(screen==Screen.Missions||screen==Screen.Messages);if(storyApp.gameObject.activeSelf)storyApp.Open(screen==Screen.Messages);}
             notice.text = "";
             Refresh();
+        }
+        public bool OpenIncoming(StoryPhoneInbox.Message message){
+            if(IsRiding||!phone||!storyApp||home==null)return false;
+            phone.OpenPhone();wasOpen=true;wasRiding=false;
+            Show(message.localConversation&&message.missionUpdate?Screen.Missions:Screen.Messages);
+            if(CurrentScreen==Screen.Messages)storyApp.OpenMessage(message);
+            return true;
         }
         void Refresh()
         {
@@ -198,15 +220,15 @@ namespace DeliveryService.Mok.Navigation
             var oldHint=display.Find("DestinationHint");if(oldHint!=null)oldHint.gameObject.SetActive(false);
             home=Panel("Home",root.transform,0,0,540,960,new Color(.055f,.12f,.19f));
             Label("DELIVERY",home.transform,36,48,470,45,27);
-            Label("내 휴대폰",home.transform,36,160,470,70,48);
-            Label("도시 생활의 모든 것",home.transform,36,236,470,42,25).color=new Color(.62f,.74f,.79f);
-            // 앱을 두 열로 배치하고 방향키로 이동한다.
-            apps=new Text[6];appIcons=new PhoneAppIcon[6];
-            for(int i=0;i<6;i++){
-                var tile=Rect("App "+i,home.transform,86+(i%2)*220,310+(i/2)*190,148,192);
-                appIcons[i]=Rect("App icon",tile.transform,8,0,132,132).AddComponent<PhoneAppIcon>();
+            Label("내 휴대폰",home.transform,36,100,470,70,48);
+            Label("도시 생활의 모든 것",home.transform,36,170,470,42,25).color=new Color(.62f,.74f,.79f);
+            // 아홉 앱을 세 열로 배치하고 방향키로 이동한다.
+            apps=new Text[9];appIcons=new PhoneAppIcon[9];
+            for(int i=0;i<9;i++){
+                var tile=Rect("App "+i,home.transform,28+(i%3)*168,265+(i/3)*190,148,174);
+                appIcons[i]=Rect("App icon",tile.transform,19,0,110,110).AddComponent<PhoneAppIcon>();
                 appIcons[i].App=i;appIcons[i].raycastTarget=false;
-                apps[i]=Label(i==0?"지도":i==1?"주식":i==2?"뉴스":i==3?"별점":i==4?"급전":"사다리",tile.transform,0,144,148,44,28);
+                apps[i]=Label(i==0?"지도":i==1?"주식":i==2?"뉴스":i==3?"별점":i==4?"급전":i==5?"사다리":i==6?"미션":i==7?"문자":"호출",tile.transform,0,114,148,40,28);
                 apps[i].alignment=TextAnchor.MiddleCenter;
             }
             // 배경의 도시 실루엣은 앱 선택과 겹치지 않는 하단에 둔다.
@@ -224,6 +246,11 @@ namespace DeliveryService.Mok.Navigation
             reviews=DeliveryService.Mok.ReviewPhoneApp.Build(root.transform,font);
             loans=DeliveryService.Mok.LoanPhoneApp.Build(root.transform,font);
             ladderApp=DeliveryService.Mok.LadderPhoneApp.Build(root.transform,font);
+            recall=FindFirstObjectByType<BikeRecall>();recallPanel=Panel("Bike recall",root.transform,0,0,540,960,new Color(.055f,.12f,.19f));Label("오토바이 호출",recallPanel.transform,36,60,468,60,40);
+            var recallIcon=Rect("Recall icon",recallPanel.transform,175,205,190,190).AddComponent<PhoneAppIcon>();recallIcon.App=8;recallIcon.raycastTarget=false;
+            recallMessage=Label("",recallPanel.transform,44,440,452,160,30);recallMessage.alignment=TextAnchor.MiddleCenter;
+            var callButton=Panel("Call action",recallPanel.transform,44,690,452,82,new Color(.82f,.39f,.12f));Label("오토바이 부르기",callButton.transform,0,0,452,82,34).alignment=TextAnchor.MiddleCenter;recallPanel.SetActive(false);
+            if(storyAppsPrefab){storyApp=Instantiate(storyAppsPrefab,root.transform,false);foreach(var child in storyApp.GetComponentsInChildren<Transform>(true))child.gameObject.layer=root.layer;storyApp.gameObject.SetActive(false);}
         }
     }
 }

@@ -166,7 +166,7 @@ public sealed class BankPrologue : MonoBehaviour {
             alarmLights[i].intensity = Alarm ? (Mathf.Sin(Time.time * 7 + i * Mathf.PI) > 0 ? 5 : .15f) : 0;
         hitOpacity = Mathf.MoveTowards(hitOpacity, 0, Time.deltaTime * .7f);
         damageFlash.color = new Color(.8f, .02f, .01f, hitOpacity);
-        if(CanPlay)health.text=$"체력 {player.Health}";
+        if(CanPlay)health.gameObject.SetActive(false);
         if (!CanPlay || player.KnockedDown) return;
         if(Current==Phase.Escape && RouteStep<escapeRoute.Length &&
             Vector3.Distance(player.transform.position,escapeRoute[RouteStep].position)<5) {
@@ -176,7 +176,7 @@ public sealed class BankPrologue : MonoBehaviour {
         string route=RouteStep<story.routeNames.Length?story.routeNames[RouteStep]:"정문 앞 도주 차량";
         objective.text = Current == Phase.Robbery ? $"공범이 돈을 챙기는 동안 경찰을 막으세요   {Collected} / {cash.Length}" : $"공범과 함께 탈출  /  {route}";
         ammo.text = player.Reloading ? "재장전 중…" : $"{player.Ammo} / {player.magazineSize}\nR  재장전";
-        health.text = $"체력 {player.Health}";
+        health.gameObject.SetActive(false);
         UpdateBattleRhythm();
         if (BattleBeat!=CombatBeat.Breather && BattleBeat!=CombatBeat.FirstContact && Time.time >= waveTime && reinforcements < officers.Length) {
             int live = 0; foreach (var officer in officers) if (officer.Active && !officer.Dead) live++;
@@ -191,8 +191,8 @@ public sealed class BankPrologue : MonoBehaviour {
         } else {
             collecting = 0;
             if (Current == Phase.Escape && Vector3.Distance(player.transform.position, exitPoint.position) < 3) {
-                prompt.text = accomplice&&!accomplice.ReadyToBoard ? "공범이 차량으로 오고 있습니다" : "E  공범과 도주 차량 탑승";
-                if (AcceptInput && PrologueKeyboard.Pressed(Key.E)) BoardCar();
+                prompt.text = accomplice&&!accomplice.ReadyToBoard ? "공범이 차량으로 오고 있습니다" : "F  공범과 도주 차량 탑승";
+                if (AcceptInput && PrologueKeyboard.Pressed(Key.F)) BoardCar();
             }
         }
     }

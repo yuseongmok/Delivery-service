@@ -3,6 +3,7 @@
 
 public class PhoneController : MonoBehaviour
 {
+    public Transform VisualRoot => phoneTransform;
     [Header("핸드폰")]
     [Tooltip("움직일 핸드폰 오브젝트의 Transform")]
     [SerializeField] private Transform phoneTransform;
@@ -91,6 +92,8 @@ public class PhoneController : MonoBehaviour
     {
         isPhoneOpen = !isPhoneOpen;
     }
+
+    public void OpenPhone(){isPhoneOpen=true;}
 
 
     public bool IsPhoneOpen()

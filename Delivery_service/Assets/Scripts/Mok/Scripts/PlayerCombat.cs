@@ -16,13 +16,14 @@ public sealed class PlayerCombat : MonoBehaviour {
     public int Health {get;private set;}
     public bool IsDown {get;private set;}
     public bool IsKicking {get;private set;}
-    public bool CanAct => CanReceiveHit && !IsDown && (avatar==null||!avatar.IsPhysical) && Time.timeScale>0 && Cursor.lockState==CursorLockMode.Locked && (move==null||move.isControllable) && (phone==null||!phone.IsPhoneOpen());
+    public bool CanAct => isActiveAndEnabled && RiddenBike==null && CanReceiveHit && !IsDown && (avatar==null||!avatar.IsPhysical) && Time.timeScale>0 && Cursor.lockState==CursorLockMode.Locked && (move==null||move.isControllable) && (phone==null||!phone.IsPhoneOpen());
     public bool WaterRescueActive {get;set;}
     public void ResetAfterWaterRescue(){HitsTaken=0;BulletHitsTaken=0;Health=maximumHealth;recoveryUntil=Time.time+2;}
-    public bool CanReceiveHit => !WaterRescueActive && isActiveAndEnabled && (avatar==null||!avatar.IsPhysical) && !(GetComponent<PlayerHiding>()!=null&&GetComponent<PlayerHiding>().IsHidden) && !PoliceControl.IsArrestInProgress && !IsDown && (bikes==null||!bikes.Any(b=>b!=null&&b.isDriven));
+    public bool CanReceiveHit => !(VenueFinale.Active&&VenueFinale.Current.Cinematic) && !WaterRescueActive && (isActiveAndEnabled||RiddenBike!=null) && (avatar==null||!avatar.IsPhysical) && !(GetComponent<PlayerHiding>()!=null&&GetComponent<PlayerHiding>().IsHidden) && !PoliceControl.IsArrestInProgress && !IsDown;
     Camera view;PlayerMove move;PhoneController phone;MotorcycleController[] bikes;CharacterController controller;
     float nextKick, recoveryUntil; Font font;
-    public Camera View => view;
+    public MotorcycleController RiddenBike => bikes==null?null:bikes.FirstOrDefault(b=>b&&b.isDriven);
+    public Camera View => RiddenBike&&RiddenBike.bikeCamera?RiddenBike.bikeCamera.GetComponentInChildren<Camera>():view;
     void Awake(){Health=maximumHealth;view=GetComponent<PlayerInteraction>().InteractionCamera;if(avatar!=null&&view!=null)view.nearClipPlane=Mathf.Min(view.nearClipPlane,.05f);move=GetComponent<PlayerMove>();controller=GetComponent<CharacterController>();}
     void Start(){phone=FindFirstObjectByType<PhoneController>();bikes=FindObjectsByType<MotorcycleController>(FindObjectsSortMode.None);font=MokUIFont.Font;if(kickVisual!=null)kickVisual.gameObject.SetActive(false);}
     void Update(){if(CanAct&&Input.GetMouseButtonDown(0)&&(GetComponent<PlayerWeapon>()==null||!GetComponent<PlayerWeapon>().HasInHand))TryKick();}
@@ -50,7 +51,7 @@ public sealed class PlayerCombat : MonoBehaviour {
     }
     bool IsHeldObject(Transform target){var inv=GetComponent<ToppingInventory>();return target.IsChildOf(transform)||(inv!=null&&((inv.HoldPoint!=null&&target.IsChildOf(inv.HoldPoint))||(inv.HeldPizza!=null&&target.IsChildOf(inv.HeldPizza.transform))));}
     public bool ResolveKick(){
-        // 가장 가까운 물체를 우선해 벽 너머로 발차기하지 못하게 한다.
+        // 가장 가까운 물체를 우선해 벽 너머로 주먹 공격을 하지 못하게 한다.
         var hits=Physics.SphereCastAll(view.transform.position,.22f,view.transform.forward,kickReach,~0,QueryTriggerInteraction.Ignore).OrderBy(h=>h.distance);
         foreach(var h in hits){
             if(IsHeldObject(h.transform))continue;
@@ -64,6 +65,7 @@ public sealed class PlayerCombat : MonoBehaviour {
     }
     public void ReceivePunch(int damage,Vector3 direction,bool slumRobber=false){
         if(!CanReceiveHit||Time.time<recoveryUntil)return;
+        var mounted=RiddenBike;if(mounted){mounted.ApplyImpactDeceleration(.1f);mounted.ExitBike();}
         HitsTaken++;Health=Mathf.Max(0,maximumHealth-HitsTaken*34);
         if(HitsTaken>=3&&slumRobber)SlumRobberCombat.ApplyDefeatLoss(this);
         StartCoroutine(RecoverPlayer(direction));
@@ -94,7 +96,7 @@ public sealed class PlayerCombat : MonoBehaviour {
         if(Time.timeScale<=0)return;
         var style=new GUIStyle(GUI.skin.label){font=font,fontSize=Mathf.Max(16,Screen.height/45),alignment=TextAnchor.MiddleCenter};style.normal.textColor=Color.white;
         if(CanAct){var npc=FocusCitizen();if(npc!=null&&npc.CanBePickpocketed)
-            GUI.Label(new Rect(Screen.width*.25f,Screen.height-95,Screen.width*.5f,40),"E를 눌러 소매치기",style);}
+            GUI.Label(new Rect(Screen.width*.25f,Screen.height-95,Screen.width*.5f,40),"F를 눌러 소매치기",style);}
     }
 }
 }

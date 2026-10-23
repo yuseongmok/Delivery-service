@@ -55,7 +55,7 @@ public class OrderManager : MonoBehaviour {
     void Update(){
         if(dayNightCycle==null)dayNightCycle=FindFirstObjectByType<DayNightCycle>();
         if(dayNightCycle==null)return;
-        if(dayNightCycle.isShopOpen)deliveryClockMinutes+=Time.deltaTime*DeliveryTimeMultiplier/60d;
+        if(dayNightCycle.isShopOpen||(dayNightCycle.IsNightPreparation&&HasActiveOrder))deliveryClockMinutes+=Time.deltaTime*DeliveryTimeMultiplier/60d;
         if(dayNightCycle.isShopOpen&&!prevShopOpenState)OnShopOpened();
         prevShopOpenState=dayNightCycle.isShopOpen;
         if(dayNightCycle.isShopOpen){
@@ -67,9 +67,11 @@ public class OrderManager : MonoBehaviour {
     void RefreshPrices(){SyncPendingCapacity();foreach(var order in pendingOrders){var point=deliveryPoints.Find(p=>p!=null&&p.DeliveryPointID==order.destinationID);order.quotedPrice=Quote(order,point);}Changed();}
     void Changed(){if(orderUI!=null)orderUI.RefreshOrderList(pendingOrders);OrdersChanged?.Invoke();}
     void UpdateOrderNumberDay(){if(dayNightCycle==null)return;if(orderNumberDay==dayNightCycle.currentDay)return;orderNumberDay=dayNightCycle.currentDay;nextOrderNumber=1;generatedToday=0;refillAt.Clear();}
+    public void CloseOrderReception(){pendingOrders.Clear();refillAt.Clear();prevShopOpenState=false;Changed();}
     public void OnShopOpened(){
         if(dayNightCycle==null)dayNightCycle=FindFirstObjectByType<DayNightCycle>();
         if(orderGenerator==null)orderGenerator=FindFirstObjectByType<OrderGenerator>();
+        if(dayNightCycle==null||!dayNightCycle.isShopOpen||dayNightCycle.IsNightPreparation)return;
         UpdateOrderNumberDay();int missing=PendingCapacity-pendingOrders.Count-refillAt.Count;
         for(int i=0;i<missing;i++)GenerateSingleOrder();
     }

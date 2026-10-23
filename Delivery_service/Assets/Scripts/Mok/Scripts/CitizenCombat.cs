@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.AI;
@@ -8,6 +8,7 @@ namespace DeliveryService.Mok {
 [RequireComponent(typeof(NPCControl))]
 public sealed class CitizenCombat : MonoBehaviour {
     public int maximumHealth = 100;
+    public bool missionEnemy;
     public float chaseSpeed = 4.5f, punchRange = 2.8f, punchCooldown = 1.4f;
     public float attackStartRange=2.6f, combatSpacing=2.2f;
     public int punchDamage = 10;
@@ -17,7 +18,7 @@ public sealed class CitizenCombat : MonoBehaviour {
     DayNightCycle clock;
     public float GameMinute => clock!=null?((clock.currentDay-1)*24f+clock.currentTime)*60f:0;
     public bool WasRobbed => clock!=null&&GameMinute<RobberyReadyAt;
-    public bool CanBePickpocketed => GetComponent<SlumRobberCombat>()==null&&clock!=null&&clock.isShopOpen&&!WasRobbed&&Health>0&&!npc.IsDead&&!npc.IsKnockedDown;
+    public bool CanBePickpocketed => !missionEnemy&&GetComponent<SlumRobberCombat>()==null&&clock!=null&&clock.isShopOpen&&!WasRobbed&&Health>0&&!npc.IsDead&&!npc.IsKnockedDown;
     public bool IsAggressive => target != null && Health > 0 && !npc.IsDead;
     public bool IsPunching => punching;
     public NPCControl Npc => npc;
@@ -46,7 +47,7 @@ public sealed class CitizenCombat : MonoBehaviour {
     public bool ReceiveKick(PlayerCombat player,Vector3 direction,int damage) {
         if(Health<=0||npc.IsDead||npc.IsKnockedDown)return false;
         Health=Mathf.Max(0,Health-damage);punching=false;Provoke(player);
-        if(Health==0){target=null;npc.Die(direction,22f);if(GetComponent<SlumRobberCombat>()==null)CitizenCrime.ReportPlayerKill(npc);return true;}
+        if(Health==0){target=null;npc.Die(direction,22f);if(!missionEnemy&&GetComponent<SlumRobberCombat>()==null)CitizenCrime.ReportPlayerKill(npc);return true;}
         npc.KnockDown(direction,5f);StartCoroutine(GetUp());return true;
     }
     IEnumerator GetUp() {
@@ -67,7 +68,8 @@ public sealed class CitizenCombat : MonoBehaviour {
         if(!agent.enabled||!agent.isOnNavMesh)return;
         float distance=Vector3.Distance(transform.position,target.transform.position);
         if(!punching && Time.time>=repath){repath=Time.time+.2f;agent.isStopped=false;
-            if(NavMesh.SamplePosition(target.transform.position,out var dest,3f,NavMesh.AllAreas))agent.SetDestination(dest.position);
+            if(target.RiddenBike){repath=Time.time+.5f;MountedTargetPath.Set(agent,target.transform.position);}
+            else if(NavMesh.SamplePosition(target.transform.position,out var dest,3f,NavMesh.AllAreas))agent.SetDestination(dest.position);
         }
         if(distance<punchRange+.4f){Vector3 dir=target.transform.position-transform.position;dir.y=0;if(dir.sqrMagnitude>.01f)transform.rotation=Quaternion.RotateTowards(transform.rotation,Quaternion.LookRotation(dir),540f*Time.deltaTime);}
         if(!punching&&distance<=attackStartRange&&Time.time>=nextPunch&&target.CanReceiveHit)StartCoroutine(Punch());
@@ -85,7 +87,7 @@ public sealed class CitizenCombat : MonoBehaviour {
         if(agent.enabled&&agent.isOnNavMesh)agent.isStopped=false;
     }
     bool ClearLine(Vector3 from,Vector3 to) {
-        return !Physics.RaycastAll(from,(to-from).normalized,(to-from).magnitude,~0,QueryTriggerInteraction.Ignore).Any(h=>!h.transform.IsChildOf(transform)&&!h.transform.IsChildOf(target.transform));
+        return !Physics.RaycastAll(from,(to-from).normalized,(to-from).magnitude,~0,QueryTriggerInteraction.Ignore).Any(h=>!h.transform.IsChildOf(transform)&&!h.transform.IsChildOf(target.transform)&&!(target.RiddenBike&&h.transform.IsChildOf(target.RiddenBike.transform)));
     }
     // 기존 뼈대를 조정하며 팀원의 걷기 Animator와 컨트롤러는 교체하지 않는다.
     void LateUpdate(){

@@ -3,7 +3,7 @@ public class PlayerInteract : MonoBehaviour {
     public float interactRange=3f;
     public LayerMask motorcycleLayer;
     public Transform playerCameraTransform;
-    void Update(){if(Input.GetKeyDown(KeyCode.E))TryInteract();}
+    void Update(){if(DeliveryService.Mok.PrologueKeyboard.Pressed(UnityEngine.InputSystem.Key.F))TryInteract();}
     void TryInteract(){
         var combat=GetComponent<DeliveryService.Mok.PlayerCombat>();if(combat!=null&&!combat.CanAct)return;
         Vector3 origin=playerCameraTransform!=null?playerCameraTransform.position:transform.position;

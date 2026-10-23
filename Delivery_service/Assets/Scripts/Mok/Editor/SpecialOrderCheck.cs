@@ -1,0 +1,43 @@
+#if UNITY_EDITOR
+using System;using System.Collections;using System.IO;using System.Linq;
+using UnityEngine;using UnityEngine.AI;using UnityEngine.InputSystem;using UnityEngine.InputSystem.LowLevel;
+namespace DeliveryService.Mok.Editor {
+public static class SpecialOrderCheck {
+ static string log;static string report="Logs/Special-order-check.txt";static void Check(bool ok,string text){if(!ok)throw new Exception("Special order: "+text);log+="PASS "+text+"\n";File.WriteAllText(report,log);}
+ static IEnumerator Wait(float seconds){float end=Time.time+seconds;while(Time.time<end)yield return null;}
+ static IEnumerator Key(Key key){InputSystem.QueueStateEvent(Keyboard.current,new KeyboardState(key));yield return null;yield return null;InputSystem.QueueStateEvent(Keyboard.current,new KeyboardState());yield return null;}
+ public static IEnumerator EdgeCases(){
+  report="Logs/Special-order-edges.txt";log="Special order recovery checks\n";yield return Wait(.5f);StoryPhoneInbox.Current.AutoOpenEnabled=false;var s=SpecialOrderMission.Current;var b=s.broker;var p=b.player;
+  typeof(BrokerMission).GetProperty("State").SetValue(b,BrokerMission.Phase.Complete);b.day.EnterNightPreparation();Check(s.Begin(),"isolated recovery setup begins");
+  p.GetComponent<PlayerMove>().enabled=false;Place(p,s.approach.position);yield return Wait(.2f);Check(s.Interact(),"contact on foot");s.AdvanceDialogue(true);
+  var inv=p.GetComponent<ToppingInventory>();
+  var bike=UnityEngine.Object.FindFirstObjectByType<MotorcycleController>();Check(bike.EnterBike(p.gameObject),"mounted interaction setup");Check(!s.Interact()&&!s.SampleAccepted,"cannot hand over through mounted interaction");bike.ExitBike();Place(p,s.approach.position);yield return Wait(.3f);inv.AddPackagedDataStack(new(){new PizzaData(new(){"도우","소스","치즈"},true)});
+  Check(s.Interact(),"sample accepted after dismount");yield return Wait(1.8f);s.Cancel();Check(s.Begin()&&s.approvalPaper.activeSelf&&s.State==SpecialOrderMission.Phase.Approval,"retry restores approval document and accepted box");
+  s.Cancel();Check(s.Begin(),"second retry");int cash=MoneyManager.Instance.currentMoney;b.day.currentDay++;yield return null;Check(s.State==SpecialOrderMission.Phase.Failed&&!s.attendant.gameObject.activeSelf&&MoneyManager.Instance.currentMoney==cash,"day change fails safely without reward");
+ }
+ static void Place(PlayerCombat p,Vector3 at){var cc=p.GetComponent<CharacterController>();cc.enabled=false;p.transform.position=at+Vector3.up*(cc.height*.5f-cc.center.y+.12f);cc.enabled=true;Physics.SyncTransforms();}
+ static IEnumerator Walk(PlayerCombat p,Vector3 at){var path=new NavMeshPath();Check(NavMesh.CalculatePath(p.transform.position,at,NavMesh.AllAreas,path)&&path.status==NavMeshPathStatus.PathComplete,"reception has complete route");var cc=p.GetComponent<CharacterController>();foreach(var corner in path.corners.Skip(1)){float end=Time.time+30;while(Vector2.Distance(new(p.transform.position.x,p.transform.position.z),new(corner.x,corner.z))>.4f){if(Time.time>end)throw new Exception("route blocked "+p.transform.position+" to "+corner);Vector3 d=corner-p.transform.position;d.y=0;p.View.transform.rotation=Quaternion.LookRotation(d);cc.Move((d.normalized*6+Vector3.down*3)*Time.deltaTime);yield return null;}}}
+ public static IEnumerator Verify(){
+  log="Special order chain integration\n";yield return Wait(.4f);var s=SpecialOrderMission.Current;var b=BrokerMission.Current;var p=b.player;var phone=UnityEngine.Object.FindFirstObjectByType<PhoneController>();StoryPhoneInbox.Current.AutoOpenEnabled=false;phone.ClosePhone();
+  Check(s&&s.attendant&&s.box&&s.approvalPaper,"authored scene references exist");Check(!s.Begin(),"mission locked until broker rescue");
+  yield return BrokerMissionCheck.Verify();
+  Check(b.Completed&&!s.Begin(),"broker rescue preserved and daytime blocks followup");b.day.EnterNightPreparation();phone.ClosePhone();b.day.pcUIPanel.SetActive(false);Cursor.lockState=CursorLockMode.Locked;
+  var app=UnityEngine.Object.FindFirstObjectByType<StoryPhoneApp>(FindObjectsInactive.Include);app.Open(false);app.Move(1);app.Confirm();app.Refresh();Check(app.action.text=="미션 시작","phone unlocks special order after rescue");app.Confirm();yield return null;Check(s.State==SpecialOrderMission.Phase.Meet,"phone launches second mission");
+  int day=b.day.currentDay;b.day.OnClick_ConfirmClose();Check(!b.day.IsTransitioning&&b.day.currentDay==day,"night settlement blocked during followup");s.Cancel();Check(s.State==SpecialOrderMission.Phase.Failed&&!s.attendant.gameObject.activeSelf,"cancel cleans mission actor");Check(s.Begin(),"restart allowed");
+  var move=p.GetComponent<PlayerMove>();move.enabled=false;Place(p,b.exit.position);yield return Walk(p,s.approach.position);p.View.transform.LookAt(s.attendant.position+Vector3.up*1.2f);yield return Wait(.15f);yield return Key(UnityEngine.InputSystem.Key.F);Check(s.State==SpecialOrderMission.Phase.Briefing,"F enters reception briefing after physical walk");BrokerMissionCheck.Capture(b,"Special-order-reception");
+  Time.timeScale=0;var phase=s.State;s.AdvanceDialogue(true);Check(s.State==phase,"paused dialogue does not advance");Time.timeScale=1;yield return Key(UnityEngine.InputSystem.Key.Space);Check(s.State==SpecialOrderMission.Phase.Prepare,"dialogue skip hands off to pizza preparation");
+  var inv=p.GetComponent<ToppingInventory>();Check(!s.Interact()&&s.State==SpecialOrderMission.Phase.Prepare,"empty hands cannot deliver");
+  var wrong=new PizzaData(new(){"도우","소스","치즈","고추"},true);inv.AddPackagedDataStack(new(){wrong});Check(!s.Interact()&&inv.GetHeldPackagedPizzas().Count==1,"wrong pizza rejected without loss");inv.ClearPackagedPizzas();
+  Check(!SpecialOrderMission.Valid(new PizzaData(new(){"도우","소스","치즈"},false))&&!SpecialOrderMission.Valid(new PizzaData(new(){"도우","소스","치즈"},true,true)),"raw and ruined pizza rejected");
+  yield return Walk(p,b.exit.position);var k=s.kitchen;Place(p,k.maker.transform.position+Vector3.back*2);MoneyManager.Instance.currentMoney=200000;
+  k.dough.Interact(inv);k.maker.Interact(inv);k.sauce.Interact(inv);k.maker.Interact(inv);k.cheese.Interact(inv);k.maker.Interact(inv);k.maker.Interact(inv);Check(inv.HasPizza(),"existing kitchen creates and picks up cheese pizza at night");k.oven.Interact(inv);yield return Wait(7);k.oven.Interact(inv);Check(inv.HasPizza()&&inv.HeldPizza.GetComponent<Pizza>().IsBaked,"existing oven bakes mission pizza");
+  k.packing.Interact(inv);yield return Wait(.45f);k.packing.Interact(inv);yield return Wait(.5f);k.packing.Interact(inv);yield return Wait(.5f);k.pickup.Interact(inv);Check(inv.HasPackagedPizzas()&&SpecialOrderMission.Valid(inv.GetHeldPackagedPizzas()[0]),"existing box animation produces valid packaged pizza");
+  var good=inv.ClearPackagedPizzas()[0];inv.AddPackagedDataStack(new(){wrong,good});Place(p,b.exit.position);yield return Walk(p,s.approach.position);p.View.transform.LookAt(s.attendant.position+Vector3.up*1.2f);yield return null;yield return Key(UnityEngine.InputSystem.Key.F);Check(s.State==SpecialOrderMission.Phase.Handover&&inv.GetHeldPackagedPizzas().Count==1&&inv.GetHeldPackagedPizzas()[0]==wrong,"physical F consumes exactly matching box from stack");
+  yield return Wait(1.8f);Check(s.State==SpecialOrderMission.Phase.Approval&&s.approvalPaper.activeSelf&&Vector3.Distance(s.box.transform.position,s.boxRest.position)<.05f,"handover completes at counter with approval document");BrokerMissionCheck.Capture(b,"Special-order-approved");
+  s.Cancel();Check(s.Begin()&&s.State==SpecialOrderMission.Phase.Approval,"retry preserves accepted sample without taking another pizza");yield return Key(UnityEngine.InputSystem.Key.Space);Check(s.State==SpecialOrderMission.Phase.Return,"approval unlocks return to Mingi");
+  yield return Walk(p,b.exit.position);Place(p,s.returnPoint.position+s.kitchen.actor.forward*2);p.View.transform.LookAt(k.actor.position+Vector3.up*1.2f);yield return Wait(.3f);yield return Key(UnityEngine.InputSystem.Key.F);Check(s.State==SpecialOrderMission.Phase.Debrief,"return dialogue starts with Mingi");int money=MoneyManager.Instance.currentMoney;yield return Key(UnityEngine.InputSystem.Key.Space);Check(s.Completed&&!SpecialOrderMission.Active&&MoneyManager.Instance.currentMoney==money+s.payment,"story completion pays once");Check(!s.Begin(),"completed mission cannot replay for money");
+  Check(StoryPhoneInbox.Current.Messages[0].localConversation&&StoryPhoneInbox.Current.Messages[0].read,"nearby Mingi completion is direct conversation");app.Open(false);app.Move(1);app.Confirm();app.Refresh();Check(app.action.text.Contains("승인 완료"),"phone retains completion state");app.gameObject.SetActive(false);move.enabled=true;
+ }
+}
+}
+#endif

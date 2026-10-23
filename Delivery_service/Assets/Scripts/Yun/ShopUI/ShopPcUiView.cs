@@ -136,7 +136,7 @@ namespace DeliveryService.Yun.ShopUI
             ButtonAt("OpenBusiness", pages[1].transform, "영업하기", Teal, Color.white, .52f, .40f, .84f, .60f, () => Notify("영업하기"));
             BuildSupplyPage();
             ButtonAt("CloseWindow", background, "닫기  ×", Pale, Navy, .90f, .945f, .985f, .988f, Close, 19);
-            Label("Hint", background, "E / ESC  닫기", 17, Navy, .20f, .012f, .37f, .052f);
+            Label("Hint", background, "F / ESC  닫기", 17, Navy, .20f, .012f, .37f, .052f);
             feedback = Label("ClickFeedback", background, "", 18, Teal, .40f, .012f, .98f, .052f, TextAnchor.MiddleRight);
             actionButtons = new[] {
                 pages[0].transform.Find("Accept").GetComponent<Button>(),

@@ -30,12 +30,14 @@ public sealed class ProloguePlayer : MonoBehaviour {
     public int Ammo { get; private set; } = 30;
     public bool Reloading { get; private set; }
     CharacterController body;
+    PlayerTacticalStance stance;
     float pitch, vertical, nextShot, immuneUntil, recoil;
     float recoilSide, recoilRoll;
     Vector3 rest;
     Vector3 magazineRest, boltRest;
     Quaternion restRotation;
     void Awake() {
+        stance=GetComponent<PlayerTacticalStance>();if(!stance)stance=gameObject.AddComponent<PlayerTacticalStance>();
         body = GetComponent<CharacterController>(); rest = weapon.transform.localPosition;
         restRotation=weapon.transform.localRotation;Ammo=magazineSize;
         if(magazine)magazineRest=magazine.localPosition;
@@ -57,7 +59,7 @@ public sealed class ProloguePlayer : MonoBehaviour {
         // 문자 입력이나 기존 입력축 대신 실제 키 위치를 읽는다.
         var input = Vector3.ClampMagnitude(new Vector3(PrologueKeyboard.Horizontal,0,PrologueKeyboard.Vertical),1);
         vertical = body.isGrounded && vertical < 0 ? -2 : vertical + Physics.gravity.y * Time.deltaTime;
-        if(body.enabled)body.Move((transform.TransformDirection(input) * (PrologueKeyboard.Held(Key.LeftShift) ? 5.5f : 3.8f) + Vector3.up * vertical) * Time.deltaTime);
+        if(body.enabled)body.Move((transform.TransformDirection(input) * (PrologueKeyboard.Held(Key.LeftShift)&&!stance.IsCrouching ? 5.5f : 3.8f)*stance.MoveMultiplier + Vector3.up * vertical) * Time.deltaTime);
         if(!Reloading) {
             ApplyWeaponRecoil();
         }
@@ -89,8 +91,8 @@ public sealed class ProloguePlayer : MonoBehaviour {
     }
     void ApplyRecoil(){view.transform.localRotation=Quaternion.Euler(pitch-recoil,recoilSide,recoilRoll);}
     void ApplyWeaponRecoil(){
-        weapon.transform.localPosition=rest+new Vector3(recoilSide*.012f,0,-recoil*.025f);
-        weapon.transform.localRotation=restRotation*Quaternion.Euler(-recoil*2.5f,recoilSide*2,recoilRoll*2);
+        weapon.transform.localPosition=Vector3.Lerp(rest,new Vector3(0,-.14f,rest.z),stance.AimAmount)+new Vector3(recoilSide*.012f,0,-recoil*.025f);
+        weapon.transform.localRotation=Quaternion.Slerp(restRotation,Quaternion.identity,stance.AimAmount)*Quaternion.Euler(-recoil*2.5f,recoilSide*2,recoilRoll*2);
     }
     IEnumerator Flash() { muzzle.enabled = true; yield return new WaitForSeconds(.05f); muzzle.enabled = false; }
     public bool Reload() {
@@ -104,7 +106,7 @@ public sealed class ProloguePlayer : MonoBehaviour {
             float t=elapsed/reloadSeconds;
             float tilt=Mathf.SmoothStep(0,1,Mathf.Clamp01(t/.2f))*Mathf.SmoothStep(0,1,Mathf.Clamp01((1-t)/.2f));
             weapon.transform.localRotation=restRotation*Quaternion.Euler(10*tilt,15*tilt,-35*tilt);
-            weapon.transform.localPosition=rest+new Vector3(-.07f,.07f,-.08f)*tilt;
+            weapon.transform.localPosition=Vector3.Lerp(rest,new Vector3(0,-.14f,rest.z),stance.AimAmount)+new Vector3(-.07f,.07f,-.08f)*tilt;
             if(magazine) {
                 float pull=t<.52f?Mathf.InverseLerp(.22f,.48f,t):1-Mathf.InverseLerp(.56f,.76f,t);
                 magazine.localPosition=magazineRest+Vector3.down*(Mathf.Clamp01(pull)*.24f);

@@ -132,7 +132,7 @@ namespace DeliveryService.Yun.Editor
                 Require(pc.cameraLookScript == null || pc.cameraLookScript.enabled, "Look restored");
                 typeof(ShopPC).GetMethod("OpenPanel", flags).Invoke(pc, null);
                 typeof(ShopPC).GetMethod("ClosePanel", flags).Invoke(pc, null);
-                Require(!pc.pcUIPanel.activeSelf, "Existing E/Escape close path works");
+                Require(!pc.pcUIPanel.activeSelf, "Existing F/Escape close path works");
                 var cycle = UnityEngine.Object.FindObjectsByType<DayNightCycle>(FindObjectsSortMode.None)
                     .Single(c => c.pcUIPanel == view.gameObject);
                 int dayBefore = cycle.currentDay;

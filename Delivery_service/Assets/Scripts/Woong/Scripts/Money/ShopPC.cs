@@ -18,14 +18,14 @@ public class ShopPC : MonoBehaviour
         if (isPanelOpen)
         {
             float distance = Vector3.Distance(transform.position, playerCamera.position);
-            if (distance > interactRange || Input.GetKeyDown(KeyCode.Escape) || Input.GetKeyDown(KeyCode.E))
+            if (distance > interactRange || Input.GetKeyDown(KeyCode.Escape) || DeliveryService.Mok.PrologueKeyboard.Pressed(UnityEngine.InputSystem.Key.F))
             {
                 ClosePanel();
             }
         }
         else
         {
-            if (Input.GetKeyDown(KeyCode.E))
+            if (DeliveryService.Mok.PrologueKeyboard.Pressed(UnityEngine.InputSystem.Key.F))
             {
                 Ray ray = new Ray(playerCamera.position, playerCamera.forward);
                 RaycastHit hit;

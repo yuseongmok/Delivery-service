@@ -31,8 +31,8 @@ public class BikeShopTrigger : MonoBehaviour
 
     private void Update()
     {
-        // 근처에 있고 E키를 눌렀다면
-        if (isPlayerNear && Input.GetKeyDown(KeyCode.E))
+        // 근처에 있고 F키를 눌렀다면
+        if (isPlayerNear && DeliveryService.Mok.PrologueKeyboard.Pressed(UnityEngine.InputSystem.Key.F))
         {
             if (BikeShopManager.Instance != null && playerBike != null)
             {

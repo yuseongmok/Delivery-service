@@ -31,6 +31,49 @@ public static class BankPrologueCheck {
         if(!File.Exists(path))return;
         string command=File.ReadAllText(path).Trim();File.Delete(path);
         try {
+            if(command=="test-mission-polish"){NightPreparationCheck.Backup();SessionState.SetBool(Key+".missionPolish",true);SessionState.SetBool(Key+".night",true);StartTest();}
+            if(command=="test-companion"){NightPreparationCheck.Backup();SessionState.SetBool(Key+".companion",true);SessionState.SetBool(Key+".night",true);StartTest();}
+            if(command=="mission-polish-install")MissionPolishInstaller.Install();
+            if(command=="rename-story-character")StoryCompanionInstaller.RenameCharacter();
+            if(command=="special-order-preview")SpecialOrderBuilder.Preview();
+            if(command=="test-special-order-edges"){NightPreparationCheck.Backup();SessionState.SetBool(Key+".specialEdges",true);SessionState.SetBool(Key+".night",true);StartTest();}
+            if(command=="test-backdoor-focus"){NightPreparationCheck.Backup();SessionState.SetBool(Key+".backdoorFocus",true);SessionState.SetBool(Key+".night",true);StartTest();}
+            if(command=="test-street-repair"){NightPreparationCheck.Backup();SessionState.SetBool(Key+".streetRepair",true);SessionState.SetBool(Key+".night",true);StartTest();}
+            if(command=="test-venue"){NightPreparationCheck.Backup();SessionState.SetBool(Key+".venue",true);SessionState.SetBool(Key+".night",true);StartTest();}
+            if(command=="venue-finish")VenueFinaleBuilder.Finish();
+            if(command=="test-venue-vehicle"){NightPreparationCheck.Backup();SessionState.SetBool(Key+".venueVehicle",true);SessionState.SetBool(Key+".night",true);StartTest();}
+            if(command=="venue-polish")VenueFinaleBuilder.Polish();
+            if(command=="venue-install")VenueFinaleBuilder.Install();
+            if(command=="mechanic-approach")MechanicBuilder.Approach();
+            if(command=="test-mechanic-focus"){NightPreparationCheck.Backup();SessionState.SetBool(Key+".mechanicFocus",true);SessionState.SetBool(Key+".night",true);StartTest();}
+            if(command=="test-mechanic"){NightPreparationCheck.Backup();SessionState.SetBool(Key+".mechanic",true);SessionState.SetBool(Key+".night",true);StartTest();}
+            if(command=="mechanic-refine")MechanicBuilder.Refine();
+            if(command=="mechanic-install")MechanicBuilder.Install();
+            if(command=="street-repair-apply")StreetRepairSetup.Apply();
+            if(command=="street-repair-inspect")StreetRepairSetup.Inspect();
+            if(command=="backdoor-sightlines")BackdoorBuilder.Sightlines();
+            if(command=="backdoor-navigation")BackdoorBuilder.ReceptionNavigation();
+            if(command=="backdoor-refine")BackdoorBuilder.Refine();
+            if(command=="backdoor-preview")BackdoorBuilder.Preview();
+            if(command=="backdoor-inspect")BackdoorBuilder.Inspect();
+            if(command=="backdoor-install")BackdoorBuilder.Install();
+            if(command=="test-backdoor"){NightPreparationCheck.Backup();SessionState.SetBool(Key+".backdoor",true);SessionState.SetBool(Key+".night",true);StartTest();}
+            if(command=="special-order-install")SpecialOrderBuilder.Install();
+            if(command=="test-special-order"){NightPreparationCheck.Backup();SessionState.SetBool(Key+".specialOrder",true);SessionState.SetBool(Key+".night",true);StartTest();}
+            if(command=="companion-install")StoryCompanionInstaller.Install();
+            if(command=="companion-inspect")StoryCompanionInstaller.Inspect();
+            if(command=="mission-art-inspect")MissionPolishInstaller.Inspect();
+            if(command=="mission-art-refine")MissionPolishInstaller.Refine();
+            if(command=="story-phone-install")StoryPhoneInstaller.Install();
+            if(command=="test-story-phone"){NightPreparationCheck.Backup();SessionState.SetBool(Key+".storyPhone",true);SessionState.SetBool(Key+".night",true);StartTest();}
+            if(command=="tactical-install")TacticalControlCheck.Install();
+            if(command=="test-broker-extra"){NightPreparationCheck.Backup();SessionState.SetBool(Key+".brokerExtra",true);SessionState.SetBool(Key+".night",true);StartTest();}
+            if(command=="test-broker"){NightPreparationCheck.Backup();SessionState.SetBool(Key+".broker",true);SessionState.SetBool(Key+".night",true);StartTest();}
+            if(command=="broker-repair")BrokerMissionBuilder.Repair();
+            if(command=="broker-tune")BrokerMissionBuilder.Tune();
+            if(command=="broker-install")BrokerMissionBuilder.Install();
+            if(command=="night-install")NightPreparationInstaller.Install();
+            if(command=="test-night"){NightPreparationCheck.Backup();SessionState.SetBool(Key+".night",true);StartTest();}
             if(command=="test")StartTest();
             if(command=="build-tutorial")StoryTutorialBuilder.Build();
             if(command=="tune-tutorial")StoryTutorialBuilder.Tune();
@@ -38,6 +81,7 @@ public static class BankPrologueCheck {
             if(command=="polish-tutorial")StoryTutorialBuilder.Polish();
             if(command=="test-chain"){SessionState.SetBool(Key+".chain",true);StartTest();}
             if(command=="test-tutorial"){SessionState.SetBool(Key+".tutorial",true);StartTest();}
+            if(command=="test-tactical-main"){SessionState.SetBool(Key+".tacticalMain",true);SessionState.SetBool(Key+".tutorial",true);StartTest();}
             if(command=="test-input"){SessionState.SetBool(Key+".input",true);StartTest();}
             if(command=="vault-polish")BankPrologueBuilder.PolishVault();
             if(command=="partner-reach")BankPrologueBuilder.RefinePartnerReach();
@@ -107,7 +151,7 @@ public static class BankPrologueCheck {
             .Concat(new[]{"Yun.Achievements.first_packaged_pizza","Yun.Achievements.first_honest_income"})
             .Select(k=>new SavedValue{key=k,value=PlayerPrefs.GetInt(k),exists=PlayerPrefs.HasKey(k)}).ToArray()};
         File.WriteAllText("Temp/BankPrologue-prefs.json",JsonUtility.ToJson(save));
-        EditorSceneManager.OpenScene(SessionState.GetBool(Key+".tutorial",false)?StoryTutorialBuilder.Main:BankPrologueBuilder.ScenePath);
+        EditorSceneManager.OpenScene((SessionState.GetBool(Key+".tutorial",false)||SessionState.GetBool(Key+".night",false))?StoryTutorialBuilder.Main:BankPrologueBuilder.ScenePath);
         SessionState.SetBool(Key,true);SessionState.SetBool(Key+".ok",false);
         EditorApplication.EnterPlaymode();
     }
@@ -128,7 +172,7 @@ public static class BankPrologueCheck {
     static void Tick() {
         if(!EditorApplication.isPlaying||frame==Time.frameCount)return;frame=Time.frameCount;
         try {
-            if(EditorApplication.timeSinceStartup-start>600)throw new Exception("Test timed out");
+            if(EditorApplication.timeSinceStartup-start>900)throw new Exception("Test timed out");
             if(routines.Count>0){
                 var current=routines.Peek();
                 if(current.MoveNext()){if(current.Current is IEnumerator child)routines.Push(child);return;}
@@ -170,7 +214,22 @@ public static class BankPrologueCheck {
     }
     static IEnumerator Run(){
         yield return null;yield return null;
-        if(SessionState.GetBool(Key+".tutorial",false)){SessionState.SetBool(Key+".tutorial",false);yield return RunTutorial();yield break;}
+        if(SessionState.GetBool(Key+".specialEdges",false)){SessionState.SetBool(Key+".specialEdges",false);SessionState.SetBool(Key+".night",false);yield return SpecialOrderCheck.EdgeCases();yield break;}
+        if(SessionState.GetBool(Key+".venueVehicle",false)){SessionState.SetBool(Key+".venueVehicle",false);SessionState.SetBool(Key+".night",false);yield return VenueFinaleCheck.Vehicle();yield break;}
+        if(SessionState.GetBool(Key+".venue",false)){SessionState.SetBool(Key+".venue",false);SessionState.SetBool(Key+".night",false);yield return VenueFinaleCheck.Verify();yield break;}
+        if(SessionState.GetBool(Key+".mechanicFocus",false)){SessionState.SetBool(Key+".mechanicFocus",false);SessionState.SetBool(Key+".night",false);yield return MechanicCheck.Verify(true);yield break;}
+        if(SessionState.GetBool(Key+".mechanic",false)){SessionState.SetBool(Key+".mechanic",false);SessionState.SetBool(Key+".night",false);yield return MechanicCheck.Verify();yield break;}
+        if(SessionState.GetBool(Key+".streetRepair",false)){SessionState.SetBool(Key+".streetRepair",false);SessionState.SetBool(Key+".night",false);yield return StreetRepairCheck.Verify();yield break;}
+        if(SessionState.GetBool(Key+".backdoorFocus",false)){SessionState.SetBool(Key+".backdoorFocus",false);SessionState.SetBool(Key+".night",false);yield return BackdoorCheck.Verify(true);yield break;}
+        if(SessionState.GetBool(Key+".backdoor",false)){SessionState.SetBool(Key+".backdoor",false);SessionState.SetBool(Key+".night",false);yield return BackdoorCheck.Verify();yield break;}
+        if(SessionState.GetBool(Key+".specialOrder",false)){SessionState.SetBool(Key+".specialOrder",false);SessionState.SetBool(Key+".night",false);yield return SpecialOrderCheck.Verify();yield break;}
+        if(SessionState.GetBool(Key+".companion",false)){SessionState.SetBool(Key+".companion",false);SessionState.SetBool(Key+".night",false);yield return StoryCompanionCheck.Verify();yield break;}
+        if(SessionState.GetBool(Key+".missionPolish",false)){SessionState.SetBool(Key+".missionPolish",false);SessionState.SetBool(Key+".night",false);yield return MissionPolishCheck.Verify();yield break;}
+        if(SessionState.GetBool(Key+".storyPhone",false)){SessionState.SetBool(Key+".storyPhone",false);SessionState.SetBool(Key+".night",false);yield return StoryPhoneCheck.Verify();yield break;}
+        if(SessionState.GetBool(Key+".brokerExtra",false)){SessionState.SetBool(Key+".brokerExtra",false);SessionState.SetBool(Key+".night",false);yield return BrokerMissionCheck.Extra();yield break;}
+        if(SessionState.GetBool(Key+".broker",false)){SessionState.SetBool(Key+".broker",false);SessionState.SetBool(Key+".night",false);yield return BrokerMissionCheck.Verify();yield break;}
+        if(SessionState.GetBool(Key+".night",false)){SessionState.SetBool(Key+".night",false);yield return NightPreparationCheck.Verify();yield break;}
+        if(SessionState.GetBool(Key+".tutorial",false)){SessionState.SetBool(Key+".tutorial",false);if(SessionState.GetBool(Key+".tacticalMain",false)){SessionState.SetBool(Key+".tacticalMain",false);yield return TacticalControlCheck.VerifyMain();}else yield return RunTutorial();yield break;}
         var d=UnityEngine.Object.FindFirstObjectByType<BankPrologue>();d.autoEnterGame=false;
         if(SessionState.GetBool(Key+".input",false)){SessionState.SetBool(Key+".input",false);yield return RunKeyboard(d);yield break;}
         if(SessionState.GetBool(Key+".shop",false)){SessionState.SetBool(Key+".shop",false);yield return RunShopArrival(d);yield break;}
@@ -395,6 +454,7 @@ public static class BankPrologueCheck {
             float openingEnd=Time.time+10;
             while(d.Current==BankPrologue.Phase.Opening&&Time.time<openingEnd)yield return null;
             Check(d.CanPlay,"Space input skips opening and hands control back");
+            yield return TacticalControlCheck.Verify(d.player.gameObject,d.player.view,keyboard);
             Set(d.player,"immuneUntil",Time.time+1000);
             // 제어 함수를 직접 호출하지 않고 입력 이벤트로 일반 Update를 검증한다.
             var startPosition=d.player.transform.position;
@@ -413,7 +473,7 @@ public static class BankPrologueCheck {
             Check(d.Paused&&Time.timeScale==0,"Escape input pauses gameplay");
             yield return HoldKey(keyboard,UnityEngine.InputSystem.Key.Enter,.15f);
             Check(!d.Paused&&Time.timeScale==1,"Enter input resumes gameplay");
-            // 탑승 전제는 준비하되 탑승 호출 자체는 E 입력으로만 실행한다.
+            // 탑승 전제는 준비하되 탑승 호출 자체는 F 입력으로만 실행한다.
             d.StopAllCoroutines();
             foreach(var officer in d.officers){officer.Stop();officer.gameObject.SetActive(false);}
             Set(d,"<Current>k__BackingField",BankPrologue.Phase.Escape);
@@ -423,9 +483,9 @@ public static class BankPrologueCheck {
             agent.Warp(d.accomplice.boardingPoint.position);
             Check(d.accomplice.ReadyToBoard,"companion ready at passenger door");
             yield return null;yield return null;
-            Check(d.RouteStep<d.escapeRoute.Length&&d.prompt.text.Contains("E  "),"boarding prompt is shown even when intermediate route markers were missed");
-            yield return HoldKey(keyboard,UnityEngine.InputSystem.Key.E,.15f);
-            Check(d.Current==BankPrologue.Phase.Getaway,"E input starts vehicle boarding even with missed route markers");
+            Check(d.RouteStep<d.escapeRoute.Length&&d.prompt.text.Contains("F  "),"boarding prompt is shown even when intermediate route markers were missed");
+            yield return HoldKey(keyboard,UnityEngine.InputSystem.Key.F,.15f);
+            Check(d.Current==BankPrologue.Phase.Getaway,"F input starts vehicle boarding even with missed route markers");
             until=Time.time+15;while(d.Current==BankPrologue.Phase.Getaway&&Time.time<until)yield return null;
             Check(d.Current==BankPrologue.Phase.Driving&&d.drive.Driving,"boarding animation hands over driving control");
             var car=d.getawayCar.GetComponent<Rigidbody>();

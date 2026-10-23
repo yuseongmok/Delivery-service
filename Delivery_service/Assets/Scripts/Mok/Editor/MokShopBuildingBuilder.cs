@@ -93,7 +93,7 @@ var switchGo=Cube("LightSwitch",new Vector3(4.22f,1.35f,2.25f),new Vector3(.1f,.
 var switchWorld=switchGo.transform.position;switchGo.GetComponent<BoxCollider>().size=new Vector3(1,1,1);
 var controller=switchGo.AddComponent<ShopLightSwitch>();controller.lights=lights.ToArray();controller.lampSurfaces=lamps.ToArray();controller.signText=signs.ToArray();
 Cube("SwitchRocker",new Vector3(4.159f,1.35f,2.25f),new Vector3(.025f,.13f,.10f),mats[1],root.transform);
-controller.label=Text("SwitchLabel","E  조명 끄기",new Vector3(4.15f,1.59f,2.25f),.025f,root.transform,new Vector3(0,90,0));controller.SetLights(true);
+controller.label=Text("SwitchLabel","F  조명 끄기",new Vector3(4.15f,1.59f,2.25f),.025f,root.transform,new Vector3(0,90,0));controller.SetLights(true);
 // 불러온 부모 오브젝트에도 기존 건물 메시가 있다.
 foreach(var r in shop.GetComponents<Renderer>()){Undo.RecordObject(r,"Hide original shop mesh");r.enabled=false;PrefabUtility.RecordPrefabInstancePropertyModifications(r);}
 foreach(var c in shop.GetComponents<Collider>()){Undo.RecordObject(c,"Disable original shop collision");c.enabled=false;PrefabUtility.RecordPrefabInstancePropertyModifications(c);}

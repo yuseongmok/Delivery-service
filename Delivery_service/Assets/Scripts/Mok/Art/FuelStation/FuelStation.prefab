@@ -1932,7 +1932,7 @@ TextMesh:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7804089646833907425}
-  m_Text: "E  \uC8FC\uC720"
+  m_Text: "F  \uC8FC\uC720"
   m_OffsetZ: 0
   m_CharacterSize: 0.055
   m_LineSpacing: 1

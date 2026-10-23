@@ -23,7 +23,7 @@ public class InteractHoverManager : MonoBehaviour {
   if(existing.Length>0){foreach(var line in existing)if(line.gameObject.activeInHierarchy)EnableLine(line);}
   else if(target.GetComponentInChildren<Renderer>()!=null)EnableLine(target.gameObject.AddComponent<Outline>());
   string message="";var thrown=target.GetComponent<ThrownBrick>();
-  if(thrown!=null)message="E를 눌러 줍기";
+  if(thrown!=null)message="F를 눌러 줍기";
   else {var info=target.GetComponentInParent<InteractMessage>();if(info!=null&&MessageManager.Instance!=null)message=MessageManager.Instance.GetMessage(info.messageID);}
   if(interactText!=null){interactText.font=MokUIFont.Font;interactText.text=message;interactText.gameObject.SetActive(!string.IsNullOrEmpty(message));}
   if(interactUIContainer!=null)interactUIContainer.SetActive(!string.IsNullOrEmpty(message));

@@ -7,6 +7,9 @@ public class DayNightCycle : MonoBehaviour
     [Header("Game System")]
     public int currentDay = 1;
     public bool isShopOpen = false;
+    public bool storyDayNightEnabled = false;
+    public bool IsNightPreparation => storyDayNightEnabled && currentTime >= 18f;
+    public bool IsTransitioning => isTransitioning;
     public MonoBehaviour cameraLookScript;
 
     public float dailyIncome = 0f;
@@ -73,7 +76,11 @@ public class DayNightCycle : MonoBehaviour
         {
             currentTime += (Time.deltaTime / 3600f) * timeMultiplier;
 
-            if (currentTime >= 24f && !isTransitioning)
+            if (storyDayNightEnabled && currentTime >= 18f && !DeliveryService.Mok.StoryTutorial.Active)
+            {
+                EnterNightPreparation();
+            }
+            else if (!storyDayNightEnabled && currentTime >= 24f && !isTransitioning)
             {
                 isTransitioning = true;
                 StartCoroutine(TransitionToNextDay());
@@ -104,7 +111,7 @@ public class DayNightCycle : MonoBehaviour
     }
     public void OnClick_OpenShop()
     {
-        if (isShopOpen || isTransitioning) return;
+        if (isShopOpen || isTransitioning || IsNightPreparation) return;
 
         isShopOpen = true;
         openShopButton.SetActive(false);
@@ -121,6 +128,7 @@ public class DayNightCycle : MonoBehaviour
         closeShopButton.SetActive(false);
         pcUIPanel.SetActive(false);
         summaryPanel.SetActive(true);
+        if (storyDayNightEnabled) DeliveryService.Mok.NightPreparationView.SetClosingLabels(this);
 
         if (MoneyManager.Instance != null)
         {
@@ -131,7 +139,9 @@ public class DayNightCycle : MonoBehaviour
 
     public void OnClick_ConfirmClose()
     {
-        if (isTransitioning) return;
+        if (DeliveryService.Mok.BrokerMission.Active) return;
+        if (isTransitioning || DeliveryService.Mok.StoryTutorial.Active) return;
+        if (storyDayNightEnabled && !IsNightPreparation) { EnterNightPreparation(); ClosePCMenu(); return; }
 
         isTransitioning = true;
         StartCoroutine(TransitionToNextDay());
@@ -139,12 +149,27 @@ public class DayNightCycle : MonoBehaviour
 
     public void OnClick_CancelClose()
     {
+        if (IsNightPreparation || isTransitioning) return;
         summaryPanel.SetActive(false);
         closeShopButton.SetActive(true);
         pcUIPanel.SetActive(true);
         isShopOpen = true;
     }
 
+
+    // 마감은 정산과 다음 날 이동 대신 밤 준비를 연다. 비용은 밤을 마칠 때 한 번만 정산한다.
+    public void EnterNightPreparation()
+    {
+        if (!storyDayNightEnabled || isTransitioning || DeliveryService.Mok.StoryTutorial.Active) return;
+        bool announce = isShopOpen || currentTime < 18f;
+        currentTime = 18f;
+        isShopOpen = false;
+        if (openShopButton) openShopButton.SetActive(false);
+        if (closeShopButton) closeShopButton.SetActive(false);
+        if (summaryPanel) summaryPanel.SetActive(false);
+        FindFirstObjectByType<OrderManager>()?.CloseOrderReception();
+        if (announce) DeliveryService.Mok.DeliveryRequestNotice.Show("낮 영업 종료 · 휴대폰 문자와 미션 앱을 확인하세요.");
+    }
 
     private void ClosePCMenu()
     {

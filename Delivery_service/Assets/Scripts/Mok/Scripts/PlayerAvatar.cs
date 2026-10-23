@@ -7,54 +7,54 @@ public sealed class PlayerAvatar : MonoBehaviour {
     public PlayerRagdoll ragdoll;
     public Renderer[] upperBody;
     public PlayerCombat combat;
-    public const float KickDuration=.65f,HitTime=.22f;
-    Vector3 restFoot;Quaternion restFootRotation;float kickTime;bool kicking;Vector3 previous;bool wasPhysical;
+    // 이전 전투 API 이름은 유지하되 실제 동작은 좌우 주먹이다.
+    public const float KickDuration=.52f,HitTime=.18f;
+    public Transform leftFist,rightFist;bool leftPunch;
+    float kickTime;bool kicking;Vector3 previous;bool wasPhysical;
     public bool IsPhysical {get{if(ragdoll!=null&&ragdoll.IsActive)return true;var rb=GetComponentInParent<Rigidbody>();return rb!=null&&!rb.isKinematic;}}
     void OnEnable(){RenderPipelineManager.beginCameraRendering+=BeforeCamera;RenderPipelineManager.endCameraRendering+=AfterCamera;previous=transform.position;}
-    public void PoseKick(float seconds){if(animator==null||!animator.isHuman)return;if(!kicking){var foot=animator.GetBoneTransform(HumanBodyBones.RightFoot);restFoot=transform.InverseTransformPoint(foot.position);restFootRotation=Quaternion.Inverse(transform.rotation)*foot.rotation;}kickTime=seconds;kicking=true;}
-    public void StopKick(){bool wasKicking=kicking;kicking=false;if(wasKicking&&animator!=null&&animator.isActiveAndEnabled&&!IsPhysical)animator.CrossFadeInFixedTime("Idle",.1f,0);}
+    public void PoseKick(float seconds){if(animator==null||!animator.isHuman)return;if(!kicking)leftPunch=!leftPunch;kickTime=seconds;kicking=true;}
+    public void StopKick(){bool wasKicking=kicking;kicking=false;if(leftFist)leftFist.gameObject.SetActive(false);if(rightFist)rightFist.gameObject.SetActive(false);if(wasKicking&&animator!=null&&animator.isActiveAndEnabled&&!IsPhysical)animator.CrossFadeInFixedTime("Idle",.1f,0);}
     void LateUpdate(){
         if(animator==null)return;if(ragdoll!=null&&ragdoll.IsActive){kicking=false;return;}
         bool physical=IsPhysical;
         if(physical){kicking=false;animator.Play("Tumble",0,0);animator.Update(0);}
-        else if(kicking){animator.Play("Kick",0,Mathf.Clamp01(kickTime/KickDuration));animator.Update(0);ApplyKickLeg();}
+        else if(kicking){animator.Play("Idle",0,0);animator.Update(0);ApplyPunch();}
         else{if(wasPhysical)animator.Play("Idle",0,0);animator.SetFloat("Speed",Vector3.ProjectOnPlane(transform.position-previous,Vector3.up).magnitude/Mathf.Max(Time.deltaTime,.001f));}
         previous=transform.position;wasPhysical=physical;
     }
-    // 두 관절 IK로 무릎을 접었다 펴며 실제 발을 타격 시점에 앞으로 보낸다.
-    void ApplyKickLeg(){
-        var hip=animator.GetBoneTransform(HumanBodyBones.RightUpperLeg);
-        var knee=animator.GetBoneTransform(HumanBodyBones.RightLowerLeg);
-        var foot=animator.GetBoneTransform(HumanBodyBones.RightFoot);
-        // 체형 기준으로 무릎 들기 → 뻗기 → 다시 접기 → 착지한다.
-        float length=Vector3.Distance(hip.position,knee.position)+Vector3.Distance(knee.position,foot.position);
-        float scale=Mathf.Max(.001f,transform.lossyScale.y);float leg=length/scale;
-        Vector3 hipLocal=transform.InverseTransformPoint(hip.position);
-        // 정면 시야의 아래쪽에 신발이 들어오도록 무릎을 높이고 상단으로 뻗는다.
-        float t=kickTime;Vector3 tuck=new Vector3(restFoot.x,hipLocal.y-leg*.05f,hipLocal.z+leg*.40f);
-        Vector3 extended=new Vector3(restFoot.x,hipLocal.y+leg*.52f,hipLocal.z+leg*.84f);
-        Vector3 local=t<.12f?Vector3.Lerp(restFoot,tuck,Mathf.SmoothStep(0,1,t/.12f)):
-            t<HitTime?Vector3.Lerp(tuck,extended,Mathf.SmoothStep(0,1,(t-.12f)/(HitTime-.12f))):
-            t<.34f?extended:t<.49f?Vector3.Lerp(extended,tuck,Mathf.SmoothStep(0,1,(t-.34f)/.15f)):
-            Vector3.Lerp(tuck,restFoot,Mathf.SmoothStep(0,1,(t-.49f)/(KickDuration-.49f)));
-        Vector3 target=transform.TransformPoint(local),origin=hip.position;
-        float a=Vector3.Distance(origin,knee.position),b=Vector3.Distance(knee.position,foot.position);
-        Vector3 direction=(target-origin).normalized;float d=Mathf.Clamp(Vector3.Distance(target,origin),.02f,a+b-.001f);
-        target=origin+direction*d;
-        float along=(a*a-b*b+d*d)/(2*d),height=Mathf.Sqrt(Mathf.Max(0,a*a-along*along));
-        Vector3 bend=Vector3.ProjectOnPlane(transform.forward+transform.up,direction);
-        if(bend.sqrMagnitude<.001f)bend=Vector3.ProjectOnPlane(transform.up,direction);
-        bend.Normalize();
-        Vector3 joint=origin+direction*along+bend*height;
-        hip.rotation=Quaternion.FromToRotation(knee.position-origin,joint-origin)*hip.rotation;
-        knee.rotation=Quaternion.FromToRotation(foot.position-knee.position,target-knee.position)*knee.rotation;
-        foot.rotation=transform.rotation*restFootRotation;
+    void ApplyPunch(){
+        float t=kickTime;
+        float thrust=t<.07f?0:t<HitTime?Mathf.SmoothStep(0,1,(t-.07f)/(HitTime-.07f)):1-Mathf.SmoothStep(0,1,(t-HitTime)/(KickDuration-HitTime));
+        var eye=combat.View.transform;
+        for(int side=0;side<2;side++){
+            bool left=side==0;float sign=left?-1:1;float reach=left==leftPunch?thrust:0;
+            var fist=left?leftFist:rightFist;
+            Vector3 local=new Vector3(sign*Mathf.Lerp(.19f,.045f,reach),Mathf.Lerp(-.15f,-.045f,reach),Mathf.Lerp(.38f,.54f,reach));
+            float lift=Mathf.Min(Mathf.SmoothStep(0,1,t/.065f),1-Mathf.SmoothStep(0,1,(t-(KickDuration-.10f))/.10f));local.y-=(1-lift)*.4f;
+            if(fist){
+                fist.gameObject.SetActive(true);fist.localPosition=local;fist.localRotation=Quaternion.Euler(Mathf.Lerp(-20,-4,reach),-sign*reach*12,sign*Mathf.Lerp(-30,-8,reach));
+                // 소매를 화면 아래 팔 위치까지 이어 주먹만 공중에 떠 보이지 않게 한다.
+                var sleeve=fist.Find("Jacket cuff");if(sleeve){var wrist=new Vector3(0,-.005f,-.07f);var shoulder=fist.InverseTransformPoint(eye.TransformPoint(new Vector3(sign*.27f,-.42f,.06f)));var delta=wrist-shoulder;sleeve.localPosition=(wrist+shoulder)*.5f;sleeve.localRotation=Quaternion.FromToRotation(Vector3.up,delta.normalized);sleeve.localScale=new Vector3(.085f,delta.magnitude+.025f,.085f);}
+            }
+            var arm=animator.GetBoneTransform(left?HumanBodyBones.LeftUpperArm:HumanBodyBones.RightUpperArm);
+            var elbow=animator.GetBoneTransform(left?HumanBodyBones.LeftLowerArm:HumanBodyBones.RightLowerArm);
+            var hand=animator.GetBoneTransform(left?HumanBodyBones.LeftHand:HumanBodyBones.RightHand);
+            Vector3 goal=eye.TransformPoint(local),origin=arm.position;
+            float a=Vector3.Distance(origin,elbow.position),b=Vector3.Distance(elbow.position,hand.position);
+            Vector3 axis=(goal-origin).normalized;float d=Mathf.Clamp(Vector3.Distance(origin,goal),.04f,a+b-.005f);goal=origin+axis*d;
+            float along=(a*a-b*b+d*d)/(2*d),height=Mathf.Sqrt(Mathf.Max(0,a*a-along*along));
+            Vector3 bend=Vector3.ProjectOnPlane(transform.right*sign-transform.up,axis).normalized;
+            Vector3 joint=origin+axis*along+bend*height;
+            arm.rotation=Quaternion.FromToRotation(elbow.position-origin,joint-origin)*arm.rotation;
+            elbow.rotation=Quaternion.FromToRotation(hand.position-elbow.position,goal-elbow.position)*elbow.rotation;
+        }
     }
     void BeforeCamera(ScriptableRenderContext context,Camera camera){
         bool firstPerson=combat!=null&&camera==combat.View;
         foreach(var r in upperBody)if(r!=null)r.shadowCastingMode=firstPerson?ShadowCastingMode.ShadowsOnly:ShadowCastingMode.On;
     }
     void AfterCamera(ScriptableRenderContext context,Camera camera){foreach(var r in upperBody)if(r!=null)r.shadowCastingMode=ShadowCastingMode.On;}
-    void OnDisable(){kicking=false;RenderPipelineManager.beginCameraRendering-=BeforeCamera;RenderPipelineManager.endCameraRendering-=AfterCamera;foreach(var r in upperBody)if(r!=null)r.shadowCastingMode=ShadowCastingMode.On;}
+    void OnDisable(){StopKick();RenderPipelineManager.beginCameraRendering-=BeforeCamera;RenderPipelineManager.endCameraRendering-=AfterCamera;foreach(var r in upperBody)if(r!=null)r.shadowCastingMode=ShadowCastingMode.On;}
 }
 }

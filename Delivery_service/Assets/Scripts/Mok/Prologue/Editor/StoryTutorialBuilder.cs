@@ -28,8 +28,8 @@ public static class StoryTutorialBuilder {
    var points=new[]{t.insideStand.position,shop.TransformPoint(new Vector3(3.22f,.015f,.8f)),shop.TransformPoint(new Vector3(3.22f,.015f,3.8f)),shop.TransformPoint(new Vector3(3.22f,.015f,5.3f)),t.outsideStand.position};
    t.guideRoute=points.Select((p,i)=>{var a=new GameObject("Walk "+i).transform;a.SetParent(route,false);a.position=p;return a;}).ToArray();
   }
-  t.dialogue[0]="나: 어디서부터 하는데?\n민기: 앞치마부터. 컴퓨터를 보고 E를 눌러, 개점해 봐.";
-  t.dialogue[2]="민기: E로 도우를 집어서 제작대에 올려. 컴퓨터는 E로 닫으면 돼. 재료는 내가 준비했어.";
+  t.dialogue[0]="나: 어디서부터 하는데?\n민기: 앞치마부터. 컴퓨터를 보고 F를 눌러, 개점해 봐.";
+  t.dialogue[2]="민기: F로 도우를 집어서 제작대에 올려. 컴퓨터는 F로 닫으면 돼. 재료는 내가 준비했어.";
   t.dialogue[12]="민기: 첫 손님이 별 다섯 개를 줬네. 지도 앱에서 매장을 골라 돌아와. 안에서 기다릴게.";
   EditorUtility.SetDirty(t);EditorSceneManager.SaveScene(scene);AssetDatabase.SaveAssets();
   File.WriteAllText("Logs/Tutorial-polish.txt","Saved physical floor height "+floor+", PC reference, doorway route and contextual dialogue.");

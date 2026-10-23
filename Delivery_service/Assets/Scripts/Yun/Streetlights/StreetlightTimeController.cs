@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace DeliveryService.Yun.Streetlights
 {
@@ -29,8 +29,8 @@ namespace DeliveryService.Yun.Streetlights
         [ContextMenu("Refresh from game clock")]
         public void Refresh()
         {
-            // Shared by streetlights and motorcycle headlights; closing/canceling follows business state.
-            bool shouldLight = isActiveAndEnabled && clock != null && clock.isShopOpen && (clock.currentTime >= turnOnHour || (clock.currentTime >= 6f && clock.currentTime < 9f));
+            // 밤 준비 시간에는 영업이 끝나도 가로등과 전조등을 유지한다.
+            bool shouldLight = isActiveAndEnabled && clock != null && (clock.isShopOpen || clock.IsNightPreparation) && (clock.currentTime >= turnOnHour || (clock.currentTime >= 6f && clock.currentTime < 9f));
             if (!applied || shouldLight != IsLit) SetLit(shouldLight);
         }
 

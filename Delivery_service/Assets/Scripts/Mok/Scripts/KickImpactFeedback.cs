@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Rendering;
 namespace DeliveryService.Mok {
 // 명중 순간에만 짧은 저음과 작은 화면 충격을 더한다. 조작용 카메라 각도는 바꾸지 않는다.
@@ -18,7 +18,7 @@ public sealed class KickImpactFeedback : MonoBehaviour {
    float bass=Mathf.Sin(2*Mathf.PI*(110*t-100*t*t))*Mathf.Exp(-t*24);
    samples[i]=Mathf.Min(1,t/.002f)*(bass*.65f+smoothNoise*Mathf.Exp(-t*45)*.5f+noise*Mathf.Exp(-t*180)*.12f);
   }
-  clip=AudioClip.Create("발차기 명중",samples.Length,1,rate,false);clip.SetData(samples,0);
+  clip=AudioClip.Create("주먹 명중",samples.Length,1,rate,false);clip.SetData(samples,0);
  }
  void OnEnable(){RenderPipelineManager.beginCameraRendering+=BeforeCamera;RenderPipelineManager.endCameraRendering+=AfterCamera;}
  public static void Play(PlayerCombat player){Play(player,WeaponKind.None);}

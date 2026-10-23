@@ -26,7 +26,7 @@ public sealed class PoliceCombat:MonoBehaviour {
   if(target==null||target.View==null)return false;Vector3 from=transform.position+Vector3.up*1.35f,to=target.View.transform.position;
   if(Vector3.Distance(from,to)>18)return false;
   foreach(var hit in Physics.RaycastAll(from,(to-from).normalized,Vector3.Distance(from,to),Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore).OrderBy(h=>h.distance)){
-   if(hit.transform.IsChildOf(transform))continue;return hit.transform.IsChildOf(target.transform);
+   if(hit.transform.IsChildOf(transform))continue;return hit.transform.IsChildOf(target.transform)||(target.RiddenBike&&hit.transform.IsChildOf(target.RiddenBike.transform));
   }return true;
  }
  void Update(){

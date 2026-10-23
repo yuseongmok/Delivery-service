@@ -43,7 +43,7 @@ namespace DeliveryService.Mok.ShopUI
         {
             if(type==ExpenseType.LoanBorrow||type==ExpenseType.LoanRepayment)return;
             // 개점 버튼을 누르기 전 거래는 오늘 통계에 포함하지 않는다.
-            if (cycle == null || (!cycle.isShopOpen && type!=ExpenseType.LoanInterest && type!=ExpenseType.Rent)) return;
+            if (cycle == null || (!cycle.isShopOpen && !(cycle.IsNightPreparation && HasOpenedToday) && type!=ExpenseType.LoanInterest && type!=ExpenseType.Rent)) return;
             BeginDay();
             if (amount > 0) Income += amount;
             else

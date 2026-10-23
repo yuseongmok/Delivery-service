@@ -16,7 +16,7 @@ public sealed class ThrownBrick:MonoBehaviour,IInteractable {
   GUI.Label(new Rect(x-110,y-25,220,62),$"▼ {WeaponCatalog.Names[(int)kind]}\n{Vector3.Distance(cam.transform.position,transform.position):0}m",style);
   // 공통 안내 UI가 없는 씬에서도 회수 문구를 표시한다.
   var input=owner.GetComponent<PlayerInteraction>();var hover=owner.GetComponentInChildren<InteractHoverManager>();
-  if(input!=null&&(hover==null||hover.interactText==null)&&InteractionFocus.Find(input)==transform){style.normal.textColor=Color.white;GUI.Label(new Rect(0,Screen.height-125,Screen.width,40),"E를 눌러 줍기",style);}
+  if(input!=null&&(hover==null||hover.interactText==null)&&InteractionFocus.Find(input)==transform){style.normal.textColor=Color.white;GUI.Label(new Rect(0,Screen.height-125,Screen.width,40),"F를 눌러 줍기",style);}
  }
  void Update(){if(owner==null){Destroy(gameObject);return;}if(transform.position.y< -50){transform.position=owner.transform.position+Vector3.up;GetComponent<Rigidbody>().linearVelocity=Vector3.zero;}}
 }

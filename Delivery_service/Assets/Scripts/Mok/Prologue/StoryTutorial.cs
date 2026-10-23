@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.AI;
@@ -145,9 +145,7 @@ public sealed class StoryTutorial : MonoBehaviour {
         if(!running||!marker)return;
         var cam=Camera.main;marker.gameObject.SetActive(target&&cam);
         if(!target||!cam)return;
-        var point=cam.WorldToScreenPoint(target.position+Vector3.up);marker.gameObject.SetActive(point.z>0);
-        marker.transform.position=new Vector3(Mathf.Clamp(point.x,50,Screen.width-50),Mathf.Clamp(point.y,100,Screen.height-80),0);
-        marker.text="목표 · "+Mathf.RoundToInt(Vector3.Distance(inventory.transform.position,target.position))+"m";
+        StoryTargetDiamond.Place(marker,cam,target.position+Vector3.up,inventory.transform.position,"목표");
     }
     void Finish(){
         Completed=true;running=false;day.timeMultiplier=oldMultiplier;orders.EndStoryLesson();

@@ -36,7 +36,7 @@ public sealed class RobberLoot : MonoBehaviour, IInteractable {
         var camera=player.View;Vector3 point=camera.WorldToScreenPoint(transform.position+Vector3.up*.35f);
         if(point.z<=0||Vector3.Distance(player.transform.position,transform.position)>12)return;
         var style=new GUIStyle(GUI.skin.label){font=MokUIFont.Font,fontSize=18,alignment=TextAnchor.MiddleCenter};style.normal.textColor=new Color(1,.85f,.35f);
-        GUI.Label(new Rect(point.x-160,Screen.height-point.y-25,320,50),cash>0?$"되찾을 현금 {cash:N0}원 · E로 줍기":player.GetComponent<ToppingInventory>().HasItem()?"되찾을 피자 · 손을 비워주세요":"되찾을 피자 · E로 줍기",style);
+        GUI.Label(new Rect(point.x-160,Screen.height-point.y-25,320,50),cash>0?$"되찾을 현금 {cash:N0}원 · F로 줍기":player.GetComponent<ToppingInventory>().HasItem()?"되찾을 피자 · 손을 비워주세요":"되찾을 피자 · F로 줍기",style);
     }
 }}
 

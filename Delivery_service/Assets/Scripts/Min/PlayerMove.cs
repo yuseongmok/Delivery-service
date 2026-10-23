@@ -20,6 +20,7 @@ public class PlayerMove : MonoBehaviour
     private void Awake()
     {
         controller = GetComponent<CharacterController>();
+        if (!GetComponent<DeliveryService.Mok.PlayerTacticalStance>()) gameObject.AddComponent<DeliveryService.Mok.PlayerTacticalStance>();
     }
 
     private void Update()
@@ -57,6 +58,8 @@ public class PlayerMove : MonoBehaviour
 
         float speed = Input.GetKey(KeyCode.LeftShift) ? runSpeed : walkSpeed;
 
+        var stance = GetComponent<DeliveryService.Mok.PlayerTacticalStance>();
+        if (stance != null) speed = (stance.IsCrouching ? walkSpeed : speed) * stance.MoveMultiplier;
         Vector3 velocity = direction * speed;
 
         // 바닥에 있을 때 중력 초기화
@@ -65,7 +68,7 @@ public class PlayerMove : MonoBehaviour
             verticalVelocity = -2f;
         }
 
-        if (Input.GetButtonDown("Jump") &&
+        if ((stance == null || !stance.IsCrouching) && Input.GetButtonDown("Jump") &&
             controller.isGrounded)
         {
             verticalVelocity =

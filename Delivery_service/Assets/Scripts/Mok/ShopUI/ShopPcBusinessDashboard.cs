@@ -40,14 +40,14 @@ namespace DeliveryService.Mok.ShopUI
         {
             if (cycle == null || ledger == null) return;
             if(openingRent==null&&openingGate!=null)openingRent=openingGate.transform.Find("OpeningCard/Description")?.GetComponent<Text>();
-            if(openingRent!=null){openingRent.text=$"오늘 임대료 {DailyRent.Cost(cycle.currentDay):N0}원 · 매일 3,000원 증가\n마감 후 다음 날로 넘어갈 때 차감됩니다.";openingRent.font=MokUIFont.Font;openingRent.resizeTextForBestFit=true;openingRent.resizeTextMinSize=18;}
+            if(openingRent!=null){openingRent.text="낮에는 주문을 골라 배달하고, 밤에는 휴대폰에서 다음 사건을 준비하세요.";openingRent.font=MokUIFont.Font;openingRent.resizeTextForBestFit=true;openingRent.resizeTextMinSize=18;}
             bool open = cycle.isShopOpen;
-            openingGate.SetActive(!open);
+            openingGate.SetActive(!open && !cycle.IsNightPreparation);
             orderList.SetActive(open);
             closeButton.interactable = open;
             bool current = ledger.HasOpenedToday;
             periodLabel.text = $"DAY {cycle.currentDay:00}  ·  오늘 개점부터 현재까지";
-            statusLabel.text = DailyRent.Preview(cycle.currentDay);
+            statusLabel.text = cycle.IsNightPreparation ? "낮 영업이 끝났습니다. 미션은 휴대폰에서 확인하세요. 영업 종료 탭에서 다음 날로 넘어갈 수 있습니다." : DailyRent.Preview(cycle.currentDay);
             statusLabel.resizeTextForBestFit=true;statusLabel.resizeTextMinSize=16;statusLabel.resizeTextMaxSize=22;
             statusLabel.color=DailyRent.ProjectedBalance(cycle.currentDay)<0?new Color(.7f,.2f,.2f):new Color(.1f,.17f,.23f);
             incomeLabel.text = Won(current ? ledger.Income : 0);
@@ -65,7 +65,7 @@ namespace DeliveryService.Mok.ShopUI
                 loanSummary=go.AddComponent<Text>();loanSummary.font=MokUIFont.Font;loanSummary.fontSize=21;loanSummary.resizeTextForBestFit=true;loanSummary.resizeTextMinSize=16;loanSummary.resizeTextMaxSize=21;loanSummary.color=new Color(.1f,.17f,.23f);loanSummary.raycastTarget=false;
             }
             var finance=LoanAccount.Current?.ForDay(cycle.currentDay);
-            if(loanSummary!=null&&finance!=null)loanSummary.text=$"대출 +{finance.Borrowed:N0}원   원금 상환 {finance.Repaid:N0}원   이자 {finance.Interest:N0}원   임대료 {(current?ledger.Rent:0):N0}원";
+            if(loanSummary!=null&&finance!=null)loanSummary.text=$"대출 +{finance.Borrowed:N0}원   원금 상환 {finance.Repaid:N0}원   이자 {finance.Interest:N0}원";
             balanceLabel.text = MoneyManager.Instance == null ? "현재 잔액  —" : "현재 잔액  " + Won(MoneyManager.Instance.currentMoney);
         }
         private static string Won(long value) => value.ToString("N0") + "원";
