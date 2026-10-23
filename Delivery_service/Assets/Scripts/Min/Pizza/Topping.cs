@@ -42,7 +42,7 @@ public class Topping : MonoBehaviour, IInteractable
         if (isBasicTopping)
         {
             // 기본 재료 - cost 만 차감
-            if (toppingData.cost <= 0)
+            if (toppingData.cost <= 0 || DeliveryService.Mok.StoryTutorial.Active)
             {
                 inventory.AddItem(toppingData);
             }

@@ -80,7 +80,7 @@ public class RobberyManager : MonoBehaviour
             return Mathf.Abs(local.x)<=shopFloor.size.x*.5f&&Mathf.Abs(local.z)<=shopFloor.size.z*.5f&&Mathf.Abs(local.y)<5;
         }
     }
-    public bool CanSpawnNow => dayNightCycle!=null && dayNightCycle.isShopOpen
+    public bool CanSpawnNow => !DeliveryService.Mok.StoryTutorial.Active && dayNightCycle!=null && dayNightCycle.isShopOpen
         && Time.timeScale>0 && HasWaveCapacity
         && player!=null && CanOperate && Time.unscaledTime>=(InHighRiskDistrict?districtProtectedUntil:protectedUntil) && HasTargetPizza && !IsInsideShop
         && !SceneActors.Police.Any(p=>p.RemainingChaseSeconds>0);

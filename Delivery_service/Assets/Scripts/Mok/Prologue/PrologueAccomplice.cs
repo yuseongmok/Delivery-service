@@ -8,21 +8,22 @@ public sealed class PrologueAccomplice : MonoBehaviour {
     public Transform bag;
     public Transform[] collectionPoints;
     public Transform boardingPoint;
+    public ProloguePartnerPerformance performance;
     public bool Boarded { get; private set; }
     public float CollectionProgress { get; private set; }
     public bool ReadyToBoard => !Boarded && Vector3.Distance(transform.position,boardingPoint.position)<2;
     NavMeshAgent agent;
     float work, nextPath;
-    int route;
     Vector3 handTarget;
     bool working;
     void Awake(){
         agent=GetComponent<NavMeshAgent>();
         animator.applyRootMotion=false;
+        animator.cullingMode=AnimatorCullingMode.AlwaysAnimate;
         animator.SetFloat("RunRate",1.25f);
     }
     void Update(){
-        if(!director||director.Paused||Boarded)return;
+        if(!director||director.Paused||Boarded||(performance&&performance.Busy))return;
         working=false;
         if(director.Current==BankPrologue.Phase.Opening){
             working=true;handTarget=director.vaultDoor.TransformPoint(new Vector3(2.1f,-.6f,-.3f));
@@ -31,20 +32,29 @@ public sealed class PrologueAccomplice : MonoBehaviour {
             if(i<collectionPoints.Length){
                 Vector3 point=collectionPoints[i].position;
                 Move(point);
-                if(Vector3.Distance(transform.position,point)<.65f){
-                    agent.isStopped=true;working=true;handTarget=director.cash[i].transform.position;
+                if(Vector3.Distance(transform.position,point)<.28f){
+                    agent.isStopped=true;
+                    if(performance&&!performance.PrepareCash(i))return;
+                    working=!performance;handTarget=director.cash[i].transform.position;
                     Face(handTarget);work+=Time.deltaTime;
                     CollectionProgress=Mathf.Clamp01(work/Mathf.Max(1,director.story.cashBundleSeconds));
-                    if(CollectionProgress>=1&&director.SecureCash(i,this)){work=0;CollectionProgress=0;}
+                    if(performance)performance.WorkCash(i,CollectionProgress);
+                    if(CollectionProgress>=1&&director.SecureCash(i,this)){
+                        work=0;CollectionProgress=0;
+                        if(performance&&i<director.cash.Length-1)performance.CarryToNextPile();
+                    }
                 }
             }
         }else if(director.Current==BankPrologue.Phase.Escape){
-            // 같은 통로를 순서대로 통과하므로 플레이어를 따라 벽을 가로지르지 않는다.
-            if(route<director.escapeRoute.Length){
-                var goal=director.escapeRoute[route].position;
-                if(Vector3.Distance(transform.position,goal)<1.4f)route++;
-                else Move(goal);
-            }else Move(boardingPoint.position);
+            // 목적지로 선행하지 않고 플레이어의 현재 위치까지 실제 통로를 따라간다.
+            bool atCar=Vector3.Distance(director.player.transform.position,director.exitPoint.position)<4;
+            Vector3 goal=atCar?boardingPoint.position:director.player.transform.position;
+            float keepDistance=atCar?.5f:2.3f;
+            if(agent.enabled&&agent.isOnNavMesh){
+                if(Vector3.Distance(transform.position,goal)<=keepDistance){agent.isStopped=true;Face(director.player.transform.position);}
+                else if(NavMesh.SamplePosition(goal,out var hit,2,NavMesh.AllAreas))Move(hit.position);
+                else agent.isStopped=true;
+            }
         }else if(agent.enabled&&agent.isOnNavMesh)agent.isStopped=true;
         animator.SetFloat("MoveSpeed",agent.enabled&&agent.isOnNavMesh?agent.velocity.magnitude:0);
     }
@@ -59,7 +69,7 @@ public sealed class PrologueAccomplice : MonoBehaviour {
         if(v.sqrMagnitude>.01f)transform.rotation=Quaternion.RotateTowards(transform.rotation,Quaternion.LookRotation(v),240*Time.deltaTime);
     }
     void LateUpdate(){
-        if(!working||!animator.isHuman||Boarded)return;
+        if(performance||!working||!animator.isHuman||Boarded)return;
         // 기존 걷기 리그 위에 금고 조작·돈 담기 손동작을 더한다.
         foreach(var side in new[]{HumanBodyBones.RightUpperArm,HumanBodyBones.LeftUpperArm}){
             var arm=animator.GetBoneTransform(side);

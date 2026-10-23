@@ -12,13 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1f7ed5a6f9a35904d8a40f0f4aded09a, type: 3}
   m_Name: BankPrologueStory
   m_EditorClassIdentifier: Assembly-CSharp::DeliveryService.Mok.PrologueStory
-  title: "\uD504\uB864\uB85C\uADF8  /  \uB9C8\uC9C0\uB9C9 \uD55C\uD0D5"
+  title: "\uD504\uB864\uB85C\uADF8"
   vault:
-    text: "\uACF5\uBC94: \uAE08\uACE0\uB294 \uB0B4\uAC00 \uC5F4\uAC8C. \uB10C \uB4A4\uB97C
+    text: "\uBBFC\uAE30: \uAE08\uACE0\uB294 \uB0B4\uAC00 \uC5F4\uAC8C. \uB10C \uB4A4\uB97C
       \uBD10\uC918."
     seconds: 3
   alarm:
-    text: "\uACF5\uBC94: \uACBD\uBCF4\uC57C! \uB3C8\uC740 \uB0B4\uAC00 \uCC59\uAE38
+    text: "\uBBFC\uAE30: \uACBD\uBCF4\uC57C! \uB3C8\uC740 \uB0B4\uAC00 \uCC59\uAE38
       \uD14C\uB2C8\uAE4C \uACBD\uCC30\uC744 \uB9C9\uC544!"
     seconds: 3
   police:
@@ -26,23 +26,72 @@ MonoBehaviour:
       \uBC84\uB9AC\uACE0 \uB098\uC640\uB77C!"
     seconds: 3.5
   cashBundleSeconds: 8
-  collect: "\uACF5\uBC94: \uAC00\uBC29\uC5D0 \uB2F4\uACE0 \uC788\uC5B4. \uC870\uAE08\uB9CC
+  firstContactSeconds: 10
+  breatherSeconds: 6
+  supportSeconds: 9
+  breather: "\uBBFC\uAE30: \uC7A0\uAE50 \uB738\uD574\uC84C\uC5B4! \uC7A5\uC804\uD574,
+    \uB0B4\uAC00 \uC11C\uB450\uB97C\uAC8C!"
+  reinforcement: "\uACBD\uCC30: \uC9C0\uC6D0 \uBCD1\uB825 \uB3C4\uCC29! \uC548\uCABD\uC73C\uB85C
+    \uC9C4\uC785\uD55C\uB2E4!"
+  finalPressure: "\uBBFC\uAE30: \uAC70\uC758 \uB2E4 \uB2F4\uC558\uC5B4! \uC870\uAE08\uB9CC
+    \uB354 \uBC84\uD168!"
+  collect: "\uBBFC\uAE30: \uAC00\uBC29\uC5D0 \uB2F4\uACE0 \uC788\uC5B4. \uC870\uAE08\uB9CC
     \uBC84\uD168!"
-  escape: "\uACF5\uBC94: \uB2E4 \uCC59\uACBC\uC5B4! \uAC19\uC774 \uCC28\uB85C \uAC00\uC790!"
+  escape: "\uBBFC\uAE30: \uB2E4 \uCC59\uACBC\uC5B4! \uAC19\uC774 \uCC28\uB85C \uAC00\uC790!"
   routeNames:
   - "\uC624\uB978\uCABD \uBCF4\uC548 \uD1B5\uB85C"
   - "\uC67C\uCABD \uC0AC\uBB34\uC2E4 \uD1B5\uB85C"
   - "\uC624\uB978\uCABD \uB300\uAE30 \uD640"
   - "\uC815\uBB38 \uC55E \uB3C4\uC8FC \uCC28\uB7C9"
   routeLines:
-  - "\uACF5\uBC94: \uC624\uB978\uCABD \uD1B5\uB85C\uC57C! \uAE30\uB465 \uB4A4\uB85C
+  - "\uBBFC\uAE30: \uC624\uB978\uCABD \uD1B5\uB85C\uC57C! \uAE30\uB465 \uB4A4\uB85C
     \uC228\uC5B4\uC11C \uC6C0\uC9C1\uC5EC!"
-  - "\uACF5\uBC94: \uC0AC\uBB34\uC2E4\uC744 \uAC00\uB85C\uC9C8\uB7EC \uC67C\uCABD\uC73C\uB85C!"
-  - "\uACF5\uBC94: \uB9C8\uC9C0\uB9C9 \uD640\uC774\uC57C. \uC624\uB978\uCABD \uC815\uBB38\uC73C\uB85C
+  - "\uBBFC\uAE30: \uC0AC\uBB34\uC2E4\uC744 \uAC00\uB85C\uC9C8\uB7EC \uC67C\uCABD\uC73C\uB85C!"
+  - "\uBBFC\uAE30: \uB9C8\uC9C0\uB9C9 \uD640\uC774\uC57C. \uC624\uB978\uCABD \uC815\uBB38\uC73C\uB85C
     \uB098\uC640!"
-  - "\uACF5\uBC94: \uCC28\uAC00 \uBC14\uB85C \uC55E\uC774\uC57C. \uB6F0\uC5B4!"
+  - "\uBBFC\uAE30: \uCC28\uAC00 \uBC14\uB85C \uC55E\uC774\uC57C. \uB6F0\uC5B4!"
+  carConversation:
+  - text: "나: 이 돈이면 당분간 아무것도 안 해도 되겠네."
+    seconds: 3.8
+  - text: "민기: 경찰만 찾는 돈이면 그랬겠지."
+    seconds: 3
+  - text: "나: …무슨 뜻이야?"
+    seconds: 2
+  - text: "민기: 그 금고, 조직이 돈을 맡겨 둔 곳이야."
+    seconds: 3.5
+  - text: "나: 알고도 날 데려간 거야?"
+    seconds: 2.8
+  - text: "민기: 지금 큰돈을 쓰면 우리가 살아 있다는 광고야."
+    seconds: 3.8
+  - text: "민기: 일단 숨자. 예전에 우리 집이 하던 가게가 있어."
+    seconds: 4
+  shopConversation:
+  - text: "나: 피자 가게? 우리보고 장사하라고?"
+    seconds: 3.2
+  - text: "민기: 문 닫기 직전이야. 열쇠도, 아버지 조리법도 남아 있어."
+    seconds: 4.5
+  - text: "민기: 챙긴 돈 일부로 밀린 임대료부터 막자. 배달 오토바이도 마련하고."
+    seconds: 5
+  - text: "나: 나머지 돈은?"
+    seconds: 2
+  - text: "민기: 내가 숨겨 둘게. 놈들이 조용해질 때까지는 손대지 마."
+    seconds: 4.2
+  - text: "나: 돈가방을 두고 피자 팔아서 먹고살자고?"
+    seconds: 3.5
+  - text: "민기: 가게가 벌어야 우리도 버텨. 밤에 움직일 준비도 공짜는 아니고."
+    seconds: 5
+  - text: "나: 그런데 왜 하필 배달이야?"
+    seconds: 2.7
+  - text: "민기: 낯선 사람이 건물마다 드나들면 의심받지. 피자 상자를 들면 문을 열어 줘."
+    seconds: 5.5
+  - text: "나: 넌 처음부터 여기까지 생각한 거냐?"
+    seconds: 3
+  - text: "민기: 반죽부터 배우자. 나머지는 밤에 얘기하고."
+    seconds: 3.8
+  - text: "나: …좋아. 적어도 이 가게에서 버는 돈은 내 돈이야."
+    seconds: 4
   boarding:
-    text: "\uACF5\uBC94: \uB098\uB3C4 \uD0D4\uC5B4. \uCD9C\uBC1C\uD574!"
+    text: "\uBBFC\uAE30: \uB098\uB3C4 \uD0D4\uC5B4. \uCD9C\uBC1C\uD574!"
     seconds: 2
   getaway:
     text: "\uADF8\uB0A0 \uC774\uD6C4, \uB098\uB294 \uC791\uC740 \uD53C\uC790 \uAC00\uAC8C\uB97C
@@ -51,7 +100,7 @@ MonoBehaviour:
   ending:
     text: "\uBA87 \uC8FC \uD6C4\n\n\uC774\uC58F\uD638 \uD53C\uC790, \uCCAB \uC601\uC5C5\uC77C"
     seconds: 2.5
-  driving: "\uACF5\uBC94: \uC55E\uC5D0 \uC800\uC9C0\uC120\uC774\uC57C! \uB3C4\uB85C
+  driving: "\uBBFC\uAE30: \uC55E\uC5D0 \uC800\uC9C0\uC120\uC774\uC57C! \uB3C4\uB85C
     \uB05D\uAE4C\uC9C0 \uB3CC\uD30C\uD574!"
   cityArrivalSeconds: 8
   cityPanSeconds: 3

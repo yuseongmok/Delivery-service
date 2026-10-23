@@ -8,6 +8,7 @@ namespace DeliveryService.Yun.Achievements
     public sealed class AchievementManager : MonoBehaviour
     {
         public const string FirstPizzaId = "first_packaged_pizza";
+        public const string FirstDeliveryId = "first_honest_income";
         private string savePrefix = "Yun.Achievements.";
 
         [SerializeField] private AchievementNotification notification;
@@ -18,6 +19,7 @@ namespace DeliveryService.Yun.Achievements
         {
             if (PlayerPrefs.GetInt(savePrefix + FirstPizzaId, 0) == 1)
                 unlocked.Add(FirstPizzaId);
+            if (PlayerPrefs.GetInt(savePrefix + FirstDeliveryId, 0) == 1) unlocked.Add(FirstDeliveryId);
         }
 
         public bool IsUnlocked(string id) { return unlocked.Contains(id); }
@@ -25,7 +27,7 @@ namespace DeliveryService.Yun.Achievements
         // 여러 조건이 같은 프레임에 만족해도 알림 쪽에서 개수를 합산합니다.
         public bool TryUnlock(string id)
         {
-            if (id != FirstPizzaId || !unlocked.Add(id)) return false;
+            if ((id != FirstPizzaId && id != FirstDeliveryId) || !unlocked.Add(id)) return false;
             PlayerPrefs.SetInt(savePrefix + id, 1);
             PlayerPrefs.Save();
             if (notification != null) notification.Show(1);

@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -23,6 +24,7 @@ public sealed class BankPrologue : MonoBehaviour {
     public string lobbyScene = "Assets/Scenes/Lobby.unity";
     public bool autoEnterGame = true;
     public PrologueDrive drive;
+    public PrologueShopArrival shopArrival;
     public PrologueOfficer[] roadPolice;
     public GameObject cityVista;
     public Transform cityCarStart, cityCarEnd, cityWideCamera, cityLookTarget;
@@ -40,9 +42,12 @@ public sealed class BankPrologue : MonoBehaviour {
     public int SpawnedPolice => reinforcements;
     public Phase Current { get; private set; }
     public bool Paused { get; private set; }
+    // 자동 검증은 입력 대신 명시적인 동작 호출을 사용한다. 실제 플레이에서는 항상 켜진다.
+    public bool AcceptInput { get; set; } = true;
     public int Collected { get; private set; }
     public bool CanPlay => !Paused && (Current == Phase.Robbery || Current == Phase.Escape);
     public bool IsCinematic => Current == Phase.Opening || Current == Phase.Getaway || Current == Phase.CityReveal;
+    public bool CinematicSkipRequested => skip;
     public bool Alarm { get; private set; }
     AudioSource siren;
     AudioClip sirenClip;
@@ -50,6 +55,12 @@ public sealed class BankPrologue : MonoBehaviour {
     int reinforcements;
     bool skip, leaving;
     bool temporaryStory;
+    public enum CombatBeat { FirstContact, Breather, Reinforcement, FinalPush, Withdrawal }
+    public CombatBeat BattleBeat { get; private set; }
+    public float SquadShotInterval => BattleBeat==CombatBeat.Breather?2.2f:BattleBeat==CombatBeat.FinalPush?.65f:1.05f;
+    float beatStarted;
+    bool finalPushStarted;
+    void ChangeBeat(CombatBeat beat){BattleBeat=beat;beatStarted=Time.time;}
 
     void Start() {
         Time.timeScale = 1;
@@ -106,16 +117,27 @@ public sealed class BankPrologue : MonoBehaviour {
         for (float t = 0; t < 1.2f && !skip; t += Time.deltaTime) { fade.alpha = 1 - t / 1.2f; yield return null; }
         fade.alpha = 0;
         yield return Shot(0, story.vault.text, story.vault.seconds, Vector3.forward * .35f);
-        for (float t = 0; t < 2.4f && !skip; t += Time.deltaTime) {
+        if(accomplice&&accomplice.performance)yield return accomplice.performance.OpenVault();
+        else for (float t = 0; t < 2.4f && !skip; t += Time.deltaTime) {
             vaultDoor.localRotation = Quaternion.Euler(0, -105 * Mathf.SmoothStep(0, 1, t / 2.4f), 0);
             yield return null;
         }
         vaultDoor.localRotation = Quaternion.Euler(0, -105, 0);
         Alarm = true; siren.Play();
+        if(accomplice&&accomplice.performance&&!skip)yield return accomplice.performance.ReactToAlarm();
         yield return Shot(1, story.alarm.text, story.alarm.seconds, Vector3.forward * .2f);
         officers[0].StageEntrance(policeEntryTargets.Length>0?policeEntryTargets[0].position:new Vector3(-.7f, 0, -5));
         officers[1].StageEntrance(policeEntryTargets.Length>1?policeEntryTargets[1].position:new Vector3(.7f, 0, -5));
         yield return Shot(2, story.police.text, story.police.seconds, Vector3.left * .3f);
+        // 입구를 보여준 뒤 플레이할 시점으로 짧게 연결해 조작 전환을 알린다.
+        if(!skip){
+            subtitle.text=story.collect;
+            for(float t=0;t<.45f&&!skip;t+=Time.deltaTime){
+                fade.alpha=t<.2f?t/.2f:1-(t-.2f)/.25f;
+                if(t>=.2f)filmCamera.transform.SetPositionAndRotation(player.view.transform.position,player.view.transform.rotation);
+                yield return null;
+            }
+        }
         BeginRobbery();
     }
     public void BeginRobbery() {
@@ -126,19 +148,20 @@ public sealed class BankPrologue : MonoBehaviour {
         subtitle.text = story.collect;
         waveTime = Time.time + waveInterval;
         reinforcements=0;
-        while(reinforcements<Mathf.Min(initialPolice,officers.Length))officers[reinforcements++].Activate();
+        finalPushStarted=false;ChangeBeat(CombatBeat.FirstContact);
+        while(reinforcements<Mathf.Min(Mathf.Min(initialPolice,4),officers.Length))officers[reinforcements++].Activate();
     }
     void Update() {
         if (leaving) return;
-        if (Input.GetKeyDown(KeyCode.Escape)) SetPaused(!Paused);
+        if (AcceptInput && PrologueKeyboard.Pressed(Key.Escape)) SetPaused(!Paused);
         if (Paused) {
-            if (Input.GetKeyDown(KeyCode.Return)) SetPaused(false);
-            if (Input.GetKeyDown(KeyCode.R)) Retry();
-            if (Input.GetKeyDown(KeyCode.L)) Load(lobbyScene);
+            if (AcceptInput && PrologueKeyboard.Pressed(Key.Enter)) SetPaused(false);
+            if (AcceptInput && PrologueKeyboard.Pressed(Key.R)) Retry();
+            if (AcceptInput && PrologueKeyboard.Pressed(Key.L)) Load(lobbyScene);
             return;
         }
-        if (IsCinematic && Input.GetKeyDown(KeyCode.Space)) skip = true;
-        if (Current == Phase.Failed && Input.GetKeyDown(KeyCode.R)) Retry();
+        if (AcceptInput && IsCinematic && PrologueKeyboard.Pressed(Key.Space)) skip = true;
+        if (AcceptInput && Current == Phase.Failed && PrologueKeyboard.Pressed(Key.R)) Retry();
         for (int i = 0; i < alarmLights.Length; i++)
             alarmLights[i].intensity = Alarm ? (Mathf.Sin(Time.time * 7 + i * Mathf.PI) > 0 ? 5 : .15f) : 0;
         hitOpacity = Mathf.MoveTowards(hitOpacity, 0, Time.deltaTime * .7f);
@@ -154,11 +177,13 @@ public sealed class BankPrologue : MonoBehaviour {
         objective.text = Current == Phase.Robbery ? $"공범이 돈을 챙기는 동안 경찰을 막으세요   {Collected} / {cash.Length}" : $"공범과 함께 탈출  /  {route}";
         ammo.text = player.Reloading ? "재장전 중…" : $"{player.Ammo} / {player.magazineSize}\nR  재장전";
         health.text = $"체력 {player.Health}";
-        if (Time.time >= waveTime && reinforcements < officers.Length) {
+        UpdateBattleRhythm();
+        if (BattleBeat!=CombatBeat.Breather && BattleBeat!=CombatBeat.FirstContact && Time.time >= waveTime && reinforcements < officers.Length) {
             int live = 0; foreach (var officer in officers) if (officer.Active && !officer.Dead) live++;
-            int count=Mathf.Min(waveSize,maxActivePolice-live);
+            int cap=BattleBeat==CombatBeat.FinalPush?maxActivePolice:Mathf.Min(maxActivePolice,10);
+            int count=Mathf.Min(BattleBeat==CombatBeat.FinalPush?waveSize+2:waveSize,cap-live);
             for(int i=0;i<count&&reinforcements<officers.Length;i++)officers[reinforcements++].Activate();
-            waveTime=Time.time+waveInterval;
+            waveTime=Time.time+(BattleBeat==CombatBeat.FinalPush?4:waveInterval);
         }
         prompt.text = ""; progress.fillAmount = 0;
         if (Current == Phase.Robbery && accomplice) {
@@ -167,9 +192,26 @@ public sealed class BankPrologue : MonoBehaviour {
             collecting = 0;
             if (Current == Phase.Escape && Vector3.Distance(player.transform.position, exitPoint.position) < 3) {
                 prompt.text = accomplice&&!accomplice.ReadyToBoard ? "공범이 차량으로 오고 있습니다" : "E  공범과 도주 차량 탑승";
-                if (Input.GetKeyDown(KeyCode.E)) BoardCar();
+                if (AcceptInput && PrologueKeyboard.Pressed(Key.E)) BoardCar();
             }
         }
+    }
+    void UpdateBattleRhythm(){
+        if(Current==Phase.Escape){
+            if(BattleBeat!=CombatBeat.Withdrawal){ChangeBeat(CombatBeat.Withdrawal);waveTime=Mathf.Max(waveTime,Time.time+4);}
+            return;
+        }
+        float elapsed=Time.time-beatStarted;
+        float collected=(Collected+(accomplice?accomplice.CollectionProgress:0))/Mathf.Max(1,cash.Length);
+        // 마지막 돈을 챙기는 시점에 맞추되, 최소 한 번은 숨 돌릴 틈을 보장한다.
+        if(!finalPushStarted&&collected>=.72f&&BattleBeat!=CombatBeat.FirstContact&&BattleBeat!=CombatBeat.Breather){
+            finalPushStarted=true;ChangeBeat(CombatBeat.FinalPush);
+            subtitle.text=story.finalPressure;
+            return;
+        }
+        if(BattleBeat==CombatBeat.FirstContact&&elapsed>=story.firstContactSeconds){ChangeBeat(CombatBeat.Breather);subtitle.text=story.breather;}
+        else if(BattleBeat==CombatBeat.Breather&&elapsed>=story.breatherSeconds){ChangeBeat(CombatBeat.Reinforcement);subtitle.text=story.reinforcement;}
+        else if(BattleBeat==CombatBeat.Reinforcement&&!finalPushStarted&&elapsed>=story.supportSeconds){ChangeBeat(CombatBeat.Breather);subtitle.text=story.breather;}
     }
     int NearestCash() {
         for (int i = 0; i < cash.Length; i++)
@@ -189,13 +231,19 @@ public sealed class BankPrologue : MonoBehaviour {
             !cash[index].activeSelf||actor.CollectionProgress<1||
             Vector3.Distance(actor.transform.position,cash[index].transform.position)>2.6f)return false;
         cash[index].SetActive(false);Collected++;
-        if(Collected==cash.Length){Current=Phase.Escape;subtitle.text=story.escape;}
+        if(Collected==cash.Length)StartCoroutine(FinishPacking());
         return true;
     }
+    IEnumerator FinishPacking(){
+        if(accomplice&&accomplice.performance)yield return accomplice.performance.PackAndCarry();
+        if(Current==Phase.Robbery){Current=Phase.Escape;subtitle.text=story.escape;}
+    }
     public bool BoardCar() {
-        if (!CanPlay || player.KnockedDown || Current != Phase.Escape || RouteStep<escapeRoute.Length || Vector3.Distance(player.transform.position, exitPoint.position) >= 3) return false;
+        // 중간 경로는 안내용이다. 차량까지 도착했다면 놓친 지점 때문에 탑승을 막지 않는다.
+        if (!CanPlay || player.KnockedDown || Current != Phase.Escape || Vector3.Distance(player.transform.position, exitPoint.position) >= 3) return false;
         if(accomplice&&!accomplice.ReadyToBoard)return false;
-        if(accomplice)accomplice.Board();
+        RouteStep=escapeRoute.Length;
+        if(accomplice&&!accomplice.performance)accomplice.Board();
         Current = Phase.Getaway; StartCoroutine(Getaway()); return true;
     }
     IEnumerator Getaway() {
@@ -203,14 +251,22 @@ public sealed class BankPrologue : MonoBehaviour {
         foreach (var officer in officers) officer.Stop();
         SetCinematic(true); objective.text = ""; ammo.text = ""; health.text = "";
         prompt.text = "Space  컷신 건너뛰기";
-        yield return Shot(3, story.boarding.text, story.boarding.seconds, Vector3.right * .5f);
+        if(accomplice&&accomplice.performance){
+            var p=accomplice.performance;
+            filmCamera.transform.position=p.passengerStand.position+getawayCar.right*3-getawayCar.forward*2+Vector3.up*1.6f;
+            filmCamera.transform.LookAt(p.passengerSeat.position+Vector3.up*.9f);
+            subtitle.text="";
+            yield return p.EnterVehicle();
+            subtitle.text=story.boarding.text;
+        }else yield return Shot(3, story.boarding.text, story.boarding.seconds, Vector3.right * .5f);
         skip=false;Current=Phase.Driving;bars.alpha=0;
         player.GetComponent<CharacterController>().enabled=false;
         foreach(var officer in roadPolice){officer.gameObject.SetActive(true);}
         subtitle.text=story.driving;
         filmCamera.transform.position=getawayCar.position-getawayCar.forward*8+Vector3.up*4;
         filmCamera.transform.LookAt(getawayCar.position+getawayCar.forward*4);
-        drive.Begin();
+        // 운전 구간에서는 뒤따르는 경찰차의 공간 사이렌을 듣게 한다.
+        siren.Stop();drive.Begin();
     }
     public bool FinishDriving(){
         if(Paused||Current!=Phase.Driving||Vector3.Distance(getawayCar.position,drive.finish.position)>=9)return false;
@@ -234,18 +290,19 @@ public sealed class BankPrologue : MonoBehaviour {
         }
         getawayCar.position=carB;fade.alpha=0;
         Vector3 cameraStart=filmCamera.transform.position;Quaternion rotationStart=filmCamera.transform.rotation;
-        subtitle.text=story.getaway.text;
+        subtitle.text=shopArrival?"":story.getaway.text;
         for(float t=0;t<story.cityPanSeconds&&!skip;t+=Time.deltaTime){
             float p=Mathf.SmoothStep(0,1,t/Mathf.Max(.1f,story.cityPanSeconds));
             filmCamera.transform.position=Vector3.Lerp(cameraStart,cityWideCamera.position,p);
             filmCamera.transform.rotation=Quaternion.Slerp(rotationStart,cityWideCamera.rotation,p);yield return null;
         }
         filmCamera.transform.SetPositionAndRotation(cityWideCamera.position,cityWideCamera.rotation);
+        if(shopArrival)yield return shopArrival.Play();
         subtitle.text="";prompt.text="";logo.alpha=0;
         // 로고는 전경이 완전히 드러난 뒤 등장한다.
         for(float t=0;t<story.logoSeconds;t+=Time.deltaTime){logo.alpha=Mathf.Clamp01(t*2);yield return null;}
         for(float t=0;t<1;t+=Time.deltaTime){fade.alpha=t;logo.alpha=1-t;yield return null;}
-        fade.alpha=1;logo.alpha=0;objective.text=story.ending.text;
+        fade.alpha=1;logo.alpha=0;objective.text=shopArrival?"다음 날 아침\n이얏호 피자, 첫 영업일":story.ending.text;
         yield return new WaitForSeconds(Mathf.Max(.1f,story.ending.seconds));
         Current=Phase.Complete;if(autoEnterGame)Load(gameScene);
     }
@@ -270,6 +327,7 @@ public sealed class BankPrologue : MonoBehaviour {
     public void Retry() { Load(SceneManager.GetActiveScene().path); }
     void Load(string path) {
         if (!Application.CanStreamedLevelBeLoaded(path)) { objective.text = "씬 연결을 확인해 주세요."; return; }
+        if(Current==Phase.Complete&&path==gameScene)StoryTutorial.Requested=true;
         leaving = true; Time.timeScale = 1; SceneManager.LoadSceneAsync(path);
     }
     void OnDestroy() { Time.timeScale = 1; if (sirenClip) Destroy(sirenClip);if(temporaryStory&&story)Destroy(story); }

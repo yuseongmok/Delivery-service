@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 namespace DeliveryService.Mok {
 // 프롤로그 전용 직접 운전. 본편 교통 차량의 자동 경로 이동과 분리한다.
 public sealed class PrologueDrive : MonoBehaviour {
@@ -18,10 +19,10 @@ public sealed class PrologueDrive : MonoBehaviour {
     public void Stop(){Driving=false;Speed=0;}
     void Update(){
         if(!Driving||director.Paused)return;
-        if(!ExternalInput)SetInput(Input.GetAxisRaw("Vertical"),Input.GetAxisRaw("Horizontal"));
-        if(Input.GetKeyDown(KeyCode.R))ResetToRoad();
-        director.objective.text="경찰 저지선을 돌파하세요";
-        director.prompt.text="W/S  가속·후진    A/D  조향    Space  브레이크    R  도로 복귀";
+        if(!ExternalInput)SetInput(director.AcceptInput?PrologueKeyboard.Vertical:0,director.AcceptInput?PrologueKeyboard.Horizontal:0);
+        if(!ExternalInput&&director.AcceptInput&&PrologueKeyboard.Pressed(Key.R))ResetToRoad();
+        director.objective.text="추격을 따돌리고 경찰 저지선을 돌파하세요";
+        director.prompt.text="W/S  가속·후진    A/D  조향    Space  브레이크    C  뒤보기    R  도로 복귀";
         director.ammo.text=Mathf.Abs(Speed*3.6f).ToString("F0")+" km/h";
         if(Vector3.Distance(transform.position,finish.position)<9)director.FinishDriving();
     }
@@ -29,7 +30,7 @@ public sealed class PrologueDrive : MonoBehaviour {
         if(!Driving||director.Paused)return;
         float target=throttle>=0?throttle*maxSpeed:throttle*7;
         Speed=Mathf.MoveTowards(Speed,target,acceleration*Time.fixedDeltaTime);
-        if(!ExternalInput&&Input.GetKey(KeyCode.Space))Speed=Mathf.MoveTowards(Speed,0,30*Time.fixedDeltaTime);
+        if(!ExternalInput&&director.AcceptInput&&PrologueKeyboard.Held(Key.Space))Speed=Mathf.MoveTowards(Speed,0,30*Time.fixedDeltaTime);
         var rotation=body.rotation*Quaternion.Euler(0,turn*steering*Mathf.Clamp(Speed/7,-1,1)*Time.fixedDeltaTime,0);
         Vector3 forward=rotation*Vector3.forward,delta=forward*Speed*Time.fixedDeltaTime;
         // 저지선 경찰은 밀어내고 건물·차량에는 막히도록 이동 전에 검사한다.
@@ -51,14 +52,15 @@ public sealed class PrologueDrive : MonoBehaviour {
         body.rotation=Quaternion.Euler(0,90,0);Speed=0;
     }
     void LateUpdate(){
-        if(!Driving)return;
+        if(!Driving||director.Paused)return;
         var camera=director.filmCamera;
         Vector3 target=transform.position+Vector3.up*1.3f;
-        Vector3 desired=target-transform.forward*8+Vector3.up*3;
-        if(Physics.Linecast(target,desired,out var hit,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore)&&!hit.transform.IsChildOf(transform))
+        bool rear=!ExternalInput&&director.AcceptInput&&PrologueKeyboard.Held(Key.C);
+        Vector3 desired=target+transform.forward*(rear?6:-8)+Vector3.up*3;
+        if(Physics.Linecast(target,desired,out var hit,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore)&&!hit.transform.IsChildOf(transform)&&!hit.collider.GetComponentInParent<ProloguePursuitCar>())
             desired=hit.point+hit.normal*.4f;
         camera.transform.position=Vector3.Lerp(camera.transform.position,desired,1-Mathf.Exp(-6*Time.deltaTime));
-        camera.transform.LookAt(target+transform.forward*4);
+        camera.transform.LookAt(target+transform.forward*(rear?-8:4));
     }
 }
 }

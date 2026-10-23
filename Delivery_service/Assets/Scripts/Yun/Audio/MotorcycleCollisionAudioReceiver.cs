@@ -10,7 +10,13 @@ namespace DeliveryService.Yun.Audio
         public void Bind(MotorcycleCollisionAudio owner) { audioOwner = owner; }
         private void OnTriggerEnter(Collider other)
         {
-            if (audioOwner != null) audioOwner.Contact(other, other.ClosestPoint(transform.position), 0, true);
+            if (audioOwner == null || other == null) return;
+            // 오목한 메시에는 ClosestPoint를 지원하지 않으므로 경계 상자의 접점을 사용한다.
+            var mesh = other as MeshCollider;
+            Vector3 point = mesh != null && !mesh.convex
+                ? other.bounds.ClosestPoint(transform.position)
+                : other.ClosestPoint(transform.position);
+            audioOwner.Contact(other, point, 0, true);
         }
         private void OnCollisionEnter(Collision collision)
         {

@@ -1,6 +1,14 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.InputSystem;
 namespace DeliveryService.Mok {
+// 프롤로그의 모든 키보드 조작은 동일한 물리 키 입력을 사용한다.
+internal static class PrologueKeyboard {
+    public static bool Held(Key key) => Keyboard.current != null && Keyboard.current[key].isPressed;
+    public static bool Pressed(Key key) => Keyboard.current != null && Keyboard.current[key].wasPressedThisFrame;
+    public static float Horizontal => (Held(Key.D)?1:0)-(Held(Key.A)?1:0);
+    public static float Vertical => (Held(Key.W)?1:0)-(Held(Key.S)?1:0);
+}
 // 본편 전투와 분리하여 프롤로그 실패가 병원·벌금으로 이어지지 않게 한다.
 [RequireComponent(typeof(CharacterController))]
 public sealed class ProloguePlayer : MonoBehaviour {
@@ -11,6 +19,9 @@ public sealed class ProloguePlayer : MonoBehaviour {
     public Transform magazine, bolt;
     public PrologueRagdoll ragdoll;
     public Renderer[] avatarRenderers;
+    public PrologueGunFeedback gunFeedback;
+    public PrologueCombatFeedback combatFeedback;
+    public float RecoilAmount => recoil;
     public bool KnockedDown => ragdoll && ragdoll.IsDown;
     [Min(1)] public int magazineSize = 30;
     [Min(.05f)] public float shotInterval = .10f;
@@ -20,6 +31,7 @@ public sealed class ProloguePlayer : MonoBehaviour {
     public bool Reloading { get; private set; }
     CharacterController body;
     float pitch, vertical, nextShot, immuneUntil, recoil;
+    float recoilSide, recoilRoll;
     Vector3 rest;
     Vector3 magazineRest, boltRest;
     Quaternion restRotation;
@@ -31,30 +43,33 @@ public sealed class ProloguePlayer : MonoBehaviour {
         if(avatarRenderers!=null)foreach(var r in avatarRenderers)r.enabled=false;
     }
     void Update() {
-        if (director == null || !director.CanPlay || KnockedDown) return;
+        if (director == null || !director.CanPlay || !director.AcceptInput || KnockedDown) return;
         // 포커스를 되찾는 클릭으로 바로 발사하지 않는다.
-        if (Cursor.lockState != CursorLockMode.Locked) {
-            if (Input.GetMouseButtonDown(0)) Cursor.lockState = CursorLockMode.Locked;
-            return;
+        bool mouseReady=Cursor.lockState==CursorLockMode.Locked;
+        if(!mouseReady&&Input.GetMouseButtonDown(0)){Cursor.lockState=CursorLockMode.Locked;Cursor.visible=false;}
+        if(mouseReady){
+            transform.Rotate(0, Input.GetAxis("Mouse X") * 2, 0);
+            pitch = Mathf.Clamp(pitch - Input.GetAxis("Mouse Y") * 2, -75, 75);
         }
-        transform.Rotate(0, Input.GetAxis("Mouse X") * 2, 0);
-        pitch = Mathf.Clamp(pitch - Input.GetAxis("Mouse Y") * 2, -75, 75);
-        recoil = Mathf.MoveTowards(recoil, 0, Time.deltaTime * 12);
-        view.transform.localRotation = Quaternion.Euler(pitch - recoil, 0, 0);
-        var input = Vector3.ClampMagnitude(new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical")), 1);
+        float recovery=1-Mathf.Exp(-10*Time.deltaTime);
+        recoil=Mathf.Lerp(recoil,0,recovery);recoilSide=Mathf.Lerp(recoilSide,0,recovery);recoilRoll=Mathf.Lerp(recoilRoll,0,recovery);
+        ApplyRecoil();
+        // 문자 입력이나 기존 입력축 대신 실제 키 위치를 읽는다.
+        var input = Vector3.ClampMagnitude(new Vector3(PrologueKeyboard.Horizontal,0,PrologueKeyboard.Vertical),1);
         vertical = body.isGrounded && vertical < 0 ? -2 : vertical + Physics.gravity.y * Time.deltaTime;
-        body.Move((transform.TransformDirection(input) * (Input.GetKey(KeyCode.LeftShift) ? 5.5f : 3.8f) + Vector3.up * vertical) * Time.deltaTime);
+        if(body.enabled)body.Move((transform.TransformDirection(input) * (PrologueKeyboard.Held(Key.LeftShift) ? 5.5f : 3.8f) + Vector3.up * vertical) * Time.deltaTime);
         if(!Reloading) {
-            weapon.transform.localPosition = rest + Vector3.back * recoil * .015f;
-            weapon.transform.localRotation=restRotation;
+            ApplyWeaponRecoil();
         }
-        if (Input.GetMouseButton(0)) Fire();
-        if (Input.GetKeyDown(KeyCode.R)) Reload();
+        if (mouseReady&&Input.GetMouseButton(0)) Fire();
+        if (PrologueKeyboard.Pressed(Key.R)) Reload();
     }
     public bool Fire() {
         if (director == null || !director.CanPlay || KnockedDown || Reloading || Ammo <= 0 || Time.time < nextShot) return false;
-        Ammo--; nextShot = Time.time + shotInterval; recoil = 1.25f;
-        GunshotSound.Play(gameObject, false); StartCoroutine(Flash());
+        Ammo--; nextShot = Time.time + shotInterval;
+        recoil=Mathf.Min(4.5f,recoil+Random.Range(1.05f,1.4f));
+        recoilSide=Mathf.Clamp(recoilSide+Random.Range(-.23f,.23f),-.7f,.7f);recoilRoll=Random.Range(-.3f,.3f);
+        if(gunFeedback)gunFeedback.Fire();else {GunshotSound.Play(gameObject, false);StartCoroutine(Flash());}
         Vector3 end=view.transform.position+view.transform.forward*90;
         bool hitSomething=Physics.Raycast(view.transform.position, view.transform.forward, out var hit, 90, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
         if(hitSomething)end=hit.point;
@@ -66,9 +81,16 @@ public sealed class ProloguePlayer : MonoBehaviour {
         PrologueTracer.Spawn(start,end,new Color(1,.8f,.3f));
         if (hitSomething) {
             var target = hit.collider.GetComponentInParent<PrologueOfficer>();
-            if (target != null) target.ReceiveHit(35);
+            if (target != null) target.ReceiveHit(35,hit.point,(end-start).normalized);
+            else if(combatFeedback)combatFeedback.Impact(hit.point,hit.normal,false);
         }
+        ApplyRecoil();if(!Reloading)ApplyWeaponRecoil();
         return true;
+    }
+    void ApplyRecoil(){view.transform.localRotation=Quaternion.Euler(pitch-recoil,recoilSide,recoilRoll);}
+    void ApplyWeaponRecoil(){
+        weapon.transform.localPosition=rest+new Vector3(recoilSide*.012f,0,-recoil*.025f);
+        weapon.transform.localRotation=restRotation*Quaternion.Euler(-recoil*2.5f,recoilSide*2,recoilRoll*2);
     }
     IEnumerator Flash() { muzzle.enabled = true; yield return new WaitForSeconds(.05f); muzzle.enabled = false; }
     public bool Reload() {

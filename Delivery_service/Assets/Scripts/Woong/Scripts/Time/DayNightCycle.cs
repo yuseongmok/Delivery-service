@@ -114,6 +114,7 @@ public class DayNightCycle : MonoBehaviour
 
     public void OnClick_CloseShop()
     {
+        if (DeliveryService.Mok.StoryTutorial.Active) { DeliveryService.Mok.DeliveryRequestNotice.Show("민기: 첫 배달부터 마치자. 마감은 그 다음이야."); return; }
         if (!isShopOpen || isTransitioning) return;
 
         isShopOpen = false;

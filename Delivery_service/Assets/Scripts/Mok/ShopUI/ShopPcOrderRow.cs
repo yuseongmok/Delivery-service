@@ -21,6 +21,7 @@ namespace DeliveryService.Mok.ShopUI
             number.text = order.orderName;
             description.text = $"{PizzaRecipes.Title(order)} · 예상 {order.quotedPrice:N0}원\n{order.districtName} · {order.destinationID}";
             accept.interactable = canAccept;
+            decline.interactable = !StoryTutorial.Active;
             accept.onClick.RemoveAllListeners();
             decline.onClick.RemoveAllListeners();
             accept.onClick.AddListener(() => onAccept(order));

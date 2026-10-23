@@ -113,7 +113,11 @@ public static partial class BankPrologueBuilder {
         Box("Escape boulevard",new Vector3(145,-.25f,-65),new Vector3(260,.5f,24),road,root);
         foreach(int side in new[]{-1,1}){
             Box("Boulevard pavement",new Vector3(125,-.1f,-65+side*14),new Vector3(300,.2f,4),stone,root);
-            Box("Road boundary",new Vector3(125,.5f,-65+side*16),new Vector3(300,1,.35f),dark,root);
+            if(side<0)Box("Road boundary",new Vector3(125,.5f,-81),new Vector3(300,1,.35f),dark,root);
+            else{
+                Box("Road boundary west of bank entrance",new Vector3(-7.25f,.5f,-49),new Vector3(35.5f,1,.35f),dark,root);
+                Box("Road boundary east of bank entrance",new Vector3(145.25f,.5f,-49),new Vector3(259.5f,1,.35f),dark,root);
+            }
         }
         for(int x=25;x<250;x+=8)Box("Centre road marking",new Vector3(x,.018f,-65),new Vector3(3,.02f,.15f),white,root,false);
         // 벽 위에 덧댄 석재와 창문은 출구 충돌을 바꾸지 않는다.
@@ -122,7 +126,7 @@ public static partial class BankPrologueBuilder {
         Box("Facade name plate",new Vector3(-2,5.5f,-50.4f),new Vector3(25,1.1f,.25f),dark,root,false);
         ExteriorSign("UNION BANK",new Vector3(-2,5.5f,-50.6f),.13f,root);
         for(int x=-16;x<=16;x+=4){
-            Box("Facade pilaster",new Vector3(x,5.4f,-50.4f),new Vector3(.55f,10.8f,.6f),white,root);
+            Box("Facade pilaster",new Vector3(x==12?10.6f:x,5.4f,-50.4f),new Vector3(.55f,10.8f,.6f),white,root);
             Box("Capital",new Vector3(x,10.6f,-50.4f),new Vector3(.85f,.4f,.85f),brass,root,false);
             if(x<10)Box("Lower bank window",new Vector3(x+1.6f,2.7f,-50.29f),new Vector3(2,2.5f,.08f),dark,root,false);
             Box("Upper window",new Vector3(x+1.4f,8,-50.08f),new Vector3(1.8f,2.8f,.1f),teal,root,false);

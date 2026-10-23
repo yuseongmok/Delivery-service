@@ -13,6 +13,7 @@ public class PizzaPickUpZone : MonoBehaviour, IInteractable
     [SerializeField] private float stackHeight = 0.05f;
 
     private List<PizzaData> packagedDataList = new List<PizzaData>();
+    public int PackedCount => packagedDataList.Count;
     private List<GameObject> visualBoxes = new List<GameObject>();
 
     public void AddPackagedPizzaData(PizzaData data)

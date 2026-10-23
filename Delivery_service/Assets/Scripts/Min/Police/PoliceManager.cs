@@ -55,6 +55,7 @@ public class PoliceManager : MonoBehaviour
     // 지정된 수만큼 경찰 스폰
     public void SpawnPoliceGroup(int count)
     {
+        if (DeliveryService.Mok.StoryTutorial.Active) return;
         if (spawnPoints == null || spawnPoints.Length == 0 || policePrefab == null) return;
 
         activePoliceList.RemoveAll(p => p == null);
@@ -77,6 +78,7 @@ public class PoliceManager : MonoBehaviour
     // 공격마다 증원하지 않고 현재 무장 지원 경찰 한 명을 유지한다.
     public PoliceControl SpawnArmedSupport(Transform target)
     {
+        if (DeliveryService.Mok.StoryTutorial.Active) return null;
         foreach(var existing in DeliveryService.Mok.SceneActors.Police){var fighter=existing.GetComponent<DeliveryService.Mok.PoliceCombat>();if(fighter!=null&&fighter.Armed&&!fighter.IsDead){existing.ResetChaseTimers();return existing;}}
         if(policePrefab==null||target==null)return null;
         for(int i=0;i<12;i++){

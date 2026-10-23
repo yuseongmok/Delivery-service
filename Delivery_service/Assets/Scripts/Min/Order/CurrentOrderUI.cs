@@ -38,7 +38,8 @@ public class CurrentOrderUI : MonoBehaviour
         if(order==null){ClearOrder();return;}
         int seconds=Mathf.Max(0,Mathf.FloorToInt(elapsed*60f));
         string time=$"경과 {seconds/60:00}:{seconds%60:00} / 권장 {recommended:00}:00";
-        if(elapsed>recommended)time=$"<color=#FF963F>{time} · 배달 지연 (-{(1f-DeliveryService.Mok.DeliveryPricing.LateMultiplier(elapsed,recommended))*100f:0}%)</color>";
+        if(!DeliveryService.Mok.StoryTutorial.Active&&elapsed>recommended)time=$"<color=#FF963F>{time} · 배달 지연 (-{(1f-DeliveryService.Mok.DeliveryPricing.LateMultiplier(elapsed,recommended))*100f:0}%)</color>";
+        if(DeliveryService.Mok.StoryTutorial.Active)time="\uc5f0\uc2b5 \ubc30\ub2ec \xb7 \uc2dc\uac04 \uac10\uc810 \uc5c6\uc74c";
         SetText(OrderHeading(order)+"\n"+DeliveryService.Mok.PizzaRecipes.Title(order)+"\n"+destination+"\n"+time);
     }
 

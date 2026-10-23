@@ -140,6 +140,9 @@ public class Outline : MonoBehaviour {
   void OnDisable() {
     foreach (var renderer in renderers) {
 
+      // 포장 등으로 모델이 교체된 경우 이미 사라진 렌더러는 건너뜁니다.
+      if (!renderer) continue;
+
       // Remove outline shaders
       var materials = renderer.sharedMaterials.ToList();
 
