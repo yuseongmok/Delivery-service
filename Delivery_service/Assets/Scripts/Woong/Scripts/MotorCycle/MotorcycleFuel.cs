@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 public class MotorcycleFuel : MonoBehaviour
@@ -17,7 +17,7 @@ public class MotorcycleFuel : MonoBehaviour
 
     public void ConsumeFuel()
     {
-        currentFuel -= fuelConsumptionRate * Time.deltaTime;
+        currentFuel -= fuelConsumptionRate * 0.5f * Time.deltaTime;
         currentFuel = Mathf.Clamp(currentFuel, 0, maxFuel);
         UpdateUI();
     }

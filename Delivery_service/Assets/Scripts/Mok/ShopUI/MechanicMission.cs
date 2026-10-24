@@ -1,4 +1,4 @@
-using System.Linq;using UnityEngine;using UnityEngine.InputSystem;using UnityEngine.UI;using UnityEngine.AI;
+﻿using System.Linq;using UnityEngine;using UnityEngine.InputSystem;using UnityEngine.UI;using UnityEngine.AI;
 namespace DeliveryService.Mok {
 // 회수한 부품과 차량 지원은 현재 게임 세션의 준비 성과로 유지한다.
 public sealed class MechanicMission:MonoBehaviour {
@@ -42,6 +42,7 @@ public sealed class MechanicMission:MonoBehaviour {
  }
  void Engage(){if(engaged)return;engaged=true;foreach(var e in enemies)if(e)e.Provoke(Player);}
  void Clean(){foreach(var e in enemies)if(e){e.EndFight();Destroy(e.gameObject);}enemies=new CitizenCombat[0];}
+ public void DeveloperComplete(){if(Completed)return;Clean();PartRecovered=true;Set(Phase.Complete);FailureReason="";parts.SetActive(false);keys.SetActive(false);mechanic.gameObject.SetActive(false);supportVehicle.gameObject.SetActive(true);ui.SetActive(false);}
  public void Cancel(){if(Running)Fail("미션을 중단했습니다.");}
  public void Fail(string reason){if(!Running)return;Set(Phase.Failed);FailureReason=reason;Clean();parts.SetActive(false);keys.SetActive(false);mechanic.gameObject.SetActive(false);Notice("빚진 정비사 중단 · "+reason+(PartRecovered?"\n회수한 부품은 유지됩니다. 휴대폰에서 다시 시작하세요.":"\n휴대폰에서 다시 시작할 수 있습니다."));}
  void Update(){if(Time.timeScale<=0)return;if(!Running){marker.gameObject.SetActive(false);if(Time.time>noticeUntil)ui.SetActive(false);return;}

@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
@@ -324,6 +324,7 @@ public sealed class BankPrologue : MonoBehaviour {
         Cursor.visible = value;
         if (siren) { if (value) siren.Pause(); else if (Alarm) siren.UnPause(); }
     }
+    public bool DeveloperComplete(){if(!Application.CanStreamedLevelBeLoaded(gameScene))return false;StopAllCoroutines();Current=Phase.Complete;Load(gameScene);return true;}
     public void Retry() { Load(SceneManager.GetActiveScene().path); }
     void Load(string path) {
         if (!Application.CanStreamedLevelBeLoaded(path)) { objective.text = "씬 연결을 확인해 주세요."; return; }

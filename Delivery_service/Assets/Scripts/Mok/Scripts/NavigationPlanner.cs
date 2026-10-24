@@ -62,6 +62,8 @@ namespace DeliveryService.Mok.Navigation
                 if(CurrentScreen==Screen.Missions||CurrentScreen==Screen.Messages){
                     if(PrologueKeyboard.Pressed(UnityEngine.InputSystem.Key.UpArrow))storyApp.Move(-1);
                     if(PrologueKeyboard.Pressed(UnityEngine.InputSystem.Key.DownArrow))storyApp.Move(1);
+                    float wheel=UnityEngine.InputSystem.Mouse.current!=null?UnityEngine.InputSystem.Mouse.current.scroll.ReadValue().y:0;
+                    if(Mathf.Abs(wheel)>.1f)storyApp.Move(wheel<0?1:-1);
                     if(PrologueKeyboard.Pressed(UnityEngine.InputSystem.Key.Enter)||PrologueKeyboard.Pressed(UnityEngine.InputSystem.Key.NumpadEnter))storyApp.Confirm();
                     if(PrologueKeyboard.Pressed(UnityEngine.InputSystem.Key.Backspace)&&!storyApp.Back())Show(Screen.Home);
                     return;

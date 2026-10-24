@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -13,12 +13,14 @@ namespace DeliveryService.Mok.ShopUI
         public ScrollRect scroll;
         public ShopPcOrderRow template;
         private readonly List<ShopPcOrderRow> rows = new List<ShopPcOrderRow>();
+        Button cancelButton; bool confirmCancel;
         public int VisibleCount { get; private set; }
         public IReadOnlyList<ShopPcOrderRow> Rows => rows;
 
         private void OnEnable()
         {
             if (manager == null) return;
+            confirmCancel=false;
             manager.OrdersChanged += Refresh;
             Refresh();
         }
@@ -29,6 +31,14 @@ namespace DeliveryService.Mok.ShopUI
         public void Refresh()
         {
             if (manager == null || template == null) return;
+            if(cancelButton==null){
+                cancelButton=Instantiate(template.decline,activeLabel.transform.parent);cancelButton.name="Cancel accepted order";
+                var rt=(RectTransform)cancelButton.transform;rt.anchorMin=new Vector2(.76f,0);rt.anchorMax=new Vector2(.99f,1);rt.offsetMin=Vector2.zero;rt.offsetMax=Vector2.zero;
+                activeLabel.rectTransform.anchorMax=new Vector2(.74f,activeLabel.rectTransform.anchorMax.y);
+                cancelButton.onClick.RemoveAllListeners();cancelButton.onClick.AddListener(()=>{if(!confirmCancel){confirmCancel=true;Refresh();return;}manager.CancelActiveOrder();confirmCancel=false;Refresh();});
+            }
+            cancelButton.gameObject.SetActive(manager.HasActiveOrder&&!manager.StoryLesson);
+            cancelButton.GetComponentInChildren<Text>().text=confirmCancel?"정말 취소?":"주문 취소";
             var orders = manager.PendingOrders;
             VisibleCount = orders.Count;
             countLabel.text = $"대기 {orders.Count:00}건 · 주문칸 {OrderManager.PendingCapacity}개";

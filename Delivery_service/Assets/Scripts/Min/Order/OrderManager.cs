@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using DeliveryService.Mok;
@@ -104,6 +104,15 @@ public class OrderManager : MonoBehaviour {
     }
     public bool TryAcceptOrder(PizzaOrder order){if(order==null||HasActiveOrder||!pendingOrders.Contains(order)||dayNightCycle==null||!dayNightCycle.isShopOpen)return false;HandleAccept(order);return activeOrder==order;}
     public bool TryDeclineOrder(PizzaOrder order){if(order==null||!pendingOrders.Contains(order)||dayNightCycle==null||!dayNightCycle.isShopOpen)return false;HandleDecline(order);return true;}
+    // 수락 취소는 피자나 현금을 소모하지 않고 주문 연결만 해제한다.
+    public bool CancelActiveOrder(){
+        if(!HasActiveOrder||StoryLesson)return false;
+        activeOrder=null;currentTargetDeliveryID="";deliveryDeadlineMinutes=0;LastDeliveredPizzaIndex=-1;
+        if(currentOrderUI!=null)currentOrderUI.ClearOrder();
+        FindFirstObjectByType<NavigationManager>()?.ResetNavigationForNewDay();
+        ShopReputation.Instance.Declined();Changed();
+        DeliveryRequestNotice.Show("주문을 취소했습니다. 준비한 피자는 그대로 남습니다.");return true;
+    }
     void HandleAccept(PizzaOrder order){
         if(order==null||HasActiveOrder||!pendingOrders.Contains(order)||dayNightCycle==null||!dayNightCycle.isShopOpen)return;
         if(!deliveryPoints.Any(p=>p!=null&&p.isActiveAndEnabled&&p.DeliveryPointID==order.destinationID))return;

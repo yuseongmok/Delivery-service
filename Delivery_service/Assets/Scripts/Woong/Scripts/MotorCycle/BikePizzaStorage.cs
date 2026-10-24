@@ -37,94 +37,9 @@ public class BikePizzaStorage : MonoBehaviour, IInteractable
         UpdateUI();
     }
 
-    private void Update()
-    {
-        if (storedPizzas.Count > 0 && bikeController != null && bikeController.isDriven)
-        {
-            float speed = Mathf.Abs(bikeController.CurrentSpeed);
-            if (speed > safeSpeed)
-            {
-                float turnShake = Mathf.Abs(Input.GetAxis("Horizontal")) * speed * 0.8f;
-
-                // 기존 흔들림 좀 줄임
-                float baseShakeIncrement = (turnShake + (speed * 0.1f)) * baseShakeScale;
-
-                // 적재된 피자의 총 재료/토핑 개수에 따른 무게 가중치 곱산
-                float weightMultiplier = GetIngredientWeightMultiplier();
-
-                currentShake += (baseShakeIncrement * weightMultiplier) * Time.deltaTime;
-            }
-            else
-            {
-                currentShake -= 15f * Time.deltaTime;
-            }
-
-            currentShake = Mathf.Clamp(currentShake, 0, maxShake);
-
-            if (currentShake >= maxShake)
-            {
-                RuinPizza();
-            }
-            UpdateUI();
-        }
-        else
-        {
-            currentShake = Mathf.Lerp(currentShake, 0, Time.deltaTime * 5f);
-            UpdateUI();
-        }
-    }
-
-    // 적재된 피자들의 토핑 수를 기반으로 게이지 증가 계산
-    private float GetIngredientWeightMultiplier()
-    {
-        int totalIngredients = 0;
-
-        foreach (var pizza in storedPizzas)
-        {
-            if (pizza == null) continue;
-
-            // PizzaData 내부 토핑/재료 리스트 개수 합산
-            if (pizza.toppings != null)
-            {
-                totalIngredients += pizza.toppings.Count;
-            }
-            else
-            {
-                totalIngredients += 1;
-            }
-        }
-
-        // 기본 1.0배 + (총 재료 수 * 가중치)
-        return 1f + (totalIngredients * weightFactorPerIngredient);
-    }
-
-    public void AddCollisionShock(float impactForce)
-    {
-        if (storedPizzas.Count > 0)
-        {
-            // 충돌 충격도 재료 무게 가중치를 적용하여 비율 기준 증가
-            float weightedShock = impactForce * 3f * baseShakeScale * GetIngredientWeightMultiplier();
-            currentShake += weightedShock;
-
-            if (currentShake >= maxShake) RuinPizza();
-        }
-    }
-
-    private void RuinPizza()
-    {
-        Debug.Log("운전이 그따구라서 피자가 이렇게 망가져버렸습니다");
-
-        foreach (var pizza in storedPizzas)
-        {
-            if (pizza != null)
-            {
-                pizza.isRuined = true;
-            }
-        }
-
-        currentShake = 0f;
-        UpdateUI();
-    }
+    // 흔들림 폐기: 기존 외부 호출과 저장 필드는 호환성을 위해 유지한다.
+    private void Update() { currentShake = 0f; UpdateUI(); }
+    public void AddCollisionShock(float impactForce) { currentShake = 0f; }
 
     public void Interact(ToppingInventory inventory)
     {
@@ -175,11 +90,12 @@ public class BikePizzaStorage : MonoBehaviour, IInteractable
     {
         if (shakeGaugeUI != null)
         {
-            shakeGaugeUI.fillAmount = currentShake / maxShake;
+            shakeGaugeUI.fillAmount = 0;
+            shakeGaugeUI.enabled = false;
         }
         if (pizzaUIGroup != null)
         {
-            pizzaUIGroup.SetActive(storedPizzas.Count > 0 && bikeController != null && bikeController.isDriven);
+            pizzaUIGroup.SetActive(false);
         }
     }
 }

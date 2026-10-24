@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+﻿#if UNITY_EDITOR
 using System;
 using System.Collections;
 using System.IO;
@@ -40,6 +40,15 @@ public static class BankPrologueCheck {
             if(command=="test-backdoor-focus"){NightPreparationCheck.Backup();SessionState.SetBool(Key+".backdoorFocus",true);SessionState.SetBool(Key+".night",true);StartTest();}
             if(command=="test-street-repair"){NightPreparationCheck.Backup();SessionState.SetBool(Key+".streetRepair",true);SessionState.SetBool(Key+".night",true);StartTest();}
             if(command=="test-venue"){NightPreparationCheck.Backup();SessionState.SetBool(Key+".venue",true);SessionState.SetBool(Key+".night",true);StartTest();}
+            if(command=="comfort-preview")MechanicBuilder.Preview();
+            if(command=="comfort-apply")MissionComfortCheck.Apply();
+            if(command=="test-cheats"){NightPreparationCheck.Backup();SessionState.SetBool(Key+".cheats",true);SessionState.SetBool(Key+".night",true);StartTest();}
+            if(command=="test-comfort"){NightPreparationCheck.Backup();SessionState.SetBool(Key+".comfort",true);SessionState.SetBool(Key+".night",true);StartTest();}
+            if(command=="comfort-audit")MissionComfortCheck.Audit();
+            if(command=="refresh-scripts")AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
+            if(command=="venue-readability")VenueReadabilityUpgrade.Apply();
+            if(command=="venue-upgrade")VenueUpgrade.Apply();
+            if(command=="venue-upgrade-audit")VenueUpgrade.Audit();
             if(command=="venue-finish")VenueFinaleBuilder.Finish();
             if(command=="test-venue-vehicle"){NightPreparationCheck.Backup();SessionState.SetBool(Key+".venueVehicle",true);SessionState.SetBool(Key+".night",true);StartTest();}
             if(command=="venue-polish")VenueFinaleBuilder.Polish();
@@ -65,6 +74,7 @@ public static class BankPrologueCheck {
             if(command=="mission-art-inspect")MissionPolishInstaller.Inspect();
             if(command=="mission-art-refine")MissionPolishInstaller.Refine();
             if(command=="story-phone-install")StoryPhoneInstaller.Install();
+            if(command=="test-phone-readability"){NightPreparationCheck.Backup();SessionState.SetBool(Key+".phoneReadability",true);SessionState.SetBool(Key+".night",true);StartTest();}
             if(command=="test-story-phone"){NightPreparationCheck.Backup();SessionState.SetBool(Key+".storyPhone",true);SessionState.SetBool(Key+".night",true);StartTest();}
             if(command=="tactical-install")TacticalControlCheck.Install();
             if(command=="test-broker-extra"){NightPreparationCheck.Backup();SessionState.SetBool(Key+".brokerExtra",true);SessionState.SetBool(Key+".night",true);StartTest();}
@@ -215,6 +225,8 @@ public static class BankPrologueCheck {
     static IEnumerator Run(){
         yield return null;yield return null;
         if(SessionState.GetBool(Key+".specialEdges",false)){SessionState.SetBool(Key+".specialEdges",false);SessionState.SetBool(Key+".night",false);yield return SpecialOrderCheck.EdgeCases();yield break;}
+        if(SessionState.GetBool(Key+".cheats",false)){SessionState.SetBool(Key+".cheats",false);SessionState.SetBool(Key+".night",false);yield return DeveloperCheatsCheck.Verify();yield break;}
+        if(SessionState.GetBool(Key+".comfort",false)){SessionState.SetBool(Key+".comfort",false);SessionState.SetBool(Key+".night",false);yield return MissionComfortPlayCheck.Verify();yield break;}
         if(SessionState.GetBool(Key+".venueVehicle",false)){SessionState.SetBool(Key+".venueVehicle",false);SessionState.SetBool(Key+".night",false);yield return VenueFinaleCheck.Vehicle();yield break;}
         if(SessionState.GetBool(Key+".venue",false)){SessionState.SetBool(Key+".venue",false);SessionState.SetBool(Key+".night",false);yield return VenueFinaleCheck.Verify();yield break;}
         if(SessionState.GetBool(Key+".mechanicFocus",false)){SessionState.SetBool(Key+".mechanicFocus",false);SessionState.SetBool(Key+".night",false);yield return MechanicCheck.Verify(true);yield break;}
@@ -225,6 +237,7 @@ public static class BankPrologueCheck {
         if(SessionState.GetBool(Key+".specialOrder",false)){SessionState.SetBool(Key+".specialOrder",false);SessionState.SetBool(Key+".night",false);yield return SpecialOrderCheck.Verify();yield break;}
         if(SessionState.GetBool(Key+".companion",false)){SessionState.SetBool(Key+".companion",false);SessionState.SetBool(Key+".night",false);yield return StoryCompanionCheck.Verify();yield break;}
         if(SessionState.GetBool(Key+".missionPolish",false)){SessionState.SetBool(Key+".missionPolish",false);SessionState.SetBool(Key+".night",false);yield return MissionPolishCheck.Verify();yield break;}
+        if(SessionState.GetBool(Key+".phoneReadability",false)){SessionState.SetBool(Key+".phoneReadability",false);yield return StoryPhoneCheck.Readability();yield break;}
         if(SessionState.GetBool(Key+".storyPhone",false)){SessionState.SetBool(Key+".storyPhone",false);SessionState.SetBool(Key+".night",false);yield return StoryPhoneCheck.Verify();yield break;}
         if(SessionState.GetBool(Key+".brokerExtra",false)){SessionState.SetBool(Key+".brokerExtra",false);SessionState.SetBool(Key+".night",false);yield return BrokerMissionCheck.Extra();yield break;}
         if(SessionState.GetBool(Key+".broker",false)){SessionState.SetBool(Key+".broker",false);SessionState.SetBool(Key+".night",false);yield return BrokerMissionCheck.Verify();yield break;}

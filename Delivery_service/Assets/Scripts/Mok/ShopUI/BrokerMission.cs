@@ -1,4 +1,4 @@
-using System.Linq;
+﻿using System.Linq;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.InputSystem;
@@ -62,6 +62,8 @@ public sealed class BrokerMission : MonoBehaviour {
   e.gameObject.SetActive(true);e.chaseSpeed=pursuitSpeed;e.punchCooldown=1.9f+index*.15f;e.Provoke(player);enemies[index]=e;
  }
  public void Fail(string reason){if(Completed)return;FailureReason=reason;SetPhase(Phase.Failed);CleanEnemies();if(broker)broker.gameObject.SetActive(false);if(missionUI)missionUI.SetActive(true);subtitle.text="미션 실패 · "+reason+"\n휴대폰 미션 앱에서 다시 시도할 수 있습니다.";messageUntil=Time.time+8;}
+ // 발표용 완료 처리는 추격과 동승 상태를 먼저 정리한다.
+ public void DeveloperComplete(){if(Completed)return;CleanEnemies();if(passenger)passenger.ResetRide();broker.gameObject.SetActive(false);SetPhase(Phase.Complete);FailureReason="";missionUI.SetActive(false);}
  public void Cancel(){if(Running)Fail("준비를 중단했습니다.");}
  void CleanEnemies(){foreach(var e in enemies)if(e)Destroy(e.gameObject);enemies=new CitizenCombat[4];}
  void Update(){

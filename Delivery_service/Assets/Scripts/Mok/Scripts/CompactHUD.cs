@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -10,7 +10,7 @@ public sealed class CompactHUD : MonoBehaviour {
     Text sourceOrder,orderTitle,orderBody,timeLabel,cash,popup;
     RectTransform orderCard;GameObject vehicle;
     MotorcycleController[] bikes;
-    readonly Image[] fills=new Image[3];readonly GameObject[] gauges=new GameObject[3];
+    readonly Image[] fills=new Image[2];readonly GameObject[] gauges=new GameObject[2];
     static readonly Color Cream=new Color(.98f,.95f,.86f),Orange=new Color(.95f,.57f,.25f),Danger=new Color(.94f,.29f,.22f);
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     static void Boot(){SceneManager.sceneLoaded-=Loaded;SceneManager.sceneLoaded+=Loaded;Install();}
@@ -32,7 +32,7 @@ public sealed class CompactHUD : MonoBehaviour {
         popup=Label(balance,-16,72,280,40,26);popup.alignment=TextAnchor.MiddleRight;
         vehicle=Card("Vehicle",Vector2.zero,new Vector2(28,28),new Vector2(270,150)).gameObject;
         string[] labels={"연료","내구도","피자 흔들림"};
-        for(int i=0;i<3;i++){
+        for(int i=0;i<2;i++){
             var row=Rect(vehicle.transform,"Gauge "+i,12,10+i*44,246,40);gauges[i]=row.gameObject;Icon(row,0,3,30,i);
             var label=Label(row,40,0,192,20,18);label.text=labels[i];
             var track=Rect(row,"Empty track",40,25,190,8).gameObject.AddComponent<Image>();track.color=new Color(.33f,.40f,.44f);
@@ -70,9 +70,7 @@ public sealed class CompactHUD : MonoBehaviour {
         var f=current.GetComponent<MotorcycleFuel>();var d=Durability(current);var cargo=current.GetComponentInChildren<BikePizzaStorage>(true);
         SetGauge(0,f?f.currentFuel/Mathf.Max(.001f,f.maxFuel):0,false);
         SetGauge(1,d?d.currentDurability/Mathf.Max(.001f,d.maxDurability):0,false);
-        bool loaded=current.isDriven&&cargo!=null&&cargo.StoredCount>0;
-        gauges[2].SetActive(loaded);((RectTransform)vehicle.transform).sizeDelta=new Vector2(270,loaded?150:106);
-        if(loaded)SetGauge(2,cargo.currentShake/Mathf.Max(.001f,cargo.maxShake),true);
+        ((RectTransform)vehicle.transform).sizeDelta=new Vector2(270,106);
     }}
     void SetGauge(int i,float ratio,bool highDanger){ratio=Mathf.Clamp01(ratio);fills[i].rectTransform.sizeDelta=new Vector2(190*ratio,8);fills[i].color=(highDanger?ratio>.7f:ratio<.25f)?Danger:Orange;}
     RectTransform Card(string name,Vector2 anchor,Vector2 pos,Vector2 size){

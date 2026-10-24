@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -22,15 +22,19 @@ public sealed class StoryPhoneInbox : MonoBehaviour {
  void Awake(){Current=this;toast.SetActive(false);sound=gameObject.AddComponent<AudioSource>();sound.spatialBlend=0;sound.volume=.18f;var samples=new float[11025];for(int i=0;i<samples.Length;i++){float t=i/22050f;float envelope=Mathf.Sin(Mathf.PI*Mathf.Clamp01((t% .25f)/.18f));samples[i]=t% .25f<.18f?Mathf.Sin(2*Mathf.PI*(t<.25f?660:880)*t)*envelope*.4f:0;}tone=AudioClip.Create("Story message chime",samples.Length,1,22050,false);tone.SetData(samples,0);}
  void OnDestroy(){if(Current==this)Current=null;if(tone)Destroy(tone);}
  public void Send(string title,string body,bool missionUpdate=false){
-  bool local=IsMingiNearby;var message=new Message{sender="민기",title=title,body=body,day=cycle.currentDay,localConversation=local,read=local,missionUpdate=missionUpdate};Messages.Insert(0,message);
+  SendMessage("민기",title,body,missionUpdate,IsMingiNearby);
+ }
+ public void SendFrom(string sender,string title,string body,bool missionUpdate=false){SendMessage(sender,title,body,missionUpdate,false);}
+ void SendMessage(string sender,string title,string body,bool missionUpdate,bool local){
+  var message=new Message{sender=sender,title=title,body=body,day=cycle.currentDay,localConversation=local,read=local,missionUpdate=missionUpdate};Messages.Insert(0,message);
   if(local&&nearbyPanel){nearbySubtitle.text="민기: "+body;nearbyPanel.SetActive(true);nearbyUntil=Time.time+Mathf.Clamp(body.Length*.065f,6,14);if(missionUpdate)pending.Enqueue(message);}
-  else{toastText.text="새 문자 · 민기\n"+title;toast.SetActive(true);until=Time.unscaledTime+5;sound.PlayOneShot(tone);pending.Enqueue(message);}
+  else{toastText.text="새 문자 · "+sender+"\n"+title;toast.SetActive(true);until=Time.unscaledTime+5;sound.PlayOneShot(tone);pending.Enqueue(message);}
  }
  void PresentPending(){
   if(nearbyPanel&&nearbyPanel.activeSelf&&Time.time>=nearbyUntil)nearbyPanel.SetActive(false);
   if(nearbyPanel&&nearbyPanel.activeSelf&&IsMingiNearby&&!StoryTutorial.Active){Vector3 direction=mission.player.transform.position-mingi.position;direction.y=0;if(direction.sqrMagnitude>.1f)mingi.rotation=Quaternion.RotateTowards(mingi.rotation,Quaternion.LookRotation(direction),180*Time.deltaTime);}
   if(!AutoOpenEnabled||pending.Count==0||StoryTutorial.Active||!mission||cycle.IsTransitioning||cycle.pcUIPanel.activeSelf||PoliceControl.IsArrestInProgress||mission.player.IsDown||mission.player.WaterRescueActive)return;
-  if(VenueFinale.Active)return;
+  if(VenueFinale.Active&&VenueFinale.Current.State!=VenueFinale.Phase.Entrance)return;
   if(SpecialOrderMission.Active&&SpecialOrderMission.Current.InDialogue)return;
   if(MechanicMission.Active&&(MechanicMission.Current.InDialogue||MechanicMission.Current.ThreatNearby))return;
   if(BackdoorMission.Active&&(BackdoorMission.Current.InDialogue||BackdoorMission.Current.Alerted))return;

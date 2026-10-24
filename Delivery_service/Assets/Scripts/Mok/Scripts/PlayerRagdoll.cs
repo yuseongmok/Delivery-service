@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 namespace DeliveryService.Mok {
 // 시민과 같은 관절 물리를 사용하고, 충돌이 끝나면 조작 가능한 몸으로 복구한다.
@@ -20,7 +20,7 @@ public sealed class PlayerRagdoll : MonoBehaviour {
         bones=GetComponentsInChildren<Transform>();positions=new Vector3[bones.Length];rotations=new Quaternion[bones.Length];
         for(int i=0;i<colliders.Length;i++)for(int j=i+1;j<colliders.Length;j++)Physics.IgnoreCollision(colliders[i],colliders[j]);
     }
-    public void Launch(Vector3 velocity,float duration=2.5f){if(!IsReady||IsActive||!isActiveAndEnabled)return;StartCoroutine(Fly(velocity,duration));}
+    public void Launch(Vector3 velocity,float duration=2.5f){if(DeveloperCheats.Invincible||!IsReady||IsActive||!isActiveAndEnabled)return;StartCoroutine(Fly(velocity,duration));}
     IEnumerator Fly(Vector3 velocity,float duration){
         IsActive=true;rootRotation=root.rotation;
         TrafficRecovery.Get(root.gameObject).Protect(duration);

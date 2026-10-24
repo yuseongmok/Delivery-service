@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 namespace DeliveryService.Mok {
@@ -45,7 +45,7 @@ public sealed class ProloguePlayer : MonoBehaviour {
         if(avatarRenderers!=null)foreach(var r in avatarRenderers)r.enabled=false;
     }
     void Update() {
-        if (director == null || !director.CanPlay || !director.AcceptInput || KnockedDown) return;
+        if (DeveloperCheats.Invincible || director == null || !director.CanPlay || !director.AcceptInput || KnockedDown) return;
         // 포커스를 되찾는 클릭으로 바로 발사하지 않는다.
         bool mouseReady=Cursor.lockState==CursorLockMode.Locked;
         if(!mouseReady&&Input.GetMouseButtonDown(0)){Cursor.lockState=CursorLockMode.Locked;Cursor.visible=false;}

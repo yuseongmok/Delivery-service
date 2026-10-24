@@ -147,6 +147,7 @@ public sealed class StoryTutorial : MonoBehaviour {
         if(!target||!cam)return;
         StoryTargetDiamond.Place(marker,cam,target.position+Vector3.up,inventory.transform.position,"목표");
     }
+    public void DeveloperComplete(){if(!Active)return;orders.ResetOrdersForNewDay();Finish();}
     void Finish(){
         Completed=true;running=false;day.timeMultiplier=oldMultiplier;orders.EndStoryLesson();
         FindFirstObjectByType<DeliveryService.Yun.Achievements.AchievementManager>()?.TryUnlock(DeliveryService.Yun.Achievements.AchievementManager.FirstDeliveryId);

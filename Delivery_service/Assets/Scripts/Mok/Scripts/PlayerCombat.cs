@@ -12,7 +12,7 @@ public sealed class PlayerCombat : MonoBehaviour {
     public int HitsTaken {get;private set;}
     public int BulletHitsTaken {get;private set;}
     public bool CanReceiveBullet=>CanReceiveHit&&Time.time>=recoveryUntil;
-    public bool ReceiveBullet(Vector3 direction){if(!CanReceiveBullet)return false;BulletHitsTaken++;if(BulletHitsTaken>=3)HitsTaken=2;ReceivePunch(34,direction);return true;}
+    public bool ReceiveBullet(Vector3 direction){if(DeveloperCheats.Invincible||!CanReceiveBullet)return false;BulletHitsTaken++;if(BulletHitsTaken>=3)HitsTaken=2;ReceivePunch(34,direction);return true;}
     public int Health {get;private set;}
     public bool IsDown {get;private set;}
     public bool IsKicking {get;private set;}
@@ -64,7 +64,7 @@ public sealed class PlayerCombat : MonoBehaviour {
         }return false;
     }
     public void ReceivePunch(int damage,Vector3 direction,bool slumRobber=false){
-        if(!CanReceiveHit||Time.time<recoveryUntil)return;
+        if(DeveloperCheats.Invincible||!CanReceiveHit||Time.time<recoveryUntil)return;
         var mounted=RiddenBike;if(mounted){mounted.ApplyImpactDeceleration(.1f);mounted.ExitBike();}
         HitsTaken++;Health=Mathf.Max(0,maximumHealth-HitsTaken*34);
         if(HitsTaken>=3&&slumRobber)SlumRobberCombat.ApplyDefeatLoss(this);

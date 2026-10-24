@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -9,6 +9,7 @@ public sealed class SpecialOrderMission : MonoBehaviour {
  public enum Phase { Available, Meet, Briefing, Prepare, Handover, Approval, Return, Debrief, Complete, Failed }
  public static SpecialOrderMission Current {get;private set;}
  public static bool Active=>Current&&Current.Running;
+ public static bool SuppliesProvided=>Current&&Current.State==Phase.Prepare;
  public Phase State {get;private set;}
  public bool Completed=>State==Phase.Complete;
  public bool Running=>State>=Phase.Meet&&State<=Phase.Debrief;
@@ -74,12 +75,13 @@ public sealed class SpecialOrderMission : MonoBehaviour {
  public void AdvanceDialogue(bool skip=false){
   if(!InDialogue||State==Phase.Handover||!Near(State==Phase.Debrief?kitchen.actor:attendant))return;
   line++;if(!skip&&Lines!=null&&line<Lines.Length){ShowLine();return;}
-  if(State==Phase.Briefing){Set(Phase.Prepare);Notice("치즈피자 한 판을 만들어 포장하세요. 재료비는 평소와 같습니다. 이 시식 납품에는 시간 제한이 없습니다.");}
+  if(State==Phase.Briefing){Set(Phase.Prepare);Notice("치즈피자 한 판을 만들어 포장하세요. 민기가 도우·소스·치즈 재료비를 지원합니다. 실패해도 다시 만들 수 있어요. 휴대폰 미션에서 중단·재시도할 수 있습니다.");}
   else if(State==Phase.Approval){approvalPaper.SetActive(false);if(sound&&paperSound)sound.PlayOneShot(paperSound,.3f);ShowMingi();Set(Phase.Return);Notice("정식 납품 승인서 확보 · 가게로 돌아가 민기와 다음 준비를 의논하세요.");}
   else{Set(Phase.Complete);showingMingi=false;MoneyManager.Instance?.AddMoney(payment);Notice("특별 주문 완료 · 정식 납품 승인\n시식 납품 대금 "+payment.ToString("N0")+"원");StoryPhoneInbox.Current?.Send("납품 승인서 확보","승인서는 잘 보관해 둬. 이제 휴대폰에서 ‘도시의 뒷문’을 시작하자. 행사장 출입구와 경비 사각지대, 탈출 동선을 확인해야 해.",true);}
  }
  void ShowMingi(){if(showingMingi)return;showingMingi=true;mingiWasActive=kitchen.actor.gameObject.activeSelf;mingiPosition=kitchen.actor.position;mingiRotation=kitchen.actor.rotation;kitchen.actor.position=returnPoint.position;kitchen.actor.gameObject.SetActive(true);}
  void RestoreMingi(){if(!showingMingi||!kitchen||!kitchen.actor)return;kitchen.actor.gameObject.SetActive(false);kitchen.actor.SetPositionAndRotation(mingiPosition,mingiRotation);kitchen.actor.gameObject.SetActive(mingiWasActive);showingMingi=false;}
+ public void DeveloperComplete(){if(Completed)return;StopAllCoroutines();RestoreMingi();SampleAccepted=true;Set(Phase.Complete);FailureReason="";attendant.gameObject.SetActive(false);box.SetActive(false);approvalPaper.SetActive(false);ui.SetActive(false);}
  public void Cancel(){if(Running)Fail("준비를 중단했습니다.");}
  public void Fail(string reason){if(!Running)return;Set(Phase.Failed);FailureReason=reason;attendant.gameObject.SetActive(false);box.SetActive(false);approvalPaper.SetActive(false);RestoreMingi();Notice("특별 주문 중단 · "+reason+"\n휴대폰에서 재시도할 수 있습니다."+(SampleAccepted?"\n접수된 피자는 다시 제출하지 않아도 됩니다.":""));}
  void Update(){

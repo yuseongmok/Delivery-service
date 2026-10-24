@@ -1,4 +1,4 @@
-using System.Linq;
+﻿using System.Linq;
 using UnityEngine;
 using UnityEngine.AI;
 namespace DeliveryService.Mok {
@@ -16,7 +16,7 @@ public sealed class BackdoorGuard : MonoBehaviour {
   Cache();if(!gameObject.activeInHierarchy||npc.IsDead||npc.IsKnockedDown)return false;
   var hiding=player.GetComponent<PlayerHiding>();if(hiding&&hiding.IsHidden)return false;
   var from=transform.position+Vector3.up*1.45f;var to=player.View.transform.position;var d=to-from;
-  if(d.magnitude>sightDistance||Vector3.Angle(transform.forward,d)>viewAngle*.5f)return false;
+  if(d.magnitude>sightDistance*.65f||Vector3.Angle(transform.forward,d)>viewAngle*.35f)return false;
   return !Physics.RaycastAll(from,d.normalized,d.magnitude,~0,QueryTriggerInteraction.Ignore).Any(h=>!h.transform.IsChildOf(transform)&&!h.transform.IsChildOf(player.transform)&&!(player.RiddenBike&&h.transform.IsChildOf(player.RiddenBike.transform)));
  }
  void Update(){
