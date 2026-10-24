@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
 namespace DeliveryService.Mok {
@@ -208,7 +208,8 @@ public sealed class ProloguePartnerPerformance : MonoBehaviour {
     }
     float seatBend;
     void LateUpdate(){
-        if(!Anim||!Anim.isHuman||partner.Boarded)return;
+        if(!Anim||!Anim.isHuman)return;
+        if(partner.Boarded){foreach(var bone in new[]{HumanBodyBones.LeftUpperLeg,HumanBodyBones.RightUpperLeg})Anim.GetBoneTransform(bone).localRotation*=Quaternion.Euler(-75,0,0);foreach(var bone in new[]{HumanBodyBones.LeftLowerLeg,HumanBodyBones.RightLowerLeg})Anim.GetBoneTransform(bone).localRotation*=Quaternion.Euler(85,0,0);return;}
         if(shoulderStraps)shoulderStraps.SetActive(partner.bag.parent==shoulderMount);
         var chest=Anim.GetBoneTransform(HumanBodyBones.Chest);if(chest)chest.localRotation*=Quaternion.Euler(lean+duck*13,0,0);
         // 이동 루트는 유지하고 상체만 낮춰 작업과 동행을 끊지 않는다.

@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.AI;
 namespace DeliveryService.Mok {
 // 공범은 수집과 동행만 담당하며 본편 시민·경제 시스템을 실행하지 않는다.
@@ -81,10 +81,12 @@ public sealed class PrologueAccomplice : MonoBehaviour {
     public void Board(){
         Boarded=true;agent.enabled=false;
         transform.SetParent(director.getawayCar,true);
-        transform.localPosition=new Vector3(.45f,.25f,0);
+        transform.localPosition=new Vector3(.45f,-.4f,-.1f);
         transform.localRotation=Quaternion.identity;
-        // 차체 밖으로 서 있는 몸이 비치지 않게 탑승 후 외형을 숨긴다.
-        foreach(var r in GetComponentsInChildren<Renderer>())r.enabled=false;
+        // 조수석에서 민기가 계속 보이도록 몸을 표시하고 가방은 좌석 밖으로 숨긴다.
+        animator.SetFloat("MoveSpeed",0);
+        foreach(var r in GetComponentsInChildren<SkinnedMeshRenderer>())r.enabled=true;
+        if(bag)bag.gameObject.SetActive(false);
     }
 }
 }

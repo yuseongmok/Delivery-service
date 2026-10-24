@@ -283,16 +283,20 @@ public sealed class BankPrologue : MonoBehaviour {
         Vector3 carA=cityCarStart.position,carB=cityCarEnd.position;
         for(float t=0;t<story.cityArrivalSeconds&&!skip;t+=Time.deltaTime){
             float p=t/Mathf.Max(.1f,story.cityArrivalSeconds);
-            getawayCar.position=Vector3.Lerp(carA,carB,p);
+            var moving=Vector3.Lerp(carA,carB,p);carBody.position=moving;getawayCar.position=moving;
+            foreach(var wheel in drive.wheels)wheel.Rotate(Vector3.right,Vector3.Distance(carA,carB)/Mathf.Max(.1f,story.cityArrivalSeconds)*Time.deltaTime*130,Space.Self);
             filmCamera.transform.position=getawayCar.position-getawayCar.forward*12+getawayCar.right*9+Vector3.up*6;
             filmCamera.transform.LookAt(getawayCar.position+getawayCar.forward*4+Vector3.up);
             fade.alpha=1-Mathf.Clamp01(t);yield return null;
         }
-        getawayCar.position=carB;fade.alpha=0;
+        getawayCar.position=carB;carBody.position=carB;fade.alpha=0;
+        float citySpeed=Vector3.Distance(carA,carB)/Mathf.Max(.1f,story.cityArrivalSeconds);
         Vector3 cameraStart=filmCamera.transform.position;Quaternion rotationStart=filmCamera.transform.rotation;
         subtitle.text=shopArrival?"":story.getaway.text;
         for(float t=0;t<story.cityPanSeconds&&!skip;t+=Time.deltaTime){
             float p=Mathf.SmoothStep(0,1,t/Mathf.Max(.1f,story.cityPanSeconds));
+            float rollingSpeed=Mathf.Lerp(citySpeed,1.2f,p);var moving=getawayCar.position+getawayCar.forward*rollingSpeed*Time.deltaTime;carBody.position=moving;getawayCar.position=moving;
+            foreach(var wheel in drive.wheels)wheel.Rotate(Vector3.right,rollingSpeed*Time.deltaTime*130,Space.Self);
             filmCamera.transform.position=Vector3.Lerp(cameraStart,cityWideCamera.position,p);
             filmCamera.transform.rotation=Quaternion.Slerp(rotationStart,cityWideCamera.rotation,p);yield return null;
         }

@@ -35,7 +35,7 @@ public static class BackdoorCheck {
   Place(p,isolated?m.standPoints[0].position:b.exit.position);for(int i=1;i<4;i++){yield return Walk(p,m.standPoints[i].position);yield return Record(m);Check(m.ConfirmedCount==i+1,"objective recorded "+i);}
   Check(m.State==BackdoorMission.Phase.Return&&m.ActiveGuards.Length==0,"all four observations unlock return and clean guards");
   yield return Walk(p,b.exit.position);Place(p,m.reportPoint.position+m.delivery.kitchen.actor.forward*2);p.View.transform.LookAt(m.delivery.kitchen.actor.position+Vector3.up*1.2f);yield return Wait(.2f);yield return Key(UnityEngine.InputSystem.Key.F);Check(m.State==BackdoorMission.Phase.Debrief,"return debrief uses physical F");int money=MoneyManager.Instance.currentMoney;yield return Key(UnityEngine.InputSystem.Key.Space);Check(m.Completed&&!BackdoorMission.Active&&!m.Begin(),"completion persists and prevents replay");Check(MoneyManager.Instance.currentMoney==money,"reconnaissance does not change economy");
-  app.Open(false);app.Move(2);app.Confirm();app.Refresh();Check(app.action.text.Contains("확보 완료"),"phone displays completed escape preparation");app.gameObject.SetActive(false);if(look)look.enabled=true;move.enabled=true;
+  app.Open(false);app.Move(2);app.Confirm();app.Refresh();Check(app.action.text.Contains("완료")&&app.heading.text.Contains("완료"),"phone displays completed escape preparation");app.gameObject.SetActive(false);if(look)look.enabled=true;move.enabled=true;
  }
 }
 }

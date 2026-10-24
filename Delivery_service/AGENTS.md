@@ -16,3 +16,7 @@
 - Maintain cohesive low-poly environments, purposeful lighting, readable props and routes, weapon recoil/muzzle flashes/tracers, hit feedback and ragdolls. Use spatial audio and pursuit cues where appropriate.
 - Keep dialogue and useful timing settings editable. Do not imply subtitles are recorded voice: police entrance currently uses subtitles with an optional voice-clip field.
 - Validate the complete mission chain, not only isolated effects: cinematic locks and handoff, objective completion, companion navigation, boarding, pursuit, final transition, pause/skip behavior, and isolation from main-game economy. Report what was actually tested and distinguish functional checks from subjective visual polish.
+
+- Prefer existing assets under Assets/Synty for story characters and interior furniture, tools, and decoration. Apply replacements to saved scenes/prefabs, preserve gameplay rigs and references, and create custom models only where a suitable Synty asset is unavailable.
+
+- Player identity: use Synty PolygonCity Character_Male_Hoodie (red hoodie, cap and beard), matching the prologue shop conversation, for gameplay, ragdolls and all future cutscenes. Preserve gameplay rigs. Mingi keeps Character_Male_Jacket; hostile gang roles must use visibly distinct clothing/colors/silhouette rather than identical Mingi appearances. If a base model is reused for different roles, differentiate costume, palette and accessories clearly.

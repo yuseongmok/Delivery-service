@@ -45,7 +45,25 @@ public static class BankPrologueCheck {
             if(command=="test-cheats"){NightPreparationCheck.Backup();SessionState.SetBool(Key+".cheats",true);SessionState.SetBool(Key+".night",true);StartTest();}
             if(command=="test-comfort"){NightPreparationCheck.Backup();SessionState.SetBool(Key+".comfort",true);SessionState.SetBool(Key+".night",true);StartTest();}
             if(command=="comfort-audit")MissionComfortCheck.Audit();
+            if(command=="bank-synty-refine")BankSyntyUpgrade.Refine();
+            if(command=="bank-synty-preview")BankSyntyUpgrade.Preview();
+            if(command=="bank-synty")BankSyntyUpgrade.Apply();
+            if(command=="driving-hands-refine")PrologueDrivingHandsBuilder.Refine();
+            if(command=="test-role"){NightPreparationCheck.Backup();SessionState.SetBool(Key+".role",true);SessionState.SetBool(Key+".night",true);StartTest();}
+            if(command=="slum-verify"){System.IO.File.Delete("Temp/Mok-slum-guard-test-request");typeof(SlumGuardCheck).GetMethod("Restore",System.Reflection.BindingFlags.Static|System.Reflection.BindingFlags.NonPublic).Invoke(null,null);SlumGuardCheck.Start();}
+            if(command=="slum-three")SlumGuardReduction.Apply();
+            if(command=="role-reload")RoleVisualUpgrade.Reload();
+            if(command=="role-refine")RoleVisualUpgrade.RefinePlayers();
+            if(command=="role-apply")RoleVisualUpgrade.Apply();
+            if(command=="role-inspect")RoleVisualUpgrade.Inspect();
+            if(command=="driving-feedback")PrologueDriveFeedbackBuilder.Apply();
+            if(command=="driving-hands")PrologueDrivingHandsBuilder.Apply();
+            if(command=="driving-inspect")PrologueCameraUpgrade.InspectDriving();
+            if(command=="prologue-camera")PrologueCameraUpgrade.Apply();
             if(command=="refresh-scripts")AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
+            if(command=="synty-story-refine")SyntyStoryUpgrade.Refine();
+            if(command=="synty-story-apply")SyntyStoryUpgrade.Apply();
+            if(command=="synty-story-inspect")SyntyStoryUpgrade.Inspect();
             if(command=="venue-readability")VenueReadabilityUpgrade.Apply();
             if(command=="venue-upgrade")VenueUpgrade.Apply();
             if(command=="venue-upgrade-audit")VenueUpgrade.Audit();
@@ -226,6 +244,7 @@ public static class BankPrologueCheck {
         yield return null;yield return null;
         if(SessionState.GetBool(Key+".specialEdges",false)){SessionState.SetBool(Key+".specialEdges",false);SessionState.SetBool(Key+".night",false);yield return SpecialOrderCheck.EdgeCases();yield break;}
         if(SessionState.GetBool(Key+".cheats",false)){SessionState.SetBool(Key+".cheats",false);SessionState.SetBool(Key+".night",false);yield return DeveloperCheatsCheck.Verify();yield break;}
+        if(SessionState.GetBool(Key+".role",false)){SessionState.SetBool(Key+".role",false);SessionState.SetBool(Key+".night",false);yield return RoleVisualUpgrade.Verify();yield break;}
         if(SessionState.GetBool(Key+".comfort",false)){SessionState.SetBool(Key+".comfort",false);SessionState.SetBool(Key+".night",false);yield return MissionComfortPlayCheck.Verify();yield break;}
         if(SessionState.GetBool(Key+".venueVehicle",false)){SessionState.SetBool(Key+".venueVehicle",false);SessionState.SetBool(Key+".night",false);yield return VenueFinaleCheck.Vehicle();yield break;}
         if(SessionState.GetBool(Key+".venue",false)){SessionState.SetBool(Key+".venue",false);SessionState.SetBool(Key+".night",false);yield return VenueFinaleCheck.Verify();yield break;}
@@ -327,8 +346,10 @@ public static class BankPrologueCheck {
         d.AcceptInput=false;d.StopAllCoroutines();d.player.enabled=false;d.accomplice.enabled=false;d.fade.alpha=0;d.bars.alpha=0;
         foreach(var o in d.officers){o.Stop();o.gameObject.SetActive(false);}foreach(var o in d.roadPolice)o.gameObject.SetActive(false);
         d.player.GetComponent<CharacterController>().enabled=false;Set(d,"<Current>k__BackingField",BankPrologue.Phase.Driving);
-        d.drive.ExternalInput=true;d.drive.SetInput(1,0);d.drive.Begin();
+        d.accomplice.Board();d.drive.ExternalInput=true;d.drive.SetInput(1,0);d.drive.Begin();
         float until=Time.time+5;while(Time.time<until)yield return null;
+        Check(Vector3.Distance(d.filmCamera.transform.position,d.getawayCar.TransformPoint(d.drive.driverEye))<.05f,"first person camera stays at driver eye");Capture(d.filmCamera,"cockpit-forward");Check(d.prompt.text=="","driving control legend hidden");Check(d.accomplice.GetComponentsInChildren<SkinnedMeshRenderer>().Any(r=>r.enabled),"Mingi remains visible in passenger seat");d.filmCamera.transform.rotation=d.getawayCar.rotation*Quaternion.Euler(8,75,0);Capture(d.filmCamera,"cockpit-passenger");
+        var feedback=d.drive.GetComponent<PrologueDriveFeedback>();Check(feedback&&feedback.engine.isPlaying&&feedback.engine.pitch>1.3f,"engine rises with driving speed");
         var cars=UnityEngine.Object.FindObjectsByType<ProloguePursuitCar>(FindObjectsSortMode.None);
         Check(cars.Length==2&&cars.All(c=>c.Pursuing&&c.Travelled>30&&c.siren.isPlaying&&c.headlights.enabled),"both pursuit cars catch up with sirens and headlights");
         foreach(var c in cars)Check(d.getawayCar.position.x-c.transform.position.x>6&&d.getawayCar.position.x-c.transform.position.x<40,"pursuit stays behind within audible range: "+c.name+" gap "+(d.getawayCar.position.x-c.transform.position.x).ToString("F1"));
@@ -336,7 +357,13 @@ public static class BankPrologueCheck {
         d.SetPaused(true);var positions=cars.Select(c=>c.transform.position).ToArray();yield return null;yield return null;
         Check(cars.Select((c,i)=>Vector3.Distance(c.transform.position,positions[i])<.001f&&!c.siren.isPlaying).All(v=>v),"pause freezes pursuit and audio");d.SetPaused(false);yield return null;yield return null;
         Check(cars.All(c=>c.siren.isPlaying),"sirens resume after pause");
-        d.drive.Stop();yield return null;yield return null;Check(cars.All(c=>!c.Pursuing&&!c.siren.isPlaying&&!c.headlights.enabled),"stopping drive shuts down pursuit audio and lights");
+        var hands=d.drive.GetComponent<PrologueDrivingHands>();Check(hands&&hands.arms.gameObject.activeSelf,"driver arms visible during driving");
+        foreach(float steering in new[]{-1f,1f,0f}){d.drive.SetInput(0,steering);until=Time.time+1;while(Time.time<until)yield return null;Check(Mathf.Abs(hands.Angle+steering*hands.maxAngle)<1,"wheel follows steering and returns to center");Check(Vector3.Distance(hands.leftHand.position,hands.leftGrip.position)<.02f&&Vector3.Distance(hands.rightHand.position,hands.rightGrip.position)<.02f,"both hands stay on wheel through steering");Capture(d.filmCamera,steering<0?"hands-left":steering>0?"hands-right":"hands-center");}
+        Check(feedback.engine.pitch<1.1f,"engine settles toward idle when stopped");
+        var obstacle=GameObject.CreatePrimitive(PrimitiveType.Cube);obstacle.name="Driving feedback test barrier";obstacle.transform.position=d.getawayCar.position+d.getawayCar.forward*9+Vector3.up;obstacle.transform.rotation=d.getawayCar.rotation;obstacle.transform.localScale=new Vector3(6,3,1);Physics.SyncTransforms();int impacts=feedback.ImpactCount;d.drive.SetInput(1,0);until=Time.time+4;while(feedback.ImpactCount==impacts&&Time.time<until)yield return null;
+        Check(feedback.ImpactCount==impacts+1&&feedback.impact.isPlaying&&feedback.ShakeRemaining>0,"physical barrier triggers collision audio and brief shake");until=Time.time+1.5f;while(Time.time<until)yield return null;Check(feedback.ImpactCount==impacts+1&&feedback.ShakeRemaining==0,"resting against wall does not repeat impact or shake");UnityEngine.Object.Destroy(obstacle);d.drive.SetInput(0,0);
+        d.SetPaused(true);float angle=hands.Angle;d.drive.SetInput(0,1);yield return null;yield return null;Check(hands.Angle==angle,"pause freezes steering pose");Check(!feedback.engine.isPlaying,"pause silences engine");d.SetPaused(false);
+        d.drive.Stop();yield return null;yield return null;Check(cars.All(c=>!c.Pursuing&&!c.siren.isPlaying&&!c.headlights.enabled),"stopping drive shuts down pursuit audio and lights");Check(!hands.arms.gameObject.activeSelf,"driver arms hidden after driving");Check(!feedback.engine.isPlaying&&!feedback.impact.isPlaying&&feedback.ShakeRemaining==0,"driving audio and shake stop before cutscene");
     }
     static IEnumerator RunPolice(BankPrologue d){
         d.AcceptInput=false;d.player.enabled=false;Set(d,"skip",true);
@@ -552,8 +579,9 @@ public static class BankPrologueCheck {
         d.StartCoroutine(d.shopArrival.Play());
         float until=Time.time+.5f;while(Time.time<until)yield return null;Capture(d.filmCamera,"shop-arrival-car-refined");
         d.SetPaused(true);var position=d.getawayCar.position;yield return null;yield return null;Check(d.getawayCar.position==position,"arrival dialogue pauses car movement");d.SetPaused(false);
-        int stage=1;until=Time.time+d.story.carConversation.Sum(l=>l.seconds)+d.story.shopConversation.Sum(l=>l.seconds)+15;
+        string lastShopLine="";int stage=1;until=Time.time+d.story.carConversation.Sum(l=>l.seconds)+d.story.shopConversation.Sum(l=>l.seconds)+15;
         while(!d.shopArrival.Completed&&Time.time<until){
+            if(d.shopArrival&&d.shopArrival.Stage==4&&!d.shopArrival.Completed&&!string.IsNullOrEmpty(d.subtitle.text)&&lastShopLine!=d.subtitle.text){lastShopLine=d.subtitle.text;bool playerLine=System.Text.RegularExpressions.Regex.Replace(lastShopLine,"<[^>]+>","").TrimStart().StartsWith("나:");var shot=playerLine?d.shopArrival.playerShot:d.shopArrival.mingiShot;Check(shot&&Vector3.Distance(d.filmCamera.transform.position,shot.position)<.1f,"shop dialogue camera follows speaker");Capture(d.filmCamera,playerLine?"shop-player-reply":"shop-mingi-dialogue");}
             if(d.shopArrival.Stage>stage){stage=d.shopArrival.Stage;float wait=Time.time+.8f;while(Time.time<wait)yield return null;Capture(d.filmCamera,"shop-arrival-refined-"+stage);}
             yield return null;
         }
@@ -695,11 +723,14 @@ public static class BankPrologueCheck {
         Check(pursuit.All(c=>!c.Pursuing&&!c.siren.isPlaying),"pursuit and sirens end before city reveal");
         until=Time.time+3;while(Time.time<until)yield return null;
         Capture(d.filmCamera,"city-arrival");
-        int arrivalStage=0;
+        int arrivalStage=0;string lastShopLine="";bool panMoved=false;
         until=Time.time+30+d.story.carConversation.Sum(l=>l.seconds)+d.story.shopConversation.Sum(l=>l.seconds);while(d.logo.alpha<.9f&&Time.time<until){
+            if(d.shopArrival&&d.shopArrival.Stage==0&&Vector3.Dot(d.getawayCar.position-d.cityCarEnd.position,d.getawayCar.forward)>1)panMoved=true;
+            if(d.shopArrival&&d.shopArrival.Stage==4&&!d.shopArrival.Completed&&!string.IsNullOrEmpty(d.subtitle.text)&&lastShopLine!=d.subtitle.text){lastShopLine=d.subtitle.text;bool playerLine=System.Text.RegularExpressions.Regex.Replace(lastShopLine,"<[^>]+>","").TrimStart().StartsWith("나:");var shot=playerLine?d.shopArrival.playerShot:d.shopArrival.mingiShot;Check(shot&&Vector3.Distance(d.filmCamera.transform.position,shot.position)<.1f,"shop dialogue camera follows speaker");Capture(d.filmCamera,playerLine?"shop-player-reply":"shop-mingi-dialogue");}
             if(d.shopArrival&&d.shopArrival.Stage>arrivalStage){arrivalStage=d.shopArrival.Stage;yield return null;Capture(d.filmCamera,"shop-arrival-"+arrivalStage);}
             yield return null;
         }
+        Check(panMoved,"car keeps moving during diagonal city camera pan");
         if(d.shopArrival)Check(d.shopArrival.Completed&&d.shopArrival.Opened,"car conversation and pizza shop shutter lead into logo");
         Check(d.logo.alpha>=.9f&&d.cityVista.activeSelf,"panorama completes and reveals game logo");
         Check(d.filmCamera.transform.position.y-d.getawayCar.position.y<10,"city reveal uses low diagonal entrance framing");

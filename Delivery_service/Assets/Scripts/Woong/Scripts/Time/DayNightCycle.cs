@@ -168,7 +168,7 @@ public class DayNightCycle : MonoBehaviour
         if (closeShopButton) closeShopButton.SetActive(false);
         if (summaryPanel) summaryPanel.SetActive(false);
         FindFirstObjectByType<OrderManager>()?.CloseOrderReception();
-        if (announce) DeliveryService.Mok.DeliveryRequestNotice.Show("낮 영업 종료 · 휴대폰 문자와 미션 앱을 확인하세요.");
+        if (announce) DeliveryService.Mok.DeliveryRequestNotice.Show("\ub0ae \uc601\uc5c5 \uc885\ub8cc \u00b7 \ud734\ub300\ud3f0 \ubb38\uc790\uc640 \ubbf8\uc158 \uc571\uc744 \ud655\uc778\ud558\uc138\uc694.");
     }
 
     private void ClosePCMenu()
