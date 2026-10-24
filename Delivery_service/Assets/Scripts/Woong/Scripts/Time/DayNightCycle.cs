@@ -1,4 +1,4 @@
-using System.Collections;  
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -20,17 +20,17 @@ public class DayNightCycle : MonoBehaviour
     public Transform spawnPoint;
 
     [Header("UI Elements")]
-    public GameObject pcUIPanel;         
+    public GameObject pcUIPanel;
     public GameObject openShopButton;
     public GameObject closeShopButton;
     public GameObject summaryPanel;
     public Text summaryIncomeText;
     public Text summaryExpenseText;
-    public Text dayText;// ÀÌ°Å ³¯Â¥ÀÓ
-    public Text timeText; // ½Ã°£ 
+    public Text dayText;
+    public Text timeText;
 
     [Header("Fade Effect")]
-    public Image fadeScreen;             
+    public Image fadeScreen;
     public float fadeDuration = 1.5f;
 
     [Header("Motorcycle System")]
@@ -93,7 +93,6 @@ public class DayNightCycle : MonoBehaviour
 
     private void UpdateTimeUI()
     {
-        
         if (timeText != null)
         {
             if (currentTime >= 24f)
@@ -106,9 +105,9 @@ public class DayNightCycle : MonoBehaviour
                 int minutes = Mathf.FloorToInt((currentTime - hours) * 60f);
                 timeText.text = string.Format("{0:00}:{1:00}", hours, minutes);
             }
-               
         }
     }
+
     public void OnClick_OpenShop()
     {
         if (isShopOpen || isTransitioning || IsNightPreparation) return;
@@ -121,7 +120,7 @@ public class DayNightCycle : MonoBehaviour
 
     public void OnClick_CloseShop()
     {
-        if (DeliveryService.Mok.StoryTutorial.Active) { DeliveryService.Mok.DeliveryRequestNotice.Show("ë¯¼ê¸°: ì²« ë°°ë‹¬ë¶€í„° ë§ˆì¹˜ì. ë§ˆê°ì€ ê·¸ ë‹¤ìŒì´ì•¼."); return; }
+        if (DeliveryService.Mok.StoryTutorial.Active) { DeliveryService.Mok.DeliveryRequestNotice.Show("¹Î±â: Ã¹ ¹è´ŞºÎÅÍ ¸¶Ä¡ÀÚ. ¸¶°¨Àº ±× ´ÙÀ½ÀÌ¾ß."); return; }
         if (!isShopOpen || isTransitioning) return;
 
         isShopOpen = false;
@@ -156,8 +155,6 @@ public class DayNightCycle : MonoBehaviour
         isShopOpen = true;
     }
 
-
-    // ë§ˆê°ì€ ì •ì‚°ê³¼ ë‹¤ìŒ ë‚  ì´ë™ ëŒ€ì‹  ë°¤ ì¤€ë¹„ë¥¼ ì—°ë‹¤. ë¹„ìš©ì€ ë°¤ì„ ë§ˆì¹  ë•Œ í•œ ë²ˆë§Œ ì •ì‚°í•œë‹¤.
     public void EnterNightPreparation()
     {
         if (!storyDayNightEnabled || isTransitioning || DeliveryService.Mok.StoryTutorial.Active) return;
@@ -168,7 +165,7 @@ public class DayNightCycle : MonoBehaviour
         if (closeShopButton) closeShopButton.SetActive(false);
         if (summaryPanel) summaryPanel.SetActive(false);
         FindFirstObjectByType<OrderManager>()?.CloseOrderReception();
-        if (announce) DeliveryService.Mok.DeliveryRequestNotice.Show("\ub0ae \uc601\uc5c5 \uc885\ub8cc \u00b7 \ud734\ub300\ud3f0 \ubb38\uc790\uc640 \ubbf8\uc158 \uc571\uc744 \ud655\uc778\ud558\uc138\uc694.");
+        if (announce) DeliveryService.Mok.DeliveryRequestNotice.Show("³· ¿µ¾÷ Á¾·á ¡¤ ÈŞ´ëÆù ¹®ÀÚ¿Í ¹Ì¼Ç ¾ÛÀ» È®ÀÎÇÏ¼¼¿ä.");
     }
 
     private void ClosePCMenu()
@@ -199,7 +196,6 @@ public class DayNightCycle : MonoBehaviour
             }
         }
 
-        // µÎ ¸¶°¨ °æ·Î ¸ğµÎ ´ÙÀ½ ³¯ ÃÊ±âÈ­¡¤³³Ç°¡¤¸®½ºÆù Àü¿¡ °Ë»çÇÑ´Ù.
         DeliveryService.Mok.LadderGame.Current?.CompleteRound();
         DeliveryService.Mok.LoanAccount.Current?.SettleDay(currentDay);
         DeliveryService.Mok.DailyRent.Current?.SettleDay(currentDay);
@@ -240,6 +236,20 @@ public class DayNightCycle : MonoBehaviour
         NavigationManager navManager = FindObjectOfType<NavigationManager>();
         if (navManager != null) navManager.ResetNavigationForNewDay();
 
+        // °æÂû ¼ö¹è »óÅÂ ÃÊ±âÈ­
+        PoliceManager policeManager = FindObjectOfType<PoliceManager>();
+        if (policeManager != null) policeManager.ClearAllPolice();
+
+        // NPC ½Ãºñ »óÅÂ ÃÊ±âÈ­
+        NPCControl[] allNPCs = FindObjectsOfType<NPCControl>();
+        foreach (var npc in allNPCs)
+        {
+            if (npc != null)
+            {
+                npc.ResetForNewDay();
+            }
+        }
+
         if (pcUIPanel != null) pcUIPanel.SetActive(false);
         openShopButton.SetActive(true);
         closeShopButton.SetActive(false);
@@ -261,7 +271,6 @@ public class DayNightCycle : MonoBehaviour
             }
         }
 
-
         if (player != null && spawnPoint != null)
         {
             CharacterController cc = player.GetComponent<CharacterController>();
@@ -275,6 +284,7 @@ public class DayNightCycle : MonoBehaviour
 
         UpdateLighting();
     }
+
     private void UpdateLighting()
     {
         float sunRotation = ((currentTime / 24f) * 360f) - 90f;
