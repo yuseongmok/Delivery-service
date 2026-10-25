@@ -39,6 +39,9 @@ public static class BankPrologueCheck {
             if(command=="test-special-order-edges"){NightPreparationCheck.Backup();SessionState.SetBool(Key+".specialEdges",true);SessionState.SetBool(Key+".night",true);StartTest();}
             if(command=="test-backdoor-focus"){NightPreparationCheck.Backup();SessionState.SetBool(Key+".backdoorFocus",true);SessionState.SetBool(Key+".night",true);StartTest();}
             if(command=="test-street-repair"){NightPreparationCheck.Backup();SessionState.SetBool(Key+".streetRepair",true);SessionState.SetBool(Key+".night",true);StartTest();}
+            if(command=="test-venue-pursuit"){NightPreparationCheck.Backup();SessionState.SetBool(Key+".venuePursuit",true);SessionState.SetBool(Key+".night",true);StartTest();}
+            if(command=="test-melee-motion"){NightPreparationCheck.Backup();SessionState.SetBool(Key+".meleeMotion",true);SessionState.SetBool(Key+".night",true);StartTest();}
+            if(command=="test-venue-stealth"){NightPreparationCheck.Backup();SessionState.SetBool(Key+".venueStealth",true);SessionState.SetBool(Key+".night",true);StartTest();}
             if(command=="test-venue"){NightPreparationCheck.Backup();SessionState.SetBool(Key+".venue",true);SessionState.SetBool(Key+".night",true);StartTest();}
             if(command=="comfort-preview")MechanicBuilder.Preview();
             if(command=="comfort-apply")MissionComfortCheck.Apply();
@@ -64,6 +67,21 @@ public static class BankPrologueCheck {
             if(command=="synty-story-refine")SyntyStoryUpgrade.Refine();
             if(command=="synty-story-apply")SyntyStoryUpgrade.Apply();
             if(command=="synty-story-inspect")SyntyStoryUpgrade.Inspect();
+            if(command=="venue-escape-apply")VenueEscapeUpgrade.Apply();
+            if(command=="venue-escape-signs")VenueEscapeUpgrade.SignFix();
+            if(command=="venue-escape-preview")VenueEscapeUpgrade.Preview();
+            if(command=="venue-escape-validate")VenueEscapeUpgrade.Validate();
+            if(command=="venue-drive-narrative")VenueGetawayBuilder.Narrative();
+            if(command=="venue-pursuit-upgrade")VenuePursuitUpgrade.Apply();
+            if(command=="city-evening-fill")VenueRoadInterceptionBuilder.Evening();
+            if(command=="venue-road-guards")VenueRoadInterceptionBuilder.Apply();
+            if(command=="venue-drive-install")VenueGetawayBuilder.Apply();
+            if(command=="venue-motion-cleanup")VenueMotionCleanup.Apply();
+            if(command=="venue-escape-audit")VenueEscapeUpgrade.Audit();
+            if(command=="venue-stealth")VenueStealthBuilder.Apply();
+            if(command=="venue-stealth-polish")VenueStealthBuilder.Polish();
+            if(command=="venue-stealth-rebuild")VenueStealthBuilder.Rebuild();
+            if(command=="venue-stealth-validate")VenueStealthBuilder.Validate();
             if(command=="venue-readability")VenueReadabilityUpgrade.Apply();
             if(command=="venue-upgrade")VenueUpgrade.Apply();
             if(command=="venue-upgrade-audit")VenueUpgrade.Audit();
@@ -247,6 +265,9 @@ public static class BankPrologueCheck {
         if(SessionState.GetBool(Key+".role",false)){SessionState.SetBool(Key+".role",false);SessionState.SetBool(Key+".night",false);yield return RoleVisualUpgrade.Verify();yield break;}
         if(SessionState.GetBool(Key+".comfort",false)){SessionState.SetBool(Key+".comfort",false);SessionState.SetBool(Key+".night",false);yield return MissionComfortPlayCheck.Verify();yield break;}
         if(SessionState.GetBool(Key+".venueVehicle",false)){SessionState.SetBool(Key+".venueVehicle",false);SessionState.SetBool(Key+".night",false);yield return VenueFinaleCheck.Vehicle();yield break;}
+        if(SessionState.GetBool(Key+".venuePursuit",false)){SessionState.SetBool(Key+".venuePursuit",false);SessionState.SetBool(Key+".night",false);yield return VenuePursuitCheck.Verify();yield break;}
+        if(SessionState.GetBool(Key+".meleeMotion",false)){SessionState.SetBool(Key+".meleeMotion",false);SessionState.SetBool(Key+".night",false);yield return MeleeMotionCheck.Verify();yield break;}
+        if(SessionState.GetBool(Key+".venueStealth",false)){SessionState.SetBool(Key+".venueStealth",false);SessionState.SetBool(Key+".night",false);yield return VenueStealthCheck.Verify();yield break;}
         if(SessionState.GetBool(Key+".venue",false)){SessionState.SetBool(Key+".venue",false);SessionState.SetBool(Key+".night",false);yield return VenueFinaleCheck.Verify();yield break;}
         if(SessionState.GetBool(Key+".mechanicFocus",false)){SessionState.SetBool(Key+".mechanicFocus",false);SessionState.SetBool(Key+".night",false);yield return MechanicCheck.Verify(true);yield break;}
         if(SessionState.GetBool(Key+".mechanic",false)){SessionState.SetBool(Key+".mechanic",false);SessionState.SetBool(Key+".night",false);yield return MechanicCheck.Verify();yield break;}
@@ -358,7 +379,7 @@ public static class BankPrologueCheck {
         Check(cars.Select((c,i)=>Vector3.Distance(c.transform.position,positions[i])<.001f&&!c.siren.isPlaying).All(v=>v),"pause freezes pursuit and audio");d.SetPaused(false);yield return null;yield return null;
         Check(cars.All(c=>c.siren.isPlaying),"sirens resume after pause");
         var hands=d.drive.GetComponent<PrologueDrivingHands>();Check(hands&&hands.arms.gameObject.activeSelf,"driver arms visible during driving");
-        foreach(float steering in new[]{-1f,1f,0f}){d.drive.SetInput(0,steering);until=Time.time+1;while(Time.time<until)yield return null;Check(Mathf.Abs(hands.Angle+steering*hands.maxAngle)<1,"wheel follows steering and returns to center");Check(Vector3.Distance(hands.leftHand.position,hands.leftGrip.position)<.02f&&Vector3.Distance(hands.rightHand.position,hands.rightGrip.position)<.02f,"both hands stay on wheel through steering");Capture(d.filmCamera,steering<0?"hands-left":steering>0?"hands-right":"hands-center");}
+        foreach(float steering in new[]{-1f,1f,0f}){d.drive.SetInput(0,steering);until=Time.time+1;while(Time.time<until)yield return null;Check(Mathf.Abs(hands.Angle-steering*hands.maxAngle)<1,"wheel follows steering and returns to center");Check(Vector3.Distance(hands.leftHand.position,hands.leftGrip.position)<.02f&&Vector3.Distance(hands.rightHand.position,hands.rightGrip.position)<.02f,"both hands stay on wheel through steering");Capture(d.filmCamera,steering<0?"hands-left":steering>0?"hands-right":"hands-center");}
         Check(feedback.engine.pitch<1.1f,"engine settles toward idle when stopped");
         var obstacle=GameObject.CreatePrimitive(PrimitiveType.Cube);obstacle.name="Driving feedback test barrier";obstacle.transform.position=d.getawayCar.position+d.getawayCar.forward*9+Vector3.up;obstacle.transform.rotation=d.getawayCar.rotation;obstacle.transform.localScale=new Vector3(6,3,1);Physics.SyncTransforms();int impacts=feedback.ImpactCount;d.drive.SetInput(1,0);until=Time.time+4;while(feedback.ImpactCount==impacts&&Time.time<until)yield return null;
         Check(feedback.ImpactCount==impacts+1&&feedback.impact.isPlaying&&feedback.ShakeRemaining>0,"physical barrier triggers collision audio and brief shake");until=Time.time+1.5f;while(Time.time<until)yield return null;Check(feedback.ImpactCount==impacts+1&&feedback.ShakeRemaining==0,"resting against wall does not repeat impact or shake");UnityEngine.Object.Destroy(obstacle);d.drive.SetInput(0,0);

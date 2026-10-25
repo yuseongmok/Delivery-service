@@ -23,7 +23,7 @@ public static class BrokerMissionCheck {
  }
  public static void Capture(BrokerMission m,string name,Camera overrideCamera=null){
   var cam=overrideCamera?overrideCamera:m.player.View;var canvases=UnityEngine.Object.FindObjectsByType<Canvas>(FindObjectsSortMode.None).Where(c=>c.isRootCanvas&&c.renderMode==RenderMode.ScreenSpaceOverlay).ToArray();var rt=new RenderTexture(1280,720,24);var previous=cam.targetTexture;var active=RenderTexture.active;
-  try{foreach(var c in canvases){c.renderMode=RenderMode.ScreenSpaceCamera;c.worldCamera=cam;c.planeDistance=.3f;}cam.targetTexture=rt;Canvas.ForceUpdateCanvases();cam.Render();RenderTexture.active=rt;var tex=new Texture2D(1280,720,TextureFormat.RGB24,false);tex.ReadPixels(new Rect(0,0,1280,720),0,0);tex.Apply();File.WriteAllBytes("Logs/"+name+".png",tex.EncodeToPNG());UnityEngine.Object.DestroyImmediate(tex);}
+  try{foreach(var c in canvases){c.renderMode=RenderMode.ScreenSpaceCamera;c.worldCamera=cam;c.planeDistance=Mathf.Max(.04f,cam.nearClipPlane+.01f);}cam.targetTexture=rt;Canvas.ForceUpdateCanvases();cam.Render();RenderTexture.active=rt;var tex=new Texture2D(1280,720,TextureFormat.RGB24,false);tex.ReadPixels(new Rect(0,0,1280,720),0,0);tex.Apply();File.WriteAllBytes("Logs/"+name+".png",tex.EncodeToPNG());UnityEngine.Object.DestroyImmediate(tex);}
   finally{foreach(var c in canvases)c.renderMode=RenderMode.ScreenSpaceOverlay;cam.targetTexture=previous;RenderTexture.active=active;rt.Release();UnityEngine.Object.DestroyImmediate(rt);}
  }
  public static IEnumerator Extra(){

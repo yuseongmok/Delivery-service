@@ -1,0 +1,15 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!221 &22100000
+AnimatorOverrideController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: VenuePatrolWalk
+  m_Controller: {fileID: 9100000, guid: e08b8210b3a86584db52e4f39c1d8f5a, type: 2}
+  m_Clips:
+  - m_OriginalClip: {fileID: 7400000, guid: 774df961ddccfdc409ca2f44121271d3, type: 2}
+    m_OverrideClip: {fileID: -203655887218126122, guid: c9aebf834d1540a46b5be81195152ab4, type: 3}
+  - m_OriginalClip: {fileID: -203655887218126122, guid: 0c5f76e75d70b5a4a8973b46b6d1167e, type: 3}
+    m_OverrideClip: {fileID: 0}

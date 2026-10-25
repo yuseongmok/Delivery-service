@@ -9,6 +9,7 @@ public sealed class PlayerWeapon : MonoBehaviour {
  public bool HasInHand=>HasWeapon&&Thrown==null;
  public PlayerCombat Combat {get;private set;}
  PlayerTacticalStance stance;
+ int attackVersion;
  Transform held; float nextAttack,animationEnd,animationStart; Quaternion restRotation; Vector3 restPosition;
  void Awake(){Combat=GetComponent<PlayerCombat>();}
  void Start(){stance=GetComponent<PlayerTacticalStance>();}
@@ -16,19 +17,28 @@ public sealed class PlayerWeapon : MonoBehaviour {
   if(!MoneyManager.Instance.SpendMoney(WeaponCatalog.Prices[i]))return false;
   Equip(kind);return true;}
  public bool BuyAmmo(){if(Equipped!=WeaponKind.Pistol||Ammo>989||MoneyManager.Instance==null||!MoneyManager.Instance.SpendMoney(3000))return false;Ammo+=10;return true;}
- public void Equip(WeaponKind kind){if(Thrown!=null)Destroy(Thrown.gameObject);Thrown=null;if(held!=null)Destroy(held.gameObject);Equipped=kind;Ammo=0;nextAttack=Time.time+.25f;
+ public void Equip(WeaponKind kind){attackVersion++;animationEnd=0;if(Thrown!=null)Destroy(Thrown.gameObject);Thrown=null;if(held!=null)Destroy(held.gameObject);Equipped=kind;Ammo=0;nextAttack=Time.time+.25f;
   if(kind==WeaponKind.None)return;var prefab=WeaponCatalog.Model(kind);if(prefab==null)return;
-  held=Instantiate(prefab,Combat.View.transform).transform;held.gameObject.name="Held "+kind;restPosition=kind==WeaponKind.Pistol?new Vector3(.23f,-.33f,.45f):new Vector3(.32f,-.35f,.55f);restRotation=kind==WeaponKind.Pistol?Quaternion.Euler(0,-4,0):Quaternion.Euler(-20,0,-18);held.localPosition=restPosition;held.localRotation=restRotation;
+  held=Instantiate(prefab,Combat.View.transform).transform;held.gameObject.name="Held "+kind;restPosition=kind==WeaponKind.Pistol?new Vector3(.23f,-.33f,.45f):new Vector3(.32f,-.35f,.65f);restRotation=kind==WeaponKind.Pistol?Quaternion.Euler(0,-4,0):Quaternion.Euler(15,0,-18);held.localPosition=restPosition;held.localRotation=restRotation;
   foreach(var c in held.GetComponentsInChildren<Collider>())Destroy(c);foreach(var t in held.GetComponentsInChildren<Transform>())t.gameObject.layer=2;}
- void Update(){if(held!=null){held.gameObject.SetActive(HasInHand&&Combat.CanAct);float p=animationEnd>Time.time?Mathf.Clamp01((Time.time-animationStart)/(animationEnd-animationStart)):1;float arc=Mathf.Sin(p*Mathf.PI);float aim=stance?stance.AimAmount:0;if(Equipped==WeaponKind.Pistol)arc*=.06f;
-   held.localRotation=Quaternion.Slerp(restRotation,Quaternion.identity,aim)*Quaternion.Euler(-arc*85,arc*25,arc*35);held.localPosition=Vector3.Lerp(restPosition,new Vector3(0,-.345f,.55f),aim)+new Vector3(-arc*.2f,arc*.12f,arc*.18f);}
+ void Update(){UpdateHeldPose();
   if(!Combat.CanAct||!HasInHand)return;if(Input.GetMouseButtonDown(0))Attack(false);else if(Equipped!=WeaponKind.Pistol&&Input.GetMouseButtonDown(1))Attack(true);}
+ // 긴 무기의 끝이 카메라 뒤로 돌아가지 않도록 전방에서 준비·타격·회수를 나눈다.
+ public void UpdateHeldPose(){if(!held)return;held.gameObject.SetActive(HasInHand&&Combat.CanAct);float p=animationEnd>Time.time?Mathf.Clamp01((Time.time-animationStart)/(animationEnd-animationStart)):1;
+ if(Equipped==WeaponKind.Pistol){float aim=stance?stance.AimAmount:0;held.localRotation=Quaternion.Slerp(restRotation,Quaternion.identity,aim)*Quaternion.Euler(-Mathf.Sin(p*Mathf.PI)*5,0,0);held.localPosition=Vector3.Lerp(restPosition,new Vector3(0,-.345f,.55f),aim);return;}
+ MeleePose(Equipped,p,out var position,out var rotation);held.localPosition=position;held.localRotation=rotation;
+ }
+ public static void MeleePose(WeaponKind kind,float phase,out Vector3 position,out Quaternion rotation){
+ bool brick=kind==WeaponKind.Brick;var rest=new Vector3(.32f,-.35f,.65f);var wind=brick?new Vector3(.28f,.08f,.62f):new Vector3(.42f,-.25f,.72f);var hit=brick?new Vector3(.02f,-.10f,.82f):new Vector3(.03f,-.16f,.70f);var follow=brick?new Vector3(.02f,-.40f,.75f):new Vector3(-.28f,-.28f,.65f);
+ var r0=Quaternion.Euler(15,0,-18);var r1=Quaternion.Euler(brick?-15:-8,brick?0:-25,brick?-8:-30);var r2=Quaternion.Euler(brick?55:72,brick?0:-10,brick?8:35);var r3=Quaternion.Euler(brick?65:95,brick?0:15,brick?8:70);
+ phase=Mathf.Clamp01(phase);if(phase<.25f){float t=Mathf.SmoothStep(0,1,phase/.25f);position=Vector3.Lerp(rest,wind,t);rotation=Quaternion.Slerp(r0,r1,t);}else if(phase<.52f){float t=Mathf.SmoothStep(0,1,(phase-.25f)/.27f);position=Vector3.Lerp(wind,hit,t);rotation=Quaternion.Slerp(r1,r2,t);}else if(phase<.68f){float t=Mathf.SmoothStep(0,1,(phase-.52f)/.16f);position=Vector3.Lerp(hit,follow,t);rotation=Quaternion.Slerp(r2,r3,t);}else{float t=Mathf.SmoothStep(0,1,(phase-.68f)/.32f);position=Vector3.Lerp(follow,rest,t);rotation=Quaternion.Slerp(r3,r0,t);}
+ }
  public bool Attack(bool throwing){if(!Combat.CanAct||!HasInHand||Combat.IsKicking||Time.time<nextAttack)return false;int i=(int)Equipped;
   if(!throwing&&Equipped==WeaponKind.Pistol&&Ammo<=0){DeliveryRequestNotice.Show("탄약이 없습니다. 무기점에서 구매하세요.");return false;}
   nextAttack=Time.time+WeaponCatalog.Cooldown[i];animationStart=Time.time;animationEnd=Time.time+(Equipped==WeaponKind.Pistol?.15f:WeaponCatalog.Cooldown[i]*.65f);
   if(throwing){Throw();return true;}
-  if(Equipped==WeaponKind.Pistol){Ammo--;GunshotSound.Play(gameObject,false);Resolve();StartCoroutine(ShotFlash());}else StartCoroutine(Swing(Equipped));return true;}
- IEnumerator Swing(WeaponKind kind){yield return new WaitForSeconds(WeaponCatalog.Cooldown[(int)kind]*.23f);if(Combat.CanAct&&Equipped==kind&&HasInHand)Resolve();}
+  if(Equipped==WeaponKind.Pistol){Ammo--;GunshotSound.Play(gameObject,false);Resolve();StartCoroutine(ShotFlash());}else StartCoroutine(Swing(Equipped,++attackVersion));return true;}
+ IEnumerator Swing(WeaponKind kind,int version){yield return new WaitForSeconds(WeaponCatalog.Cooldown[(int)kind]*.65f*.52f);if(version==attackVersion&&Combat.CanAct&&Equipped==kind&&HasInHand)Resolve();}
  bool Ignore(Transform t){var inv=GetComponent<ToppingInventory>();return t.IsChildOf(transform)||(inv!=null&&((inv.HoldPoint!=null&&t.IsChildOf(inv.HoldPoint))||(inv.HeldPizza!=null&&t.IsChildOf(inv.HeldPizza.transform))));}
  public int Resolve(){if(Equipped==WeaponKind.None)return 0;var cam=Combat.View;int i=(int)Equipped;var seen=new HashSet<int>();int count=0;
   // 참치는 부채꼴 여러 광선으로 쓸어 치고, 각 광선은 첫 장애물에서 멈춘다.

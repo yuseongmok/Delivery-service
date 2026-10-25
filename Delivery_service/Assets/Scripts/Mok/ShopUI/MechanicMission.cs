@@ -10,8 +10,8 @@ public sealed class MechanicMission:MonoBehaviour {
  public BackdoorMission preparation;public Transform mechanic,approach,pickupStand,caseRest,benchRest,supportVehicle,rendezvous;
  public GameObject parts,keys,ui;public Text objective,subtitle,marker;public Transform[] enemyPosts;public CitizenCombat enemyTemplate;
  public AudioSource sound;public AudioClip pickupSound,repairSound;public float handoverSeconds=2.4f;
- [TextArea(2,5)]public string[] briefing={"정비사: 민기가 보냈지? 행사장 뒤에서 기다려 줄 차가 필요하다면서.","나: 눈에 안 띄고, 확실하게 움직이는 차면 돼.\n정비사: 차는 있어. 문제는 시동 제어기야. 빚은 다 갚았는데 그놈들이 부품을 담보라고 안 돌려줘.","정비사: 표시한 골목에 공구 상자가 있어. 노란 띠에 내 정비소 표시가 붙어 있지. 그것만 찾아와 줘.","나: 가져오면?\n정비사: 부품을 달고 직접 운전할게. 행사 당일 네가 확인한 합류 지점에서 기다리겠다."};
- [TextArea(2,5)]public string[] ending={"정비사: 맞아, 이 부품이야. 이제 저 차를 다시 굴릴 수 있겠어.","나: 행사장 골목 끝, 큰길 합류 지점이야. 민기가 위치를 보내 줄 거야.\n정비사: 받았어. 신호가 오면 문 열어 두고 기다릴게.","정비사: 이건 예비 열쇠야. 이번 빚은 내가 진 걸로 하자.\n나: 그날 꼭 갚아. 시간이 없을 테니까."};
+ [TextArea(2,5)]public string[] briefing={"정비사: 민기가 보냈지? 행사장 뒤에 준비해 둘 차가 필요하다면서.","나: 눈에 안 띄고, 확실하게 움직이는 차면 돼.\n정비사: 차는 있어. 문제는 시동 제어기야. 빚은 다 갚았는데 그놈들이 부품을 담보라고 안 돌려줘.","정비사: 표시한 골목에 공구 상자가 있어. 노란 띠에 내 정비소 표시가 붙어 있지. 그것만 찾아와 줘.","나: 가져오면?\n정비사: 부품을 달고 행사 당일 네가 확인한 합류 지점에 차를 가져다 둘게. 운전은 네가 해."};
+ [TextArea(2,5)]public string[] ending={"정비사: 맞아, 이 부품이야. 이제 저 차를 다시 굴릴 수 있겠어.","나: 행사장 골목 끝, 큰길 합류 지점이야. 민기가 위치를 보내 줄 거야.\n정비사: 받았어. 차와 열쇠를 거기 두고 먼저 빠질게. 탈출 후에는 지정한 곳에 차를 버려. 추적될 수 있으니까.","정비사: 이건 예비 열쇠야. 이번 빚은 내가 진 걸로 하자.\n나: 그날 꼭 갚아. 시간이 없을 테니까."};
  public string FailureReason{get;private set;}public CitizenCombat[] Pursuers=>enemies;
  CitizenCombat[] enemies=new CitizenCombat[0];bool engaged;int day,line;float entered,noticeUntil;Vector3 boxStart;Quaternion boxRotation;
  public PlayerCombat Player=>preparation.Player;DayNightCycle Day=>preparation.delivery.broker.day;
@@ -38,7 +38,7 @@ public sealed class MechanicMission:MonoBehaviour {
  }
  public void AdvanceDialogue(bool skip=false){if(Time.timeScale<=0||(State!=Phase.Briefing&&State!=Phase.Debrief)||!Near(mechanic))return;line++;var lines=State==Phase.Briefing?briefing:ending;if(!skip&&line<lines.Length){ShowLine();return;}
   if(State==Phase.Briefing){Set(Phase.Retrieve);enemies=enemyPosts.Select(t=>{var e=Instantiate(enemyTemplate,t.position,t.rotation,transform);e.gameObject.SetActive(true);e.missionEnemy=true;e.GetComponent<NPCControl>().ExternalControl=true;return e;}).ToArray();Notice("정비소 표시가 붙은 부품 상자를 회수하세요. 조직원과 싸우거나 빠져나와 돌아올 수 있습니다.");}
-  else{Set(Phase.Complete);keys.SetActive(false);parts.transform.SetPositionAndRotation(benchRest.position,benchRest.rotation);Notice("빚진 정비사 · 준비 완료\n행사장 탈출 차량·운전 지원 확보");StoryPhoneInbox.Current?.Send("탈출 차량 지원 확보","정비사가 차량과 운전을 맡기로 했어. 행사 당일 네가 확인한 골목 끝 합류 지점에서 기다릴 거야. ‘빚진 정비사’ 준비 성과에 기록했어.",true);}
+  else{Set(Phase.Complete);keys.SetActive(false);parts.transform.SetPositionAndRotation(benchRest.position,benchRest.rotation);Notice("빚진 정비사 · 준비 완료\n행사장 탈출 차량·차량 폐기 지원 확보");StoryPhoneInbox.Current?.Send("탈출 차량 지원 확보","정비사가 행사 당일 골목 끝 합류 지점에 차와 열쇠를 두기로 했어. 직접 운전해 탈출한 다음 지정 장소에 차를 버려. 가게까지 추적되면 안 돼. ‘빚진 정비사’ 준비 성과에 기록했어.",true);}
  }
  void Engage(){if(engaged)return;engaged=true;foreach(var e in enemies)if(e)e.Provoke(Player);}
  void Clean(){foreach(var e in enemies)if(e){e.EndFight();Destroy(e.gameObject);}enemies=new CitizenCombat[0];}

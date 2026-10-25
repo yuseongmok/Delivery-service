@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+﻿#if UNITY_EDITOR
 using System;
 using System.IO;
 using System.Linq;
@@ -111,12 +111,12 @@ public static partial class BankPrologueBuilder {
         AssetDatabase.ImportAsset(path);return AssetDatabase.LoadAssetAtPath<AudioClip>(path);
     }
     struct Vertex {public Vector3 p,n;public Vector2 uv;public static Vertex Mix(Vertex a,Vertex b,float t)=>new Vertex{p=Vector3.Lerp(a.p,b.p,t),n=Vector3.Lerp(a.n,b.n,t).normalized,uv=Vector2.Lerp(a.uv,b.uv,t)};}
-    static void SplitPassengerDoor(MeshFilter filter,Transform car,Transform hinge){
+    static void SplitPassengerDoor(MeshFilter filter,Transform car,Transform hinge,bool left=false){
         var source=filter.sharedMesh;using var data=MeshUtility.AcquireReadOnlyMeshData(source);var m=data[0];int count=m.vertexCount;
         using var pos=new NativeArray<Vector3>(count,Allocator.Temp);using var normals=new NativeArray<Vector3>(count,Allocator.Temp);using var uv=new NativeArray<Vector2>(count,Allocator.Temp);
         m.GetVertices(pos);m.GetNormals(normals);m.GetUVs(0,uv);
         var body=new List<Vertex>[m.subMeshCount];var door=new List<Vertex>[m.subMeshCount];
-        Plane[] planes={new Plane(Vector3.right,new Vector3(.72f,0,0)),new Plane(Vector3.up,new Vector3(0,.48f,0)),new Plane(Vector3.down,new Vector3(0,1.45f,0)),new Plane(Vector3.forward,new Vector3(0,0,-.65f)),new Plane(Vector3.back,new Vector3(0,0,.8f))};
+        Plane[] planes={new Plane(left?Vector3.left:Vector3.right,new Vector3(left?-.72f:.72f,0,0)),new Plane(Vector3.up,new Vector3(0,.48f,0)),new Plane(Vector3.down,new Vector3(0,1.45f,0)),new Plane(Vector3.forward,new Vector3(0,0,-.65f)),new Plane(Vector3.back,new Vector3(0,0,.8f))};
         for(int s=0;s<m.subMeshCount;s++){
             body[s]=new List<Vertex>();door[s]=new List<Vertex>();using var indices=new NativeArray<int>(m.GetSubMesh(s).indexCount,Allocator.Temp);m.GetIndices(indices,s);
             for(int i=0;i<indices.Length;i+=3){
@@ -125,9 +125,9 @@ public static partial class BankPrologueBuilder {
                 Triangulate(polygon,door[s]);
             }
         }
-        filter.sharedMesh=SaveMesh(source.name+"_OpenableBody",body,v=>filter.transform.InverseTransformPoint(car.TransformPoint(v)));
+        filter.sharedMesh=SaveMesh(source.name+(left?"_DriverOpenableBody":"_OpenableBody"),body,v=>filter.transform.InverseTransformPoint(car.TransformPoint(v)));
         var g=new GameObject(filter.name+" passenger panel");g.transform.SetParent(hinge,false);
-        g.AddComponent<MeshFilter>().sharedMesh=SaveMesh(source.name+"_PassengerDoor",door,v=>v-hinge.localPosition);
+        g.AddComponent<MeshFilter>().sharedMesh=SaveMesh(source.name+(left?"_DriverDoor":"_PassengerDoor"),door,v=>v-hinge.localPosition);
         g.AddComponent<MeshRenderer>().sharedMaterials=filter.GetComponent<MeshRenderer>().sharedMaterials;
     }
     static List<Vertex> Clip(List<Vertex> polygon,Plane plane,bool positive){

@@ -1,7 +1,7 @@
-#if UNITY_EDITOR
+﻿#if UNITY_EDITOR
 using System;using System.IO;using System.Linq;using UnityEngine;using UnityEngine.AI;using UnityEngine.UI;using Unity.AI.Navigation;using UnityEditor;using UnityEditor.SceneManagement;
 namespace DeliveryService.Mok.Editor {
-public static partial class BankPrologueBuilder {public static void OpenSupportDoor(Transform car,Transform hinge){foreach(var f in car.GetComponentsInChildren<MeshFilter>().Where(f=>f.transform==car||f.name.Contains("Glass")).ToArray())SplitPassengerDoor(f,car,hinge);}}
+public static partial class BankPrologueBuilder {public static void OpenSupportDoor(Transform car,Transform hinge,bool left=false){foreach(var f in car.GetComponentsInChildren<MeshFilter>().Where(f=>f.transform==car||f.name.Contains("Glass")).ToArray())SplitPassengerDoor(f,car,hinge,left);}}
 public static class VenueFinaleBuilder {
  const string Art="Assets/Scripts/Mok/Art/VenueFinale";
  static Material Mat(string name,Color color){var m=new Material(Shader.Find("Universal Render Pipeline/Lit")){name=name,color=color};AssetDatabase.CreateAsset(m,Art+"/"+name+".mat");return m;}
