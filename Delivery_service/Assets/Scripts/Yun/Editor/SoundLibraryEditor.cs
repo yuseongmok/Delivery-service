@@ -22,6 +22,7 @@ namespace DeliveryService.Yun.Audio.Editor
         {
             var library = (SoundLibrary)target;
             DrawDefaultInspector();
+            EditorGUILayout.HelpBox("Start Seconds: 시작 위치(초) / Duration Seconds: 사용할 길이(초, 0은 끝까지). Loop를 켜면 지정 구간을 반복합니다. Distance는 시간과 무관한 거리 설정입니다.", MessageType.Info);
 
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("슬롯 도구", EditorStyles.boldLabel);

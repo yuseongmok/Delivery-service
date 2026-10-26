@@ -26,6 +26,14 @@ namespace DeliveryService.Yun.Audio
         [Tooltip("켜면 핸들로 멈출 때까지 반복한다.")]
         public bool loop;
 
+        [Min(0f)]
+        [Tooltip("음원에서 재생을 시작할 위치(초). 0이면 처음부터 재생합니다.")]
+        public float startSeconds;
+
+        [Min(0f)]
+        [Tooltip("시작 위치부터 사용할 음원 길이(초). 0이면 끝까지. Loop가 켜져 있으면 이 구간을 반복합니다. 실제 재생 시간은 Pitch에 따라 달라집니다.")]
+        public float durationSeconds;
+
         [Tooltip("2D는 거리와 무관하고, 3D는 위치와 거리에 따라 감쇠한다.")]
         public SoundSpatialMode spatialMode = SoundSpatialMode.ThreeDimensional;
 
@@ -307,6 +315,12 @@ namespace DeliveryService.Yun.Audio
                     entry.loop = true;
                     entry.spatialMode = SoundSpatialMode.TwoDimensional;
                     entry.volume = 0.4f;
+                    break;
+
+                case SoundId.RainLoop:
+                    entry.loop = true;
+                    entry.spatialMode = SoundSpatialMode.TwoDimensional;
+                    entry.volume = 0.6f;
                     break;
 
                 case SoundId.GameBgm:

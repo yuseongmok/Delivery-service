@@ -400,6 +400,14 @@ namespace DeliveryService.Yun.Audio
             voice.followTarget = voice.follow ? followTarget : null;
             voice.startedAt = Time.unscaledTime;
             voice.source.pitch = voice.instancePitch;
+            voice.startSeconds = Mathf.Clamp(entry.startSeconds, 0f, Mathf.Max(0f, clip.length - .01f));
+            voice.endSeconds = entry.durationSeconds > 0f
+                ? Mathf.Min(clip.length, voice.startSeconds + Mathf.Max(.01f, entry.durationSeconds))
+                : clip.length;
+            voice.trimmed = voice.startSeconds > 0f || voice.endSeconds < clip.length;
+            // 구간 반복은 아래 CleanupVoices에서 처리합니다.
+            if (voice.trimmed) voice.source.loop = false;
+            voice.source.time = voice.startSeconds;
             ApplyVoiceVolume(voice);
             voice.source.Play();
             return new SoundHandle(voice.index, voice.generation);
@@ -491,6 +499,18 @@ namespace DeliveryService.Yun.Audio
                 if (voice.follow && voice.followTarget == null)
                 {
                     Release(voice);
+                    continue;
+                }
+
+                if (voice.trimmed && voice.source != null
+                    && (!voice.source.isPlaying || voice.source.time >= voice.endSeconds))
+                {
+                    if (voice.loop)
+                    {
+                        voice.source.time = voice.startSeconds;
+                        voice.source.Play();
+                    }
+                    else Release(voice);
                     continue;
                 }
 
@@ -723,6 +743,9 @@ namespace DeliveryService.Yun.Audio
             public int generation;
             public bool inUse;
             public bool loop;
+            public bool trimmed;
+            public float startSeconds;
+            public float endSeconds;
             public bool follow;
             public SoundId soundId;
             public SoundCategory category;

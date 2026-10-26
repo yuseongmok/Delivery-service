@@ -73,6 +73,10 @@ namespace DeliveryService.Yun.Audio
         PackedPizzaPickup = 310,
         [InspectorName("피자/쓰레기 버리기")]
         TrashDiscard = 311,
+        [InspectorName("피자/피자박스 열기")]
+        PizzaBoxOpen = 312,
+        [InspectorName("피자/피자박스 닫기")]
+        PizzaBoxClose = 313,
 
         [InspectorName("오토바이/탑승")]
         MotorcycleMount = 400,
@@ -124,6 +128,8 @@ namespace DeliveryService.Yun.Audio
         CityDayAmbienceLoop = 605,
         [InspectorName("도시/밤 환경 반복음")]
         CityNightAmbienceLoop = 606,
+        [InspectorName("날씨/빗소리 반복음")]
+        RainLoop = 607,
 
         [InspectorName("경제/수입")]
         MoneyIncome = 700,
