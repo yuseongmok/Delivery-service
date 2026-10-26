@@ -20,6 +20,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 0.92, y: 1.08}
     loop: 0
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 1
     minDistance: 1
     maxDistance: 25
@@ -30,6 +32,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 0.92, y: 1.08}
     loop: 0
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 1
     minDistance: 1
     maxDistance: 25
@@ -40,6 +44,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 1, y: 1}
     loop: 0
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 1
     minDistance: 1
     maxDistance: 25
@@ -50,6 +56,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 1, y: 1}
     loop: 0
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 1
     minDistance: 1
     maxDistance: 25
@@ -60,6 +68,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 1, y: 1}
     loop: 0
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 0
     minDistance: 1
     maxDistance: 25
@@ -70,6 +80,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 1, y: 1}
     loop: 0
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 0
     minDistance: 1
     maxDistance: 25
@@ -80,6 +92,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 1, y: 1}
     loop: 0
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 0
     minDistance: 1
     maxDistance: 25
@@ -90,6 +104,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 1, y: 1}
     loop: 0
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 0
     minDistance: 1
     maxDistance: 25
@@ -100,6 +116,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 1, y: 1}
     loop: 0
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 0
     minDistance: 1
     maxDistance: 25
@@ -110,6 +128,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 1, y: 1}
     loop: 0
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 0
     minDistance: 1
     maxDistance: 25
@@ -120,6 +140,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 1, y: 1}
     loop: 0
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 0
     minDistance: 1
     maxDistance: 25
@@ -130,6 +152,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 1, y: 1}
     loop: 0
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 0
     minDistance: 1
     maxDistance: 25
@@ -140,6 +164,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 1, y: 1}
     loop: 0
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 0
     minDistance: 1
     maxDistance: 25
@@ -150,6 +176,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 1, y: 1}
     loop: 0
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 1
     minDistance: 1
     maxDistance: 25
@@ -160,6 +188,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 1, y: 1}
     loop: 0
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 1
     minDistance: 1
     maxDistance: 25
@@ -170,6 +200,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 1, y: 1}
     loop: 0
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 1
     minDistance: 1
     maxDistance: 25
@@ -180,6 +212,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 1, y: 1}
     loop: 0
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 1
     minDistance: 1
     maxDistance: 25
@@ -190,6 +224,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 1, y: 1}
     loop: 0
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 1
     minDistance: 1
     maxDistance: 25
@@ -200,6 +236,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 1, y: 1}
     loop: 0
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 1
     minDistance: 1
     maxDistance: 25
@@ -210,6 +248,8 @@ MonoBehaviour:
     volume: 0.6
     pitchRange: {x: 1, y: 1}
     loop: 1
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 1
     minDistance: 1.5
     maxDistance: 12
@@ -220,6 +260,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 1, y: 1}
     loop: 0
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 1
     minDistance: 1
     maxDistance: 25
@@ -230,6 +272,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 1, y: 1}
     loop: 0
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 1
     minDistance: 1
     maxDistance: 25
@@ -240,6 +284,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 1, y: 1}
     loop: 0
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 1
     minDistance: 1
     maxDistance: 25
@@ -250,6 +296,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 1, y: 1}
     loop: 0
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 1
     minDistance: 1
     maxDistance: 25
@@ -260,6 +308,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 1, y: 1}
     loop: 0
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 1
     minDistance: 1
     maxDistance: 25
@@ -294,6 +344,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 1, y: 1}
     loop: 0
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 1
     minDistance: 1
     maxDistance: 25
@@ -304,6 +356,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 1, y: 1}
     loop: 0
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 1
     minDistance: 1
     maxDistance: 25
@@ -314,6 +368,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 1, y: 1}
     loop: 0
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 1
     minDistance: 1
     maxDistance: 25
@@ -324,6 +380,8 @@ MonoBehaviour:
     volume: 0.65
     pitchRange: {x: 1, y: 1}
     loop: 1
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 1
     minDistance: 1
     maxDistance: 25
@@ -334,6 +392,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 1, y: 1}
     loop: 1
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 1
     minDistance: 1
     maxDistance: 25
@@ -344,6 +404,8 @@ MonoBehaviour:
     volume: 0.44
     pitchRange: {x: 1, y: 1}
     loop: 0
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 1
     minDistance: 1
     maxDistance: 25
@@ -354,6 +416,8 @@ MonoBehaviour:
     volume: 0.7
     pitchRange: {x: 1, y: 1}
     loop: 0
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 1
     minDistance: 1
     maxDistance: 25
@@ -364,6 +428,8 @@ MonoBehaviour:
     volume: 0.7
     pitchRange: {x: 1, y: 1}
     loop: 0
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 1
     minDistance: 1
     maxDistance: 25
@@ -374,6 +440,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 1, y: 1}
     loop: 1
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 1
     minDistance: 1
     maxDistance: 25
@@ -384,6 +452,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 1, y: 1}
     loop: 0
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 1
     minDistance: 1
     maxDistance: 25
@@ -394,6 +464,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 1, y: 1}
     loop: 0
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 1
     minDistance: 1
     maxDistance: 25
@@ -404,6 +476,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 1, y: 1}
     loop: 0
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 1
     minDistance: 1
     maxDistance: 25
@@ -414,6 +488,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 1, y: 1}
     loop: 1
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 1
     minDistance: 1
     maxDistance: 25
@@ -424,6 +500,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 1, y: 1}
     loop: 0
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 1
     minDistance: 1
     maxDistance: 25
@@ -434,6 +512,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 1, y: 1}
     loop: 0
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 1
     minDistance: 1
     maxDistance: 25
@@ -444,6 +524,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 1, y: 1}
     loop: 0
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 1
     minDistance: 1
     maxDistance: 25
@@ -454,6 +536,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 0.92, y: 1.08}
     loop: 0
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 1
     minDistance: 1
     maxDistance: 25
@@ -464,6 +548,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 1, y: 1}
     loop: 0
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 1
     minDistance: 1
     maxDistance: 25
@@ -474,6 +560,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 1, y: 1}
     loop: 1
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 1
     minDistance: 1
     maxDistance: 25
@@ -484,6 +572,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 1, y: 1}
     loop: 1
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 1
     minDistance: 1
     maxDistance: 25
@@ -494,6 +584,8 @@ MonoBehaviour:
     volume: 0.4
     pitchRange: {x: 1, y: 1}
     loop: 1
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 0
     minDistance: 1
     maxDistance: 25
@@ -504,6 +596,8 @@ MonoBehaviour:
     volume: 0.4
     pitchRange: {x: 1, y: 1}
     loop: 1
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 0
     minDistance: 1
     maxDistance: 25
@@ -514,17 +608,19 @@ MonoBehaviour:
     volume: 0.4
     pitchRange: {x: 1, y: 1}
     loop: 1
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 0
     minDistance: 1
     maxDistance: 25
   - id: 607
     category: 1
     clips:
-    - {fileID: 8300000, guid: 9a8d4832a9964b32bab9699ef389ec3d, type: 3}
-    volume: 0.6
+    - {fileID: 8300000, guid: 4d7b7ae8d807b7549a4a62b8eafffaef, type: 3}
+    volume: 0.1
     pitchRange: {x: 1, y: 1}
     loop: 1
-    startSeconds: 0
+    startSeconds: 2
     durationSeconds: 0
     spatialMode: 0
     minDistance: 1
@@ -536,6 +632,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 1, y: 1}
     loop: 0
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 0
     minDistance: 1
     maxDistance: 25
@@ -546,6 +644,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 1, y: 1}
     loop: 0
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 0
     minDistance: 1
     maxDistance: 25
@@ -556,6 +656,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 1, y: 1}
     loop: 0
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 0
     minDistance: 1
     maxDistance: 25
@@ -566,6 +668,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 1, y: 1}
     loop: 0
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 0
     minDistance: 1
     maxDistance: 25
@@ -576,6 +680,8 @@ MonoBehaviour:
     volume: 0.5
     pitchRange: {x: 1, y: 1}
     loop: 1
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 0
     minDistance: 1
     maxDistance: 25
@@ -586,6 +692,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 1, y: 1}
     loop: 0
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 0
     minDistance: 1
     maxDistance: 25
@@ -596,6 +704,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 1, y: 1}
     loop: 0
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 0
     minDistance: 1
     maxDistance: 25
@@ -606,6 +716,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 1, y: 1}
     loop: 0
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 0
     minDistance: 1
     maxDistance: 25
@@ -616,6 +728,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 1, y: 1}
     loop: 0
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 0
     minDistance: 1
     maxDistance: 25
@@ -626,6 +740,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 1, y: 1}
     loop: 0
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 0
     minDistance: 1
     maxDistance: 25
@@ -636,6 +752,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 1, y: 1}
     loop: 0
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 0
     minDistance: 1
     maxDistance: 25
@@ -646,6 +764,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 1, y: 1}
     loop: 0
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 0
     minDistance: 1
     maxDistance: 25
@@ -656,6 +776,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 1, y: 1}
     loop: 1
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 1
     minDistance: 1
     maxDistance: 25
@@ -666,6 +788,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 1, y: 1}
     loop: 0
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 1
     minDistance: 1
     maxDistance: 25
@@ -676,6 +800,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 1, y: 1}
     loop: 0
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 0
     minDistance: 1
     maxDistance: 25
@@ -686,6 +812,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 1, y: 1}
     loop: 0
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 0
     minDistance: 1
     maxDistance: 25
@@ -696,6 +824,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 1, y: 1}
     loop: 0
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 1
     minDistance: 1
     maxDistance: 25
@@ -706,6 +836,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 1, y: 1}
     loop: 0
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 1
     minDistance: 1
     maxDistance: 25
@@ -716,6 +848,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 1, y: 1}
     loop: 1
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 1
     minDistance: 1
     maxDistance: 60
@@ -726,6 +860,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 1, y: 1}
     loop: 0
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 0
     minDistance: 1
     maxDistance: 25
@@ -736,6 +872,8 @@ MonoBehaviour:
     volume: 1
     pitchRange: {x: 1, y: 1}
     loop: 0
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 0
     minDistance: 1
     maxDistance: 25
@@ -746,6 +884,8 @@ MonoBehaviour:
     volume: 0.65
     pitchRange: {x: 1, y: 1}
     loop: 1
+    startSeconds: 0
+    durationSeconds: 0
     spatialMode: 1
     minDistance: 1
     maxDistance: 25
