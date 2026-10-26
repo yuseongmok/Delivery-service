@@ -38,6 +38,7 @@ namespace DeliveryService.Yun.Editor
                 }
                 new GameObject("Test weather").AddComponent<WeatherManager>();
                 new GameObject("Test packing").AddComponent<PizzaPacking>();
+                new GameObject("Test nozzle").AddComponent<FuelNozzle>();
                 SessionState.SetBool(Session, true);
                 EditorApplication.EnterPlaymode();
             }
@@ -121,7 +122,8 @@ namespace DeliveryService.Yun.Editor
             weather.isRaining = true; yield return null; yield return null;
             Check(manager.ActiveCount == 1, "Rain starts one loop");
             voice = manager.GetComponentsInChildren<AudioSource>().Single(s => s.isPlaying);
-            Check(voice.loop && voice.spatialBlend == 0f, "Rain is a 2D loop");
+            manager.Library.TryGetEntry(SoundId.RainLoop, out var rainEntry);
+            Check(rainEntry.loop && voice.spatialBlend == (rainEntry.spatialMode == SoundSpatialMode.TwoDimensional ? 0f : 1f), "Rain uses configured loop and spatial mode");
             for (int i = 0; i < 10; i++) yield return null;
             Check(manager.ActiveCount == 1, "Rain does not stack");
             Time.timeScale = 0; yield return null; yield return null;
@@ -158,6 +160,47 @@ namespace DeliveryService.Yun.Editor
             while (box.IsBusy && Time.realtimeSinceStartup < boxDeadline) yield return null;
             Check(!box.IsOpen, "Box completes closing");
             Check(manager.ActiveCount <= 1, "Box closes without stacked sounds: " + manager.ActiveCount);
+            manager.StopAll();
+            // 비활성 테스트 지갑은 Awake/Update를 실행하지 않아 게임 저장을 변경하지 않습니다.
+            var walletObject = new GameObject("Test wallet"); walletObject.SetActive(false);
+            var wallet = walletObject.AddComponent<MoneyManager>();
+            typeof(MoneyManager).GetProperty("Instance").GetSetMethod(true).Invoke(null, new object[] { wallet });
+            wallet.currentMoney = 1000;
+            var nozzle = UnityEngine.Object.FindFirstObjectByType<FuelNozzle>();
+            Check(nozzle.GetComponent<GameplayAudio>() != null, "Fuel nozzle auto hookup");
+            nozzle.playerHandPoint = new GameObject("Nozzle hand").transform;
+            nozzle.pumpResetPoint = new GameObject("Pump dock").transform;
+            nozzle.costPerSecond = 0;
+            var fuel = new GameObject("Test fuel tank").AddComponent<MotorcycleFuel>();
+            var cap = fuel.gameObject.AddComponent<FuelCap>(); cap.bikeFuelSystem = fuel; cap.NozzleAttachPoint = fuel.transform;
+            yield return null; yield return null;
+            fuel.currentFuel = 0;
+            nozzle.PickUpNozzle(); nozzle.AttachToBike(cap);
+            yield return null; yield return null;
+            Check(manager.ActiveCount == 1, "Refueling starts one sound");
+            voice = manager.GetComponentsInChildren<AudioSource>().Single(s => s.isPlaying);
+            manager.Library.TryGetEntry(SoundId.FuelLoop, out var fuelEntry);
+            Check(voice.loop && voice.spatialBlend == 1 && fuelEntry.clips.Contains(voice.clip), "Fuel loop uses library clip in 3D");
+            for (int i = 0; i < 5; i++) yield return null;
+            Check(manager.ActiveCount == 1, "Fuel loop does not stack");
+            Time.timeScale = 0; yield return null; yield return null;
+            Check(manager.ActiveCount == 0, "Fuel audio pauses");
+            Time.timeScale = 1; yield return null; yield return null;
+            Check(manager.ActiveCount == 1, "Fuel audio resumes");
+            fuel.currentFuel = fuel.maxFuel; yield return null; yield return null;
+            Check(manager.ActiveCount == 0, "Full tank stops audio while nozzle stays attached");
+            nozzle.PickUpNozzle(); fuel.currentFuel = 0; nozzle.AttachToBike(cap);
+            yield return null; yield return null;
+            Check(manager.ActiveCount == 1, "Refueling can restart");
+            nozzle.PickUpNozzle(); yield return null; yield return null;
+            Check(manager.ActiveCount == 0, "Detaching nozzle stops audio");
+            nozzle.AttachToBike(cap); yield return null; yield return null;
+            wallet.currentMoney = 0; yield return null; yield return null;
+            Check(manager.ActiveCount == 0, "No money stops audio");
+            wallet.currentMoney = 1000; nozzle.AttachToBike(cap); yield return null; yield return null;
+            nozzle.ReturnPump(); yield return null; yield return null;
+            Check(manager.ActiveCount == 0, "Returning nozzle stops audio");
+            Debug.Log("FUEL_AUDIO_PASSED: hookup, clip, repeat, pause/resume, full tank, detach, no money, return.");
         }
     }
 }

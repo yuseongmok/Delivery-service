@@ -484,15 +484,15 @@ MonoBehaviour:
   - id: 502
     category: 1
     clips:
-    - {fileID: 0}
-    volume: 1
+    - {fileID: 8300000, guid: 25d8a592b4304ac4b2e832c18d0a5a69, type: 3}
+    volume: 0.6
     pitchRange: {x: 1, y: 1}
     loop: 1
     startSeconds: 0
     durationSeconds: 0
     spatialMode: 1
-    minDistance: 1
-    maxDistance: 25
+    minDistance: 1.5
+    maxDistance: 12
   - id: 503
     category: 1
     clips:

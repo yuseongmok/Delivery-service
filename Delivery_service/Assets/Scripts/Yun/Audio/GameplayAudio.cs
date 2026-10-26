@@ -13,6 +13,7 @@ namespace DeliveryService.Yun.Audio
         private static readonly FieldInfo BakingField = typeof(Oven).GetField("isBaking", BindingFlags.Instance | BindingFlags.NonPublic);
         private static readonly FieldInfo PizzaField = typeof(Oven).GetField("currentPizza", BindingFlags.Instance | BindingFlags.NonPublic);
         private Oven oven;
+        private FuelNozzle nozzle;
         private WeatherManager weather;
         private PizzaBoxStation station;
         private Transform hinge;
@@ -21,6 +22,7 @@ namespace DeliveryService.Yun.Audio
         private AudioManager owner;
         private SoundHandle ovenLoop = SoundHandle.Invalid;
         private SoundHandle rainLoop = SoundHandle.Invalid;
+        private SoundHandle fuelLoop = SoundHandle.Invalid;
         private AudioSource originalRainSource;
         private bool originalRainMute;
 
@@ -38,6 +40,7 @@ namespace DeliveryService.Yun.Audio
                 foreach (Oven target in root.GetComponentsInChildren<Oven>(true)) Attach(target);
                 foreach (PizzaPacking target in root.GetComponentsInChildren<PizzaPacking>(true)) Attach(target);
                 foreach (WeatherManager target in root.GetComponentsInChildren<WeatherManager>(true)) Attach(target);
+                foreach (FuelNozzle target in root.GetComponentsInChildren<FuelNozzle>(true)) Attach(target);
             }
         }
 
@@ -49,6 +52,7 @@ namespace DeliveryService.Yun.Audio
         private void OnEnable()
         {
             oven = GetComponent<Oven>();
+            nozzle = GetComponent<FuelNozzle>();
             weather = GetComponent<WeatherManager>();
             station = GetComponent<PizzaBoxStation>();
             if (oven != null && (BakingField == null || PizzaField == null))
@@ -73,6 +77,12 @@ namespace DeliveryService.Yun.Audio
             UpdateLoop(ref rainLoop, SoundId.RainLoop, canPlay && weather != null
                 && weather.isActiveAndEnabled && weather.isRaining, false);
             UpdateBox(canPlay);
+            var fuel = nozzle != null && nozzle.currentTargetCap != null ? nozzle.currentTargetCap.bikeFuelSystem : null;
+            // 완충 뒤에도 노즐 상태는 Refueling이므로 연료량과 결제 가능 여부도 확인합니다.
+            UpdateLoop(ref fuelLoop, SoundId.FuelLoop, canPlay && nozzle != null && nozzle.isActiveAndEnabled
+                && nozzle.currentState == FuelNozzle.NozzleState.Refueling && nozzle.refuelSpeed > 0f
+                && fuel != null && fuel.currentFuel < fuel.maxFuel
+                && MoneyManager.Instance != null && MoneyManager.Instance.currentMoney > 0, true);
         }
 
         private void UpdateLoop(ref SoundHandle handle, SoundId id, bool active, bool spatial)
@@ -119,8 +129,8 @@ namespace DeliveryService.Yun.Audio
 
         private void StopLoops()
         {
-            if (owner != null) { owner.Stop(ovenLoop); owner.Stop(rainLoop); }
-            ovenLoop = rainLoop = SoundHandle.Invalid;
+            if (owner != null) { owner.Stop(ovenLoop); owner.Stop(rainLoop); owner.Stop(fuelLoop); }
+            ovenLoop = rainLoop = fuelLoop = SoundHandle.Invalid;
             owner = null;
         }
 
