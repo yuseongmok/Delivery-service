@@ -10,11 +10,13 @@ public sealed class PlayerAvatar : MonoBehaviour {
     // 이전 전투 API 이름은 유지하되 실제 동작은 좌우 주먹이다.
     public const float KickDuration=.52f,HitTime=.18f;
     public Transform leftFist,rightFist;bool leftPunch;
+    public bool SilentStrike{get;private set;}
+    public void PoseSilentStrike(float seconds){PoseKick(seconds);SilentStrike=true;leftPunch=false;}
     float kickTime;bool kicking;Vector3 previous;bool wasPhysical;
     public bool IsPhysical {get{if(ragdoll!=null&&ragdoll.IsActive)return true;var rb=GetComponentInParent<Rigidbody>();return rb!=null&&!rb.isKinematic;}}
     void OnEnable(){RenderPipelineManager.beginCameraRendering+=BeforeCamera;RenderPipelineManager.endCameraRendering+=AfterCamera;previous=transform.position;}
     public void PoseKick(float seconds){if(animator==null||!animator.isHuman)return;if(!kicking)leftPunch=!leftPunch;kickTime=seconds;kicking=true;}
-    public void StopKick(){bool wasKicking=kicking;kicking=false;if(leftFist)leftFist.gameObject.SetActive(false);if(rightFist)rightFist.gameObject.SetActive(false);if(wasKicking&&animator!=null&&animator.isActiveAndEnabled&&!IsPhysical)animator.CrossFadeInFixedTime("Idle",.1f,0);}
+    public void StopKick(){bool wasKicking=kicking;kicking=false;SilentStrike=false;if(leftFist)leftFist.gameObject.SetActive(false);if(rightFist)rightFist.gameObject.SetActive(false);if(wasKicking&&animator!=null&&animator.isActiveAndEnabled&&!IsPhysical)animator.CrossFadeInFixedTime("Idle",.1f,0);}
     void LateUpdate(){
         if(animator==null)return;if(ragdoll!=null&&ragdoll.IsActive){kicking=false;return;}
         bool physical=IsPhysical;
@@ -32,8 +34,10 @@ public sealed class PlayerAvatar : MonoBehaviour {
             var fist=left?leftFist:rightFist;
             Vector3 local=new Vector3(sign*Mathf.Lerp(.19f,.045f,reach),Mathf.Lerp(-.15f,-.045f,reach),Mathf.Lerp(.38f,.54f,reach));
             float lift=Mathf.Min(Mathf.SmoothStep(0,1,t/.065f),1-Mathf.SmoothStep(0,1,(t-(KickDuration-.10f))/.10f));local.y-=(1-lift)*.4f;
+            if(SilentStrike){float wind=Mathf.SmoothStep(0,1,t/.18f),hit=Mathf.SmoothStep(0,1,(t-.18f)/.10f),recover=Mathf.SmoothStep(0,1,(t-.34f)/.38f);local=left?new Vector3(-.15f,-.1f,.45f):Vector3.Lerp(Vector3.Lerp(new Vector3(.24f,-.2f,.25f),new Vector3(.2f,.16f,.32f),wind),new Vector3(.025f,-.03f,.64f),hit);local=Vector3.Lerp(local,new Vector3(sign*.2f,-.55f,.2f),recover);}
             if(fist){
                 fist.gameObject.SetActive(true);fist.localPosition=local;fist.localRotation=Quaternion.Euler(Mathf.Lerp(-20,-4,reach),-sign*reach*12,sign*Mathf.Lerp(-30,-8,reach));
+                if(SilentStrike&&!left)fist.localRotation=Quaternion.Euler(45,0,-85);
                 // 소매를 화면 아래 팔 위치까지 이어 주먹만 공중에 떠 보이지 않게 한다.
                 var sleeve=fist.Find("Jacket cuff");if(sleeve){var wrist=new Vector3(0,-.005f,-.07f);var shoulder=fist.InverseTransformPoint(eye.TransformPoint(new Vector3(sign*.27f,-.42f,.06f)));var delta=wrist-shoulder;sleeve.localPosition=(wrist+shoulder)*.5f;sleeve.localRotation=Quaternion.FromToRotation(Vector3.up,delta.normalized);sleeve.localScale=new Vector3(.085f,delta.magnitude+.025f,.085f);}
             }

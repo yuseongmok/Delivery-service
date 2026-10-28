@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DeliveryService.Mok.PrologueStory
   title: "\uD504\uB864\uB85C\uADF8"
   vault:
-    text: "\uBBFC\uAE30: \uAE08\uACE0\uB294 \uB0B4\uAC00 \uC5F4\uAC8C. \uB10C \uB4A4\uB97C
-      \uBD10\uC918."
+    text: "\uBBFC\uAE30: \uC2E4\uC7A5 \uBD80\uD0C1\uC774\uC57C. \uAE08\uACE0\uB294
+      \uB0B4\uAC00 \uC5F4\uAC8C. \uB4A4\uB97C \uBD10 \uC918."
     seconds: 3
   alarm:
     text: "\uBBFC\uAE30: \uACBD\uBCF4\uC57C! \uB3C8\uC740 \uB0B4\uAC00 \uCC59\uAE38
@@ -51,54 +51,69 @@ MonoBehaviour:
     \uB098\uC640!"
   - "\uBBFC\uAE30: \uCC28\uAC00 \uBC14\uB85C \uC55E\uC774\uC57C. \uB6F0\uC5B4!"
   carConversation:
-  - text: "나: 이 돈이면 당분간 아무것도 안 해도 되겠네."
+  - text: "\uB098: \uC774\uC81C \uC2E4\uC7A5 \uB9CC\uB098\uC11C \uC6B0\uB9AC \uBAAB
+      \uBC1B\uC73C\uBA74 \uB05D\uC774\uC9C0?"
     seconds: 3.8
-  - text: "민기: 경찰만 찾는 돈이면 그랬겠지."
+  - text: "\uBBFC\uAE30: \uADF8\uB798. \uC870\uC9C1\uC774 \uC2DC\uD0A8 \uC77C\uC740
+      \uB05D\uB0C8\uC73C\uB2C8\uAE4C."
     seconds: 3
-  - text: "나: …무슨 뜻이야?"
+  - text: "\uB098: \uC2E4\uC7A5, \uC804\uD654 \uBC1B\uC544?"
     seconds: 2
-  - text: "민기: 그 금고, 조직이 돈을 맡겨 둔 곳이야."
+  - text: "\uBBFC\uAE30: \u2026\uC548 \uBC1B\uC544. \uC57D\uC18D \uC7A5\uC18C\uC5D0\uB3C4
+      \uC5C6\uB300."
     seconds: 3.5
-  - text: "나: 알고도 날 데려간 거야?"
+  - text: "\uB098: \uACBD\uCC30 \uB54C\uBB38\uC5D0 \uC7A0\uC801\uD55C \uAC74\uAC00?"
     seconds: 2.8
-  - text: "민기: 지금 큰돈을 쓰면 우리가 살아 있다는 광고야."
+  - text: "\uBBFC\uAE30: \uBAA8\uB974\uACA0\uC5B4. \uC5F0\uB77D \uC62C \uB54C\uAE4C\uC9C0
+      \uC870\uC6A9\uD788 \uC788\uC790."
     seconds: 3.8
-  - text: "민기: 일단 숨자. 예전에 우리 집이 하던 가게가 있어."
+  - text: "\uBBFC\uAE30: \uC6B0\uB9AC \uC544\uBC84\uC9C0\uAC00 \uD558\uB358 \uAC00\uAC8C\uAC00
+      \uC788\uC5B4. \uAC70\uAE30\uB85C \uAC00\uC790."
     seconds: 4
   shopConversation:
-  - text: "나: 피자 가게? 우리보고 장사하라고?"
+  - text: "\uB098: \uD53C\uC790 \uAC00\uAC8C\uC5D0 \uC228\uC790\uACE0?"
     seconds: 3.2
-  - text: "민기: 문 닫기 직전이야. 열쇠도, 아버지 조리법도 남아 있어."
+  - text: "\uBBFC\uAE30: \uC544\uBC84\uC9C0\uAC00 \uC811\uC740 \uAC00\uAC8C\uC57C.
+      \uC5F4\uC1E0\uB791 \uC870\uB9AC\uBC95\uC740 \uB0A8\uC544 \uC788\uC5B4."
     seconds: 4.5
-  - text: "민기: 챙긴 돈 일부로 밀린 임대료부터 막자. 배달 오토바이도 마련하고."
+  - text: "\uBBFC\uAE30: \uB0B4 \uBE44\uC0C1\uAE08\uC73C\uB85C \uC7AC\uB8CC\uBD80\uD130
+      \uC0AC\uC790. \uBC30\uB2EC \uC624\uD1A0\uBC14\uC774\uB3C4 \uC5EC\uAE30 \uC788\uACE0."
     seconds: 5
-  - text: "나: 나머지 돈은?"
+  - text: "\uB098: \uC740\uD589 \uB3C8\uC740?"
     seconds: 2
-  - text: "민기: 내가 숨겨 둘게. 놈들이 조용해질 때까지는 손대지 마."
+  - text: "\uBBFC\uAE30: \uC228\uACA8 \uB458\uAC8C. \uC870\uC9C1\uC5D0 \uB118\uAE38
+      \uB3C8\uC774\uC57C. \uC6B0\uB9AC \uBAAB\uC740 \uB530\uB85C \uBC1B\uAE30\uB85C
+      \uD588\uC796\uC544."
     seconds: 4.2
-  - text: "나: 돈가방을 두고 피자 팔아서 먹고살자고?"
+  - text: "\uB098: \uAC00\uBC29\uC740 \uAF49 \uCC3C\uB294\uB370 \uC6B0\uB9B0 \uBE48\uD138\uD130\uB9AC\uB124."
     seconds: 3.5
-  - text: "민기: 가게가 벌어야 우리도 버텨. 밤에 움직일 준비도 공짜는 아니고."
+  - text: "\uBBFC\uAE30: \uC2E4\uC7A5 \uC5F0\uB77D\uC744 \uAE30\uB2E4\uB9AC\uB824\uBA74
+      \uBA39\uACE0\uC0B4 \uB3C8\uC740 \uBC8C\uC5B4\uC57C\uC9C0."
     seconds: 5
-  - text: "나: 그런데 왜 하필 배달이야?"
+  - text: "\uB098: \uADF8\uB0E5 \uBB38 \uC7A0\uADF8\uACE0 \uC788\uC73C\uBA74?"
     seconds: 2.7
-  - text: "민기: 낯선 사람이 건물마다 드나들면 의심받지. 피자 상자를 들면 문을 열어 줘."
+  - text: "\uBBFC\uAE30: \uB2EB\uD78C \uAC00\uAC8C\uC5D0 \uB458\uC774 \uC228\uC5B4
+      \uC788\uC73C\uBA74 \uB354 \uB208\uC5D0 \uB744\uC5B4. \uD3C9\uBC94\uD558\uAC8C
+      \uC7A5\uC0AC\uD558\uB294 \uAC70\uC57C."
     seconds: 5.5
-  - text: "나: 넌 처음부터 여기까지 생각한 거냐?"
+  - text: "\uB098: \uB124\uAC00 \uD53C\uC790\uB294 \uB9CC\uB4E4 \uC904 \uC54C\uACE0?"
     seconds: 3
-  - text: "민기: 반죽부터 배우자. 나머지는 밤에 얘기하고."
+  - text: "\uBBFC\uAE30: \uC5B4\uB9B4 \uB54C \uC9C0\uACB9\uAC8C \uB3C4\uC654\uC5B4.
+      \uB0B4\uC77C\uC740 \uB124 \uCC28\uB840\uC57C."
     seconds: 3.8
-  - text: "나: …좋아. 적어도 이 가게에서 버는 돈은 내 돈이야."
+  - text: "\uB098: \u2026\uC88B\uC544. \uC801\uC5B4\uB3C4 \uC5EC\uAE30\uC11C \uBC88
+      \uB3C8\uC740 \uC6B0\uB9AC\uAC00 \uC4F0\uC790."
     seconds: 4
   boarding:
     text: "\uBBFC\uAE30: \uB098\uB3C4 \uD0D4\uC5B4. \uCD9C\uBC1C\uD574!"
     seconds: 2
   getaway:
-    text: "\uADF8\uB0A0 \uC774\uD6C4, \uB098\uB294 \uC791\uC740 \uD53C\uC790 \uAC00\uAC8C\uB97C
-      \uCC28\uB838\uB2E4."
+    text: "\uC2E4\uC7A5\uC758 \uC5F0\uB77D\uC744 \uAE30\uB2E4\uB9AC\uBA70, \uC6B0\uB9AC\uB294
+      \uD53C\uC790 \uAC00\uAC8C \uBB38\uC744 \uB2E4\uC2DC \uC5F4\uC5C8\uB2E4."
     seconds: 5
   ending:
-    text: "\uBA87 \uC8FC \uD6C4\n\n\uC774\uC58F\uD638 \uD53C\uC790, \uCCAB \uC601\uC5C5\uC77C"
+    text: "\uB2E4\uC74C \uB0A0 \uC544\uCE68\n\n\uC774\uC58F\uD638 \uD53C\uC790, \uCCAB
+      \uC601\uC5C5\uC77C"
     seconds: 2.5
   driving: "\uBBFC\uAE30: \uC55E\uC5D0 \uC800\uC9C0\uC120\uC774\uC57C! \uB3C4\uB85C
     \uB05D\uAE4C\uC9C0 \uB3CC\uD30C\uD574!"

@@ -5,17 +5,21 @@ namespace DeliveryService.Mok {
 // 도주 연출용 사격. 벽을 관통하지 않으며 운전 조작이나 체력을 빼앗지 않는다.
 public sealed class VenueGuardShooter:MonoBehaviour {
  public VenueRoadInterception owner;
+ public float OriginalHandScale{get;private set;}public float WeaponSize{get;private set;}
  NPCControl npc;Animator animator;Transform gun,hand,arm;AudioSource shot,impact;float next;Light flash;
  void Start(){npc=GetComponent<NPCControl>();animator=GetComponentInChildren<Animator>();if(!owner||!owner.guardGun||!animator||!animator.isHuman){enabled=false;return;}
- hand=animator.GetBoneTransform(HumanBodyBones.RightHand);arm=animator.GetBoneTransform(HumanBodyBones.RightUpperArm);gun=Instantiate(owner.guardGun,hand).transform;gun.localPosition=Vector3.zero;gun.localRotation=Quaternion.identity;
+ hand=animator.GetBoneTransform(HumanBodyBones.RightHand);arm=animator.GetBoneTransform(HumanBodyBones.RightUpperArm);OriginalHandScale=hand.lossyScale.magnitude;
+ // 손 본의 임포트 배율을 총기에 상속하지 않는다. 월드 크기를 맞춘 뒤 위치만 따라간다.
+ gun=Instantiate(owner.guardGun).transform;gun.name="Road guard rifle";gun.rotation=Quaternion.identity;gun.position=hand.position;
+ var renderers=gun.GetComponentsInChildren<Renderer>();if(renderers.Length>0){var bounds=renderers[0].bounds;foreach(var r in renderers)bounds.Encapsulate(r.bounds);float length=Mathf.Max(bounds.size.x,bounds.size.y,bounds.size.z);if(length>.001f)gun.localScale*=.85f/length;}gun.SetParent(owner.transform,true);WeaponSize=.85f;
  foreach(var c in gun.GetComponentsInChildren<Collider>())c.enabled=false;
  shot=gameObject.AddComponent<AudioSource>();shot.playOnAwake=false;shot.spatialBlend=1;shot.minDistance=5;shot.maxDistance=65;shot.volume=.45f;
  var lightObject=new GameObject("경비 총구 섬광");lightObject.transform.SetParent(gun,false);lightObject.transform.localPosition=Vector3.forward*.5f;flash=lightObject.AddComponent<Light>();flash.color=new Color(1,.65f,.2f);flash.range=3;flash.intensity=2;flash.enabled=false;
  var hitObject=new GameObject("차체 피탄음");hitObject.transform.SetParent(transform,false);impact=hitObject.AddComponent<AudioSource>();impact.playOnAwake=false;impact.spatialBlend=1;impact.minDistance=5;impact.maxDistance=40;next=Time.time+.5f+Random.Range(0,.6f);
  }
- void LateUpdate(){if(!owner||!owner.drive.Driving||Time.timeScale<=0)return;if(npc.IsDead||npc.IsKnockedDown){if(flash)flash.enabled=false;return;}if(!gun)return;
+ void LateUpdate(){if(!owner||!owner.drive.Driving||Time.timeScale<=0)return;if(npc.IsDead||npc.IsKnockedDown){if(flash)flash.enabled=false;if(gun)gun.gameObject.SetActive(false);return;}if(!gun)return;gun.gameObject.SetActive(true);gun.position=hand.position;
  var target=owner.drive.transform.position+Vector3.up;var aim=target-arm.position;if(aim.magnitude>45||aim.magnitude<3)return;
- arm.rotation=Quaternion.FromToRotation(hand.position-arm.position,aim)*arm.rotation;gun.rotation=Quaternion.LookRotation(target-hand.position);
+ arm.rotation=Quaternion.FromToRotation(hand.position-arm.position,aim)*arm.rotation;gun.position=hand.position;gun.rotation=Quaternion.LookRotation(target-hand.position);
  if(Time.time>=next&&Time.time>=owner.NextShot){next=Time.time+Random.Range(1.1f,1.9f);owner.NextShot=Time.time+.22f;Fire();}}
  void Fire(){var car=owner.drive.transform;bool hitCar=owner.Shots%3==2;float side=Vector3.Dot(transform.position-car.position,car.right)>=0?1:-1;
  var end=car.TransformPoint(new Vector3(side*(hitCar?.82f:2.6f),hitCar?.8f:1.15f,hitCar?0:-3));var start=hand.position+(end-hand.position).normalized*.55f;
@@ -29,5 +33,6 @@ public sealed class VenueGuardShooter:MonoBehaviour {
  owner.CarHits++;impact.transform.position=point;if(owner.metalHit)impact.PlayOneShot(owner.metalHit,.65f);
  var spark=PrologueTracer.Spawn(point,point+Vector3.up*.35f+owner.drive.transform.right*.2f,new Color(1,.85f,.4f));spark.transform.SetParent(owner.transform,true);
  }
- void OnDisable(){StopAllCoroutines();if(flash)flash.enabled=false;if(shot)shot.Stop();if(impact)impact.Stop();}
+ void OnDestroy(){if(gun)Destroy(gun.gameObject);}
+ void OnDisable(){if(gun)gun.gameObject.SetActive(false);StopAllCoroutines();if(flash)flash.enabled=false;if(shot)shot.Stop();if(impact)impact.Stop();}
 }}

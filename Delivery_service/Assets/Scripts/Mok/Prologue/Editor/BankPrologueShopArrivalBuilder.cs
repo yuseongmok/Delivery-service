@@ -33,7 +33,7 @@ public static partial class BankPrologueBuilder {
         var arrival=d.gameObject.AddComponent<PrologueShopArrival>();d.shopArrival=arrival;arrival.director=d;arrival.shop=root;
         var actor=UnityEngine.Object.Instantiate(d.accomplice.gameObject);actor.name="Companion arrival actor";Strip(actor);
         UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(actor,scene);
-        arrival.actor=actor.transform;arrival.animator=actor.GetComponentInChildren<Animator>();arrival.animator.cullingMode=AnimatorCullingMode.AlwaysAnimate;
+        arrival.actor=actor.transform;arrival.animator=actor.GetComponentInChildren<Animator>();arrival.animator.cullingMode=AnimatorCullingMode.AlwaysAnimate;arrival.animator.applyRootMotion=false;arrival.animator.runtimeAnimatorController=AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>("Assets/Scripts/Mok/Art/StoryCharacters/StoryWalk.controller");
         actor.transform.SetPositionAndRotation(root.TransformPoint(new Vector3(3.22f,0,3.85f)),Quaternion.Euler(0,180,0));
         var metal=AssetDatabase.LoadAssetAtPath<Material>("Assets/Scripts/Mok/Art/ShopBuilding/Steel.mat");
         var trim=AssetDatabase.LoadAssetAtPath<Material>("Assets/Scripts/Mok/Art/ShopBuilding/DeepTeal.mat");

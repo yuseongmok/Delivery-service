@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.AI;
 namespace DeliveryService.Mok {
-// 이동은 NavMesh로만 처리하며, 시야 밖 플레이어의 현재 위치를 추적하지 않는다.
+// NavMesh를 따라 플레이어에게 접근하고, 시야가 확보되면 사격한다.
 [DefaultExecutionOrder(-20)]
 public sealed class ProloguePoliceBrain : MonoBehaviour {
     public enum Action { Approach, Flank, ToCover, Hidden, Peek, Aim, Search, Recover }
@@ -40,17 +40,10 @@ public sealed class ProloguePoliceBrain : MonoBehaviour {
     }
     bool Arrived=>!agent.pathPending&&Vector3.Distance(transform.position,destination)<.45f;
     void Choose(){
-        squad.Release(this);CoverIndex=-1;planAt=Time.time+2;
-        if(Time.time-seenAt>6){if(!Move(LastSeen,Action.Search)){agent.isStopped=true;Current=Action.Search;stateUntil=Time.time+1;}return;}
-        if(!flanker){
-            CoverIndex=squad.Claim(this,agent,LastSeen,path);
-            if(CoverIndex>=0&&Move(squad.hiding[CoverIndex].position,Action.ToCover))return;
-            squad.Release(this);CoverIndex=-1;
-        }
-        var away=transform.position-LastSeen;away.y=0;if(away.sqrMagnitude<.1f)away=transform.forward;
-        var lateral=Vector3.Cross(Vector3.up,away.normalized)*side;
-        if(flanker&&Move(LastSeen+away.normalized*6+lateral*4,Action.Flank)){FlankMoves++;return;}
-        if(!Move(LastSeen,Time.time-seenAt>4?Action.Search:Action.Approach)){agent.isStopped=true;Current=Action.Search;stateUntil=Time.time+1;}
+        // 엄폐·우회 동작 대신 플레이어를 향해 접근한다. 사격 총량 제한은 유지한다.
+        squad.Release(this);CoverIndex=-1;planAt=Time.time+.4f;
+        LastSeen=officer.director.player.transform.position;seenAt=Time.time;
+        if(!Move(LastSeen,Action.Approach)){agent.isStopped=true;Current=Action.Search;stateUntil=Time.time+1;}
     }
     void Aim(){Current=Action.Aim;agent.isStopped=true;aimAt=Time.time+.75f;stateUntil=Time.time+3.5f;remaining=0;}
     void Hide(){
@@ -83,7 +76,7 @@ public sealed class ProloguePoliceBrain : MonoBehaviour {
             return visible&&!officer.director.player.KnockedDown;
         }
         float range=Vector3.Distance(transform.position,LastSeen);
-        if(visible&&range<15&&(Current!=Action.Flank||Arrived||range<4)){Aim();return true;}
+        if(visible&&range<9&&(Current!=Action.Flank||Arrived||range<4)){Aim();return true;}
         if(Current==Action.Search&&Arrived){agent.isStopped=true;transform.Rotate(0,35*Time.deltaTime,0);}
         if(Time.time>=planAt&&(Arrived||Time.time>=stateUntil||Current==Action.Approach))Choose();
         return false;

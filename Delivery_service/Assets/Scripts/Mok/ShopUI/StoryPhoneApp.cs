@@ -40,17 +40,18 @@ public sealed class StoryPhoneApp : MonoBehaviour {
   if(!s)return "준비 중";if(s.Completed)return "정식 납품 승인 완료";
   if(s.Running)return detail?(cancelConfirm?"한 번 더 확인하면 중단합니다":"진행 중 · 미션 중단"):"진행 중";
   if(!b||!b.Completed)return "실장 구출 후 시작";
+  if(!s.DayUnlocked)return "DAY "+s.EarliestDay+" · 다음 일차 밤에 시작";
   if(!b.day.IsNightPreparation)return "18시 이후 시작";
   if(b.orders&&b.orders.HasActiveOrder)return "진행 중인 배달을 먼저 마치세요";
   if(!s.CanStart)return "지금은 시작할 수 없습니다";
   return s.State==SpecialOrderMission.Phase.Failed?"다시 시작":detail?"미션 시작":"밤 미션";
  }
  string FinaleStatus(bool detail=false){var f=VenueFinale.Current;if(!f)return "준비 중";if(f.Completed)return "첫 번째 사건 완료";if(f.Running)return detail?(cancelConfirm?"한 번 더 확인하면 중단합니다":"진행 중 · 작전 중단"):"작전 진행 중";if(!f.Ready)return "모든 밤 준비 미션 완료 필요";if(!f.CanStart)return "밤에 배달을 마치고 내려서 시작";return f.State==VenueFinale.Phase.Failed?"작전 재시도":detail?"행사 당일로 출발":"준비 완료 · 출발 가능";}
- string MechanicStatus(bool detail=false){var job=MechanicMission.Current;if(!job)return "준비 중";if(job.Completed)return "탈출 차량 지원 확보 완료";if(job.Running)return detail?(cancelConfirm?"한 번 더 확인하면 중단합니다":"진행 중 · 미션 중단"):"진행 중";if(!job.preparation.Completed)return "도시의 뒷문 완료 후 시작";if(!job.preparation.delivery.broker.day.IsNightPreparation)return "18시 이후 시작";if(!job.CanStart)return "지금은 시작할 수 없습니다";return job.State==MechanicMission.Phase.Failed?"다시 시작":detail?"미션 시작":"밤 미션";}
+ string MechanicStatus(bool detail=false){var job=MechanicMission.Current;if(!job)return "준비 중";if(job.Completed)return "탈출 차량 지원 확보 완료";if(job.Running)return detail?(cancelConfirm?"한 번 더 확인하면 중단합니다":"진행 중 · 미션 중단"):"진행 중";if(!job.preparation.Completed)return "도시의 뒷문 완료 후 시작";if(!job.DayUnlocked)return "DAY "+job.EarliestDay+" · 다음 일차 밤에 시작";if(!job.preparation.delivery.broker.day.IsNightPreparation)return "18시 이후 시작";if(!job.CanStart)return "지금은 시작할 수 없습니다";return job.State==MechanicMission.Phase.Failed?"다시 시작":detail?"미션 시작":"밤 미션";}
  string BackdoorStatus(bool detail=false){
   var m=BackdoorMission.Current;if(!m)return "준비 중";if(m.Completed)return "출입구·탈출 동선 확보 완료";
   if(m.Running)return detail?(cancelConfirm?"한 번 더 확인하면 중단합니다":"진행 중 · 미션 중단"):"조사 중 · "+m.ConfirmedCount+"/4";
-  if(!m.delivery.Completed)return "정식 납품 승인 후 시작";if(!m.delivery.broker.day.IsNightPreparation)return "18시 이후 시작";
+  if(!m.delivery.Completed)return "정식 납품 승인 후 시작";if(!m.DayUnlocked)return "DAY "+m.EarliestDay+" · 다음 일차 밤에 시작";if(!m.delivery.broker.day.IsNightPreparation)return "18시 이후 시작";
   if(m.delivery.broker.orders&&m.delivery.broker.orders.HasActiveOrder)return "진행 중인 배달을 먼저 마치세요";
   if(!m.CanStart)return "지금은 시작할 수 없습니다";
   return m.State==BackdoorMission.Phase.Failed?"다시 시작 · 확인한 정보 유지":detail?"미션 시작":"밤 미션";

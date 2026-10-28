@@ -12,6 +12,8 @@ public sealed class ProloguePursuitCar:MonoBehaviour {
     public bool Pursuing {get;private set;}
     public float Speed {get;private set;}
     public float Travelled {get;private set;}
+    public bool DisabledByPartner {get;private set;}
+    public void DisableByPartner(){DisabledByPartner=true;Pursuing=false;if(siren)siren.Stop();foreach(var l in flashes)l.enabled=false;foreach(var r in lenses)r.enabled=false;}
     Rigidbody body;Vector3 start;Quaternion rotation;float began;bool wasDriving,paused;
     readonly RaycastHit[] hits=new RaycastHit[32];
     void Awake(){body=GetComponent<Rigidbody>();start=transform.position;rotation=transform.rotation;Show(false);}
@@ -21,6 +23,7 @@ public sealed class ProloguePursuitCar:MonoBehaviour {
         if(!wasDriving){wasDriving=true;began=Time.time;body.position=start;body.rotation=rotation;Travelled=0;}
         if(drive.director.Paused){if(!paused){siren.Pause();paused=true;}return;}
         if(paused){if(Pursuing)siren.UnPause();paused=false;}
+        if(DisabledByPartner)return;
         if(!Pursuing&&Time.time-began>=delay){Pursuing=true;Show(true);siren.Play();siren.time=Mathf.Repeat(delay,siren.clip.length);}
         if(!Pursuing)return;
         for(int i=0;i<flashes.Length;i++){bool lit=Mathf.Sin(Time.time*11+i*Mathf.PI)>0;flashes[i].enabled=lit;lenses[i].enabled=lit;}
@@ -34,6 +37,11 @@ public sealed class ProloguePursuitCar:MonoBehaviour {
         return true;
     }
     void FixedUpdate(){
+        if(DisabledByPartner&&drive.Driving&&!drive.director.Paused){
+            Speed=Mathf.MoveTowards(Speed,0,13*Time.fixedDeltaTime);
+            body.MovePosition(body.position+transform.forward*Speed*Time.fixedDeltaTime);
+            return;
+        }
         if(!Pursuing||!drive.Driving||drive.director.Paused)return;
         var player=drive.transform.position;float gap=player.x-body.position.x;
         float target=gap<8?0:Mathf.Clamp(Mathf.Max(0,drive.Speed)+(gap-followingDistance)*1.5f,0,33);

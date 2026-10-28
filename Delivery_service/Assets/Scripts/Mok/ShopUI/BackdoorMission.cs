@@ -5,10 +5,11 @@ using UnityEngine.UI;
 namespace DeliveryService.Mok {
 // 현장 조사 결과는 재시도에도 유지한다. 최종 보고 전에는 피날레 준비 완료로 처리하지 않는다.
 public sealed class BackdoorMission : MonoBehaviour {
+ Phase state;public int CompletedDay{get;private set;}
  public enum Phase { Available, Briefing, Survey, Return, Debrief, Complete, Failed }
  public static BackdoorMission Current {get;private set;}
  public static bool Active=>Current&&Current.Running;
- public Phase State {get;private set;}
+ public Phase State{get=>state;private set{if(value==Phase.Complete&&state!=Phase.Complete)CompletedDay=Day.currentDay;state=value;}}
  public bool Running=>State>=Phase.Briefing&&State<=Phase.Debrief;
  public bool Completed=>State==Phase.Complete;
  public bool InDialogue=>State==Phase.Briefing||State==Phase.Debrief;
@@ -30,9 +31,9 @@ public sealed class BackdoorMission : MonoBehaviour {
   "민기: 가까이 가서 표식을 바라보고 F를 누르고 있으면 기록할 수 있어. 경비가 의심하면 벽 뒤로 빠져. 필요하면 Ctrl로 몸을 낮추고.",
   "나: 들어갈 문보다 나올 길부터 기억하라는 거지.\n민기: 그래. 무리하지 말고 살아서 돌아와."};
  [TextArea(2,5)] public string[] debrief={
-  "민기: 동선은?\n나: 납품 출입구로 들어가고, 경비 시야가 가려지는 적재함 뒤로 빠져. 모퉁이를 돌면 큰길까지 이어져.",
-  "민기: 좋아. 박진웅을 관찰하다 들키더라도 현장에서 길을 찾을 필요는 없겠네.",
-  "나: 차만 제대로 기다리고 있으면 되겠어.\n민기: 그건 정비사 쪽에 알아볼게. 오늘 확보한 출입구와 탈출 동선은 미션 기록에 남겨 둘게."};
+  "민기: 동선은?\n나: 납품 출입구와 숨을 곳을 확인했어. 들키면 들어온 문으로 나와 모퉁이를 돌아 큰길로 빠지면 돼.",
+  "민기: 박진웅에게 들키면 설명할 기회도 없을 거야. 알아낼 것만 알아내고 바로 빠져.",
+  "나: 둘러싸이면 오토바이로는 어렵겠어.\n민기: 내일 정비사를 만나 봐. 차를 구해 보자. 낮에 기름값이랑 준비 비용도 더 벌어 두고."};
  public int ConfirmedCount {get;private set;}
  public float ObservationProgress {get;private set;}
  public bool Alerted {get;private set;}
@@ -44,7 +45,8 @@ public sealed class BackdoorMission : MonoBehaviour {
  public PlayerCombat Player=>delivery.broker.player;
  DayNightCycle Day=>delivery.broker.day;
  Transform Mingi=>delivery.kitchen.actor;
- public bool CanStart=>!VenueFinale.Active&&!MechanicMission.Active&&delivery&&delivery.Completed&&!delivery.Running&&!delivery.broker.Running&&!Running&&!Completed&&Day.IsNightPreparation&&!Day.IsTransitioning&&!StoryTutorial.Active&&!Player.IsDown&&!Player.WaterRescueActive&&!PoliceControl.IsArrestInProgress&&!(delivery.broker.orders&&delivery.broker.orders.HasActiveOrder);
+ public int EarliestDay=>delivery.CompletedDay+1;public bool DayUnlocked=>Day.currentDay>=EarliestDay;
+ public bool CanStart=>DayUnlocked&&!VenueFinale.Active&&!MechanicMission.Active&&delivery&&delivery.Completed&&!delivery.Running&&!delivery.broker.Running&&!Running&&!Completed&&Day.IsNightPreparation&&!Day.IsTransitioning&&!StoryTutorial.Active&&!Player.IsDown&&!Player.WaterRescueActive&&!PoliceControl.IsArrestInProgress&&!(delivery.broker.orders&&delivery.broker.orders.HasActiveOrder);
  void Awake(){Current=this;ui.SetActive(false);foreach(var g in guards)g.gameObject.SetActive(false);}
  void OnDestroy(){StopGuards();RestoreMingi();if(Current==this)Current=null;}
  void OnDisable(){RestoreMingi();}
@@ -68,7 +70,7 @@ public sealed class BackdoorMission : MonoBehaviour {
   if(!InDialogue||!NearMingi())return;var lines=State==Phase.Briefing?briefing:debrief;line++;
   if(!skip&&line<lines.Length){ShowLine();return;}
   if(State==Phase.Briefing){State=ConfirmedCount>=surveyTargets.Length?Phase.Return:Phase.Survey;activeGuards=guards.Select(g=>Instantiate(g,transform)).ToArray();foreach(var g in activeGuards)g.Activate();Notice("주황색 표식을 따라 행사장 주변을 조사하세요. 오토바이는 접근할 때 이용하고, 조사는 내려서 진행하세요.");}
-  else{State=Phase.Complete;StopGuards();RestoreMingi();Notice("도시의 뒷문 · 준비 완료\n서비스 출입구와 탈출 경로 확보");StoryPhoneInbox.Current?.Send("현장 조사 완료","납품 출입구, 경비 사각지대, 골목 탈출로, 차량 합류 지점까지 확인했어. 행사장 진입과 탈출 동선은 확보됐어. 정비사와 연락이 닿았어. 휴대폰의 빚진 정비사를 시작해서 수리점에서 만나 봐.",true);}
+  else{State=Phase.Complete;StopGuards();RestoreMingi();Notice("도시의 뒷문 · 준비 완료\n서비스 출입구와 탈출 경로 확보");StoryPhoneInbox.Current?.Send("현장 조사 완료","현장 조사는 끝났어. 정비사와 내일 밤 약속을 잡았어. 낮에는 가게를 열고, 마감 후 수리점에서 만나 봐. 차량만 확보하면 준비가 끝나.",true);}
  }
  void Notice(string message){subtitle.text=message;noticeUntil=Time.time+Mathf.Clamp(message.Length*.065f,6,11);}
  public bool CanObserve(){

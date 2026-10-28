@@ -21,6 +21,7 @@ public static class DeveloperCheatsCheck {
   var finale=VenueFinale.Current;Check(finale.Ready,"all preparations unlock finale");typeof(VenueFinale).GetProperty("State").SetValue(finale,VenueFinale.Phase.Entrance);
   Check(cheat.SkipMission()&&finale.Completed&&!finale.Cinematic&&!finale.cinema.enabled,"finale skip completes and returns camera");
   Check(!cheat.SkipMission()&&cheat.SkipTarget.Contains("없음"),"finished chain cannot be skipped repeatedly");Check(MoneyManager.Instance.currentMoney==money+100000,"skips do not add unintended mission rewards");
+  cheat.Open();Check(cheat.StartFinalDelivery()&&finale.State==VenueFinale.Phase.Opening&&!cheat.IsOpen&&Time.timeScale==1,"direct finale cheat starts completed finale again and closes menu");finale.SkipCinematic();Check(finale.State==VenueFinale.Phase.Entrance,"direct finale reaches playable entrance");var guard=finale.entryGuard.Find("Original Synty entry guard");Check(guard&&guard.GetComponentInChildren<Animator>().isHuman,"entry guard uses intact native humanoid rig");yield return null;yield return null;var camera=new GameObject("Guard inspection camera").AddComponent<Camera>();camera.transform.position=guard.position+guard.forward*2+guard.right*.5f+Vector3.up*1.5f;camera.transform.LookAt(guard.position+Vector3.up*1.25f);BrokerMissionCheck.Capture(b,"Venue-entry-guard-fixed",camera);UnityEngine.Object.Destroy(camera.gameObject);finale.Cancel();
   cheat.Open();cheat.Close();Check(Time.timeScale==1,"menu remains usable after all skips");
  }
 }}

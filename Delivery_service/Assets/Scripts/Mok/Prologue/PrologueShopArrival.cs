@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using UnityEngine;
 namespace DeliveryService.Mok {
 // 본편 매장과 같은 외형을 사용하는 프롤로그 전용 연출. 실제 경제는 건드리지 않는다.
@@ -54,7 +54,9 @@ public sealed class PrologueShopArrival:MonoBehaviour {
         actor.SetPositionAndRotation(shop.TransformPoint(new Vector3(4.4f,0,6)),shop.rotation*Quaternion.Euler(0,180,0));
         if(conversationPlayer)conversationPlayer.gameObject.SetActive(true);CameraAt(wideShot);yield return Wait(.25f);d.fade.alpha=0;Stage=2;
         Vector3 from=actor.position,to=shop.TransformPoint(new Vector3(3.22f,0,3.85f));
-        animator.SetFloat("MoveSpeed",1.5f);
+        // 문까지의 실제 이동 방향과 속도에 맞춰 걷는다.
+        var direction=to-from;direction.y=0;if(direction.sqrMagnitude>.001f)actor.rotation=Quaternion.LookRotation(direction);
+        animator.applyRootMotion=false;animator.speed=1;animator.SetFloat("MoveSpeed",direction.magnitude/1.7f);
         for(float t=0;t<1.7f&&!d.CinematicSkipRequested;t+=Time.deltaTime){actor.position=Vector3.Lerp(from,to,t/1.7f);yield return null;}
         actor.position=to;animator.SetFloat("MoveSpeed",0);
         if(d.story.shopConversation.Length>0){d.subtitle.text=d.story.shopConversation[0].text;DialogueShot(d.subtitle.text);yield return Wait(d.story.shopConversation[0].seconds);}

@@ -6,10 +6,11 @@ using UnityEngine.UI;
 namespace DeliveryService.Mok {
 // 첫 밤 미션의 상태는 해당 게임 세션 동안 유지한다. 실패하면 휴대폰 미션 앱에서 다시 시작한다.
 public sealed class BrokerMission : MonoBehaviour {
+ Phase state;public int CompletedDay{get;private set;}
  public enum Phase { Available, Find, Conversation, Escape, Debrief, Complete, Failed }
  public static BrokerMission Current {get;private set;}
  public static bool Active=>(Current&&Current.Running)||SpecialOrderMission.Active||BackdoorMission.Active||MechanicMission.Active||VenueFinale.Active;
- public Phase State {get;private set;}
+ public Phase State{get=>state;private set{if(value==Phase.Complete&&state!=Phase.Complete)CompletedDay=day.currentDay;state=value;}}
  public bool Running=>State==Phase.Find||State==Phase.Conversation||State==Phase.Escape||State==Phase.Debrief;
  public bool Completed=>State==Phase.Complete;
  public DayNightCycle day;public PlayerCombat player;public OrderManager orders;
@@ -17,14 +18,14 @@ public sealed class BrokerMission : MonoBehaviour {
  public GameObject missionUI;public Text objective,subtitle,marker;
  public float followSpeed=5.4f,pursuitSpeed=4.5f,reinforcementDelay=14f,safeSeconds=3f;
  [TextArea(2,5)]public string[] meetingLines={
-  "실장: 조용히 해. 뒤에 누가 따라오진 않았지?",
-  "나: 연락을 끊은 건 그쪽이잖아. 은행 일, 대체 누가 시킨 거야?",
-  "실장: 나도 버림받았어. 박진웅… 그 사람이 곧 비공개 행사에 나타나.",
-  "조직원: 저기 있다! 둘 다 잡아!\n실장: 여기서 얘기할 때가 아니야. 먼저 길을 열어 줘!"};
+  "실장: 목소리 낮춰. 내 문자, 너희 둘만 봤지?",
+  "나: 조직 일이라며 은행까지 털었어. 그런데 왜 연락을 끊고, 이제 와서 도와 달라는 거야?",
+  "실장: 끊은 게 아니야. 돈 받을 장소로 갔더니 우리 조직 놈들이 날 죽이려 들었어. 이유는 나도 몰라.",
+  "조직원: 실장 옆에 저놈도 있다! 놓치지 마!\n실장: 따라붙었어! 여기선 안 돼. 일단 같이 빠져나가자!"};
  [TextArea(2,5)]public string[] endingLines={
-  "실장: 따돌렸군. 박진웅은 행사장 안쪽에서만 거래해. 평범하게는 못 들어가.",
-  "나: 피자를 시키게 만들면 되겠네.\n실장: 배달원? …그래, 관계자 연락처를 넘겨 줄게.",
-  "민기: 정보는 받았어. 가게로 돌아와. 다음에는 정식 납품부터 뚫자."};
+  "실장: 은행 일을 승인한 건 박진웅이야. 조직 돈줄을 쥔 사람이니, 왜 우릴 쫓는지도 알 거야.",
+  "나: 만나서 직접 물어보라는 거야?\n실장: 그러다 죽어. 비공개 행사에 나온다니, 먼저 무슨 말을 하는지 들어 봐. 납품 담당자 연락처를 줄게.",
+  "민기: 받았어. 피자 가게 이름으로 들어가면 되겠네. 내일 시식 납품 약속부터 잡을게. 오늘은 돌아와."};
  CitizenCombat[] enemies=new CitizenCombat[4];NavMeshAgent guide;Animator animator;
  int line,startDay;float entered,repath,safeFor,messageUntil;bool reinforced;
  public string FailureReason {get;private set;}
@@ -40,7 +41,7 @@ public sealed class BrokerMission : MonoBehaviour {
   FindFirstObjectByType<PhoneController>()?.ClosePhone();day.pcUIPanel.SetActive(false);Cursor.lockState=CursorLockMode.Locked;Cursor.visible=false;
   // PC의 별도 시점 잠금도 함께 해제한다.
   foreach(var pc in FindObjectsByType<ShopPC>(FindObjectsSortMode.None))if(pc.pcUIPanel==day.pcUIPanel&&pc.cameraLookScript)pc.cameraLookScript.enabled=true;
-  missionUI.SetActive(true);SetPhase(Phase.Find);subtitle.text="민기: 실장이 마지막으로 연락한 곳을 표시했어. 만나서 은행 일부터 물어봐.";messageUntil=Time.time+7;return true;
+  missionUI.SetActive(true);SetPhase(Phase.Find);subtitle.text="민기: 실장이 보낸 약속 장소야. 오늘 온다고 했으니 기다리고 있을 거야. 조심해서 만나 봐.";messageUntil=Time.time+7;return true;
  }
  void SetPhase(Phase value){State=value;entered=Time.time;line=0;safeFor=0;if(value!=Phase.Escape){if(guide&&guide.enabled&&guide.isOnNavMesh)guide.isStopped=true;if(animator)animator.SetFloat("MoveSpeed",0);}}
  public bool Talk(){
@@ -76,7 +77,7 @@ public sealed class BrokerMission : MonoBehaviour {
    if(PrologueKeyboard.Pressed(Key.F)){if(State==Phase.Find)Talk();else AdvanceDialogue();}
    if(PrologueKeyboard.Pressed(Key.Space))AdvanceDialogue(true);
   }
-  if(State==Phase.Conversation||State==Phase.Debrief){if(!passenger||!passenger.IsRiding)FacePlayer();objective.text=State==Phase.Conversation?"실장에게 은행 의뢰의 배후 묻기":player.RiddenBike?"오토바이에서 내려 확보한 정보 확인하기":"확보한 정보 확인하기";}
+  if(State==Phase.Conversation||State==Phase.Debrief){if(!passenger||!passenger.IsRiding)FacePlayer();objective.text=State==Phase.Conversation?"실장에게 연락이 끊긴 사정 묻기":player.RiddenBike?"오토바이에서 내려 확보한 정보 확인하기":"확보한 정보 확인하기";}
   if(State==Phase.Find){objective.text="연락이 끊긴 중개인 · 실장 찾기";if(Vector3.Distance(player.transform.position,broker.position)<3)objective.text+=player.RiddenBike?"\n오토바이에서 내려 실장과 대화하세요":"\n[F] 실장과 대화";FacePlayer();}
   if(State==Phase.Escape){
    Follow();if(!Running)return;if(!reinforced&&Time.time-entered>=reinforcementDelay){reinforced=true;Spawn(2);Spawn(3);subtitle.text="조직원: 강변 쪽을 막아!\n실장: 더 오기 전에 빠져나가자!";messageUntil=Time.time+5;}

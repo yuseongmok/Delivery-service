@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
@@ -149,7 +149,17 @@ public sealed class BankPrologue : MonoBehaviour {
         waveTime = Time.time + waveInterval;
         reinforcements=0;
         finalPushStarted=false;ChangeBeat(CombatBeat.FirstContact);
-        while(reinforcements<Mathf.Min(Mathf.Min(initialPolice,4),officers.Length))officers[reinforcements++].Activate();
+        while(reinforcements<Mathf.Min(Mathf.Min(initialPolice,4),officers.Length)){if(!DeployNextOfficer())break;}
+    }
+    bool DeployNextOfficer(){
+        // 보이는 후보는 대기시키고 가려진 다른 증원 후보부터 투입한다.
+        for(int i=reinforcements;i<officers.Length;i++){
+            var officer=officers[i];
+            if(!officer.Active&&PrologueEscapePerformance.VisibleSpawn(player.view,officer.transform.position))continue;
+            var pending=officers[reinforcements];officers[reinforcements]=officer;officers[i]=pending;
+            if(!officer.Active)officer.Activate();reinforcements++;return true;
+        }
+        return false;
     }
     void Update() {
         if (leaving) return;
@@ -182,7 +192,7 @@ public sealed class BankPrologue : MonoBehaviour {
             int live = 0; foreach (var officer in officers) if (officer.Active && !officer.Dead) live++;
             int cap=BattleBeat==CombatBeat.FinalPush?maxActivePolice:Mathf.Min(maxActivePolice,10);
             int count=Mathf.Min(BattleBeat==CombatBeat.FinalPush?waveSize+2:waveSize,cap-live);
-            for(int i=0;i<count&&reinforcements<officers.Length;i++)officers[reinforcements++].Activate();
+            for(int i=0;i<count&&reinforcements<officers.Length;i++){if(!DeployNextOfficer())break;}
             waveTime=Time.time+(BattleBeat==CombatBeat.FinalPush?4:waveInterval);
         }
         prompt.text = ""; progress.fillAmount = 0;
@@ -251,20 +261,15 @@ public sealed class BankPrologue : MonoBehaviour {
         foreach (var officer in officers) officer.Stop();
         SetCinematic(true); objective.text = ""; ammo.text = ""; health.text = "";
         prompt.text = "Space  컷신 건너뛰기";
-        if(accomplice&&accomplice.performance){
-            var p=accomplice.performance;
-            filmCamera.transform.position=p.passengerStand.position+getawayCar.right*3-getawayCar.forward*2+Vector3.up*1.6f;
-            filmCamera.transform.LookAt(p.passengerSeat.position+Vector3.up*.9f);
-            subtitle.text="";
-            yield return p.EnterVehicle();
-            subtitle.text=story.boarding.text;
-        }else yield return Shot(3, story.boarding.text, story.boarding.seconds, Vector3.right * .5f);
+        var escapePerformance=GetComponent<PrologueEscapePerformance>();
+        if(escapePerformance)yield return escapePerformance.BoardFirstPerson();
+        else if(accomplice&&accomplice.performance)yield return accomplice.performance.EnterVehicle();
+        subtitle.text=story.boarding.text;
         skip=false;Current=Phase.Driving;bars.alpha=0;
         player.GetComponent<CharacterController>().enabled=false;
         foreach(var officer in roadPolice){officer.gameObject.SetActive(true);}
         subtitle.text=story.driving;
-        filmCamera.transform.position=getawayCar.position-getawayCar.forward*8+Vector3.up*4;
-        filmCamera.transform.LookAt(getawayCar.position+getawayCar.forward*4);
+        filmCamera.transform.SetPositionAndRotation(getawayCar.TransformPoint(drive.driverEye),getawayCar.rotation);
         // 운전 구간에서는 뒤따르는 경찰차의 공간 사이렌을 듣게 한다.
         siren.Stop();drive.Begin();
     }

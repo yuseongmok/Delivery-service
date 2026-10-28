@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.InputSystem;
 namespace DeliveryService.Mok {
 // 프롤로그 전용 직접 운전. 본편 교통 차량의 자동 경로 이동과 분리한다.
@@ -24,7 +24,7 @@ public sealed class PrologueDrive : MonoBehaviour {
         if(!Driving||director.Paused)return;
         if(!ExternalInput)SetInput(director.AcceptInput?PrologueKeyboard.Vertical:0,director.AcceptInput?PrologueKeyboard.Horizontal:0);
         if(!ExternalInput&&director.AcceptInput&&PrologueKeyboard.Pressed(Key.R))ResetToRoad();
-        director.objective.text="추격을 따돌리고 경찰 저지선을 돌파하세요";
+        var support=director.GetComponent<PrologueEscapePerformance>(); director.objective.text=support&&support.PursuitEnded?"추격을 따돌렸습니다. 도시 입구로 이동하세요":"추격을 따돌리고 경찰 저지선을 돌파하세요";
         director.prompt.text="";
         director.ammo.text=Mathf.Abs(Speed*3.6f).ToString("F0")+" km/h";
         if(Vector3.Distance(transform.position,finish.position)<9)director.FinishDriving();

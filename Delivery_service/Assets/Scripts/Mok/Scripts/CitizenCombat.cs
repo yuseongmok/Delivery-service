@@ -54,6 +54,7 @@ public sealed class CitizenCombat : MonoBehaviour {
     }
     public bool ReceiveKick(PlayerCombat player,Vector3 direction,int damage) {
         if(Health<=0||npc.IsDead||npc.IsKnockedDown)return false;
+        var patrol=GetComponent<VenuePatrolGuard>();if(patrol&&patrol.HandleStealthStrike(player,direction))return true;
         Health=Mathf.Max(0,Health-damage);punching=false;Provoke(player);
         if(Health==0){target=null;npc.Die(direction,22f);if(!missionEnemy&&GetComponent<SlumRobberCombat>()==null)CitizenCrime.ReportPlayerKill(npc);return true;}
         npc.KnockDown(direction,5f);StartCoroutine(GetUp());return true;

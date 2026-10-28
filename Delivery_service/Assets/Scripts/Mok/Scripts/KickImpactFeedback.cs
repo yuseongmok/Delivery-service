@@ -4,7 +4,7 @@ namespace DeliveryService.Mok {
 // 명중 순간에만 짧은 저음과 작은 화면 충격을 더한다. 조작용 카메라 각도는 바꾸지 않는다.
 public sealed class KickImpactFeedback : MonoBehaviour {
  const float Duration=.17f;
- AudioSource source;AudioClip clip;Camera view;float began=-100;
+ AudioSource source;AudioClip clip,silentClip;Camera view;float began=-100;
  readonly System.Collections.Generic.Dictionary<WeaponKind,AudioClip> weaponClips=new();
  public WeaponKind LastWeapon {get;private set;}=WeaponKind.None;
  Vector3 savedPosition;Quaternion savedRotation;bool applied;
@@ -21,6 +21,7 @@ public sealed class KickImpactFeedback : MonoBehaviour {
   clip=AudioClip.Create("주먹 명중",samples.Length,1,rate,false);clip.SetData(samples,0);
  }
  void OnEnable(){RenderPipelineManager.beginCameraRendering+=BeforeCamera;RenderPipelineManager.endCameraRendering+=AfterCamera;}
+ public static void PlaySilent(PlayerCombat player){var effect=player.GetComponent<KickImpactFeedback>()??player.gameObject.AddComponent<KickImpactFeedback>();if(!effect.silentClip){const int rate=22050;var data=new float[(int)(rate*.18f)];var random=new System.Random(71);float noise=0;for(int i=0;i<data.Length;i++){float t=i/(float)rate;noise=Mathf.Lerp(noise,(float)(random.NextDouble()*2-1),.08f);data[i]=(Mathf.Sin(t*2*Mathf.PI*75)*.65f+noise*.35f)*Mathf.Exp(-t*32)*Mathf.Min(1,t/.004f);}effect.silentClip=AudioClip.Create("조용한 후방 제압",data.Length,1,rate,false);effect.silentClip.SetData(data,0);}effect.view=player.View;effect.began=Time.time;effect.HitCount++;effect.source.PlayOneShot(effect.silentClip,.4f);}
  public static void Play(PlayerCombat player){Play(player,WeaponKind.None);}
  public static void Play(PlayerCombat player,WeaponKind weapon){
   if(weapon==WeaponKind.Pistol)return;
@@ -51,6 +52,6 @@ public sealed class KickImpactFeedback : MonoBehaviour {
  void AfterCamera(ScriptableRenderContext context,Camera camera){if(camera==view)Restore();}
  void Restore(){if(!applied)return;if(view!=null){view.transform.localPosition=savedPosition;view.transform.localRotation=savedRotation;}applied=false;}
  void OnDisable(){Restore();began=-100;RenderPipelineManager.beginCameraRendering-=BeforeCamera;RenderPipelineManager.endCameraRendering-=AfterCamera;}
- void OnDestroy(){Restore();if(clip!=null)Destroy(clip);foreach(var sound in weaponClips.Values)if(sound!=null)Destroy(sound);if(source!=null)Destroy(source);}
+ void OnDestroy(){Restore();if(silentClip)Destroy(silentClip);if(clip!=null)Destroy(clip);foreach(var sound in weaponClips.Values)if(sound!=null)Destroy(sound);if(source!=null)Destroy(source);}
 }
 }

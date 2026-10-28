@@ -42,7 +42,7 @@ public sealed class StoryTutorial : MonoBehaviour {
         "손님: 이얏호 피자? 다시 열었네요. 예전엔 자주 시켰는데. 잘 먹을게요!\n민기: 첫 리뷰가 왔어. 폰의 별점 앱을 봐.",
         "민기: 첫 손님이 별 다섯 개를 줬네. 이제 가게로 돌아와.",
         "민기: 어땠어?\n나: 다시 열어서 좋대. 돈도 받았어. 이번엔 아무도 안 쫓아오더라.",
-        "민기: 그럼 한 판 더 팔아 보자. 문 닫으면… 어젯밤 돈 얘기 좀 하자."
+        "민기: 그럼 한 판 더 팔자. 실장한테 문자가 왔어. 오늘 밤 만나자는군. 폰으로 보내 줄게."
     };
     public Step CurrentStep {get;private set;}
     public bool Completed {get;private set;}

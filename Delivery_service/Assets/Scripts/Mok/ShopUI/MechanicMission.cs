@@ -2,9 +2,10 @@
 namespace DeliveryService.Mok {
 // 회수한 부품과 차량 지원은 현재 게임 세션의 준비 성과로 유지한다.
 public sealed class MechanicMission:MonoBehaviour {
+ Phase state;public int CompletedDay{get;private set;}
  public enum Phase{Available,Meet,Briefing,Retrieve,Return,Handover,Debrief,Complete,Failed}
  public static MechanicMission Current{get;private set;}public static bool Active=>Current&&Current.Running;
- public Phase State{get;private set;}public bool Running=>State>=Phase.Meet&&State<=Phase.Debrief;public bool Completed=>State==Phase.Complete;
+ public Phase State{get=>state;private set{if(value==Phase.Complete&&state!=Phase.Complete)CompletedDay=Day.currentDay;state=value;}}public bool Running=>State>=Phase.Meet&&State<=Phase.Debrief;public bool Completed=>State==Phase.Complete;
  public bool InDialogue=>State==Phase.Briefing||State==Phase.Handover||State==Phase.Debrief;
  public bool PartRecovered{get;private set;}public bool VehicleSupportUnlocked=>Completed;
  public BackdoorMission preparation;public Transform mechanic,approach,pickupStand,caseRest,benchRest,supportVehicle,rendezvous;
@@ -15,7 +16,8 @@ public sealed class MechanicMission:MonoBehaviour {
  public string FailureReason{get;private set;}public CitizenCombat[] Pursuers=>enemies;
  CitizenCombat[] enemies=new CitizenCombat[0];bool engaged;int day,line;float entered,noticeUntil;Vector3 boxStart;Quaternion boxRotation;
  public PlayerCombat Player=>preparation.Player;DayNightCycle Day=>preparation.delivery.broker.day;
- public bool CanStart=>preparation&&preparation.Completed&&!BrokerMission.Active&&!Running&&!Completed&&Day.IsNightPreparation&&!Day.IsTransitioning&&!StoryTutorial.Active&&!Player.IsDown&&!Player.WaterRescueActive&&!PoliceControl.IsArrestInProgress&&!(preparation.delivery.broker.orders&&preparation.delivery.broker.orders.HasActiveOrder);
+ public int EarliestDay=>preparation.CompletedDay+1;public bool DayUnlocked=>Day.currentDay>=EarliestDay;
+ public bool CanStart=>DayUnlocked&&preparation&&preparation.Completed&&!BrokerMission.Active&&!Running&&!Completed&&Day.IsNightPreparation&&!Day.IsTransitioning&&!StoryTutorial.Active&&!Player.IsDown&&!Player.WaterRescueActive&&!PoliceControl.IsArrestInProgress&&!(preparation.delivery.broker.orders&&preparation.delivery.broker.orders.HasActiveOrder);
  void Awake(){Current=this;ui.SetActive(false);parts.SetActive(false);keys.SetActive(false);mechanic.gameObject.SetActive(false);}
  void OnDestroy(){Clean();if(Current==this)Current=null;}
  public bool Begin(){if(!CanStart)return false;Clean();day=Day.currentDay;FailureReason="";engaged=false;mechanic.gameObject.SetActive(true);ui.SetActive(true);keys.SetActive(false);

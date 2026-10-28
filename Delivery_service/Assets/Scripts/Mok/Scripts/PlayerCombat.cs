@@ -37,7 +37,15 @@ public sealed class PlayerCombat : MonoBehaviour {
         if(!CanAct||IsKicking)return false;var npc=FocusCitizen();if(npc==null)return false;
         npc.Pickpocket(this);return true;
     }
-    public bool TryKick(){if(!CanAct||IsKicking||Time.time<nextKick)return false;nextKick=Time.time+kickCooldown;StartCoroutine(Kick());return true;}
+    public bool TryKick(){if(!CanAct||IsKicking||Time.time<nextKick)return false;nextKick=Time.time+kickCooldown;var target=FocusCitizen(2);var guard=target?target.GetComponent<VenuePatrolGuard>():null;if(guard&&guard.CanSilentStrike(this))StartCoroutine(SilentTakedown(guard));else StartCoroutine(Kick());return true;}
+    IEnumerator SilentTakedown(VenuePatrolGuard guard){
+        IsKicking=true;bool struck=false;
+        for(float t=0;t<.75f;t+=Time.deltaTime){if(Time.timeScale<=0){yield return null;continue;}if(!CanAct||!guard||!guard.mission.Active)break;if(avatar)avatar.PoseSilentStrike(t);
+            if(!struck&&t>=.28f){struck=true;if(guard.CanSilentStrike(this)&&guard.Combat.ReceiveKick(this,view.transform.forward,kickDamage))KickImpactFeedback.PlaySilent(this);}
+            yield return null;
+        }
+        if(avatar)avatar.StopKick();IsKicking=false;
+    }
     IEnumerator Kick(){
         IsKicking=true;if(avatar==null&&kickVisual!=null)kickVisual.gameObject.SetActive(true);bool hit=false;
         for(float t=0;t<PlayerAvatar.KickDuration;t+=Time.deltaTime){

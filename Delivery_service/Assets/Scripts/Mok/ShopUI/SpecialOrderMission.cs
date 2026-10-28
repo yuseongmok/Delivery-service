@@ -6,11 +6,12 @@ using UnityEngine.UI;
 namespace DeliveryService.Mok {
 // 시식 납품과 승인은 일반 주문/평점과 분리하며, 완료 여부는 현재 게임 세션에서 유지한다.
 public sealed class SpecialOrderMission : MonoBehaviour {
+ Phase state;public int CompletedDay{get;private set;}
  public enum Phase { Available, Meet, Briefing, Prepare, Handover, Approval, Return, Debrief, Complete, Failed }
  public static SpecialOrderMission Current {get;private set;}
  public static bool Active=>Current&&Current.Running;
  public static bool SuppliesProvided=>Current&&Current.State==Phase.Prepare;
- public Phase State {get;private set;}
+ public Phase State{get=>state;private set{if(value==Phase.Complete&&state!=Phase.Complete)CompletedDay=broker.day.currentDay;state=value;}}
  public bool Completed=>State==Phase.Complete;
  public bool Running=>State>=Phase.Meet&&State<=Phase.Debrief;
  public bool InDialogue=>State==Phase.Briefing||State==Phase.Approval||State==Phase.Debrief||State==Phase.Handover;
@@ -19,24 +20,25 @@ public sealed class SpecialOrderMission : MonoBehaviour {
  public int payment=5000;public float handoverSeconds=1.4f,interactionRange=3f;
  public AudioSource sound;public AudioClip boxSound,paperSound;
  [TextArea(2,5)]public string[] briefing={
-  "담당자: 실장님 소개로 오셨죠? 이번 비공개 행사, 납품 업체 한 곳이 빠졌어요.",
+  "담당자: 시식 납품 예약하신 이얏호 피자죠? 이번 비공개 행사에 납품할 업체를 찾고 있어요.",
   "나: 저희 가게가 맡겠습니다.\n담당자: 먼저 기본부터 봅시다. 치즈피자 한 판. 도우, 소스, 치즈만요.",
   "담당자: 제대로 구워서 상자에 담아 오세요. 멀쩡한 피자를 받으면 납품 명단에 올려 드리죠.",
-  "나: 행사장 안까지 가져다드리면 됩니까?\n담당자: 오늘은 여기까지. 승인받은 업체만 다음 행사 때 서비스 출입구를 쓸 수 있어요."};
+  "나: 행사장 안까지 가져다드리면 됩니까?\n담당자: 오늘은 여기까지. 승인받은 업체만 행사 때 서비스 출입구를 쓸 수 있어요."};
  [TextArea(2,5)]public string[] approval={
   "담당자: 토핑도 맞고, 상자 안도 멀쩡하네요. 좋아요. 정식 납품 업체로 등록하겠습니다.",
   "담당자: 이 승인서를 가져가세요. 행사 당일 물품 검사까지 면제되는 건 아닙니다. 서비스 출입구로 오세요.",
   "나: 알겠습니다. 시간 맞춰 오죠."};
  [TextArea(2,5)]public string[] ending={
-  "민기: 됐어?\n나: 납품 명단에 이름 올렸어. 피자로 문을 연 셈이지.",
-  "민기: 잘했어. 박진웅이 있는 행사장에 들어갈 이유는 생겼네. 하지만 들키면 나올 길도 있어야 해.",
-  "나: 다음은 뒷문인가.\n민기: 맞아. 승인서는 잘 챙겨. 휴대폰의 ‘도시의 뒷문’에서 현장 조사를 시작하자."};
+  "민기: 됐어?\n나: 가게 이름으로 납품 승인을 받았어. 우리 얼굴은 모르는 눈치야.",
+  "민기: 좋아. 조직 일을 따지러 온 사람이 아니라 배달원으로 들어가는 거야. 박진웅이 왜 우릴 쫓는지, 자기 입으로 말하는 걸 들어야 해.",
+  "나: 들키면?\n민기: 그래서 내일 밤엔 주변부터 살피자. 들어갈 문, 숨을 곳, 나올 길. 오늘은 여기까지 하자."};
  public string FailureReason {get;private set;}
  public bool SampleAccepted {get;private set;}
  int line,startDay;float entered,noticeUntil,nextPoll;Vector3 boxStart;Quaternion boxRotation;
  bool mingiWasActive;Vector3 mingiPosition;Quaternion mingiRotation;bool showingMingi;
  ToppingInventory Inventory=>broker.player.GetComponent<ToppingInventory>();
- public bool CanStart=>!VenueFinale.Active&&!MechanicMission.Active&&!BackdoorMission.Active&&broker&&broker.Completed&&!broker.Running&&!Running&&!Completed&&broker.day.IsNightPreparation&&!broker.day.IsTransitioning&&!StoryTutorial.Active&&!broker.player.IsDown&&!broker.player.WaterRescueActive&&!PoliceControl.IsArrestInProgress&&!(broker.orders&&broker.orders.HasActiveOrder);
+ public int EarliestDay=>broker.CompletedDay+1;public bool DayUnlocked=>broker.day.currentDay>=EarliestDay;
+ public bool CanStart=>DayUnlocked&&!VenueFinale.Active&&!MechanicMission.Active&&!BackdoorMission.Active&&broker&&broker.Completed&&!broker.Running&&!Running&&!Completed&&broker.day.IsNightPreparation&&!broker.day.IsTransitioning&&!StoryTutorial.Active&&!broker.player.IsDown&&!broker.player.WaterRescueActive&&!PoliceControl.IsArrestInProgress&&!(broker.orders&&broker.orders.HasActiveOrder);
  void Awake(){Current=this;ui.SetActive(false);attendant.gameObject.SetActive(false);box.SetActive(false);approvalPaper.SetActive(false);}
  void OnDestroy(){RestoreMingi();if(Current==this)Current=null;}
  void OnDisable(){RestoreMingi();}
@@ -77,7 +79,7 @@ public sealed class SpecialOrderMission : MonoBehaviour {
   line++;if(!skip&&Lines!=null&&line<Lines.Length){ShowLine();return;}
   if(State==Phase.Briefing){Set(Phase.Prepare);Notice("치즈피자 한 판을 만들어 포장하세요. 민기가 도우·소스·치즈 재료비를 지원합니다. 실패해도 다시 만들 수 있어요. 휴대폰 미션에서 중단·재시도할 수 있습니다.");}
   else if(State==Phase.Approval){approvalPaper.SetActive(false);if(sound&&paperSound)sound.PlayOneShot(paperSound,.3f);ShowMingi();Set(Phase.Return);Notice("정식 납품 승인서 확보 · 가게로 돌아가 민기와 다음 준비를 의논하세요.");}
-  else{Set(Phase.Complete);showingMingi=false;MoneyManager.Instance?.AddMoney(payment);Notice("특별 주문 완료 · 정식 납품 승인\n시식 납품 대금 "+payment.ToString("N0")+"원");StoryPhoneInbox.Current?.Send("납품 승인서 확보","승인서는 잘 보관해 둬. 이제 휴대폰에서 ‘도시의 뒷문’을 시작하자. 행사장 출입구와 경비 사각지대, 탈출 동선을 확인해야 해.",true);}
+  else{Set(Phase.Complete);showingMingi=false;MoneyManager.Instance?.AddMoney(payment);Notice("특별 주문 완료 · 정식 납품 승인\n시식 납품 대금 "+payment.ToString("N0")+"원");StoryPhoneInbox.Current?.Send("납품 승인서 확보","승인서는 잘 보관해 둬. 현장 조사는 내일 밤이야. 낮에는 평소처럼 장사하고, 마감 후 ‘도시의 뒷문’에서 출입구와 탈출로를 확인하자.",true);}
  }
  void ShowMingi(){if(showingMingi)return;showingMingi=true;mingiWasActive=kitchen.actor.gameObject.activeSelf;mingiPosition=kitchen.actor.position;mingiRotation=kitchen.actor.rotation;kitchen.actor.position=returnPoint.position;kitchen.actor.gameObject.SetActive(true);}
  void RestoreMingi(){if(!showingMingi||!kitchen||!kitchen.actor)return;kitchen.actor.gameObject.SetActive(false);kitchen.actor.SetPositionAndRotation(mingiPosition,mingiRotation);kitchen.actor.gameObject.SetActive(mingiWasActive);showingMingi=false;}

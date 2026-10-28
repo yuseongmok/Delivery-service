@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 namespace DeliveryService.Mok {
 [System.Serializable]
 public class PrologueLine {
@@ -10,7 +10,7 @@ public class PrologueLine {
 public sealed class PrologueStory : ScriptableObject {
     [Header("시작 컷신 — 문장과 표시 시간을 수정하세요")]
     public string title = "프롤로그  /  마지막 한탕";
-    public PrologueLine vault = new PrologueLine("공범: 금고가 열렸어. 이번 일만 끝내면 손 씻는 거야.");
+    public PrologueLine vault = new PrologueLine("민기: 실장 부탁이야. 금고는 내가 열게. 뒤를 봐 줘.");
     public PrologueLine alarm = new PrologueLine("공범: 경보야! 돈 챙겨. 차는 정문 앞에 세워 뒀어!");
     public PrologueLine police = new PrologueLine("경찰: 건물을 포위했다! 무기를 버리고 나와라!", 3.5f);
     [Header("전투와 탈출")]
@@ -32,31 +32,31 @@ public sealed class PrologueStory : ScriptableObject {
     [Header("마지막 컷신")]
     [Header("도주 후 대화와 피자 가게 — 각 문장과 표시 시간을 수정")]
     public PrologueLine[] carConversation={
-        new PrologueLine("나: 이 돈이면 당분간 아무것도 안 해도 되겠네.",3.8f),
-        new PrologueLine("민기: 경찰만 찾는 돈이면 그랬겠지.",3f),
-        new PrologueLine("나: …무슨 뜻이야?",2f),
-        new PrologueLine("민기: 그 금고, 조직이 돈을 맡겨 둔 곳이야.",3.5f),
-        new PrologueLine("나: 알고도 날 데려간 거야?",2.8f),
-        new PrologueLine("민기: 지금 큰돈을 쓰면 우리가 살아 있다는 광고야.",3.8f),
-        new PrologueLine("민기: 일단 숨자. 예전에 우리 집이 하던 가게가 있어.",4f)
+        new PrologueLine("나: 이제 실장 만나서 우리 몫 받으면 끝이지?",3.8f),
+        new PrologueLine("민기: 그래. 조직이 시킨 일은 끝냈으니까.",3f),
+        new PrologueLine("나: 실장, 전화 받아?",2f),
+        new PrologueLine("민기: …안 받아. 약속 장소에도 없대.",3.5f),
+        new PrologueLine("나: 경찰 때문에 잠적한 건가?",2.8f),
+        new PrologueLine("민기: 모르겠어. 연락 올 때까지 조용히 있자.",3.8f),
+        new PrologueLine("민기: 우리 아버지가 하던 가게가 있어. 거기로 가자.",4f)
     };
     public PrologueLine[] shopConversation={
-        new PrologueLine("나: 피자 가게? 우리보고 장사하라고?",3.2f),
-        new PrologueLine("민기: 문 닫기 직전이야. 열쇠도, 아버지 조리법도 남아 있어.",4.5f),
-        new PrologueLine("민기: 챙긴 돈 일부로 밀린 임대료부터 막자. 배달 오토바이도 마련하고.",5f),
-        new PrologueLine("나: 나머지 돈은?",2f),
-        new PrologueLine("민기: 내가 숨겨 둘게. 놈들이 조용해질 때까지는 손대지 마.",4.2f),
-        new PrologueLine("나: 돈가방을 두고 피자 팔아서 먹고살자고?",3.5f),
-        new PrologueLine("민기: 가게가 벌어야 우리도 버텨. 밤에 움직일 준비도 공짜는 아니고.",5f),
-        new PrologueLine("나: 그런데 왜 하필 배달이야?",2.7f),
-        new PrologueLine("민기: 낯선 사람이 건물마다 드나들면 의심받지. 피자 상자를 들면 문을 열어 줘.",5.5f),
-        new PrologueLine("나: 넌 처음부터 여기까지 생각한 거냐?",3f),
-        new PrologueLine("민기: 반죽부터 배우자. 나머지는 밤에 얘기하고.",3.8f),
-        new PrologueLine("나: …좋아. 적어도 이 가게에서 버는 돈은 내 돈이야.",4f)
+        new PrologueLine("나: 피자 가게에 숨자고?",3.2f),
+        new PrologueLine("민기: 아버지가 접은 가게야. 열쇠랑 조리법은 남아 있어.",4.5f),
+        new PrologueLine("민기: 내 비상금으로 재료부터 사자. 배달 오토바이도 여기 있고.",5f),
+        new PrologueLine("나: 은행 돈은?",2f),
+        new PrologueLine("민기: 숨겨 둘게. 조직에 넘길 돈이야. 우리 몫은 따로 받기로 했잖아.",4.2f),
+        new PrologueLine("나: 가방은 꽉 찼는데 우린 빈털터리네.",3.5f),
+        new PrologueLine("민기: 실장 연락을 기다리려면 먹고살 돈은 벌어야지.",5f),
+        new PrologueLine("나: 그냥 문 잠그고 있으면?",2.7f),
+        new PrologueLine("민기: 닫힌 가게에 둘이 숨어 있으면 더 눈에 띄어. 평범하게 장사하는 거야.",5.5f),
+        new PrologueLine("나: 네가 피자는 만들 줄 알고?",3f),
+        new PrologueLine("민기: 어릴 때 지겹게 도왔어. 내일은 네 차례야.",3.8f),
+        new PrologueLine("나: …좋아. 적어도 여기서 번 돈은 우리가 쓰자.",4f)
     };
     public PrologueLine boarding = new PrologueLine("공범: 타! 지금이야!", 2);
-    public PrologueLine getaway = new PrologueLine("그날 이후, 나는 작은 피자 가게를 차렸다.", 5);
-    public PrologueLine ending = new PrologueLine("몇 주 후\n\n이얏호 피자, 첫 영업일", 2.5f);
+    public PrologueLine getaway = new PrologueLine("실장의 연락을 기다리며, 우리는 피자 가게 문을 다시 열었다.", 5);
+    public PrologueLine ending = new PrologueLine("다음 날 아침\n\n이얏호 피자, 첫 영업일", 2.5f);
     [Header("직접 운전과 도시 진입")]
     [TextArea] public string driving="공범: 앞에 저지선이야! 도로 끝까지 돌파해!";
     [Min(1)] public float cityArrivalSeconds=5,cityPanSeconds=10,logoSeconds=3;
