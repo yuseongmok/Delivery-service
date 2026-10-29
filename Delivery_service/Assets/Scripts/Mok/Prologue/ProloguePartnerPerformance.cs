@@ -104,9 +104,11 @@ public sealed class ProloguePartnerPerformance : MonoBehaviour {
         grippingWheel=false;
         Vector3 release=transform.position;
         Vector3 retreat=release-transform.forward*.85f;
-        Anim.SetFloat("MoveSpeed",1);
+            Anim.SetFloat("RunRate", -0.7f);
+            Anim.SetFloat("MoveSpeed",1f);
         yield return Motion(.65f,p=>transform.position=Vector3.Lerp(release,retreat,p));
-        Anim.SetFloat("MoveSpeed",0);
+            Anim.SetFloat("RunRate", 1.25f);
+            Anim.SetFloat("MoveSpeed",0);
         Sound(vaultSwing);
         yield return Motion(2.4f,p=>D.vaultDoor.localRotation=Quaternion.Euler(0,-105*p,0));
         if(NavMesh.SamplePosition(transform.position,out var hit,2,NavMesh.AllAreas))transform.position=hit.position;
