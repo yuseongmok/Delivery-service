@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Linq;
 using UnityEngine;
 namespace DeliveryService.Mok {
@@ -26,11 +26,11 @@ public sealed class VenueGuardShooter:MonoBehaviour {
  var direction=end-start;foreach(var h in Physics.RaycastAll(start,direction.normalized,direction.magnitude,~0,QueryTriggerInteraction.Ignore).OrderBy(h=>h.distance)){if(h.transform.IsChildOf(transform))continue;if(h.transform.IsChildOf(car)){end=h.point;hitCar=true;break;}end=h.point;hitCar=false;break;}
  // 가까운 벽에 막힌 경비는 발사하지 않는다.
  if(Vector3.Distance(start,end)<2)return;
- owner.Shots++;if(owner.rifleShot){shot.pitch=Random.Range(.95f,1.05f);shot.PlayOneShot(owner.rifleShot);}flash.enabled=true;
+ owner.Shots++;if(SuppliedAudio.Current&&SuppliedAudio.Current.gunshot)owner.rifleShot=SuppliedAudio.Current.gunshot;if(owner.rifleShot){shot.pitch=Random.Range(.95f,1.05f);shot.PlayOneShot(owner.rifleShot);}flash.enabled=true;
  var tracer=PrologueTracer.Spawn(start,end,new Color(1,.65f,.16f));tracer.transform.SetParent(owner.transform,true);
  StartCoroutine(Impact(end,hitCar,Vector3.Distance(start,end)/PrologueTracer.Speed));}
  IEnumerator Impact(Vector3 point,bool hit,float delay){yield return new WaitForSeconds(.05f);if(flash)flash.enabled=false;yield return new WaitForSeconds(Mathf.Max(0,delay-.05f));if(!owner||!owner.drive.Driving||!hit)yield break;
- owner.CarHits++;impact.transform.position=point;if(owner.metalHit)impact.PlayOneShot(owner.metalHit,.65f);
+ owner.CarHits++;if(SuppliedAudio.Current&&SuppliedAudio.Current.metalImpact)owner.metalHit=SuppliedAudio.Current.metalImpact;impact.transform.position=point;if(owner.metalHit)impact.PlayOneShot(owner.metalHit,.65f);
  var spark=PrologueTracer.Spawn(point,point+Vector3.up*.35f+owner.drive.transform.right*.2f,new Color(1,.85f,.4f));spark.transform.SetParent(owner.transform,true);
  }
  void OnDestroy(){if(gun)Destroy(gun.gameObject);}

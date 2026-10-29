@@ -4,6 +4,7 @@ namespace DeliveryService.Mok {
 // 시점 회전과 별도의 축으로 엄폐 자세를 적용해 반동·래그돌과 충돌하지 않게 한다.
 [DefaultExecutionOrder(-100)]
 public sealed class PlayerTacticalStance : MonoBehaviour {
+    public PlayerWalkFeedback WalkFeedback {get;private set;}
     CharacterController body; Camera view; Transform pivot;
     ProloguePlayer prologue; PlayerCombat combat; PlayerWeapon weapon;
     float standingHeight, baseFov, crouchAmount, lean;
@@ -15,6 +16,7 @@ public sealed class PlayerTacticalStance : MonoBehaviour {
         body=GetComponent<CharacterController>();prologue=GetComponent<ProloguePlayer>();combat=GetComponent<PlayerCombat>();weapon=GetComponent<PlayerWeapon>();
         view=prologue?prologue.view:combat?combat.View:null;
         if(!body||!view){enabled=false;return;}
+        WalkFeedback=GetComponent<PlayerWalkFeedback>();if(!WalkFeedback)WalkFeedback=gameObject.AddComponent<PlayerWalkFeedback>();
         standingHeight=body.height;standingCenter=body.center;baseFov=view.fieldOfView;
         pivot=new GameObject("Tactical stance pivot").transform;
         pivot.SetParent(view.transform.parent,false);eyeRest=view.transform.localPosition;pivot.localPosition=eyeRest;
@@ -63,6 +65,7 @@ public sealed class PlayerTacticalStance : MonoBehaviour {
         view.fieldOfView=Mathf.Lerp(baseFov,baseFov*.72f,AimAmount);
         if(!ready){lean=0;pivot.localRotation=Quaternion.identity;pivot.localPosition=centerLocal;AimAmount=0;view.fieldOfView=baseFov;}
     }
-    void OnDisable(){if(body&&standingHeight>0){body.height=standingHeight;body.center=standingCenter;}if(view&&baseFov>0)view.fieldOfView=baseFov;if(pivot){pivot.localPosition=eyeRest;pivot.localRotation=Quaternion.identity;}IsCrouching=false;AimAmount=0;}
+    void LateUpdate(){if(!pivot||!WalkFeedback)return;WalkFeedback.Tick(Ready,body.isGrounded,IsCrouching,AimAmount,Time.deltaTime);pivot.localPosition+=WalkFeedback.CameraOffset;}
+    void OnDisable(){if(WalkFeedback)WalkFeedback.Tick(false,false,false,0,0);if(body&&standingHeight>0){body.height=standingHeight;body.center=standingCenter;}if(view&&baseFov>0)view.fieldOfView=baseFov;if(pivot){pivot.localPosition=eyeRest;pivot.localRotation=Quaternion.identity;}IsCrouching=false;AimAmount=0;}
 }
 }

@@ -1,4 +1,4 @@
-﻿using System.Collections;using System.Collections.Generic;using System.Linq;using UnityEngine;
+using System.Collections;using System.Collections.Generic;using System.Linq;using UnityEngine;
 namespace DeliveryService.Mok {
 // 피자 인벤토리와 독립적인 한 칸짜리 무기 슬롯이다.
 public sealed class PlayerWeapon : MonoBehaviour {
@@ -25,9 +25,10 @@ public sealed class PlayerWeapon : MonoBehaviour {
   if(!Combat.CanAct||!HasInHand)return;if(Input.GetMouseButtonDown(0))Attack(false);else if(Equipped!=WeaponKind.Pistol&&Input.GetMouseButtonDown(1))Attack(true);}
  // 긴 무기의 끝이 카메라 뒤로 돌아가지 않도록 전방에서 준비·타격·회수를 나눈다.
  public void UpdateHeldPose(){if(!held)return;held.gameObject.SetActive(HasInHand&&Combat.CanAct);float p=animationEnd>Time.time?Mathf.Clamp01((Time.time-animationStart)/(animationEnd-animationStart)):1;
- if(Equipped==WeaponKind.Pistol){float aim=stance?stance.AimAmount:0;held.localRotation=Quaternion.Slerp(restRotation,Quaternion.identity,aim)*Quaternion.Euler(-Mathf.Sin(p*Mathf.PI)*5,0,0);held.localPosition=Vector3.Lerp(restPosition,new Vector3(0,-.345f,.55f),aim);return;}
- MeleePose(Equipped,p,out var position,out var rotation);held.localPosition=position;held.localRotation=rotation;
+ if(Equipped==WeaponKind.Pistol){float aim=stance?stance.AimAmount:0;held.localRotation=Quaternion.Slerp(restRotation,Quaternion.identity,aim)*Quaternion.Euler(-Mathf.Sin(p*Mathf.PI)*5,0,0);held.localPosition=Vector3.Lerp(restPosition,new Vector3(0,-.345f,.55f),aim);ApplyWalkSway(p);return;}
+ MeleePose(Equipped,p,out var position,out var rotation);held.localPosition=position;held.localRotation=rotation;ApplyWalkSway(p);
  }
+ void ApplyWalkSway(float phase){if(phase<1||!stance||!stance.WalkFeedback)return;held.localPosition+=stance.WalkFeedback.HandOffset;held.localRotation*=stance.WalkFeedback.HandRotation;}
  public static void MeleePose(WeaponKind kind,float phase,out Vector3 position,out Quaternion rotation){
  bool brick=kind==WeaponKind.Brick;var rest=new Vector3(.32f,-.35f,.65f);var wind=brick?new Vector3(.28f,.08f,.62f):new Vector3(.42f,-.25f,.72f);var hit=brick?new Vector3(.02f,-.10f,.82f):new Vector3(.03f,-.16f,.70f);var follow=brick?new Vector3(.02f,-.40f,.75f):new Vector3(-.28f,-.28f,.65f);
  var r0=Quaternion.Euler(15,0,-18);var r1=Quaternion.Euler(brick?-15:-8,brick?0:-25,brick?-8:-30);var r2=Quaternion.Euler(brick?55:72,brick?0:-10,brick?8:35);var r3=Quaternion.Euler(brick?65:95,brick?0:15,brick?8:70);

@@ -1,0 +1,65 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cfc945df46bf4d74387070d23a6b439f, type: 3}
+  m_Name: SuppliedAudio
+  m_EditorClassIdentifier: Assembly-CSharp::DeliveryService.Mok.SuppliedAudio
+  gunshot: {fileID: 8300000, guid: 0054e4183e51408459d96a0ad7b2da70, type: 3}
+  reload: {fileID: 8300000, guid: 3b1b90f81f835e34ebfc5e8fc1041f01, type: 3}
+  flyby: {fileID: 8300000, guid: c1366ce795f232f4d88869c6732135f7, type: 3}
+  bankAlarm: {fileID: 8300000, guid: fe652ca1d87e37f43a5c40c49dac68c3, type: 3}
+  policeSiren: {fileID: 8300000, guid: 8274b54501557f444be9bb54ba778af7, type: 3}
+  playerEngine: {fileID: 8300000, guid: 09dae479b2780ee4dbdd95663f8136a1, type: 3}
+  vaultLatch: {fileID: 8300000, guid: a7db64cd9f232064b9f36be826ff987a, type: 3}
+  vaultSwing: {fileID: 8300000, guid: 8cd9621e904e221428854cf85726acf8, type: 3}
+  bodyFall: {fileID: 8300000, guid: ea546f6ecf2819c44bb54753d0948a28, type: 3}
+  bag: {fileID: 8300000, guid: c9c3ee21141d7f44cbf3f9113882d07e, type: 3}
+  shutter: {fileID: 8300000, guid: 74ae8ea21d015a34fab519b9a89a5a28, type: 3}
+  missionMusic: {fileID: 8300000, guid: d673cbd4787ccef408bf436f39dd2560, type: 3}
+  carCrash: {fileID: 8300000, guid: 1816364c364d0d348bae271f123e77bd, type: 3}
+  carOpen: {fileID: 8300000, guid: e1c448b9af08dff4f91fdf26ebc6fefc, type: 3}
+  carClose: {fileID: 8300000, guid: 3e55256835f4fb049b21b9f721112b43, type: 3}
+  wallImpact: {fileID: 8300000, guid: 0595083cb0e050844973036c23a304a9, type: 3}
+  metalImpact: {fileID: 8300000, guid: 1604b465d05497a479a1073daa7fea2b, type: 3}
+  cityAmbience: {fileID: 8300000, guid: 07abcbe5565880441b640b11900916cd, type: 3}
+  roomAmbience: {fileID: 8300000, guid: ce6533a8deed17541b86d567958a08b4, type: 3}
+  detected: {fileID: 8300000, guid: 5ddeb9b419585a6408d61556b218b0b4, type: 3}
+  escalation: {fileID: 8300000, guid: a3d820ffa8ea2a84fbdaa5ea92e99869, type: 3}
+  traffic:
+  - {fileID: 8300000, guid: 08f7e3ddfc72cbc41ae33f8dd5be4dac, type: 3}
+  - {fileID: 8300000, guid: 9cb26b4abbe702d4aa0d12a63aabd885, type: 3}
+  indoorSteps:
+  - {fileID: 8300000, guid: 6f4d557ec7a9b8e48b3b751e9a705bb7, type: 3}
+  - {fileID: 8300000, guid: 60953bced690f4547915eb0fd4d17594, type: 3}
+  - {fileID: 8300000, guid: 5fd86be7bb6f6d247b15ea19b13caa43, type: 3}
+  - {fileID: 8300000, guid: 8460bb9a90de3c643aa3018d74ea8976, type: 3}
+  - {fileID: 8300000, guid: 00a4adbfcc22b7c468ddd8250d9e27e3, type: 3}
+  - {fileID: 8300000, guid: 0f4a27354afa29b45b76b970cbd28443, type: 3}
+  - {fileID: 8300000, guid: c198d85c6dff6264fb0041fc41335c12, type: 3}
+  - {fileID: 8300000, guid: 5e759101f329e844795a535938fbf392, type: 3}
+  streetSteps:
+  - {fileID: 8300000, guid: 9340a3e24326d144d8a6cbafe1529aed, type: 3}
+  - {fileID: 8300000, guid: 763787a09d676964f93f05c545c637d3, type: 3}
+  - {fileID: 8300000, guid: 2f5dd3849f256724f9efb90b343e3940, type: 3}
+  - {fileID: 8300000, guid: 348fe03f153b3d2428817e5ec0703391, type: 3}
+  - {fileID: 8300000, guid: 961ae28ca035f4143b73fb8608dea339, type: 3}
+  - {fileID: 8300000, guid: 1bb73eea71a6be74ebda378e85fd4132, type: 3}
+  - {fileID: 8300000, guid: f190194915926564c880bfb82fccbf45, type: 3}
+  - {fileID: 8300000, guid: 62b983c0d1d7d0947aff8f18ae713c67, type: 3}
+  - {fileID: 8300000, guid: a2bc95225e4eb29499e2b99ce1167546, type: 3}
+  boots:
+  - {fileID: 8300000, guid: c9c4335209593f646b1d2d8f1465f7be, type: 3}
+  - {fileID: 8300000, guid: 9ae7c3d60f6fb3b45abebe8fdc831fac, type: 3}
+  - {fileID: 8300000, guid: a67715f73f72b164eba6f2c4f59cfee5, type: 3}
+  - {fileID: 8300000, guid: 15ff437831d076148934ab5c5f204ac4, type: 3}
+  - {fileID: 8300000, guid: 620cc173734a77040a02edea8046c28d, type: 3}
+  - {fileID: 8300000, guid: 53fc64ba926031140a94268f925b3c6d, type: 3}
+  - {fileID: 8300000, guid: 5bd5b76976c31714f9a33bde9ef6561a, type: 3}

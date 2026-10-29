@@ -20,7 +20,7 @@ public sealed class PrologueShopArrival:MonoBehaviour {
     bool paused;
     Rigidbody carBody;
     float carTravel;
-    void Awake(){if(conversationPlayer)conversationPlayer.gameObject.SetActive(false);actor.gameObject.SetActive(false);if(cabinLight)cabinLight.enabled=false;sound=gameObject.AddComponent<AudioSource>();sound.playOnAwake=false;sound.spatialBlend=1;sound.minDistance=5;sound.maxDistance=25;sound.clip=shutterSound;}
+    void Awake(){StoryActorFootsteps.Attach(actor,animator,director,true);if(conversationPlayer)conversationPlayer.gameObject.SetActive(false);actor.gameObject.SetActive(false);if(cabinLight)cabinLight.enabled=false;var emitter=new GameObject("매장 셔터 효과음");emitter.transform.SetParent(shop,false);emitter.transform.localPosition=new Vector3(3.22f,1.4f,3.15f);sound=emitter.AddComponent<AudioSource>();sound.playOnAwake=false;sound.spatialBlend=1;sound.minDistance=5;sound.maxDistance=25;if(SuppliedAudio.Current&&SuppliedAudio.Current.shutter)shutterSound=SuppliedAudio.Current.shutter;sound.clip=shutterSound;}
     void Update(){
         if(Stage==1&&!director.Paused){
             // 대사가 길어져도 차량이 연출용 도로 밖으로 나가지 않도록 이동 거리를 제한한다.
@@ -61,7 +61,7 @@ public sealed class PrologueShopArrival:MonoBehaviour {
         actor.position=to;animator.SetFloat("MoveSpeed",0);
         if(d.story.shopConversation.Length>0){d.subtitle.text=d.story.shopConversation[0].text;DialogueShot(d.subtitle.text);yield return Wait(d.story.shopConversation[0].seconds);}
         actor.rotation=shop.rotation*Quaternion.Euler(0,180,0);CameraAt(doorShot);Stage=3;handWeight=1;handTarget=shop.TransformPoint(new Vector3(3.22f,.8f,3.3f));
-        if(!d.CinematicSkipRequested)sound.Play();
+        sound.loop=true;sound.volume=.45f*SuppliedAudio.Volume;if(!d.CinematicSkipRequested)sound.Play();
         for(float t=0;t<2.8f&&!d.CinematicSkipRequested;t+=Time.deltaTime){
             float p=Mathf.SmoothStep(0,1,t/2.8f);Open(p);
             handTarget=shop.TransformPoint(new Vector3(3.22f,Mathf.Min(1.8f,.8f+p*3),3.3f));handWeight=1-Mathf.InverseLerp(.35f,.65f,p);

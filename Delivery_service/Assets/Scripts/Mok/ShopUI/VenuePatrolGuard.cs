@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.AI;
 namespace DeliveryService.Mok {
@@ -12,7 +12,7 @@ public sealed class VenuePatrolGuard:MonoBehaviour {
  public bool HandleStealthStrike(PlayerCombat player,Vector3 direction){Cache();if(!mission||!mission.Active||Incapacitated)return false;var to=Vector3.ProjectOnPlane(player.transform.position-transform.position,Vector3.up);bool behind=to.sqrMagnitude<9&&Vector3.Dot(transform.forward,to.normalized)<-.45f;bool witnessed=mission.guards.Any(g=>g!=this&&g&&g.CanSee(player));if(!behind||witnessed){mission.mission.EjectFromVenue(transform);return true;}Incapacitated=true;Combat.EndFight();Combat.Npc.ExternalControl=true;Combat.Npc.KnockDown(direction,.35f);return true;}
  public CitizenCombat Combat{get;private set;}
  NavMeshAgent agent;Animator animator;int post;float wait,nextPath;
- void Cache(){if(Combat)return;Combat=GetComponent<CitizenCombat>();agent=GetComponent<NavMeshAgent>();animator=GetComponentInChildren<Animator>(true);}
+ void Cache(){if(Combat)return;Combat=GetComponent<CitizenCombat>();VenueActorAudio.Attach(Combat);agent=GetComponent<NavMeshAgent>();animator=GetComponentInChildren<Animator>(true);}
  public void Activate(){gameObject.SetActive(true);Cache();Incapacitated=false;if(walkController)animator.runtimeAnimatorController=walkController;Combat.EndFight();Combat.Npc.ExternalControl=true;agent.enabled=true;agent.Warp(posts[0].position);transform.rotation=posts[0].rotation;post=1%posts.Length;wait=Time.time+pauseSeconds;nextPath=0;agent.speed=speed;agent.stoppingDistance=.2f;}
  public void BeginChase(){Cache();if(chaseController)animator.runtimeAnimatorController=chaseController;enabled=false;Combat.ExternalAttackControl=false;}
  public void Deactivate(){Cache();if(Combat&&Combat.Npc)Combat.EndFight();gameObject.SetActive(false);}

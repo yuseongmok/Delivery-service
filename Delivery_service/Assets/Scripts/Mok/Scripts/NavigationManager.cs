@@ -67,7 +67,7 @@ public class NavigationManager : MonoBehaviour {
   distance=Vector3.Distance(start,corners[0])+Vector3.Distance(corners[corners.Length-1],end);
   for(int i=1;i<corners.Length;i++)distance+=Vector3.Distance(corners[i-1],corners[i]);return true;
  }
- static Vector3[] FindTravelRoute(Vector3 startPosition,Vector3 endPosition){
+ public static Vector3[] FindTravelRoute(Vector3 startPosition,Vector3 endPosition){
  int road=NavMesh.GetAreaFromName("Road"),sidewalk=NavMesh.GetAreaFromName("SideWalk");
  if(road<0||sidewalk<0||NavMesh.GetSettingsCount()==0){return null;}
  int mask=(1<<road)|(1<<sidewalk);

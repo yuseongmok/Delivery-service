@@ -27,7 +27,8 @@ public sealed class PrologueOfficer : MonoBehaviour {
     readonly RaycastHit[] sightHits = new RaycastHit[16];
     void Awake() {
         agent = GetComponent<NavMeshAgent>(); body = GetComponent<CapsuleCollider>();
-        animator.SetFloat("RunRate", 1.25f);
+        agent.speed = Mathf.Max(agent.speed, 5.4f); agent.acceleration = Mathf.Max(agent.acceleration, 16);
+        animator.SetFloat("RunRate", 1.55f);
     }
     public void Activate() {
         if (Dead) return;
@@ -63,7 +64,7 @@ public sealed class PrologueOfficer : MonoBehaviour {
             if(aiming){var look=director.player.transform.position-transform.position;look.y=0;if(look.sqrMagnitude>.01f)transform.rotation=Quaternion.RotateTowards(transform.rotation,Quaternion.LookRotation(look),160*Time.deltaTime);}
             if(!director.Paused&&agent.velocity.sqrMagnitude>.2f&&Time.time>=nextEntranceStep){
                 nextEntranceStep=Time.time+.3f;
-                if(entranceFootstep&&entranceAudio)entranceAudio.PlayOneShot(entranceFootstep,.7f);
+                if(entranceFootstep&&entranceAudio)entranceAudio.PlayOneShot(SuppliedAudio.Current&&SuppliedAudio.Current.boots.Length>0?SuppliedAudio.Current.boots[Random.Range(0,SuppliedAudio.Current.boots.Length)]:entranceFootstep,.45f*SuppliedAudio.Volume);
             }
         }
         if (!Active || director == null || !director.CanPlay || !agent.enabled || !agent.isOnNavMesh) return;

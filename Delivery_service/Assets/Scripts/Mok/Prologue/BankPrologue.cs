@@ -49,6 +49,10 @@ public sealed class BankPrologue : MonoBehaviour {
     public bool IsCinematic => Current == Phase.Opening || Current == Phase.Getaway || Current == Phase.CityReveal;
     public bool CinematicSkipRequested => skip;
     public bool Alarm { get; private set; }
+    [Header("은행 경보 반복") ]
+    [Min(1)] public int alarmRepeats=3;
+    [Min(.1f)] public float alarmCycleSeconds=3.1f,alarmRestSeconds=5;
+    float alarmPhaseTime;bool alarmResting;
     AudioSource siren;
     AudioClip sirenClip;
     float collecting, waveTime, hitOpacity;
@@ -64,6 +68,9 @@ public sealed class BankPrologue : MonoBehaviour {
 
     void Start() {
         Time.timeScale = 1;
+        if(progress)progress.gameObject.SetActive(false);
+        gameObject.AddComponent<PrologueMissionMusic>();
+        gameObject.AddComponent<StorySoundscape>();
         if(!story){story=ScriptableObject.CreateInstance<PrologueStory>();temporaryStory=true;}
         player.director = this;
         if(logo)logo.alpha=0;
@@ -75,6 +82,9 @@ public sealed class BankPrologue : MonoBehaviour {
         MakeSiren();
         StartCoroutine(Opening());
     }
+    void StartBankAlarm(){if(Alarm||Collected>=cash.Length)return;Alarm=true;alarmResting=false;alarmPhaseTime=0;siren.time=0;siren.Play();}
+    void StopBankAlarm(){Alarm=false;alarmResting=false;alarmPhaseTime=0;if(siren)siren.Stop();foreach(var light in alarmLights)if(light)light.intensity=0;}
+    void UpdateBankAlarm(){if(siren)siren.volume=.25f*SuppliedAudio.Volume;if(!Alarm)return;if(Collected>=cash.Length){StopBankAlarm();return;}alarmPhaseTime+=Time.deltaTime;float duration=alarmResting?alarmRestSeconds:alarmCycleSeconds*alarmRepeats;if(alarmPhaseTime<duration)return;alarmPhaseTime=0;alarmResting=!alarmResting;if(alarmResting)siren.Stop();else{siren.time=0;siren.Play();}}
     void MakeSiren() {
         int rate = 22050;
         var samples = new float[rate * 2];
@@ -87,8 +97,8 @@ public sealed class BankPrologue : MonoBehaviour {
         sirenClip = AudioClip.Create("은행 경보", samples.Length, 1, rate, false);
         sirenClip.SetData(samples, 0);
         siren = gameObject.AddComponent<AudioSource>();
-        siren.clip = sirenClip; siren.loop = true; siren.playOnAwake = false;
-        siren.volume = .35f;
+        siren.clip = SuppliedAudio.Current&&SuppliedAudio.Current.bankAlarm?SuppliedAudio.Current.bankAlarm:sirenClip; siren.loop = true; siren.playOnAwake = false;
+        siren.volume = .25f*SuppliedAudio.Volume;
     }
     void SetCinematic(bool value) {
         player.view.enabled = !value;
@@ -123,7 +133,7 @@ public sealed class BankPrologue : MonoBehaviour {
             yield return null;
         }
         vaultDoor.localRotation = Quaternion.Euler(0, -105, 0);
-        Alarm = true; siren.Play();
+        StartBankAlarm();
         if(accomplice&&accomplice.performance&&!skip)yield return accomplice.performance.ReactToAlarm();
         yield return Shot(1, story.alarm.text, story.alarm.seconds, Vector3.forward * .2f);
         officers[0].StageEntrance(policeEntryTargets.Length>0?policeEntryTargets[0].position:new Vector3(-.7f, 0, -5));
@@ -143,7 +153,7 @@ public sealed class BankPrologue : MonoBehaviour {
     public void BeginRobbery() {
         Current = Phase.Robbery; skip = false;
         vaultDoor.localRotation = Quaternion.Euler(0, -105, 0);
-        Alarm = true; if (!siren.isPlaying) siren.Play();
+        StartBankAlarm();
         SetCinematic(false); fade.alpha = 0;
         subtitle.text = story.collect;
         waveTime = Time.time + waveInterval;
@@ -170,6 +180,7 @@ public sealed class BankPrologue : MonoBehaviour {
             if (AcceptInput && PrologueKeyboard.Pressed(Key.L)) Load(lobbyScene);
             return;
         }
+        UpdateBankAlarm();
         if (AcceptInput && IsCinematic && PrologueKeyboard.Pressed(Key.Space)) skip = true;
         if (AcceptInput && Current == Phase.Failed && PrologueKeyboard.Pressed(Key.R)) Retry();
         for (int i = 0; i < alarmLights.Length; i++)
@@ -233,7 +244,7 @@ public sealed class BankPrologue : MonoBehaviour {
         if (!CanPlay || player.KnockedDown || Current != Phase.Robbery || index < 0 || index >= cash.Length ||
             !cash[index].activeSelf || Vector3.Distance(player.transform.position, cash[index].transform.position) >= 2.4f) return false;
         cash[index].SetActive(false); Collected++; collecting = 0;
-        if (Collected == cash.Length) { Current = Phase.Escape; subtitle.text = story.escape; }
+        if (Collected == cash.Length) { StopBankAlarm();Current = Phase.Escape; subtitle.text = story.escape; }
         return true;
     }
     public bool SecureCash(int index,PrologueAccomplice actor){
@@ -241,7 +252,7 @@ public sealed class BankPrologue : MonoBehaviour {
             !cash[index].activeSelf||actor.CollectionProgress<1||
             Vector3.Distance(actor.transform.position,cash[index].transform.position)>2.6f)return false;
         cash[index].SetActive(false);Collected++;
-        if(Collected==cash.Length)StartCoroutine(FinishPacking());
+        if(Collected==cash.Length){StopBankAlarm();StartCoroutine(FinishPacking());}
         return true;
     }
     IEnumerator FinishPacking(){

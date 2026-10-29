@@ -16,9 +16,10 @@ public sealed class ProloguePursuitCar:MonoBehaviour {
     public void DisableByPartner(){DisabledByPartner=true;Pursuing=false;if(siren)siren.Stop();foreach(var l in flashes)l.enabled=false;foreach(var r in lenses)r.enabled=false;}
     Rigidbody body;Vector3 start;Quaternion rotation;float began;bool wasDriving,paused;
     readonly RaycastHit[] hits=new RaycastHit[32];
-    void Awake(){body=GetComponent<Rigidbody>();start=transform.position;rotation=transform.rotation;Show(false);}
+    void Awake(){if(SuppliedAudio.Current&&SuppliedAudio.Current.policeSiren)siren.clip=SuppliedAudio.Current.policeSiren;body=GetComponent<Rigidbody>();start=transform.position;rotation=transform.rotation;Show(false);}
     void Show(bool value){foreach(var r in GetComponentsInChildren<Renderer>(true))r.enabled=value;GetComponent<Collider>().enabled=value;foreach(var l in flashes)l.enabled=value;if(headlights)headlights.enabled=value;}
     void Update(){
+        if(siren)siren.volume=.22f*SuppliedAudio.Volume;
         if(!drive.Driving){if(wasDriving){siren.Stop();Show(false);}wasDriving=false;Pursuing=false;Speed=0;return;}
         if(!wasDriving){wasDriving=true;began=Time.time;body.position=start;body.rotation=rotation;Travelled=0;}
         if(drive.director.Paused){if(!paused){siren.Pause();paused=true;}return;}

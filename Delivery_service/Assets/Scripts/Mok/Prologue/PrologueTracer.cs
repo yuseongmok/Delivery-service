@@ -11,6 +11,7 @@ public sealed class PrologueTracer : MonoBehaviour {
         if(!shared)shared=new Material(Shader.Find("Universal Render Pipeline/Unlit")) { name="Prologue tracer" };
         var go=new GameObject("Bullet tracer");
         var t=go.AddComponent<PrologueTracer>();t.from=start;t.to=end;t.distance=Vector3.Distance(start,end);
+        BulletFlyby.TryPlay(start,end);
         t.line=go.AddComponent<LineRenderer>();t.line.sharedMaterial=shared;
         t.line.positionCount=2;t.line.useWorldSpace=true;t.line.widthMultiplier=.035f;
         t.line.startColor=color;t.line.endColor=color;t.line.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;

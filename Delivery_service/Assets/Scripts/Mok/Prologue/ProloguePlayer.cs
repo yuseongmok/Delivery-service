@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 namespace DeliveryService.Mok {
@@ -37,6 +37,7 @@ public sealed class ProloguePlayer : MonoBehaviour {
     Vector3 magazineRest, boltRest;
     Quaternion restRotation;
     void Awake() {
+        gameObject.AddComponent<PlayerDazeFeedback>();
         stance=GetComponent<PlayerTacticalStance>();if(!stance)stance=gameObject.AddComponent<PlayerTacticalStance>();
         body = GetComponent<CharacterController>(); rest = weapon.transform.localPosition;
         restRotation=weapon.transform.localRotation;Ammo=magazineSize;
@@ -93,6 +94,7 @@ public sealed class ProloguePlayer : MonoBehaviour {
     void ApplyWeaponRecoil(){
         weapon.transform.localPosition=Vector3.Lerp(rest,new Vector3(0,-.14f,rest.z),stance.AimAmount)+new Vector3(recoilSide*.012f,0,-recoil*.025f);
         weapon.transform.localRotation=Quaternion.Slerp(restRotation,Quaternion.identity,stance.AimAmount)*Quaternion.Euler(-recoil*2.5f,recoilSide*2,recoilRoll*2);
+        if(stance.WalkFeedback){weapon.transform.localPosition+=stance.WalkFeedback.HandOffset;weapon.transform.localRotation*=stance.WalkFeedback.HandRotation;}
     }
     IEnumerator Flash() { muzzle.enabled = true; yield return new WaitForSeconds(.05f); muzzle.enabled = false; }
     public bool Reload() {
@@ -100,10 +102,11 @@ public sealed class ProloguePlayer : MonoBehaviour {
         StartCoroutine(ReloadRoutine()); return true;
     }
     IEnumerator ReloadRoutine() {
-        Reloading = true;
+        Reloading = true;bool reloadSoundPlayed=false;var reloadAudio=GetComponent<PlayerReloadAudio>();if(!reloadAudio)reloadAudio=gameObject.AddComponent<PlayerReloadAudio>();
         for(float elapsed=0;elapsed<reloadSeconds;elapsed+=Time.deltaTime) {
             if(KnockedDown||(!director.CanPlay&&!director.Paused))break;
             float t=elapsed/reloadSeconds;
+            if(!reloadSoundPlayed&&t>=.3f){reloadSoundPlayed=true;reloadAudio.Play();}
             float tilt=Mathf.SmoothStep(0,1,Mathf.Clamp01(t/.2f))*Mathf.SmoothStep(0,1,Mathf.Clamp01((1-t)/.2f));
             weapon.transform.localRotation=restRotation*Quaternion.Euler(10*tilt,15*tilt,-35*tilt);
             weapon.transform.localPosition=Vector3.Lerp(rest,new Vector3(0,-.14f,rest.z),stance.AimAmount)+new Vector3(-.07f,.07f,-.08f)*tilt;
@@ -117,7 +120,7 @@ public sealed class ProloguePlayer : MonoBehaviour {
         weapon.transform.SetLocalPositionAndRotation(rest,restRotation);
         if(magazine)magazine.localPosition=magazineRest;if(bolt)bolt.localPosition=boltRest;
         if(director.CanPlay&&!KnockedDown)Ammo=magazineSize;
-        Reloading = false;
+        reloadAudio.Stop();Reloading = false;
     }
     public bool ReceiveHit(int damage) {
         if (director == null || !director.CanPlay || KnockedDown || Time.time < immuneUntil || damage <= 0) return false;

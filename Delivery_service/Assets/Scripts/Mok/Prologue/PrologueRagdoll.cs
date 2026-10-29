@@ -32,6 +32,7 @@ public sealed class PrologueRagdoll : MonoBehaviour {
     public void Knock(Vector3 velocity,bool permanent=false) {
         Permanent|=permanent;
         if(IsDown){if(Permanent&&recovery!=null)StopCoroutine(recovery);return;}
+        if(SuppliedAudio.Current&&SuppliedAudio.Current.bodyFall){var sound=GetComponent<AudioSource>();if(!sound)sound=gameObject.AddComponent<AudioSource>();sound.spatialBlend=1;sound.PlayOneShot(SuppliedAudio.Current.bodyFall,.35f*SuppliedAudio.Volume);}
         IsDown=true;origin=transform.position;heading=transform.rotation;
         for(int i=0;i<bones.Length;i++){positions[i]=bones[i].localPosition;rotations[i]=bones[i].localRotation;}
         if(agent)agent.enabled=false;if(mainCollider)mainCollider.enabled=false;

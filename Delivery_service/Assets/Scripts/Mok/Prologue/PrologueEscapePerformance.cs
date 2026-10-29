@@ -14,6 +14,7 @@ public sealed class PrologueEscapePerformance : MonoBehaviour {
     public int SupportShots {get;private set;}
     public bool PursuitEnded {get;private set;}
     public bool Boarding {get;private set;}
+    AudioSource boardingAudio;
     float drivingTime,nextShot,poseWeight,recoil;
     int targetIndex,shotsAtTarget;
     ProloguePursuitCar target;
@@ -36,8 +37,9 @@ public sealed class PrologueEscapePerformance : MonoBehaviour {
         var start=d.player.view.transform.position;var rotation=d.player.view.transform.rotation;
         var performance=d.accomplice?d.accomplice.performance:null;
         if(performance)StartCoroutine(performance.EnterVehicle());
-        var source=GetComponent<AudioSource>();if(!source){source=gameObject.AddComponent<AudioSource>();source.playOnAwake=false;}
-        if(performance&&performance.doorOpen)source.PlayOneShot(performance.doorOpen,.6f);
+        if(!boardingAudio){boardingAudio=gameObject.AddComponent<AudioSource>();boardingAudio.playOnAwake=false;boardingAudio.loop=false;StorySoundPause.Attach(boardingAudio);}
+        var source=boardingAudio;
+        if(performance&&performance.doorOpen)StorySoundMix.Play(source,performance.doorOpen,.4f);
         try{
             for(float elapsed=0;elapsed<boardingSeconds;elapsed+=Time.deltaTime){
                 if(d.CinematicSkipRequested)break;
@@ -57,7 +59,7 @@ public sealed class PrologueEscapePerformance : MonoBehaviour {
             cam.transform.SetPositionAndRotation(d.getawayCar.TransformPoint(d.drive.driverEye),d.getawayCar.rotation);
             cam.nearClipPlane=near;Boarding=false;
         }
-        if(performance&&performance.doorClose)source.PlayOneShot(performance.doorClose,.6f);
+        if(performance&&performance.doorClose)StorySoundMix.Play(source,performance.doorClose,.4f);
     }
     void Start(){if(partnerGun)partnerGun.gameObject.SetActive(false);}
     void Update(){
@@ -80,7 +82,7 @@ public sealed class PrologueEscapePerformance : MonoBehaviour {
         if(feedback)feedback.Fire();else GunshotSound.Play(gameObject,false);
         if(muzzle)PrologueTracer.Spawn(muzzle.position,target.transform.position+Vector3.up*.8f,new Color(1,.65f,.2f));
         var hitFeedback=director.GetComponent<PrologueCombatFeedback>();
-        if(hitFeedback)hitFeedback.Impact(target.transform.position+target.transform.forward*1.5f+Vector3.up*.8f,target.transform.forward,false);
+        if(hitFeedback)hitFeedback.Impact(target.transform.position+target.transform.forward*1.5f+Vector3.up*.8f,target.transform.forward,false,false,true);
         if(shotsAtTarget>=5){target.DisableByPartner();shotsAtTarget=0;targetIndex++;target=null;}
     }
     void LateUpdate(){

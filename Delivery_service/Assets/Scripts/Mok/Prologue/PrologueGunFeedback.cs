@@ -12,10 +12,11 @@ public sealed class PrologueGunFeedback : MonoBehaviour {
     float remaining;
     Vector3 size;
     void Awake(){
+        if(SuppliedAudio.Current&&SuppliedAudio.Current.gunshot)shot=SuppliedAudio.Current.gunshot;
         size=flame.localScale;flame.gameObject.SetActive(false);flash.enabled=false;
         source=gameObject.AddComponent<AudioSource>();source.playOnAwake=false;
         source.spatialBlend=playerGun?0:1;source.minDistance=4;source.maxDistance=65;
-        source.rolloffMode=AudioRolloffMode.Linear;source.volume=playerGun?.65f:.45f;
+        source.rolloffMode=AudioRolloffMode.Linear;source.volume=playerGun?.6f:.32f;StorySoundPause.Attach(source);
     }
     public void Fire(){
         ShotHeard?.Invoke(transform.position);
@@ -23,7 +24,8 @@ public sealed class PrologueGunFeedback : MonoBehaviour {
         flame.localScale=size*Random.Range(.8f,1.18f);
         flame.localRotation=Quaternion.Euler(0,0,Random.Range(0,360));
         flame.gameObject.SetActive(true);flash.enabled=true;
-        source.pitch=Random.Range(.94f,1.06f);if(shot)source.PlayOneShot(shot);
+        StorySoundMix.Duck(.3f);
+        source.pitch=Random.Range(.94f,1.06f);if(shot)source.PlayOneShot(shot,SuppliedAudio.Volume);
     }
     void Update(){
         remaining-=Time.deltaTime;

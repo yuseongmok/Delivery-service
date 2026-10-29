@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.AI;
 namespace DeliveryService.Mok {
 // 공범은 수집과 동행만 담당하며 본편 시민·경제 시스템을 실행하지 않는다.
@@ -17,6 +17,7 @@ public sealed class PrologueAccomplice : MonoBehaviour {
     Vector3 handTarget;
     bool working;
     void Awake(){
+        StoryActorFootsteps.Attach(transform,animator,director);
         agent=GetComponent<NavMeshAgent>();
         animator.applyRootMotion=false;
         animator.cullingMode=AnimatorCullingMode.AlwaysAnimate;

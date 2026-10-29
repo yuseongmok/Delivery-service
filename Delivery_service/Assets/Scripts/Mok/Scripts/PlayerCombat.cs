@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Linq;
 using UnityEngine;
 namespace DeliveryService.Mok {
@@ -24,7 +24,7 @@ public sealed class PlayerCombat : MonoBehaviour {
     float nextKick, recoveryUntil; Font font;
     public MotorcycleController RiddenBike => bikes==null?null:bikes.FirstOrDefault(b=>b&&b.isDriven);
     public Camera View => RiddenBike&&RiddenBike.bikeCamera?RiddenBike.bikeCamera.GetComponentInChildren<Camera>():view;
-    void Awake(){Health=maximumHealth;view=GetComponent<PlayerInteraction>().InteractionCamera;if(avatar!=null&&view!=null)view.nearClipPlane=Mathf.Min(view.nearClipPlane,.05f);move=GetComponent<PlayerMove>();controller=GetComponent<CharacterController>();}
+    void Awake(){gameObject.AddComponent<PlayerDazeFeedback>();Health=maximumHealth;view=GetComponent<PlayerInteraction>().InteractionCamera;if(avatar!=null&&view!=null)view.nearClipPlane=Mathf.Min(view.nearClipPlane,.05f);move=GetComponent<PlayerMove>();controller=GetComponent<CharacterController>();}
     void Start(){phone=FindFirstObjectByType<PhoneController>();bikes=FindObjectsByType<MotorcycleController>(FindObjectsSortMode.None);font=MokUIFont.Font;if(kickVisual!=null)kickVisual.gameObject.SetActive(false);}
     void Update(){if(CanAct&&Input.GetMouseButtonDown(0)&&(GetComponent<PlayerWeapon>()==null||!GetComponent<PlayerWeapon>().HasInHand))TryKick();}
 

@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
 namespace DeliveryService.Mok {
@@ -38,8 +38,10 @@ public sealed class ProloguePartnerPerformance : MonoBehaviour {
     Vector3 cashPosition;
     Vector3 WheelGrip(float side)=>wheel.TransformPoint(new Vector3(side*.365f,0,-.065f));
     void Awake(){
+        var bank=SuppliedAudio.Current;
+        if(bank){vaultLatch=bank.vaultLatch;vaultSwing=bank.vaultSwing;paperRustle=bank.bag;zipper=bank.bag;doorOpen=bank.carOpen;doorClose=bank.carClose;}
         audioSource=gameObject.AddComponent<AudioSource>();audioSource.playOnAwake=false;
-        audioSource.spatialBlend=.65f;audioSource.minDistance=3;audioSource.maxDistance=22;audioSource.rolloffMode=AudioRolloffMode.Linear;
+        audioSource.spatialBlend=1;audioSource.minDistance=1.5f;audioSource.maxDistance=22;audioSource.rolloffMode=AudioRolloffMode.Linear;
         handCash.gameObject.SetActive(false);
     }
     void Update(){
@@ -60,7 +62,14 @@ public sealed class ProloguePartnerPerformance : MonoBehaviour {
         if(D.Paused!=audioPaused){audioPaused=D.Paused;if(audioPaused)audioSource.Pause();else audioSource.UnPause();}
         if(D.Current==BankPrologue.Phase.Failed){StopAllCoroutines();Busy=false;rightWeight=leftWeight=lean=0;audioSource.Stop();handCash.gameObject.SetActive(false);}
     }
-    void Sound(AudioClip clip){if(clip){audioSource.PlayOneShot(clip,.75f);SoundEvents++;}}
+    AudioClip lastSound;float lastSoundAt;
+    void Sound(AudioClip clip){if(!clip)return;
+        // 같은 소품 접촉이 한 프레임 안에 중복 호출되는 경우만 걸러낸다.
+        if(clip==lastSound&&Time.time-lastSoundAt<.12f)return;
+        lastSound=clip;lastSoundAt=Time.time;
+        float gain=clip==paperRustle?.28f:clip==doorOpen||clip==doorClose?.32f:.45f;
+        StorySoundMix.Play(audioSource,clip,gain);SoundEvents++;
+    }
     static float Smooth(float p)=>Mathf.SmoothStep(0,1,Mathf.Clamp01(p));
     IEnumerator Motion(float seconds,System.Action<float> step){
         for(float t=0;t<seconds;t+=Time.deltaTime){
@@ -90,17 +99,16 @@ public sealed class ProloguePartnerPerformance : MonoBehaviour {
             yield return Motion(.45f,p=>{for(int i=0;i<starts.Length;i++)
                 vaultBolts[i].localPosition=starts[i]-vaultBolts[i].localRotation*Vector3.up*(.22f*p);});
         }
-        Sound(vaultSwing);
-        yield return Motion(2.4f,p=>{
-            D.vaultDoor.localRotation=Quaternion.Euler(0,-105*p,0);
-            rightTarget=WheelGrip(1);leftTarget=WheelGrip(-1);
-            Vector3 away=-D.vaultDoor.forward;
-            transform.position=new Vector3(wheel.position.x,0,wheel.position.z)+away*.43f;
-            transform.rotation=Quaternion.LookRotation(D.vaultDoor.forward);
-            lean=8+6*Mathf.Sin(p*Mathf.PI);
-        });
-        yield return Motion(.35f,p=>{rightWeight=leftWeight=1-p;lean=14*(1-p);});
+        // 잠금만 해제하고 손을 뗀 뒤 물러난다. 문 회전에는 동료를 연결하지 않는다.
+        yield return Motion(.3f,p=>{rightWeight=leftWeight=1-p;lean=5*(1-p);});
         grippingWheel=false;
+        Vector3 release=transform.position;
+        Vector3 retreat=release-transform.forward*.85f;
+        Anim.SetFloat("MoveSpeed",1);
+        yield return Motion(.65f,p=>transform.position=Vector3.Lerp(release,retreat,p));
+        Anim.SetFloat("MoveSpeed",0);
+        Sound(vaultSwing);
+        yield return Motion(2.4f,p=>D.vaultDoor.localRotation=Quaternion.Euler(0,-105*p,0));
         if(NavMesh.SamplePosition(transform.position,out var hit,2,NavMesh.AllAreas))transform.position=hit.position;
         agent.enabled=true;agent.Warp(transform.position);Busy=false;
     }

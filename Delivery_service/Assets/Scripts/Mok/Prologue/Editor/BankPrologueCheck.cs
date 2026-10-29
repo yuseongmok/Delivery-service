@@ -31,6 +31,16 @@ public static class BankPrologueCheck {
         if(!File.Exists(path))return;
         string command=File.ReadAllText(path).Trim();File.Delete(path);
         try {
+            if(command=="test-finale-soundscape"){NightPreparationCheck.Backup();SessionState.SetBool(Key+".finaleSoundscape",true);SessionState.SetBool(Key+".night",true);StartTest();}
+            if(command=="test-finale-mix"){NightPreparationCheck.Backup();SessionState.SetBool(Key+".finaleMix",true);SessionState.SetBool(Key+".night",true);StartTest();}
+            if(command=="test-story-mix"){SessionState.SetBool(Key+".storyMix",true);StartTest();}
+            if(command=="test-story-audio"){SessionState.SetBool(Key+".storyAudio",true);StartTest();}
+            if(command=="test-vault-audio"){SessionState.SetBool(Key+".vaultAudio",true);StartTest();}
+            if(command=="test-gun-alarm"){SessionState.SetBool(Key+".gunAlarm",true);StartTest();}
+            if(command=="install-supplied-audio")SuppliedAudioInstaller.Install();
+            if(command=="test-supplied-audio"){SessionState.SetBool(Key+".suppliedAudio",true);StartTest();}
+            if(command=="inspect-supplied-audio")SuppliedAudioInstaller.Inspect();
+            if(command=="test-walk-feedback"){SessionState.SetBool(Key+".walkFeedback",true);StartTest();}
             if(command=="arrival-walk-apply")PrologueArrivalWalkCheck.Apply();
             if(command=="test-arrival-walk"){SessionState.SetBool(Key+".arrivalWalk",true);StartTest();}
             if(command=="escape-polish-apply")PrologueEscapeUpgrade.Apply();
@@ -97,6 +107,7 @@ public static class BankPrologueCheck {
             if(command=="venue-upgrade")VenueUpgrade.Apply();
             if(command=="venue-upgrade-audit")VenueUpgrade.Audit();
             if(command=="venue-finish")VenueFinaleBuilder.Finish();
+            if(command=="test-escape-reroute"){NightPreparationCheck.Backup();SessionState.SetBool(Key+".reroute",true);SessionState.SetBool(Key+".night",true);StartTest();}
             if(command=="test-venue-vehicle"){NightPreparationCheck.Backup();SessionState.SetBool(Key+".venueVehicle",true);SessionState.SetBool(Key+".night",true);StartTest();}
             if(command=="venue-polish")VenueFinaleBuilder.Polish();
             if(command=="venue-install")VenueFinaleBuilder.Install();
@@ -270,6 +281,14 @@ public static class BankPrologueCheck {
         finally{canvas.renderMode=mode;canvas.worldCamera=oldCamera;canvas.planeDistance=distance;cam.targetTexture=old;RenderTexture.active=active;target.Release();UnityEngine.Object.DestroyImmediate(target);}
     }
     static IEnumerator Run(){
+        if(SessionState.GetBool(Key+".finaleSoundscape",false)){SessionState.SetBool(Key+".finaleSoundscape",false);SessionState.SetBool(Key+".night",false);yield return FinaleSoundscapeCheck.Verify();yield break;}
+        if(SessionState.GetBool(Key+".finaleMix",false)){SessionState.SetBool(Key+".finaleMix",false);SessionState.SetBool(Key+".night",false);yield return StoryMixCheck.Finale();yield break;}
+        if(SessionState.GetBool(Key+".storyMix",false)){SessionState.SetBool(Key+".storyMix",false);yield return StoryMixCheck.Verify();yield break;}
+        if(SessionState.GetBool(Key+".storyAudio",false)){SessionState.SetBool(Key+".storyAudio",false);yield return StoryAudioCheck.Verify();yield break;}
+        if(SessionState.GetBool(Key+".vaultAudio",false)){SessionState.SetBool(Key+".vaultAudio",false);yield return VaultAudioPolishCheck.Verify();yield break;}
+        if(SessionState.GetBool(Key+".gunAlarm",false)){SessionState.SetBool(Key+".gunAlarm",false);yield return GunAlarmCheck.Verify();yield break;}
+        if(SessionState.GetBool(Key+".suppliedAudio",false)){SessionState.SetBool(Key+".suppliedAudio",false);yield return SuppliedAudioCheck.Verify();yield break;}
+        if(SessionState.GetBool(Key+".walkFeedback",false)){SessionState.SetBool(Key+".walkFeedback",false);yield return PlayerWalkFeedbackCheck.Verify();yield break;}
         if(SessionState.GetBool(Key+".arrivalWalk",false)){SessionState.SetBool(Key+".arrivalWalk",false);yield return PrologueArrivalWalkCheck.Verify();yield break;}
         if(SessionState.GetBool(Key+".escapePolish",false)){SessionState.SetBool(Key+".escapePolish",false);yield return PrologueEscapeUpgrade.Verify();yield break;}
         yield return null;yield return null;
@@ -279,6 +298,7 @@ public static class BankPrologueCheck {
         if(SessionState.GetBool(Key+".comfort",false)){SessionState.SetBool(Key+".comfort",false);SessionState.SetBool(Key+".night",false);yield return MissionComfortPlayCheck.Verify();yield break;}
         if(SessionState.GetBool(Key+".homecoming",false)){SessionState.SetBool(Key+".homecoming",false);SessionState.SetBool(Key+".night",false);yield return StoryDaysCheck.Homecoming();yield break;}
         if(SessionState.GetBool(Key+".storyDays",false)){SessionState.SetBool(Key+".storyDays",false);SessionState.SetBool(Key+".night",false);yield return StoryDaysCheck.Verify();yield break;}
+        if(SessionState.GetBool(Key+".reroute",false)){SessionState.SetBool(Key+".reroute",false);SessionState.SetBool(Key+".night",false);yield return VenueFinaleCheck.Reroute();yield break;}
         if(SessionState.GetBool(Key+".venueVehicle",false)){SessionState.SetBool(Key+".venueVehicle",false);SessionState.SetBool(Key+".night",false);yield return VenueFinaleCheck.Vehicle();yield break;}
         if(SessionState.GetBool(Key+".venuePursuit",false)){SessionState.SetBool(Key+".venuePursuit",false);SessionState.SetBool(Key+".night",false);yield return VenuePursuitCheck.Verify();yield break;}
         if(SessionState.GetBool(Key+".meleeMotion",false)){SessionState.SetBool(Key+".meleeMotion",false);SessionState.SetBool(Key+".night",false);yield return MeleeMotionCheck.Verify();yield break;}
@@ -671,11 +691,13 @@ public static class BankPrologueCheck {
         Check(!d.player.ReceiveHit(8),"downed player cannot be repeatedly hit");
         until=Time.time+.6f;while(Time.time<until)yield return null;
         Capture(d.filmCamera,"player-ragdoll");
+        Check(d.player.GetComponent<PlayerDazeFeedback>().Intensity>.8f,"downed player receives daze overlay");
         Check(Vector3.Distance(d.filmCamera.transform.position,d.player.ragdoll.animator.GetBoneTransform(HumanBodyBones.Head).position)<.3f,"ragdoll camera stays at first-person head position");
         File.WriteAllText("Temp/Bank-ragdoll-details.txt",string.Join("\n",d.player.ragdoll.boneColliders.Select(c=>c.name+" "+c.bounds+" enabled "+c.enabled))+"\n"+string.Join("\n",d.player.avatarRenderers.Select(r=>r.name+" "+r.bounds+" enabled "+r.enabled)));
         until=Time.time+3;while(d.player.KnockedDown&&Time.time<until)yield return null;
         yield return null;
         Check(!d.player.KnockedDown&&d.player.view.enabled&&d.player.GetComponent<CharacterController>().enabled,"player stands up and regains camera and movement");
+        until=Time.time+2;while(Time.time<until)yield return null;Check(d.player.GetComponent<PlayerDazeFeedback>().Intensity<.01f,"daze clears after recovery");
         Check(d.accomplice&&!d.Collect(0),"saved accomplice owns cash collection instead of player");
         Check(d.accomplice.animator.parameters.Any(p=>p.name=="MoveSpeed"),"accomplice has compatible walk and run animation controller");
         d.filmCamera.transform.position=new Vector3(3,2.4f,10);
