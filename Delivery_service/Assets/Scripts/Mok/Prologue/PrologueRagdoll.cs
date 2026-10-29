@@ -55,7 +55,8 @@ public sealed class PrologueRagdoll : MonoBehaviour {
         foreach(var c in boneColliders)c.enabled=false;
         transform.SetPositionAndRotation(landing,heading);
         for(int i=0;i<bones.Length;i++){bones[i].localPosition=positions[i];bones[i].localRotation=rotations[i];}
-        animator.enabled=true;animator.Rebind();animator.Update(0);
+        animator.enabled=true;animator.Rebind();
+        animator.SetFloat("RunRate", 1.55f);animator.Update(0);
         if(mainCollider)mainCollider.enabled=true;
         if(agent){agent.enabled=true;agent.Warp(landing);}
         IsDown=false;
