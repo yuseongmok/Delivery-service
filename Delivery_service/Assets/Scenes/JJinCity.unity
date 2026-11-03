@@ -54343,6 +54343,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DeliveryService.Mok.CitizenCombat
   maximumHealth: 100
   missionEnemy: 1
+  usesFirearm: 0
   chaseSpeed: 4.5
   punchRange: 2.8
   punchCooldown: 1.4
@@ -88249,6 +88250,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5d679bbe1b74fdf449e6461f8fdb1d2a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DeliveryService.Mok.PrologueDepthText
+  depthMaterial: {fileID: 2100000, guid: 5b06215854bc0ee48ac7d64dae367623, type: 2}
 --- !u!102 &142829230
 TextMesh:
   serializedVersion: 3
@@ -97020,9 +97022,10 @@ MonoBehaviour:
     \uAC8C \uC544\uB2C8\uC57C. \uC65C \uC6B0\uB9B4 \uCAD3\uB294\uC9C0, \uC548 \uB4E4\uD0A4\uACE0
     \uB4E4\uC5B4 \uBD10."
   overheard:
-  - "\uBC15\uC9C4\uC6C5: \uC0C8 \uC0AC\uC5C5 \uC790\uAE08\uC740 \uADF8 \uC740\uD589
-    \uB3C8\uC73C\uB85C \uCC44\uC6CC. \uBBFC\uAE30\uD55C\uD14C \uB9E1\uACBC\uB358
-    \uC77C, \uC544\uC9C1\uB3C4 \uB9C8\uBB34\uB9AC\uAC00 \uC548 \uB410\uB098?"
+  - "\uBC15\uC9C4\uC6C5: \uC0C8 \uC0AC\uC5C5 \uC790\uAE08\uC740 \uADF8 \uACBD\uC7C1
+    \uC870\uC9C1\uC758 \uAE08\uACE0 \uC790\uAE08\uC73C\uB85C \uCC44\uC6CC. \uBBFC\uAE30\uD55C\uD14C
+    \uB9E1\uACBC\uB358 \uC77C, \uC544\uC9C1\uB3C4 \uB9C8\uBB34\uB9AC\uAC00 \uC548
+    \uB410\uB098?"
   - "\uC870\uC9C1\uC6D0: \uC2E4\uC7A5\uC744 \uB193\uCCE4\uC2B5\uB2C8\uB2E4. \uBBFC\uAE30\uC640
     \uAC19\uC774 \uC77C\uD55C \uB188\uB3C4 \uC0B4\uC544 \uC788\uC2B5\uB2C8\uB2E4.
     \uC57D\uC18D\uD55C \uBCF4\uC218\uB97C \uAE30\uB2E4\uB9AC\uB294 \uBAA8\uC591\uC785\uB2C8\uB2E4."
@@ -164783,6 +164786,7 @@ MonoBehaviour:
   - {fileID: 3202880121015669687, guid: cff81980807c15f438b059bcac0ea09f, type: 3}
   - {fileID: 2119448736634818676, guid: ee564708572247b4fb3772f98aa069a3, type: 3}
   maxNPCCount: 8
+  racerNPCPrefab: {fileID: 0}
   spawnArea: {fileID: 258534122}
   npcParent: {fileID: 258534121}
   minDistanceFromEdge: 1.2
@@ -237903,6 +237907,7 @@ MonoBehaviour:
   - {fileID: 3202880121015669687, guid: cff81980807c15f438b059bcac0ea09f, type: 3}
   - {fileID: 2119448736634818676, guid: ee564708572247b4fb3772f98aa069a3, type: 3}
   maxNPCCount: 150
+  racerNPCPrefab: {fileID: 0}
   spawnArea: {fileID: 285240921}
   npcParent: {fileID: 752666432}
   minDistanceFromEdge: 1.2
@@ -286686,6 +286691,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5d679bbe1b74fdf449e6461f8fdb1d2a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DeliveryService.Mok.PrologueDepthText
+  depthMaterial: {fileID: 2100000, guid: 5b06215854bc0ee48ac7d64dae367623, type: 2}
 --- !u!102 &455246980
 TextMesh:
   serializedVersion: 3
@@ -401138,6 +401144,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5d679bbe1b74fdf449e6461f8fdb1d2a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DeliveryService.Mok.PrologueDepthText
+  depthMaterial: {fileID: 2100000, guid: 5b06215854bc0ee48ac7d64dae367623, type: 2}
 --- !u!102 &634490714
 TextMesh:
   serializedVersion: 3
@@ -425331,6 +425338,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5d679bbe1b74fdf449e6461f8fdb1d2a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DeliveryService.Mok.PrologueDepthText
+  depthMaterial: {fileID: 2100000, guid: 5b06215854bc0ee48ac7d64dae367623, type: 2}
 --- !u!1 &673922606
 GameObject:
   m_ObjectHideFlags: 0
@@ -442576,6 +442584,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DeliveryService.Mok.CitizenCombat
   maximumHealth: 100
   missionEnemy: 1
+  usesFirearm: 0
   chaseSpeed: 4.5
   punchRange: 2.8
   punchCooldown: 1.4
@@ -494043,6 +494052,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5d679bbe1b74fdf449e6461f8fdb1d2a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DeliveryService.Mok.PrologueDepthText
+  depthMaterial: {fileID: 2100000, guid: 5b06215854bc0ee48ac7d64dae367623, type: 2}
 --- !u!102 &773881768
 TextMesh:
   serializedVersion: 3
@@ -538771,7 +538781,6 @@ Transform:
   - {fileID: 1400788}
   - {fileID: 909840524}
   - {fileID: 536063649}
-  - {fileID: 2089813311}
   - {fileID: 1859141114}
   - {fileID: 2094011163}
   m_Father: {fileID: 361106791}
@@ -574306,6 +574315,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DeliveryService.Mok.CitizenCombat
   maximumHealth: 100
   missionEnemy: 1
+  usesFirearm: 0
   chaseSpeed: 4.5
   punchRange: 2.8
   punchCooldown: 1.4
@@ -663142,6 +663152,7 @@ MonoBehaviour:
   - {fileID: 3202880121015669687, guid: cff81980807c15f438b059bcac0ea09f, type: 3}
   - {fileID: 2119448736634818676, guid: ee564708572247b4fb3772f98aa069a3, type: 3}
   maxNPCCount: 9
+  racerNPCPrefab: {fileID: 0}
   spawnArea: {fileID: 1042569559}
   npcParent: {fileID: 1042569558}
   minDistanceFromEdge: 1.2
@@ -692849,9 +692860,10 @@ MonoBehaviour:
   meetingLines:
   - "\uC2E4\uC7A5: \uBAA9\uC18C\uB9AC \uB0AE\uCDB0. \uB0B4 \uBB38\uC790, \uB108\uD76C
     \uB458\uB9CC \uBD24\uC9C0?"
-  - "\uB098: \uC870\uC9C1 \uC77C\uC774\uB77C\uBA70 \uC740\uD589\uAE4C\uC9C0 \uD138\uC5C8\uC5B4.
-    \uADF8\uB7F0\uB370 \uC65C \uC5F0\uB77D\uC744 \uB04A\uACE0, \uC774\uC81C \uC640\uC11C
-    \uB3C4\uC640 \uB2EC\uB77C\uB294 \uAC70\uC57C?"
+  - "\uB098: \uC870\uC9C1 \uC77C\uC774\uB77C\uBA70 \uB2E4\uB978 \uC870\uC9C1\uC758
+    \uAE08\uACE0\uAE4C\uC9C0 \uB4E4\uC5B4\uAC14\uC5B4. \uADF8\uB7F0\uB370 \uC65C
+    \uC5F0\uB77D\uC744 \uB04A\uACE0, \uC774\uC81C \uC640\uC11C \uB3C4\uC640 \uB2EC\uB77C\uB294
+    \uAC70\uC57C?"
   - "\uC2E4\uC7A5: \uB04A\uC740 \uAC8C \uC544\uB2C8\uC57C. \uB3C8 \uBC1B\uC744 \uC7A5\uC18C\uB85C
     \uAC14\uB354\uB2C8 \uC6B0\uB9AC \uC870\uC9C1 \uB188\uB4E4\uC774 \uB0A0 \uC8FD\uC774\uB824
     \uB4E4\uC5C8\uC5B4. \uC774\uC720\uB294 \uB098\uB3C4 \uBAB0\uB77C."
@@ -692859,9 +692871,10 @@ MonoBehaviour:
     \uB193\uCE58\uC9C0 \uB9C8!\n\uC2E4\uC7A5: \uB530\uB77C\uBD99\uC5C8\uC5B4! \uC5EC\uAE30\uC120
     \uC548 \uB3FC. \uC77C\uB2E8 \uAC19\uC774 \uBE60\uC838\uB098\uAC00\uC790!"
   endingLines:
-  - "\uC2E4\uC7A5: \uC740\uD589 \uC77C\uC744 \uC2B9\uC778\uD55C \uAC74 \uBC15\uC9C4\uC6C5\uC774\uC57C.
-    \uC870\uC9C1 \uB3C8\uC904\uC744 \uC954 \uC0AC\uB78C\uC774\uB2C8, \uC65C \uC6B0\uB9B4
-    \uCAD3\uB294\uC9C0\uB3C4 \uC54C \uAC70\uC57C."
+  - "\uC2E4\uC7A5: \uAE08\uACE0 \uD68C\uC218 \uC791\uC804\uC744 \uC2B9\uC778\uD55C
+    \uAC74 \uBC15\uC9C4\uC6C5\uC774\uC57C. \uC870\uC9C1 \uB3C8\uC904\uC744 \uC954
+    \uC0AC\uB78C\uC774\uB2C8, \uC65C \uC6B0\uB9B4 \uCAD3\uB294\uC9C0\uB3C4 \uC54C
+    \uAC70\uC57C."
   - "\uB098: \uB9CC\uB098\uC11C \uC9C1\uC811 \uBB3C\uC5B4\uBCF4\uB77C\uB294 \uAC70\uC57C?\n\uC2E4\uC7A5:
     \uADF8\uB7EC\uB2E4 \uC8FD\uC5B4. \uBE44\uACF5\uAC1C \uD589\uC0AC\uC5D0 \uB098\uC628\uB2E4\uB2C8,
     \uBA3C\uC800 \uBB34\uC2A8 \uB9D0\uC744 \uD558\uB294\uC9C0 \uB4E4\uC5B4 \uBD10.
@@ -723479,6 +723492,7 @@ MonoBehaviour:
   - {fileID: 3202880121015669687, guid: cff81980807c15f438b059bcac0ea09f, type: 3}
   - {fileID: 2119448736634818676, guid: ee564708572247b4fb3772f98aa069a3, type: 3}
   maxNPCCount: 9
+  racerNPCPrefab: {fileID: 930897215576026596, guid: d0aa7865cfff054419699bfc7a58ff6e, type: 3}
   spawnArea: {fileID: 1142509788}
   npcParent: {fileID: 1142509787}
   minDistanceFromEdge: 1.2
@@ -767233,6 +767247,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DeliveryService.Mok.CitizenCombat
   maximumHealth: 100
   missionEnemy: 1
+  usesFirearm: 0
   chaseSpeed: 4.5
   punchRange: 2.8
   punchCooldown: 1.4
@@ -798993,6 +799008,7 @@ MonoBehaviour:
   - {fileID: 3202880121015669687, guid: cff81980807c15f438b059bcac0ea09f, type: 3}
   - {fileID: 2119448736634818676, guid: ee564708572247b4fb3772f98aa069a3, type: 3}
   maxNPCCount: 8
+  racerNPCPrefab: {fileID: 0}
   spawnArea: {fileID: 1266062649}
   npcParent: {fileID: 1266062648}
   minDistanceFromEdge: 1.2
@@ -920817,7 +920833,7 @@ MonoBehaviour:
     - {fileID: 466535032}
   triggerDistance: 32
   runSpeed: 5.8
-  guardGun: {fileID: 192002, guid: 2c4f4c967cbf830459d53c4a848651ca, type: 3}
+  guardGun: {fileID: 0}
   rifleShot: {fileID: 8300000, guid: a3858ce66a61ac34c93c9b4f6f0849aa, type: 3}
   metalHit: {fileID: 8300000, guid: 6a0ab043705304a4aa10846407f0c31b, type: 3}
 --- !u!4 &1458492654
@@ -1028559,6 +1028575,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5d679bbe1b74fdf449e6461f8fdb1d2a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DeliveryService.Mok.PrologueDepthText
+  depthMaterial: {fileID: 2100000, guid: 5b06215854bc0ee48ac7d64dae367623, type: 2}
 --- !u!102 &1627076413
 TextMesh:
   serializedVersion: 3
@@ -1070094,6 +1070111,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5d679bbe1b74fdf449e6461f8fdb1d2a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DeliveryService.Mok.PrologueDepthText
+  depthMaterial: {fileID: 2100000, guid: 5b06215854bc0ee48ac7d64dae367623, type: 2}
 --- !u!4 &1688750807
 Transform:
   m_ObjectHideFlags: 0
@@ -1188035,6 +1188053,7 @@ MonoBehaviour:
   - {fileID: 3202880121015669687, guid: cff81980807c15f438b059bcac0ea09f, type: 3}
   - {fileID: 2119448736634818676, guid: ee564708572247b4fb3772f98aa069a3, type: 3}
   maxNPCCount: 8
+  racerNPCPrefab: {fileID: 0}
   spawnArea: {fileID: 1871970945}
   npcParent: {fileID: 1871970944}
   minDistanceFromEdge: 1.2
@@ -1216054,6 +1216073,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DeliveryService.Mok.CitizenCombat
   maximumHealth: 100
   missionEnemy: 1
+  usesFirearm: 0
   chaseSpeed: 3.7
   punchRange: 2.8
   punchCooldown: 2
@@ -1222667,6 +1222687,7 @@ MonoBehaviour:
   - {fileID: 3202880121015669687, guid: cff81980807c15f438b059bcac0ea09f, type: 3}
   - {fileID: 2119448736634818676, guid: ee564708572247b4fb3772f98aa069a3, type: 3}
   maxNPCCount: 100
+  racerNPCPrefab: {fileID: 0}
   spawnArea: {fileID: 1866948259}
   npcParent: {fileID: 1688455410}
   minDistanceFromEdge: 1.2
@@ -1265774,6 +1265795,7 @@ MonoBehaviour:
   - {fileID: 3202880121015669687, guid: cff81980807c15f438b059bcac0ea09f, type: 3}
   - {fileID: 2119448736634818676, guid: ee564708572247b4fb3772f98aa069a3, type: 3}
   maxNPCCount: 8
+  racerNPCPrefab: {fileID: 0}
   spawnArea: {fileID: 1993593551}
   npcParent: {fileID: 1993593550}
   minDistanceFromEdge: 1.2
@@ -1328947,68 +1328969,6 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!1001 &2089813310
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 841556856}
-    m_Modifications:
-    - target: {fileID: 4529288384513579205, guid: becd1a835bf185c4285761858f4ffcea, type: 3}
-      propertyPath: m_Name
-      value: "Display \uAD8C\uCD1D"
-      objectReference: {fileID: 0}
-    - target: {fileID: 8553091138345579051, guid: becd1a835bf185c4285761858f4ffcea, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 1.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 8553091138345579051, guid: becd1a835bf185c4285761858f4ffcea, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 1.25
-      objectReference: {fileID: 0}
-    - target: {fileID: 8553091138345579051, guid: becd1a835bf185c4285761858f4ffcea, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 1.25
-      objectReference: {fileID: 0}
-    - target: {fileID: 8553091138345579051, guid: becd1a835bf185c4285761858f4ffcea, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 8553091138345579051, guid: becd1a835bf185c4285761858f4ffcea, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8553091138345579051, guid: becd1a835bf185c4285761858f4ffcea, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8553091138345579051, guid: becd1a835bf185c4285761858f4ffcea, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8553091138345579051, guid: becd1a835bf185c4285761858f4ffcea, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8553091138345579051, guid: becd1a835bf185c4285761858f4ffcea, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8553091138345579051, guid: becd1a835bf185c4285761858f4ffcea, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: becd1a835bf185c4285761858f4ffcea, type: 3}
---- !u!4 &2089813311 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 8553091138345579051, guid: becd1a835bf185c4285761858f4ffcea, type: 3}
-  m_PrefabInstance: {fileID: 2089813310}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &2089861967
 Transform:
   m_ObjectHideFlags: 0

@@ -3,6 +3,7 @@ namespace DeliveryService.Mok {
 // 프롤로그 도주로에서만 동작하는 추격차. 정지한 플레이어를 밀어붙이지 않는다.
 public sealed class ProloguePursuitCar:MonoBehaviour {
     public PrologueDrive drive;
+    public bool hostileGang; // 조직 차량은 경광등과 경찰 사이렌을 사용하지 않는다.
     public AudioSource siren;
     public Light[] flashes;
     public Light headlights;
@@ -16,18 +17,18 @@ public sealed class ProloguePursuitCar:MonoBehaviour {
     public void DisableByPartner(){DisabledByPartner=true;Pursuing=false;if(siren)siren.Stop();foreach(var l in flashes)l.enabled=false;foreach(var r in lenses)r.enabled=false;}
     Rigidbody body;Vector3 start;Quaternion rotation;float began;bool wasDriving,paused;
     readonly RaycastHit[] hits=new RaycastHit[32];
-    void Awake(){if(SuppliedAudio.Current&&SuppliedAudio.Current.policeSiren)siren.clip=SuppliedAudio.Current.policeSiren;body=GetComponent<Rigidbody>();start=transform.position;rotation=transform.rotation;Show(false);}
-    void Show(bool value){foreach(var r in GetComponentsInChildren<Renderer>(true))r.enabled=value;GetComponent<Collider>().enabled=value;foreach(var l in flashes)l.enabled=value;if(headlights)headlights.enabled=value;}
+    void Awake(){if(SuppliedAudio.Current&&SuppliedAudio.Current.policeSiren&&!hostileGang)siren.clip=SuppliedAudio.Current.policeSiren;body=GetComponent<Rigidbody>();start=transform.position;rotation=transform.rotation;Show(false);}
+    void Show(bool value){foreach(var r in GetComponentsInChildren<Renderer>(true))r.enabled=value;GetComponent<Collider>().enabled=value;foreach(var l in flashes)l.enabled=value&&!hostileGang;if(headlights)headlights.enabled=value;}
     void Update(){
-        if(siren)siren.volume=.22f*SuppliedAudio.Volume;
+        if(siren)siren.volume=(hostileGang?.07f:.22f)*SuppliedAudio.Volume;
         if(!drive.Driving){if(wasDriving){siren.Stop();Show(false);}wasDriving=false;Pursuing=false;Speed=0;return;}
         if(!wasDriving){wasDriving=true;began=Time.time;body.position=start;body.rotation=rotation;Travelled=0;}
         if(drive.director.Paused){if(!paused){siren.Pause();paused=true;}return;}
         if(paused){if(Pursuing)siren.UnPause();paused=false;}
         if(DisabledByPartner)return;
-        if(!Pursuing&&Time.time-began>=delay){Pursuing=true;Show(true);siren.Play();siren.time=Mathf.Repeat(delay,siren.clip.length);}
+        if(!Pursuing&&Time.time-began>=delay){Pursuing=true;Show(true);if(siren.clip){siren.Play();siren.time=Mathf.Repeat(delay,siren.clip.length);}}
         if(!Pursuing)return;
-        for(int i=0;i<flashes.Length;i++){bool lit=Mathf.Sin(Time.time*11+i*Mathf.PI)>0;flashes[i].enabled=lit;lenses[i].enabled=lit;}
+        for(int i=0;i<flashes.Length;i++){bool lit=Mathf.Sin(Time.time*11+i*Mathf.PI)>0;flashes[i].enabled=lit&&!hostileGang;lenses[i].enabled=lit&&!hostileGang;}
     }
     bool Clear(Vector3 delta,float extra){
         if(delta.sqrMagnitude<.0001f)return true;

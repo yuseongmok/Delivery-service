@@ -1,142 +1,76 @@
+using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
+using UnityEngine.AI;
+using DeliveryService.Mok;
 
-public class RacerNPCInteraction : MonoBehaviour
+public class RacerNPCInteraction : MonoBehaviour, IInteractable
 {
-    [Header("»óÈ£ÀÛ¿ë ¼³Á¤")]
     [SerializeField] private float interactDistance = 2.5f;
-    [SerializeField] private KeyCode interactKey = KeyCode.E;
-
-    [Header("´ëÈ­ ³»¿ë ¼³Á¤")]
-    [SerializeField] private string npcName = "·¹ÀÌ¼­";
-    [TextArea(3, 5)]
-    [SerializeField] private string dialogueMessage = "¾îÀÌ, ³ª¿Í ¼Óµµ °æÀïÀ» ÇÏ°í ½ÍÀº °Ç°¡?";
-
-    // ¾À¿¡¼­ µ¿ÀûÀ¸·Î Ã£¾Æ ¿¬°áÇÒ ÂüÁ¶ º¯¼öµé
-    private GameObject dialoguePanel;
-    private Text npcNameText;
-    private Text dialogueText;
-
-    private Transform playerTransform;
-    private PlayerMove playerMove;
-    private CameraMove cameraMove;
-    private NPCControl npcControl;
-    private bool isDialogueActive = false;
-
-    private void Start()
+    [SerializeField] private KeyCode interactKey = KeyCode.F;
+    [SerializeField] private string npcName = "ë ˆì´ì„œ";
+    [TextArea(3, 5)] [SerializeField] private string dialogueMessage = "ë‹ˆê°€ ê·¸ë ‡ê²Œ ìš´ì „ì„ ì˜í•´? ë„ë¡œë¡œ ë”°ë¼ì™€.";
+    private NPCControl npc;
+    private PlayerCombat player;
+    private NavMeshAgent agent;
+    private bool active, oldExternal, oldStopped, oldVisible;
+    private CursorLockMode oldLock;
+    private int openedFrame;
+    private readonly Dictionary<Behaviour, bool> paused = new Dictionary<Behaviour, bool>();
+    public bool IsDialogueActive => active;
+    void Awake() { npc = GetComponent<NPCControl>(); agent = GetComponent<NavMeshAgent>(); }
+    void Start() { player = FindFirstObjectByType<PlayerCombat>(); }
+    public void Interact(ToppingInventory inventory)
     {
-        npcControl = GetComponent<NPCControl>();
-
-        // 1. ÇÃ·¹ÀÌ¾î ¹× Ä«¸Ş¶ó ÀÚµ¿ Å½»ö
-        GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
-        if (playerObj != null)
-        {
-            playerTransform = playerObj.transform;
-            playerMove = playerObj.GetComponent<PlayerMove>();
-        }
-
-        Camera mainCam = Camera.main;
-        if (mainCam != null)
-        {
-            cameraMove = mainCam.GetComponent<CameraMove>();
-        }
-
-        // 2. ¾À¿¡ ¹èÄ¡µÈ ´ëÈ­ UI ÀÚµ¿ Ã£¾Æ ¿¬°á
-        FindSceneDialogueUI();
+        if (inventory) player = inventory.GetComponent<PlayerCombat>();
+        StartDialogue();
     }
-
-    private void FindSceneDialogueUI()
-    {
-        // DialoguePanel ÅÂ±×·Î ÆĞ³Î ¿ÀºêÁ§Æ® Ã£±â
-        dialoguePanel = GameObject.FindGameObjectWithTag("DialoguePanel");
-
-        if (dialoguePanel != null)
-        {
-            // ÆĞ³Î ÀÚ½Ä ¿ÀºêÁ§Æ® Áß ÅØ½ºÆ® ÄÄÆ÷³ÍÆ® ÀÚµ¿ ¹ÙÀÎµù
-            Text[] texts = dialoguePanel.GetComponentsInChildren<Text>(true);
-            foreach (Text t in texts)
-            {
-                if (t.gameObject.name.Contains("Name"))
-                {
-                    npcNameText = t;
-                }
-                else if (t.gameObject.name.Contains("Dialogue") || t.gameObject.name.Contains("Text") || t.gameObject.name.Contains("Message"))
-                {
-                    dialogueText = t;
-                }
-            }
-
-            // ½ÃÀÛÇÒ ¶§´Â ´ëÈ­Ã¢ ²ô±â
-            dialoguePanel.SetActive(false);
-        }
-    }
-
-    private void Update()
-    {
-        if ((npcControl != null && npcControl.IsDead) || playerTransform == null)
-        {
-            if (isDialogueActive) EndDialogue();
-            return;
-        }
-
-        // UI ÂüÁ¶°¡ ºñ¾îÀÖ´Ù¸é ´Ù½Ã Å½»ö ½Ãµµ
-        if (dialoguePanel == null)
-        {
-            FindSceneDialogueUI();
-            if (dialoguePanel == null) return;
-        }
-
-        float distance = Vector3.Distance(transform.position, playerTransform.position);
-
-        if (isDialogueActive)
-        {
-            if (Input.GetKeyDown(interactKey) || Input.GetKeyDown(KeyCode.Escape))
-            {
-                EndDialogue();
-            }
-            return;
-        }
-
-        if (distance <= interactDistance && Input.GetKeyDown(interactKey))
-        {
-            StartDialogue();
-        }
-    }
-
     public void StartDialogue()
     {
-        if (dialoguePanel == null) FindSceneDialogueUI();
-        if (dialoguePanel == null) return;
-
-        isDialogueActive = true;
-
-        dialoguePanel.SetActive(true);
-        if (npcNameText != null) npcNameText.text = npcName;
-        if (dialogueText != null) dialogueText.text = dialogueMessage;
-
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
-
-        if (playerMove != null) playerMove.enabled = false;
-        if (cameraMove != null) cameraMove.enabled = false;
+        if (active || !player || !player.CanAct || !npc || npc.IsDead || npc.IsKnockedDown || npc.ExternalControl) return;
+        if (Vector3.Distance(player.transform.position, transform.position) > interactDistance) return;
+        active = true; openedFrame = Time.frameCount;
+        oldExternal = npc.ExternalControl; npc.ExternalControl = true;
+        var animator = GetComponent<Animator>();
+        if (animator) { animator.SetBool("IsWalking", false); animator.speed = 1; }
+        if (agent && agent.enabled && agent.isOnNavMesh) { oldStopped = agent.isStopped; agent.isStopped = true; }
+        // ëŒ€í™”ê°€ ëë‚˜ë©´ ì§„ì… ì „ì˜ ì…ë ¥ ìƒíƒœë§Œ ë³µì›í•œë‹¤.
+        foreach (var b in player.GetComponentsInChildren<MonoBehaviour>(true))
+            if (b is PlayerMove || b is PlayerMovement || b is CameraMove || b is PlayerInteraction || b is PlayerInteract || b is PlayerWeapon)
+            { paused[b] = b.enabled; b.enabled = false; }
+        var phone = FindFirstObjectByType<PhoneController>();
+        if (phone) { paused[phone] = phone.enabled; phone.enabled = false; }
+        oldLock = Cursor.lockState; oldVisible = Cursor.visible;
+        Cursor.lockState = CursorLockMode.None; Cursor.visible = true;
     }
-
+    void Update()
+    {
+        if (!active) return;
+        if (!npc || npc.IsDead || npc.IsKnockedDown || !player || player.IsDown || PoliceControl.IsArrestInProgress)
+        { EndDialogue(); return; }
+        if (Time.frameCount > openedFrame && (PrologueKeyboard.Pressed(UnityEngine.InputSystem.Key.F) || PrologueKeyboard.Pressed(UnityEngine.InputSystem.Key.Escape))) EndDialogue();
+    }
     public void EndDialogue()
     {
-        isDialogueActive = false;
-
-        if (dialoguePanel != null) dialoguePanel.SetActive(false);
-
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
-
-        if (playerMove != null) playerMove.enabled = true;
-        if (cameraMove != null) cameraMove.enabled = true;
+        if (!active) return;
+        active = false;
+        foreach (var pair in paused) if (pair.Key) pair.Key.enabled = pair.Value;
+        paused.Clear();
+        if (npc) npc.ExternalControl = oldExternal;
+        if (agent && agent.enabled && agent.isOnNavMesh) agent.isStopped = oldStopped;
+        Cursor.lockState = oldLock; Cursor.visible = oldVisible;
     }
-
-    private void OnDrawGizmosSelected()
+    void OnDisable() { EndDialogue(); }
+    void OnGUI()
     {
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, interactDistance);
+        var style = new GUIStyle(GUI.skin.label) { font = MokUIFont.Font, fontSize = Mathf.Max(18, Screen.height / 35), wordWrap = true, alignment = TextAnchor.MiddleCenter };
+        if (active)
+        {
+            var rect = new Rect(Screen.width * .15f, Screen.height * .72f, Screen.width * .7f, Screen.height * .23f);
+            GUI.Box(rect, GUIContent.none);
+            GUI.Label(new Rect(rect.x + 20, rect.y + 10, rect.width - 40, rect.height - 20), npcName + "\n" + dialogueMessage + "\n[F] ëŒ€í™” ì¢…ë£Œ", style);
+        }
+        else if (player && player.CanAct && npc && !npc.IsDead && !npc.IsKnockedDown && !npc.ExternalControl &&
+            Physics.Raycast(player.View.transform.position, player.View.transform.forward, out var hit, interactDistance) && hit.collider.GetComponentInParent<RacerNPCInteraction>() == this)
+            GUI.Label(new Rect(Screen.width / 2 - 160, Screen.height - 110, 320, 40), "[F] ë ˆì´ì„œì™€ ëŒ€í™”", style);
     }
 }

@@ -1,4 +1,4 @@
-using System.Linq;
+﻿using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
 namespace DeliveryService.Mok {
@@ -45,14 +45,8 @@ public sealed class VenueGetawayDrive : MonoBehaviour {
   if(mission.engine){float speed=Mathf.Clamp01(Mathf.Abs(Speed)/maximumSpeed);mission.engine.pitch=Mathf.Lerp(.75f,1.65f,speed);mission.engine.volume=Mathf.Lerp(.12f,.26f,speed)*SuppliedAudio.Volume;}
  }
  // 몸통 한 곳에만 충격을 주면 관절에 힘이 흡수되므로 전신에 같은 이동 속도를 전달한다.
- void LaunchPedestrian(NPCControl npc,Vector3 direction){
- npc.Die(direction,0);
- float speed=Mathf.Abs(Speed);var forward=Vector3.ProjectOnPlane(direction,Vector3.up).normalized;
- var launch=forward*Mathf.Clamp(6+speed*.9f,8,25)+Vector3.up*Mathf.Clamp(2+speed*.18f,2.5f,5.5f);
- foreach(var body in npc.GetComponentsInChildren<Rigidbody>()){
- if(body.gameObject==npc.gameObject||body.isKinematic)continue;
- body.linearVelocity=launch;body.angularVelocity=Vector3.Cross(Vector3.up,forward)*2.5f;
- }
+ bool LaunchPedestrian(NPCControl npc,Vector3 direction){
+  return TrafficKnockout.TryHit(npc,direction,Mathf.Abs(Speed),transform);
  }
  void FixedUpdate(){if(!Driving||Time.timeScale<=0)return;float dt=Time.fixedDeltaTime;
   float desired=gas*(gas<0?6:maximumSpeed);Speed=Mathf.MoveTowards(Speed,desired,(Mathf.Abs(desired)<Mathf.Abs(Speed)?20:acceleration)*dt);
@@ -65,7 +59,7 @@ public sealed class VenueGetawayDrive : MonoBehaviour {
   float step=.4f;
 
   if(delta.sqrMagnitude>.000001f)foreach(var hit in Physics.BoxCastAll(transform.position+Vector3.up*(.85f+step),new Vector3(.8f,.55f,1.65f),delta.normalized,rot,delta.magnitude+.05f,~0,QueryTriggerInteraction.Collide)){
-   if(hit.transform.IsChildOf(transform)||hit.transform.IsChildOf(mission.Player.transform)||hit.normal.y>.6f)continue;var npc=hit.collider.GetComponentInParent<NPCControl>();if(npc){if(!npc.IsDead&&Mathf.Abs(Speed)>=2){LaunchPedestrian(npc,delta.normalized);PedestrianHits++;if(Time.time>nextImpact){nextImpact=Time.time+.4f;shake=.15f;Impacts++;if(impactClip)StorySoundMix.Play(mission.sound,impactClip,.4f);}}continue;}if(hit.collider.isTrigger)continue;blocked=true;LastBlock=hit.collider.name+" at "+hit.point;break;}
+   if(hit.transform.IsChildOf(transform)||hit.transform.IsChildOf(mission.Player.transform)||hit.normal.y>.6f)continue;var npc=hit.collider.GetComponentInParent<NPCControl>();if(npc){if(!npc.IsDead&&Mathf.Abs(Speed)>=2&&LaunchPedestrian(npc,delta.normalized)){PedestrianHits++;if(Time.time>nextImpact){nextImpact=Time.time+.4f;shake=.15f;Impacts++;if(impactClip)StorySoundMix.Play(mission.sound,impactClip,.4f);}}continue;}if(hit.collider.isTrigger)continue;blocked=true;LastBlock=hit.collider.name+" at "+hit.point;break;}
   if(blocked){if(Mathf.Abs(Speed)>2.5f&&Time.time>nextImpact){nextImpact=Time.time+.7f;shake=.25f;Impacts++;if(impactClip)StorySoundMix.Play(mission.sound,impactClip,.45f);}Speed=0;delta=Vector3.zero;}
   var next=transform.position+delta;
   // 가장자리와 물로 떨어지지 않도록 바퀴 아래 지면이 있는 곳만 이동한다.

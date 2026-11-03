@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.AI;
 namespace DeliveryService.Mok {
 // 씬에 저장한 경찰 외형과 기존 달리기 애니메이션을 재사용한다.
@@ -26,6 +26,7 @@ public sealed class PrologueOfficer : MonoBehaviour {
     float nextEntranceStep;
     readonly RaycastHit[] sightHits = new RaycastHit[16];
     void Awake() {
+        HeadHitbox.Attach(gameObject);
         agent = GetComponent<NavMeshAgent>(); body = GetComponent<CapsuleCollider>();
         agent.speed = Mathf.Max(agent.speed, 5.4f); agent.acceleration = Mathf.Max(agent.acceleration, 16);
         animator.SetFloat("RunRate", 1.55f);
@@ -34,7 +35,7 @@ public sealed class PrologueOfficer : MonoBehaviour {
         if (Dead) return;
         Active = true; gameObject.SetActive(true); agent.enabled = true;
         if (NavMesh.SamplePosition(transform.position, out var hit, 3, NavMesh.AllAreas)) agent.Warp(hit.position);
-        agent.stoppingDistance = 5;
+        agent.stoppingDistance = 1.6f;
         nextShot = Time.time + 3.5f; nextPath = 0;
         if(brain)brain.ResetPlan();
     }
@@ -54,7 +55,7 @@ public sealed class PrologueOfficer : MonoBehaviour {
         if (animator && gameObject.activeInHierarchy) animator.SetFloat("MoveSpeed", 0);
     }
     void Update() {
-        if(!gunFeedback)muzzle.enabled = Time.time < flashUntil;
+        if(!gunFeedback&&muzzle)muzzle.enabled = Time.time < flashUntil;
         gunKick=Mathf.MoveTowards(gunKick,0,Time.deltaTime*35);
         if (Dead || (ragdoll && ragdoll.IsDown)){aiming=false;if(brain)brain.Suspend();return;}
         if(roadGuard){RushCar();return;}
@@ -70,14 +71,6 @@ public sealed class PrologueOfficer : MonoBehaviour {
         if (!Active || director == null || !director.CanPlay || !agent.enabled || !agent.isOnNavMesh) return;
         var target = director.player;
         Vector3 delta = target.transform.position - transform.position;
-        if(brain){
-            aiming=brain.Tick();animator.SetFloat("MoveSpeed",agent.velocity.magnitude);
-            if(aiming){
-                delta.y=0;if(delta.sqrMagnitude>.01f)transform.rotation=Quaternion.RotateTowards(transform.rotation,Quaternion.LookRotation(delta),180*Time.deltaTime);
-                if(Vector3.Angle(transform.forward,delta)<12&&ClearShot()&&brain.TryFire())ShootAtPlayer();
-            }
-            return;
-        }
         bool visible = ClearShot();
         aiming = visible && delta.magnitude < 14;
         agent.isStopped = aiming;
@@ -101,23 +94,33 @@ public sealed class PrologueOfficer : MonoBehaviour {
         bool hitPlayer=Random.value<.35f;
         var endpoint=target.view.transform.position+(hitPlayer?Vector3.zero:transform.right*Random.Range(.6f,1.1f)+Vector3.up*.3f);
         Vector3 origin=muzzle.transform.position;
-        if(Physics.Raycast(origin,(endpoint-origin).normalized,out var wall,Vector3.Distance(origin,endpoint),Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore)
+        if(FirearmBallistics.Cast(origin,(endpoint-origin).normalized,Vector3.Distance(origin,endpoint),transform,out var wall)
             && !wall.transform.IsChildOf(transform) && !wall.transform.IsChildOf(target.transform)){
             endpoint=wall.point;hitPlayer=false;
         }
         PrologueTracer.Spawn(origin,endpoint,new Color(1,.3f,.12f));
         if (hitPlayer) target.ReceiveHit(8);
     }
+    bool attackPending;
+    public bool VehicleStruck {get;private set;}
+    Vector3 retreatDirection;
+    float retreatUntil;
     void RushCar(){
         if(!director||director.Paused||director.Current!=BankPrologue.Phase.Driving){animator.SetFloat("MoveSpeed",0);return;}
+        if(VehicleStruck){
+            if(agent.enabled)agent.enabled=false;
+            if(retreatUntil==0)retreatUntil=Time.time+2;
+            if(Time.time<retreatUntil){transform.rotation=Quaternion.RotateTowards(transform.rotation,Quaternion.LookRotation(retreatDirection),240*Time.deltaTime);transform.position+=retreatDirection*Time.deltaTime*2;animator.SetFloat("MoveSpeed",2);}else animator.SetFloat("MoveSpeed",0);
+            return;
+        }
         // 직선 도주 도로에서는 오래된 은행 NavMesh 범위에 묶이지 않게 평면 추격한다.
         Vector3 delta=director.getawayCar.position-transform.position;delta.y=0;
-        if(delta.sqrMagnitude>38*38||delta.sqrMagnitude<1){animator.SetFloat("MoveSpeed",0);return;}
+        if(delta.sqrMagnitude>28*28||delta.sqrMagnitude<1){animator.SetFloat("MoveSpeed",0);return;}
         if(agent.enabled)agent.enabled=false;
         var direction=delta.normalized;
         transform.rotation=Quaternion.RotateTowards(transform.rotation,Quaternion.LookRotation(direction),360*Time.deltaTime);
-        transform.position+=direction*(5.2f*Time.deltaTime);
-        animator.SetFloat("MoveSpeed",5.2f);
+        transform.position+=direction*(3.6f*Time.deltaTime);
+        animator.SetFloat("MoveSpeed",3.6f);
     }
     public bool ClearShot() {
         if (director == null) return false;
@@ -132,29 +135,18 @@ public sealed class PrologueOfficer : MonoBehaviour {
         }
         return true;
     }
-    void LateUpdate() {
-        if (!animator.isHuman || Dead || (ragdoll && ragdoll.IsDown)) return;
-        var hand = animator.GetBoneTransform(HumanBodyBones.RightHand);
-        if (aiming) {
-            var upper = animator.GetBoneTransform(HumanBodyBones.RightUpperArm);
-            var lower = animator.GetBoneTransform(HumanBodyBones.RightLowerArm);
-            var dir = (director.player.view.transform.position - upper.position).normalized;
-            upper.rotation = Quaternion.FromToRotation(lower.position - upper.position, dir) * upper.rotation;
-            lower.rotation = Quaternion.FromToRotation(hand.position - lower.position, dir) * lower.rotation;
-        }
-        gun.SetPositionAndRotation(hand.position, aiming ? Quaternion.LookRotation(director.player.view.transform.position - hand.position) : transform.rotation);
-        if(aiming){gun.rotation*=Quaternion.Euler(-gunKick,0,0);gun.position-=gun.forward*(gunKick*.004f);}
-    }
+    void LateUpdate(){if(animator&&gun)ArmedHandPose.Apply(animator,gun,director.player.view.transform.position,aiming,Dead||(ragdoll&&ragdoll.IsDown));}
     public bool ReceiveHit(int amount) {
         if(!director||!director.player)return false;
         return ReceiveHit(amount,transform.position+Vector3.up*1.2f,(transform.position-director.player.transform.position).normalized);
     }
     public bool ReceiveHit(int amount,Vector3 point,Vector3 direction) {
-        if (!Active || Dead || director == null || !director.CanPlay || amount <= 0) return false;
+        if (!Active || Dead || (ragdoll&&ragdoll.IsDown) || director == null || !director.CanPlay || amount <= 0) return false;
         Health = Mathf.Max(0, Health - amount);
-        if (Health == 0) { Dead = true; Stop(); }
+        if (Health == 0) { Dead = true; Stop(); StartCoroutine(LeaveAfterKnockout()); }
         if(ragdoll){
-            ragdoll.Knock(direction.normalized*2.7f+Vector3.up*.65f,Dead);
+            attackPending=false;
+            ragdoll.Knock(direction.normalized*7+Vector3.up*2.2f,Dead);
             // 실제 맞은 부위에 추가 충격을 주어 어깨·몸통의 회전이 달라지게 한다.
             Rigidbody closest=null;float distance=float.MaxValue;
             foreach(var bone in ragdoll.bodies){float ds=(bone.worldCenterOfMass-point).sqrMagnitude;if(ds<distance){closest=bone;distance=ds;}}
@@ -163,9 +155,21 @@ public sealed class PrologueOfficer : MonoBehaviour {
         if(director.player.combatFeedback)director.player.combatFeedback.Impact(point,-direction.normalized,true,Dead);
         return true;
     }
+    // 배열 참조와 미션 진행은 보존하고, 기절한 뒤 화면에서 퇴장한다.
+    System.Collections.IEnumerator LeaveAfterKnockout(){
+        yield return new WaitForSeconds(4.5f);
+        gameObject.SetActive(false);
+    }
     public void VehicleHit(Vector3 velocity){
-        if(Dead||!roadGuard||director.Current!=BankPrologue.Phase.Driving)return;
-        Dead=true;Health=0;Stop();ragdoll.Knock(velocity,true);
+        if(VehicleStruck||Dead||!roadGuard||!director||director.Paused||director.Current!=BankPrologue.Phase.Driving||velocity.magnitude<3)return;
+        VehicleStruck=true;Stop();
+        Health=Mathf.Max(0,Health-Mathf.RoundToInt(velocity.magnitude*4));
+        if(Health==0){Dead=true;StartCoroutine(LeaveAfterKnockout());}
+        var car=director.getawayCar;float side=Vector3.Dot(transform.position-car.position,car.right)>=0?1:-1;
+        retreatDirection=car.right*side;
+        ragdoll.Knock(velocity.normalized*Mathf.Clamp(velocity.magnitude*.72f,7,15)+retreatDirection*2.4f+Vector3.up*3.2f,Dead);
+        // 일어난 뒤까지 차량과의 충돌을 무시해 반복 충격과 바퀴에 깔림을 막는다.
+        foreach(var bone in GetComponentsInChildren<Collider>())foreach(var vehicle in car.GetComponentsInChildren<Collider>())Physics.IgnoreCollision(bone,vehicle);
     }
 }
 }

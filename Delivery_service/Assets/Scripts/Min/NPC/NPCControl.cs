@@ -56,7 +56,8 @@ public class NPCControl : MonoBehaviour
     public bool RecoverFromKnockDown()
     {
         if (isDead || !IsKnockedDown) return false;
-        if (!NavMesh.SamplePosition(RagdollCenter.position, out var hit, 5f, NavMesh.AllAreas)) return false;
+        var filter = new NavMeshQueryFilter { agentTypeID = agent != null ? agent.agentTypeID : 0, areaMask = agent != null ? agent.areaMask : NavMesh.AllAreas };
+        if (!NavMesh.SamplePosition(RagdollCenter.position, out var hit, 5f, filter)) return false;
         foreach (var body in ragdollRig) if (body.gameObject != gameObject)
             {
                 body.linearVelocity = Vector3.zero; body.angularVelocity = Vector3.zero; body.isKinematic = true;
@@ -243,6 +244,6 @@ public class NPCControl : MonoBehaviour
 
     public void Die()
     {
-        Die(-transform.forward, 300f);
+        Die(transform.forward * -1f, 15f);
     }
 }

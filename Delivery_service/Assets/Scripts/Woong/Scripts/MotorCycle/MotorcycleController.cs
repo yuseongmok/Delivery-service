@@ -52,6 +52,7 @@ public class MotorcycleController : MonoBehaviour
     public bool isDriven = false;
     private bool isControllable = true;
     private GameObject rider;
+    public GameObject Rider => isDriven ? rider : null;
     private float enterTime = 0f;
 
     private Vector3 localOffset;

@@ -1,4 +1,4 @@
-using System.Collections;using System.Collections.Generic;using System.Linq;using UnityEngine;
+﻿using System.Collections;using System.Collections.Generic;using System.Linq;using UnityEngine;
 namespace DeliveryService.Mok {
 // 피자 인벤토리와 독립적인 한 칸짜리 무기 슬롯이다.
 public sealed class PlayerWeapon : MonoBehaviour {
@@ -9,7 +9,7 @@ public sealed class PlayerWeapon : MonoBehaviour {
  public bool HasInHand=>HasWeapon&&Thrown==null;
  public PlayerCombat Combat {get;private set;}
  PlayerTacticalStance stance;
- int attackVersion;
+ int attackVersion;bool heavySwing=true,reverseSwing;
  Transform held; float nextAttack,animationEnd,animationStart; Quaternion restRotation; Vector3 restPosition;
  void Awake(){Combat=GetComponent<PlayerCombat>();}
  void Start(){stance=GetComponent<PlayerTacticalStance>();}
@@ -25,8 +25,8 @@ public sealed class PlayerWeapon : MonoBehaviour {
   if(!Combat.CanAct||!HasInHand)return;if(Input.GetMouseButtonDown(0))Attack(false);else if(Equipped!=WeaponKind.Pistol&&Input.GetMouseButtonDown(1))Attack(true);}
  // 긴 무기의 끝이 카메라 뒤로 돌아가지 않도록 전방에서 준비·타격·회수를 나눈다.
  public void UpdateHeldPose(){if(!held)return;held.gameObject.SetActive(HasInHand&&Combat.CanAct);float p=animationEnd>Time.time?Mathf.Clamp01((Time.time-animationStart)/(animationEnd-animationStart)):1;
- if(Equipped==WeaponKind.Pistol){float aim=stance?stance.AimAmount:0;held.localRotation=Quaternion.Slerp(restRotation,Quaternion.identity,aim)*Quaternion.Euler(-Mathf.Sin(p*Mathf.PI)*5,0,0);held.localPosition=Vector3.Lerp(restPosition,new Vector3(0,-.345f,.55f),aim);ApplyWalkSway(p);return;}
- MeleePose(Equipped,p,out var position,out var rotation);held.localPosition=position;held.localRotation=rotation;ApplyWalkSway(p);
+ if(Equipped==WeaponKind.Pistol){held.localPosition=Vector3.Lerp(restPosition,new Vector3(0,-.14f,.5f),stance?stance.AimAmount:0);held.localRotation=Quaternion.Slerp(restRotation,Quaternion.identity,stance?stance.AimAmount:0);return;}
+ MeleePose(Equipped,p,out var position,out var rotation);if(Equipped==WeaponKind.Bat){BatSwingVisual.Pose(p,heavySwing,reverseSwing,out position,out rotation);BatSwingVisual.Set(held,p);}held.localPosition=position;held.localRotation=rotation;ApplyWalkSway(p);
  }
  void ApplyWalkSway(float phase){if(phase<1||!stance||!stance.WalkFeedback)return;held.localPosition+=stance.WalkFeedback.HandOffset;held.localRotation*=stance.WalkFeedback.HandRotation;}
  public static void MeleePose(WeaponKind kind,float phase,out Vector3 position,out Quaternion rotation){
@@ -35,23 +35,32 @@ public sealed class PlayerWeapon : MonoBehaviour {
  phase=Mathf.Clamp01(phase);if(phase<.25f){float t=Mathf.SmoothStep(0,1,phase/.25f);position=Vector3.Lerp(rest,wind,t);rotation=Quaternion.Slerp(r0,r1,t);}else if(phase<.52f){float t=Mathf.SmoothStep(0,1,(phase-.25f)/.27f);position=Vector3.Lerp(wind,hit,t);rotation=Quaternion.Slerp(r1,r2,t);}else if(phase<.68f){float t=Mathf.SmoothStep(0,1,(phase-.52f)/.16f);position=Vector3.Lerp(hit,follow,t);rotation=Quaternion.Slerp(r2,r3,t);}else{float t=Mathf.SmoothStep(0,1,(phase-.68f)/.32f);position=Vector3.Lerp(follow,rest,t);rotation=Quaternion.Slerp(r3,r0,t);}
  }
  public bool Attack(bool throwing){if(!Combat.CanAct||!HasInHand||Combat.IsKicking||Time.time<nextAttack)return false;int i=(int)Equipped;
-  if(!throwing&&Equipped==WeaponKind.Pistol&&Ammo<=0){DeliveryRequestNotice.Show("탄약이 없습니다. 무기점에서 구매하세요.");return false;}
-  nextAttack=Time.time+WeaponCatalog.Cooldown[i];animationStart=Time.time;animationEnd=Time.time+(Equipped==WeaponKind.Pistol?.15f:WeaponCatalog.Cooldown[i]*.65f);
-  if(throwing){Throw();return true;}
-  if(Equipped==WeaponKind.Pistol){Ammo--;GunshotSound.Play(gameObject,false);Resolve();StartCoroutine(ShotFlash());}else StartCoroutine(Swing(Equipped,++attackVersion));return true;}
- IEnumerator Swing(WeaponKind kind,int version){yield return new WaitForSeconds(WeaponCatalog.Cooldown[(int)kind]*.65f*.52f);if(version==attackVersion&&Combat.CanAct&&Equipped==kind&&HasInHand)Resolve();}
+  if(Equipped==WeaponKind.Pistol){if(throwing||Ammo<=0){DeliveryRequestNotice.Show("탄약은 무기점에서 구매하세요.");return false;}Ammo--;nextAttack=Time.time+.35f;GunshotSound.Play(gameObject,false);Shoot();return true;}
+  heavySwing=WeaponCatalog.UsesHeavySecondary(Equipped)&&throwing;if(Equipped==WeaponKind.Bat&&!heavySwing)reverseSwing=!reverseSwing;
+  float cooldown=Equipped==WeaponKind.Bat?(heavySwing?1.05f:.72f):WeaponCatalog.Cooldown[i];
+  nextAttack=Time.time+cooldown;animationStart=Time.time;animationEnd=Time.time+(Equipped==WeaponKind.Bat?(heavySwing?.8f:.62f):cooldown*.65f);
+  if(throwing&&!WeaponCatalog.UsesHeavySecondary(Equipped)){Throw();return true;}
+  StartCoroutine(Swing(Equipped,++attackVersion));return true;}
+ IEnumerator Swing(WeaponKind kind,int version){yield return new WaitForSeconds((animationEnd-animationStart)*.52f);if(version==attackVersion&&Combat.CanAct&&Equipped==kind&&HasInHand)Resolve();}
  bool Ignore(Transform t){var inv=GetComponent<ToppingInventory>();return t.IsChildOf(transform)||(inv!=null&&((inv.HoldPoint!=null&&t.IsChildOf(inv.HoldPoint))||(inv.HeldPizza!=null&&t.IsChildOf(inv.HeldPizza.transform))));}
  public int Resolve(){if(Equipped==WeaponKind.None)return 0;var cam=Combat.View;int i=(int)Equipped;var seen=new HashSet<int>();int count=0;
   // 참치는 부채꼴 여러 광선으로 쓸어 치고, 각 광선은 첫 장애물에서 멈춘다.
-  int rays=Equipped==WeaponKind.Tuna?9:1;for(int r=0;r<rays;r++){var dir=Quaternion.AngleAxis(rays==1?0:(r-4)*9,cam.transform.up)*cam.transform.forward;
-   var hits=Physics.SphereCastAll(cam.transform.position,Equipped==WeaponKind.Pistol?.015f:.18f,dir,WeaponCatalog.Reach[i],~0,QueryTriggerInteraction.Ignore).OrderBy(h=>h.distance);
+  int rays=Equipped==WeaponKind.Bat&&heavySwing?3:(Equipped==WeaponKind.Tuna||Equipped==WeaponKind.Bat)?9:1;for(int r=0;r<rays;r++){var dir=Quaternion.AngleAxis(rays==1?0:(r-(rays-1)*.5f)*9,cam.transform.up)*cam.transform.forward;
+   var hits=Physics.SphereCastAll(cam.transform.position,.18f,dir,WeaponCatalog.Reach[i],~0,QueryTriggerInteraction.Ignore).OrderBy(h=>h.distance);
    foreach(var h in hits){if(Ignore(h.transform))continue;var citizen=h.collider.GetComponentInParent<CitizenCombat>();var robber=h.collider.GetComponentInParent<RobberAI>();var police=h.collider.GetComponentInParent<PoliceCombat>();var target=police!=null?(Component)police:citizen!=null?(Component)citizen:robber;
-    if(target!=null&&seen.Add(target.GetInstanceID())&&Hit(h.collider,dir,WeaponCatalog.Damage[i]))count++;break;}}
+    if(target!=null&&seen.Add(target.GetInstanceID())&&Hit(h.collider,dir,(Equipped==WeaponKind.Bat&&heavySwing?65:WeaponCatalog.Damage[i])))count++;break;}}
   // 광역 무기가 여러 명을 맞혀도 한 번 휘두른 충격음과 흔들림은 한 번만 준다.
-  if(count>0&&Equipped!=WeaponKind.Pistol)KickImpactFeedback.Play(Combat,Equipped);
+  if(count>0)KickImpactFeedback.Play(Combat,Equipped);
   return count;}
  public bool Hit(Collider collider,Vector3 direction,int damage){var police=collider.GetComponentInParent<PoliceCombat>();if(police!=null)return police.ReceiveHit(Combat,direction,damage);var citizen=collider.GetComponentInParent<CitizenCombat>();var robber=collider.GetComponentInParent<RobberAI>();
   if(citizen!=null){if(robber!=null)robber.DropLoot();return citizen.ReceiveKick(Combat,direction,damage);}return robber!=null&&robber.ReceiveKick(direction);}
+ void Shoot(){var cam=Combat.View;var direction=FirearmBallistics.Direction(cam,stance?stance.AimAmount:0);var end=cam.transform.position+direction*45;var start=held.position+held.forward*.2f;
+  bool found=FirearmBallistics.Cast(cam.transform.position,direction,45,transform,out var hit);if(found)end=hit.point;
+  if(FirearmBallistics.Cast(start,(end-start).normalized,Vector3.Distance(start,end),transform,out var wall)){hit=wall;end=wall.point;found=true;}
+  if(found){int damage=FirearmBallistics.Headshot(hit)?110:55;var citizen=hit.collider.GetComponentInParent<CitizenCombat>();if(citizen){var robber=citizen.GetComponent<RobberAI>();if(robber)robber.DropLoot();citizen.ReceiveBullet(Combat,direction,damage);}else Hit(hit.collider,direction,damage);}
+  PrologueTracer.Spawn(start,end,new Color(1,.8f,.3f));StartCoroutine(ShotFlash());
+ }
+ IEnumerator ShotFlash(){var go=new GameObject("총구 섬광",typeof(Light));go.transform.position=held.position+held.forward*.2f;var l=go.GetComponent<Light>();l.color=new Color(1,.65f,.2f);l.range=2;l.intensity=3;yield return new WaitForSeconds(.045f);Destroy(go);}
  void Throw(){var cam=Combat.View;var pos=cam.transform.position;
   var go=Instantiate(WeaponCatalog.Model(Equipped),pos,cam.transform.rotation);go.name="Thrown "+Equipped;
   // 각 무기의 실제 외형을 감싸는 충돌체를 만들고 원본 장식 충돌체는 제거한다.
@@ -71,7 +80,6 @@ public sealed class PlayerWeapon : MonoBehaviour {
   if(held!=null)held.gameObject.SetActive(false);
  }
  public bool Recover(ThrownBrick brick){if(brick==null||brick!=Thrown||brick.kind!=Equipped)return false;Thrown=null;Destroy(brick.gameObject);return true;}
- IEnumerator ShotFlash(){var light=new GameObject("Muzzle flash",typeof(Light));light.transform.position=Combat.View.transform.position+Combat.View.transform.forward*.65f;var l=light.GetComponent<Light>();l.color=new Color(1,.6f,.2f);l.range=3;l.intensity=3;yield return new WaitForSeconds(.045f);Destroy(light);}
  void OnGUI(){if(!HasWeapon||!Combat.CanAct)return;var s=new GUIStyle(GUI.skin.label){font=MokUIFont.Font,fontSize=18,alignment=TextAnchor.MiddleRight};GUI.Label(new Rect(Screen.width-320,Screen.height-85,290,35),WeaponCatalog.Names[(int)Equipped]+(Thrown!=null?" · 회수 필요":Equipped==WeaponKind.Pistol?$"  {Ammo}발":""),s);}
 }
 }

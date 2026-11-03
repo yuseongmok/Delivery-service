@@ -13,6 +13,7 @@ public sealed class PrologueGunFeedback : MonoBehaviour {
     Vector3 size;
     void Awake(){
         if(SuppliedAudio.Current&&SuppliedAudio.Current.gunshot)shot=SuppliedAudio.Current.gunshot;
+        if(!playerGun){flame.localScale*=.55f;flash.intensity=1.6f;}
         size=flame.localScale;flame.gameObject.SetActive(false);flash.enabled=false;
         source=gameObject.AddComponent<AudioSource>();source.playOnAwake=false;
         source.spatialBlend=playerGun?0:1;source.minDistance=4;source.maxDistance=65;

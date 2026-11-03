@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.InputSystem;
 namespace DeliveryService.Mok {
 // 프롤로그 전용 직접 운전. 본편 교통 차량의 자동 경로 이동과 분리한다.
@@ -24,7 +24,7 @@ public sealed class PrologueDrive : MonoBehaviour {
         if(!Driving||director.Paused)return;
         if(!ExternalInput)SetInput(director.AcceptInput?PrologueKeyboard.Vertical:0,director.AcceptInput?PrologueKeyboard.Horizontal:0);
         if(!ExternalInput&&director.AcceptInput&&PrologueKeyboard.Pressed(Key.R))ResetToRoad();
-        var support=director.GetComponent<PrologueEscapePerformance>(); director.objective.text=support&&support.PursuitEnded?"추격을 따돌렸습니다. 도시 입구로 이동하세요":"추격을 따돌리고 경찰 저지선을 돌파하세요";
+        var support=director.GetComponent<PrologueEscapePerformance>(); director.objective.text=support&&support.PursuitEnded?"추격을 따돌렸습니다. 도시 입구로 이동하세요":"조직의 추격을 따돌리고 차량과 조직원의 봉쇄를 돌파하세요";
         director.prompt.text="";
         director.ammo.text=Mathf.Abs(Speed*3.6f).ToString("F0")+" km/h";
         if(Vector3.Distance(transform.position,finish.position)<9)director.FinishDriving();
@@ -36,20 +36,43 @@ public sealed class PrologueDrive : MonoBehaviour {
         if(!ExternalInput&&director.AcceptInput&&PrologueKeyboard.Held(Key.Space))Speed=Mathf.MoveTowards(Speed,0,30*Time.fixedDeltaTime);
         var rotation=body.rotation*Quaternion.Euler(0,turn*steering*Mathf.Clamp(Speed/7,-1,1)*Time.fixedDeltaTime,0);
         Vector3 forward=rotation*Vector3.forward,delta=forward*Speed*Time.fixedDeltaTime;
-        // 저지선 경찰은 밀어내고 건물·차량에는 막히도록 이동 전에 검사한다.
+        // 봉쇄 인원과 차량은 충격으로 밀어내고 고정 구조물은 그대로 막는다.
         int count=Physics.BoxCastNonAlloc(body.position+Vector3.up*.85f,new Vector3(.9f,.65f,1.9f),delta.normalized,hits,rotation,delta.magnitude+.05f,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore);
-        bool blocked=false;
+        bool blocked=false;float contactTravel=delta.magnitude;bool pushingCar=false;
         for(int i=0;i<count;i++){
             var hit=hits[i];if(hit.transform.IsChildOf(transform))continue;
             var officer=hit.collider.GetComponentInParent<PrologueOfficer>();
-            if(officer){if(Mathf.Abs(Speed)>2){officer.VehicleHit(forward*Mathf.Abs(Speed)*.65f+Vector3.up*4);if(feedback)feedback.Collision(Mathf.Abs(Speed)*.5f);}continue;}
+            if(officer){
+                if(officer.roadGuard&&(officer.VehicleStruck||officer.ragdoll.IsDown))continue;
+                if(officer.roadGuard&&Mathf.Abs(Speed)>=3){officer.VehicleHit(forward*Speed);if(feedback)feedback.Collision(Mathf.Abs(Speed)*.55f);continue;}
+                blocked=true;continue;
+            }
+            var ramCar=hit.collider.GetComponentInParent<PrologueRoadblockCar>();
+            if(ramCar){
+                ramCar.TryRam(forward*Speed,transform);
+                // 차가 옆으로 밀려나기 전에는 그 차의 접촉면을 넘어가지 않는다.
+                contactTravel=Mathf.Min(contactTravel,Mathf.Max(0,hit.distance-.035f));
+                pushingCar=true;continue;
+            }
+            var barrier=hit.collider.GetComponentInParent<PrologueBreakableBarrier>();
+            if(barrier&&barrier.TryBreak(forward*Speed,transform))continue;
             if(hit.normal.y<.6f)blocked=true;
         }
         if(blocked){if(feedback)feedback.Collision(Mathf.Abs(Speed));Speed=0;delta=Vector3.zero;}
+        if(!blocked){
+            delta=forward*Speed*Time.fixedDeltaTime;
+            if(pushingCar&&delta.magnitude>contactTravel){
+                delta=delta.normalized*contactTravel;
+                Speed=Mathf.Sign(Speed)*Mathf.Min(Mathf.Abs(Speed),Mathf.Max(3,contactTravel/Time.fixedDeltaTime));
+            }
+        }
         body.MoveRotation(rotation);body.MovePosition(body.position+delta);
         if(wheels!=null)foreach(var wheel in wheels)wheel.Rotate(Vector3.right,Speed*Time.fixedDeltaTime*130,Space.Self);
         if(transform.position.z < -78||transform.position.z > -52)ResetToRoad();
     }
+    float nextRamResponse;
+    // 한 봉쇄의 두 차량에 닿아도 감속이 중첩되지 않는다. 조향과 재가속은 유지한다.
+    public void AbsorbRam(){if(Time.time<nextRamResponse)return;nextRamResponse=Time.time+.35f;Speed*=.48f;}
     public void ResetToRoad(){
         body.position=new Vector3(Mathf.Clamp(transform.position.x,18,230),0,-65);
         body.rotation=Quaternion.Euler(0,90,0);Speed=0;

@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.InputSystem;
 namespace DeliveryService.Mok {
 // 시점 회전과 별도의 축으로 엄폐 자세를 적용해 반동·래그돌과 충돌하지 않게 한다.
@@ -11,7 +11,7 @@ public sealed class PlayerTacticalStance : MonoBehaviour {
     Vector3 standingCenter, eyeRest;
     public bool IsCrouching { get; private set; }
     public float AimAmount { get; private set; }
-    public float MoveMultiplier => IsCrouching ? .5f : AimAmount > .1f ? .7f : 1f;
+    public float MoveMultiplier => (IsCrouching ? .5f : 1f)*Mathf.Lerp(1,.55f,AimAmount);
     void Start() {
         body=GetComponent<CharacterController>();prologue=GetComponent<ProloguePlayer>();combat=GetComponent<PlayerCombat>();weapon=GetComponent<PlayerWeapon>();
         view=prologue?prologue.view:combat?combat.View:null;
@@ -59,7 +59,7 @@ public sealed class PlayerTacticalStance : MonoBehaviour {
         float safeLean=shift.magnitude>.001f?lean*distance/shift.magnitude:0;
         pivot.localPosition=centerLocal+Vector3.right*(safeLean*.38f);
         pivot.localRotation=Quaternion.Euler(0,0,-safeLean*12);
-        bool gun=prologue?!prologue.Reloading:weapon&&weapon.HasInHand&&weapon.Equipped==WeaponKind.Pistol;
+        bool gun=prologue||(weapon&&weapon.HasInHand&&weapon.Equipped==WeaponKind.Pistol);
         bool aim=ready&&gun&&Mouse.current!=null&&Mouse.current.rightButton.isPressed;
         AimAmount=Mathf.Lerp(AimAmount,aim?1:0,t);
         view.fieldOfView=Mathf.Lerp(baseFov,baseFov*.72f,AimAmount);

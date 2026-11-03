@@ -1,4 +1,4 @@
-using System.Collections.Generic;using UnityEngine;
+﻿using System.Collections.Generic;using UnityEngine;
 namespace DeliveryService.Mok {
 public sealed class WeaponMerchant:MonoBehaviour,IInteractable {
  PlayerCombat focusPlayer;
@@ -26,7 +26,7 @@ public sealed class WeaponMerchant:MonoBehaviour,IInteractable {
   GUI.Label(new Rect(570,155,430,50),WeaponCatalog.Names[selected],new GUIStyle(label){fontSize=36});GUI.Label(new Rect(570,225,430,90),WeaponCatalog.Description[selected],label);
   GUI.Label(new Rect(570,325,430,45),$"{WeaponCatalog.Prices[selected]:N0}원",label);GUI.Label(new Rect(570,375,430,55),$"내 돈  {(MoneyManager.Instance!=null?MoneyManager.Instance.currentMoney:0):N0}원",label);
   if(GUI.Button(new Rect(570,445,430,55),player.HasWeapon?"현재 무기 교체 구매":"구매하기",button))notice=player.Purchase((WeaponKind)selected)?"구매 완료! 기존 무기는 교체됩니다.":"잔액이 부족합니다.";
-  if(selected==3&&GUI.Button(new Rect(570,515,430,50),"탄약 10발 · 3,000원",button))notice=player.BuyAmmo()?"탄약 10발 구매 완료":player.Equipped!=WeaponKind.Pistol?"권총을 먼저 구매하세요.":"잔액 부족 또는 탄약 보유 한도입니다.";
+  if(selected==3&&GUI.Button(new Rect(570,510,430,50),"탄약 10발 · 3,000원",button))notice=player.BuyAmmo()?"탄약 구매 완료":"권총 장착 여부와 잔액을 확인하세요.";
   GUI.Label(new Rect(80,605,430,45),"마우스 휠로 무기 둘러보기",new GUIStyle(label){fontSize=20});GUI.Label(new Rect(570,585,430,70),notice,new GUIStyle(label){fontSize=20});GUI.matrix=previous;GUI.color=previousColor;GUI.backgroundColor=previousBackground;}}
 }
 }

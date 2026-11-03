@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.AI;
@@ -9,6 +9,7 @@ namespace DeliveryService.Mok {
 public sealed class CitizenCombat : MonoBehaviour {
     public int maximumHealth = 100;
     public bool missionEnemy;
+    [Tooltip("총격전용으로 지정한 적만 권총을 사용합니다.")] public bool usesFirearm;
     public float chaseSpeed = 4.5f, punchRange = 2.8f, punchCooldown = 1.4f;
     public float attackStartRange=2.6f, combatSpacing=2.2f;
     public int punchDamage = 10;
@@ -18,7 +19,7 @@ public sealed class CitizenCombat : MonoBehaviour {
     DayNightCycle clock;
     public float GameMinute => clock!=null?((clock.currentDay-1)*24f+clock.currentTime)*60f:0;
     public bool WasRobbed => clock!=null&&GameMinute<RobberyReadyAt;
-    public bool CanBePickpocketed => !missionEnemy&&GetComponent<SlumRobberCombat>()==null&&clock!=null&&clock.isShopOpen&&!WasRobbed&&Health>0&&!npc.IsDead&&!npc.IsKnockedDown;
+    public bool CanBePickpocketed => GetComponent<RacerNPCInteraction>()==null&&!missionEnemy&&GetComponent<SlumRobberCombat>()==null&&clock!=null&&clock.isShopOpen&&!WasRobbed&&Health>0&&!npc.IsDead&&!npc.IsKnockedDown;
     public bool IsAggressive => target != null && Health > 0 && !npc.IsDead;
     public bool IsPunching => punching;
     public NPCControl Npc => npc;
@@ -30,6 +31,7 @@ public sealed class CitizenCombat : MonoBehaviour {
     bool hasMoveSpeed,hasWalking,hasRunRate;
     bool punching; Transform upper, lower, hand, leftUpper, leftLower, leftHand;
     void Awake() {
+        HeadHitbox.Attach(gameObject);
         pursuitPath=new NavMeshPath();
         if(!GetComponent<EnemyLocationMarker>())gameObject.AddComponent<EnemyLocationMarker>();
         npc=GetComponent<NPCControl>();agent=GetComponent<NavMeshAgent>();animator=GetComponentInChildren<Animator>(true);
@@ -50,14 +52,30 @@ public sealed class CitizenCombat : MonoBehaviour {
     }
     public void Provoke(PlayerCombat player) {
         if(Health<=0||npc.IsDead)return;
+        if(usesFirearm&&!GetComponent<GangFirearm>())gameObject.AddComponent<GangFirearm>();
         target=player;npc.ExternalControl=true;agent.areaMask=NavMesh.AllAreas;agent.speed=chaseSpeed;agent.stoppingDistance=combatSpacing;nextPunch=Time.time+.5f;
     }
     public bool ReceiveKick(PlayerCombat player,Vector3 direction,int damage) {
+        if(!GetComponent<StunStars>())gameObject.AddComponent<StunStars>();
         if(Health<=0||npc.IsDead||npc.IsKnockedDown)return false;
         var patrol=GetComponent<VenuePatrolGuard>();if(patrol&&patrol.HandleStealthStrike(player,direction))return true;
         Health=Mathf.Max(0,Health-damage);punching=false;Provoke(player);
+        CitizenDominoContact.Arm(this,player,Time.time+1.2f);
         if(Health==0){target=null;npc.Die(direction,22f);if(!missionEnemy&&GetComponent<SlumRobberCombat>()==null)CitizenCrime.ReportPlayerKill(npc);return true;}
-        npc.KnockDown(direction,5f);StartCoroutine(GetUp());return true;
+        npc.KnockDown(direction,7f);StartCoroutine(GetUp());return true;
+    }
+    public bool ReceiveBullet(PlayerCombat player,Vector3 direction,int damage){
+        if(Health<=0||npc.IsDead||npc.IsKnockedDown)return false;
+        if(!GetComponent<StunStars>())gameObject.AddComponent<StunStars>();
+        Health=Mathf.Max(0,Health-damage);punching=false;Provoke(player);
+        if(Health==0){target=null;npc.Die(direction,7f);if(!missionEnemy&&GetComponent<SlumRobberCombat>()==null)CitizenCrime.ReportPlayerKill(npc);return true;}
+        npc.KnockDown(direction,4);StartCoroutine(GetUp());return true;
+    }
+    // 탈출 차량에 부딪힌 임무 조직원만 체력을 차감한다. 시민 사고에는 적용하지 않는다.
+    public void ReceiveEscapeImpact(int damage,Vector3 direction){
+        if(!missionEnemy||Health<=0||npc.IsDead)return;
+        Health=Mathf.Max(0,Health-Mathf.Max(0,damage));punching=false;
+        if(Health==0){target=null;npc.Die(direction,0);Destroy(gameObject,4.5f);}
     }
     IEnumerator GetUp() {
         yield return new WaitForSeconds(knockdownSeconds);
@@ -75,6 +93,7 @@ public sealed class CitizenCombat : MonoBehaviour {
         if(!IsAggressive||npc.IsKnockedDown)return;
         if(target.IsDown){if(agent.enabled&&agent.isOnNavMesh)agent.isStopped=true;return;}
         if(!agent.enabled||!agent.isOnNavMesh)return;
+        if(usesFirearm){var firearm=GetComponent<GangFirearm>();if(firearm&&firearm.enabled&&firearm.Tick(target,agent)){UpdateCombatAnimation();return;}}
         float distance=Vector3.Distance(transform.position,target.transform.position);
         if(!punching && Time.time>=repath){repath=Time.time+.2f;agent.speed=chaseSpeed;agent.isStopped=false;
             if(target.RiddenBike){repath=Time.time+.5f;MountedTargetPath.Set(agent,target.transform.position);}

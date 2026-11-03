@@ -7,7 +7,8 @@ public sealed class PrologueDriveFeedback : MonoBehaviour {
  public float impactCooldown=.65f,shakeDuration=.28f;
  public int ImpactCount {get;private set;}
  public float ShakeRemaining => shake;
- float nextImpact,shake,strength;bool paused;
+ float nextImpact,shake,strength,ramRemaining,nextRam;bool paused;
+ public float RamRemaining=>ramRemaining;
  void Start(){if(SuppliedAudio.Current&&SuppliedAudio.Current.carCrash)impact.clip=SuppliedAudio.Current.carCrash;if(SuppliedAudio.Current&&SuppliedAudio.Current.playerEngine)engine.clip=SuppliedAudio.Current.playerEngine;}
  void Update(){
   bool cityRide=drive.director.Current==BankPrologue.Phase.CityReveal&&(!drive.director.shopArrival||drive.director.shopArrival.Stage<2);
@@ -31,13 +32,23 @@ public sealed class PrologueDriveFeedback : MonoBehaviour {
   nextImpact=Time.time+impactCooldown;strength=Mathf.InverseLerp(2,23,speed);shake=shakeDuration;
   impact.pitch=Mathf.Lerp(1.1f,.85f,strength);StorySoundMix.Play(impact,impact.clip,Mathf.Lerp(.18f,.5f,strength));ImpactCount++;
  }
+ public void RamImpact(float speed){
+  if(!drive.Driving||drive.director.Paused||Time.time<nextRam)return;
+  nextRam=Time.time+.35f;nextImpact=0;Collision(speed);ramRemaining=.45f;
+ }
  void LateUpdate(){
+  if(drive.Driving&&!drive.director.Paused&&ramRemaining>0){
+   ramRemaining=Mathf.Max(0,ramRemaining-Time.deltaTime);float ramPhase=1-ramRemaining/.45f;float bump=Mathf.Sin(ramPhase*Mathf.PI*2)*Mathf.Exp(-ramPhase*3);
+   var eye=drive.director.filmCamera.transform;eye.position+=eye.forward*(-bump*.065f)+eye.up*(Mathf.Abs(bump)*.025f);eye.rotation*=Quaternion.Euler(bump*1.4f,0,bump*.6f);
+  }
+
   if(!drive.Driving||drive.director.Paused||shake<=0)return;
   shake=Mathf.Max(0,shake-Time.deltaTime);float amount=shake/shakeDuration*Mathf.Lerp(.25f,1,strength),t=(shakeDuration-shake)*65;
   var cam=drive.director.filmCamera.transform;
   cam.localPosition+=cam.right*(Mathf.Sin(t)*.012f*amount)+cam.up*(Mathf.Sin(t*1.3f)*.008f*amount);
   cam.rotation*=Quaternion.Euler(Mathf.Sin(t)*.55f*amount,Mathf.Sin(t*.7f)*.25f*amount,Mathf.Cos(t)*.35f*amount);
  }
- public void StopEffects(){if(engine)engine.Stop();if(impact)impact.Stop();shake=0;paused=false;}
+ public void StopEffects(){if(engine)engine.Stop();if(impact)impact.Stop();shake=0;ramRemaining=0;paused=false;}
  void OnDisable(){StopEffects();}
 }}
+

@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+﻿#if UNITY_EDITOR
 using System;
 using System.Collections;
 using System.IO;
@@ -81,6 +81,23 @@ public static class BankPrologueCheck {
             if(command=="test-story-days"){NightPreparationCheck.Backup();SessionState.SetBool(Key+".storyDays",true);SessionState.SetBool(Key+".night",true);StartTest();}
             if(command=="venue-homecoming")VenueHomecomingEdit.Apply();
             if(command=="story-revision")StoryRevisionInstaller.Apply();
+            if(command=="test-traffic-stun"){NightPreparationCheck.Backup();SessionState.SetBool(Key+".trafficStun",true);SessionState.SetBool(Key+".night",true);StartTest();}
+            if(command=="test-ram-polish"){SessionState.SetBool(Key+".ramPolish",true);StartTest();}
+            if(command=="test-breakthrough-focus"){SessionState.SetBool(Key+".roadFocus",true);StartTest();}
+            if(command=="breakthrough-apply")RoadBreakthroughUpgrade.Apply();
+            if(command=="melee-cleanup")MeleePrologueUpgrade.Cleanup();
+            if(command=="test-melee-focus"){SessionState.SetBool(Key+".meleeFocus",true);StartTest();}
+            if(command=="test-melee-main"){NightPreparationCheck.Backup();SessionState.SetBool(Key+".meleeMain",true);SessionState.SetBool(Key+".night",true);StartTest();}
+            if(command=="melee-apply")MeleePrologueUpgrade.Apply();
+            if(command=="recovery-apply")RecoveryPrologueUpgrade.Apply();
+            if(command=="recovery-refine")RecoveryPrologueUpgrade.Refine();
+            if(command=="recovery-preview")RecoveryPrologueUpgrade.Preview();
+            if(command=="recovery-inspect")RecoveryPrologueUpgrade.Inspect();
+            if(command=="bat-polish-apply")BatPolishUpgrade.Apply();
+            if(command=="test-gun-main"){NightPreparationCheck.Backup();SessionState.SetBool(Key+".gunMain",true);SessionState.SetBool(Key+".night",true);StartTest();}
+            if(command=="test-gun-return"){SessionState.SetBool(Key+".gunReturn",true);StartTest();}
+            if(command=="gun-return-apply")GunReturnUpgrade.Apply();
+            if(command=="gang-support-apply")GangSupportUpgrade.Apply();
             if(command=="refresh-scripts")AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
             if(command=="synty-story-refine")SyntyStoryUpgrade.Refine();
             if(command=="synty-story-apply")SyntyStoryUpgrade.Apply();
@@ -281,6 +298,14 @@ public static class BankPrologueCheck {
         finally{canvas.renderMode=mode;canvas.worldCamera=oldCamera;canvas.planeDistance=distance;cam.targetTexture=old;RenderTexture.active=active;target.Release();UnityEngine.Object.DestroyImmediate(target);}
     }
     static IEnumerator Run(){
+        if(SessionState.GetBool(Key+".trafficStun",false)){SessionState.SetBool(Key+".trafficStun",false);SessionState.SetBool(Key+".night",false);yield return TrafficStunCheck.Verify(Check);yield break;}
+        if(SessionState.GetBool(Key+".ramPolish",false)){SessionState.SetBool(Key+".ramPolish",false);yield return RamPolishCheck.Verify(Check);yield break;}
+        if(SessionState.GetBool(Key+".roadFocus",false)){SessionState.SetBool(Key+".roadFocus",false);yield return RoadBreakthroughUpgrade.Verify(Check);yield break;}
+        if(SessionState.GetBool(Key+".gunMain",false)){SessionState.SetBool(Key+".gunMain",false);SessionState.SetBool(Key+".night",false);yield return GunReturnCheck.VerifyMain(Check);yield break;}
+        if(SessionState.GetBool(Key+".gunReturn",false)){SessionState.SetBool(Key+".gunReturn",false);yield return GunReturnCheck.Verify(Check);yield break;}
+        if(SessionState.GetBool(Key+".meleeFocus",false)){SessionState.SetBool(Key+".meleeFocus",false);yield return MeleeCombatCheck.Verify(Check);yield break;}
+        if(SessionState.GetBool(Key+".meleeMain",false)){SessionState.SetBool(Key+".meleeMain",false);SessionState.SetBool(Key+".night",false);yield return WeaponImpactTest.RunCore(t=>log+=t+"\n");yield break;}
+
         if(SessionState.GetBool(Key+".finaleSoundscape",false)){SessionState.SetBool(Key+".finaleSoundscape",false);SessionState.SetBool(Key+".night",false);yield return FinaleSoundscapeCheck.Verify();yield break;}
         if(SessionState.GetBool(Key+".finaleMix",false)){SessionState.SetBool(Key+".finaleMix",false);SessionState.SetBool(Key+".night",false);yield return StoryMixCheck.Finale();yield break;}
         if(SessionState.GetBool(Key+".storyMix",false)){SessionState.SetBool(Key+".storyMix",false);yield return StoryMixCheck.Verify();yield break;}
@@ -649,7 +674,7 @@ public static class BankPrologueCheck {
     static IEnumerator RunFinale(BankPrologue d){
         d.AcceptInput=false;d.player.enabled=false;
         Check(d.player.ragdoll.bodies.Length>=10&&d.officers.All(o=>o.ragdoll&&o.ragdoll.bodies.Length>=10),"saved citizen ragdoll joints reused for player and all police");
-        Check(d.cityVista&&d.cityCarStart&&d.cityWideCamera&&d.logo&&d.roadPolice.Length==18,"saved city vista, logo and three roadblocks assigned");
+        Check(d.cityVista&&d.cityCarStart&&d.cityWideCamera&&d.logo&&d.roadPolice.Length==16&&UnityEngine.Object.FindObjectsByType<PrologueRoadblockCar>(FindObjectsSortMode.None).Length==7&&UnityEngine.Object.FindObjectsByType<PrologueBreakableBarrier>(FindObjectsSortMode.None).Length==0,"saved city vista, sixteen gang guards and seven movable roadblock cars assigned");
         if(d.accomplice.performance){
             float openingCapture=Time.time+5.6f;while(Time.time<openingCapture)yield return null;
             Capture(d.filmCamera,"vault-performance");
@@ -662,30 +687,22 @@ public static class BankPrologueCheck {
         d.player.Teleport(new Vector3(0,.05f,2));
         target.GetComponent<NavMeshAgent>().Warp(new Vector3(0,.05f,5));
         Physics.SyncTransforms();yield return null;
-        if(d.player.combatFeedback){
-            d.player.view.transform.LookAt(target.transform.position+Vector3.up*1.3f);
-            var e=d.player.view.transform.localEulerAngles;Set(d.player,"pitch",e.x>180?e.x-360:e.x);
-            int ammo=d.player.Ammo;
-            Check(d.player.Fire()&&d.player.Ammo==ammo-1,"actual rifle shot consumes one round");
-            Check(target.Health==35&&target.ragdoll.IsDown&&!target.Dead,"raycast hit applies damage and starts police ragdoll");
-            Check(d.player.combatFeedback.ConfirmedHits==1&&d.player.combatFeedback.hitMarker.alpha>0,"only accepted damage confirms the hit marker");
-            Check(d.player.gunFeedback.ShotCount==1&&d.player.gunFeedback.flame.gameObject.activeSelf&&d.player.RecoilAmount>1,"shot triggers visible flame and recoil");
-            Check(!d.player.Fire()&&d.player.gunFeedback.ShotCount==1,"fire interval blocks duplicate sound and flashes");
-            Capture(d.player.view,"rifle-feedback");
-        }else Check(target.ReceiveHit(35)&&target.ragdoll.IsDown&&!target.Dead,"nonlethal shot starts police ragdoll");
-        Check(target.ragdoll.bodies.All(b=>!b.isKinematic),"police bones simulate physics");
-        float until=Time.time+.5f;while(Time.time<until)yield return null;
-        Capture(d.player.view,"police-ragdoll");
-        Check(target.ReceiveHit(35)&&target.Dead&&target.ragdoll.Permanent,"fatal shot keeps physical corpse instead of rigid fall");
-        if(d.player.combatFeedback){
-            Check(!d.player.gunFeedback.flame.gameObject.activeSelf,"muzzle flame switches off after the shot");
-            int confirmed=d.player.combatFeedback.ConfirmedHits;
-            var cover=GameObject.CreatePrimitive(PrimitiveType.Cube);cover.transform.position=d.player.view.transform.position+Vector3.left*3;cover.transform.localScale=Vector3.one;
-            d.player.view.transform.LookAt(cover.transform.position);Physics.SyncTransforms();
-            Check(d.player.Fire()&&d.player.combatFeedback.SurfaceHits==1&&d.player.combatFeedback.ConfirmedHits==confirmed,"wall impact plays surface feedback without a false confirmed hit");
-            UnityEngine.Object.Destroy(cover);
-            d.SetPaused(true);Check(!d.player.Fire(),"pause prevents shooting feedback");d.SetPaused(false);
-        }
+        d.player.view.transform.LookAt(target.transform.position+Vector3.up*1.3f);
+        var second=d.officers[3];second.Activate();second.GetComponent<NavMeshAgent>().Warp(new Vector3(1,.05f,4.6f));
+        target.GetComponent<NavMeshAgent>().Warp(new Vector3(0,.05f,4.4f));
+        // 판정만 검증할 때에는 적의 이동을 멈춰 위치를 고정한다.
+        target.enabled=false;second.enabled=false;target.GetComponent<NavMeshAgent>().isStopped=true;second.GetComponent<NavMeshAgent>().isStopped=true;
+        Physics.SyncTransforms();yield return null;
+        // 이동 후 몸통을 다시 조준하여 무작위 헤드샷으로 회복 검사가 실패하지 않게 한다.
+        d.player.view.transform.LookAt(target.transform.position+Vector3.up*1.05f);
+        Check(d.player.Fire()&&!d.player.Fire(),"rifle shot obeys cooldown");
+        float until=Time.time+.38f;while(Time.time<until)yield return null;
+        Check(target.ragdoll.IsDown,"rifle hit knocks down enemy");
+        Check(target.GetComponent<StunStars>().Visible,"gunshot stun stars visible");
+        until=Time.time+4;while(target.ragdoll.IsDown&&Time.time<until)yield return null;
+        Check(!target.ragdoll.IsDown,"surviving gunshot victim recovers");
+        d.SetPaused(true);Check(!d.player.Fire(),"pause blocks firing");d.SetPaused(false);
+        target.enabled=true;second.enabled=true;
         foreach(var o in d.officers)o.Stop();
         Check(d.player.ReceiveHit(8)&&d.player.KnockedDown&&!d.player.Fire()&&!d.Collect(0),"player hit starts ragdoll and blocks actions");
         Check(!d.player.ReceiveHit(8),"downed player cannot be repeatedly hit");
@@ -752,13 +769,13 @@ public static class BankPrologueCheck {
         if(d.accomplice.performance)Check(d.accomplice.performance.EnteredCar&&Quaternion.Angle(d.accomplice.performance.passengerDoor.localRotation,Quaternion.identity)<1,"accomplice enters through opening passenger door and shuts it before driving");
         d.drive.ExternalInput=true;d.drive.SetInput(1,0);
         Vector3 startPosition=d.getawayCar.position;
-        var officerStart=d.roadPolice[0].transform.position;
+        var barriers=UnityEngine.Object.FindObjectsByType<PrologueBreakableBarrier>(FindObjectsSortMode.None);
         until=Time.time+3;while(Time.time<until)yield return null;
         Check(d.getawayCar.position.x>startPosition.x+15,"throttle actually moves the escape car");
-        Check(Vector3.Distance(officerStart,d.roadPolice[0].transform.position)>1,"roadblock police run toward approaching car");
+        Check(!d.officers.Any(o=>o.gameObject.activeInHierarchy)&&d.roadPolice.All(o=>o.gameObject.activeInHierarchy),"road gang blockades active after boarding");
         var pursuit=UnityEngine.Object.FindObjectsByType<ProloguePursuitCar>(FindObjectsSortMode.None);
         if(pursuit.Length>0){
-            Check(pursuit.Length==2&&pursuit.All(c=>c.Pursuing&&c.Travelled>4&&c.siren.isPlaying),"two police cars move with active spatial sirens");
+            Check(pursuit.Length==2&&pursuit.All(c=>c.Pursuing&&c.Travelled>4&&c.siren.isPlaying&&c.hostileGang&&c.flashes.Length==0&&c.siren.clip==SuppliedAudio.Current.playerEngine),"two gang sedans pursue with quiet engines and no police lights");
             var camP=d.filmCamera.transform.position;var camR=d.filmCamera.transform.rotation;
             d.filmCamera.transform.position=d.getawayCar.position+d.getawayCar.forward*7+Vector3.up*4;d.filmCamera.transform.LookAt(d.getawayCar.position-d.getawayCar.forward*15+Vector3.up);
             Capture(d.filmCamera,"police-pursuit");d.filmCamera.transform.SetPositionAndRotation(camP,camR);
@@ -772,11 +789,25 @@ public static class BankPrologueCheck {
         Capture(d.filmCamera,"driving");
         d.SetPaused(true);var paused=d.getawayCar.GetComponent<Rigidbody>().position;yield return null;yield return null;
         Check(d.getawayCar.GetComponent<Rigidbody>().position==paused&&!d.FinishDriving(),"pause freezes driving and blocks transition");d.SetPaused(false);
-        until=Time.time+4;while(!d.roadPolice.Any(o=>o.Dead)&&Time.time<until)yield return null;
-        Check(d.roadPolice.Any(o=>o.Dead&&o.ragdoll.IsDown),"car impact launches roadblock police into ragdoll");
+
+        Check(barriers.Length==0,"wooden barriers no longer interrupt escape");
         Capture(d.filmCamera,"roadblock");
-        until=Time.time+20;while(d.Current==BankPrologue.Phase.Driving&&Time.time<until)yield return null;
+        bool capturedImpact=false;
+        until=Time.time+20;while(d.Current==BankPrologue.Phase.Driving&&Time.time<until){
+            var struck=d.roadPolice.FirstOrDefault(o=>o.VehicleStruck&&o.ragdoll.IsDown);
+            if(!capturedImpact&&struck){
+                capturedImpact=true;var velocity=struck.ragdoll.bodies[0].linearVelocity;struck.VehicleHit(Vector3.right*99);
+                Check(struck.ragdoll.bodies[0].linearVelocity==velocity,"downed guard cannot receive repeated vehicle impulses");
+                Check(struck.ragdoll.boneColliders.All(c=>d.getawayCar.GetComponentsInChildren<Collider>().All(car=>Physics.GetIgnoreCollision(c,car))),"knocked-down guards ignore vehicle collisions");
+                Capture(d.filmCamera,"gang-breakthrough");
+            }
+            yield return null;
+        }
         Check(d.Current==BankPrologue.Phase.CityReveal&&!d.drive.Driving,"road finish triggers city arrival once");
+        Check(barriers.Length==0,"escape route uses vehicle obstacles only");
+        Check(UnityEngine.Object.FindObjectsByType<PrologueRoadblockCar>(FindObjectsSortMode.None).Any(c=>c.Cleared&&c.transform.position.x>200),"car breaks the final blockade and reaches exit");
+        Check(d.roadPolice.Count(o=>o.VehicleStruck)>=2,"actual driving impacts multiple road gang members");
+        Check(d.roadPolice.Where(o=>o.VehicleStruck).All(o=>o.Health==0?o.Dead&&o.ragdoll.Permanent:!o.Dead&&!o.ragdoll.Permanent),"vehicle knockout recovery follows remaining health");
         yield return null;
         Check(pursuit.All(c=>!c.Pursuing&&!c.siren.isPlaying),"pursuit and sirens end before city reveal");
         until=Time.time+3;while(Time.time<until)yield return null;

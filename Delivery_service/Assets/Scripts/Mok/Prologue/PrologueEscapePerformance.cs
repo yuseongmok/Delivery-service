@@ -1,7 +1,7 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 namespace DeliveryService.Mok {
-// 운전석 탑승과 조수석 지원 사격. 본편 전투·수배 상태는 변경하지 않는다.
+// 운전석 탑승과 조수석 탈출 안내. 본편 전투·수배 상태는 변경하지 않는다.
 [DefaultExecutionOrder(150)]
 public sealed class PrologueEscapePerformance : MonoBehaviour {
     public BankPrologue director;
@@ -67,6 +67,7 @@ public sealed class PrologueEscapePerformance : MonoBehaviour {
         bool driving=director.drive&&director.drive.Driving;
         if(!driving){if(partnerGun)partnerGun.gameObject.SetActive(false);return;}
         if(director.drive.Speed>2)drivingTime+=Time.deltaTime;
+        if(director.getawayCar.position.x>=185&&director.getawayCar.position.x<218)director.subtitle.text="민기: 마지막 봉쇄야! 속도 붙여서 가운데를 뚫어!";
         if(drivingTime<supportDelay||PursuitEnded)return;
         if(!target){
             while(targetIndex<pursuitCars.Length&&(!pursuitCars[targetIndex]||pursuitCars[targetIndex].DisabledByPartner))targetIndex++;

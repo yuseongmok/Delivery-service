@@ -138,7 +138,7 @@ public class CarMov : MonoBehaviour
         {
             Vector3 hitDirection = transform.forward;
             float hitForce = impactSpeed * 2.5f;
-            npc.Die(hitDirection, Mathf.Clamp(hitForce, 15f, 50f));
+            DeliveryService.Mok.TrafficKnockout.TryHit(npc, hitDirection, impactSpeed, transform);
             return;
         }
 

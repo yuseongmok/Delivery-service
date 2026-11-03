@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 namespace DeliveryService.Mok {
@@ -46,7 +46,7 @@ public sealed class ProloguePlayer : MonoBehaviour {
         if(avatarRenderers!=null)foreach(var r in avatarRenderers)r.enabled=false;
     }
     void Update() {
-        if (DeveloperCheats.Invincible || director == null || !director.CanPlay || !director.AcceptInput || KnockedDown) return;
+        if (director == null || !director.CanPlay || !director.AcceptInput || KnockedDown) return;
         // 포커스를 되찾는 클릭으로 바로 발사하지 않는다.
         bool mouseReady=Cursor.lockState==CursorLockMode.Locked;
         if(!mouseReady&&Input.GetMouseButtonDown(0)){Cursor.lockState=CursorLockMode.Locked;Cursor.visible=false;}
@@ -65,26 +65,29 @@ public sealed class ProloguePlayer : MonoBehaviour {
             ApplyWeaponRecoil();
         }
         if (mouseReady&&Input.GetMouseButton(0)) Fire();
-        if (PrologueKeyboard.Pressed(Key.R)) Reload();
+        if(PrologueKeyboard.Pressed(Key.R))Reload();
+
     }
-    public bool Fire() {
+    public int LastSwingHits {get;private set;}
+    public bool Fire(bool unused=false) {
         if (director == null || !director.CanPlay || KnockedDown || Reloading || Ammo <= 0 || Time.time < nextShot) return false;
         Ammo--; nextShot = Time.time + shotInterval;
         recoil=Mathf.Min(4.5f,recoil+Random.Range(1.05f,1.4f));
         recoilSide=Mathf.Clamp(recoilSide+Random.Range(-.23f,.23f),-.7f,.7f);recoilRoll=Random.Range(-.3f,.3f);
         if(gunFeedback)gunFeedback.Fire();else {GunshotSound.Play(gameObject, false);StartCoroutine(Flash());}
-        Vector3 end=view.transform.position+view.transform.forward*90;
-        bool hitSomething=Physics.Raycast(view.transform.position, view.transform.forward, out var hit, 90, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
+        Vector3 direction=FirearmBallistics.Direction(view,stance.AimAmount);
+        Vector3 end=view.transform.position+direction*90;
+        bool hitSomething=FirearmBallistics.Cast(view.transform.position,direction,90,transform,out var hit);
         if(hitSomething)end=hit.point;
         // 카메라가 엄폐물 밖이어도 총구가 벽에 막혔다면 관통하지 않는다.
         Vector3 start=muzzle.transform.position;
-        if(Physics.Raycast(start,(end-start).normalized,out var obstruction,Vector3.Distance(start,end),Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore)){
+        if(FirearmBallistics.Cast(start,(end-start).normalized,Vector3.Distance(start,end),transform,out var obstruction)){
             hit=obstruction;end=hit.point;hitSomething=true;
         }
         PrologueTracer.Spawn(start,end,new Color(1,.8f,.3f));
         if (hitSomething) {
             var target = hit.collider.GetComponentInParent<PrologueOfficer>();
-            if (target != null) target.ReceiveHit(35,hit.point,(end-start).normalized);
+            if (target != null) target.ReceiveHit(FirearmBallistics.Headshot(hit)?70:35,hit.point,(end-start).normalized);
             else if(combatFeedback)combatFeedback.Impact(hit.point,hit.normal,false);
         }
         ApplyRecoil();if(!Reloading)ApplyWeaponRecoil();
@@ -123,7 +126,7 @@ public sealed class ProloguePlayer : MonoBehaviour {
         reloadAudio.Stop();Reloading = false;
     }
     public bool ReceiveHit(int damage) {
-        if (director == null || !director.CanPlay || KnockedDown || Time.time < immuneUntil || damage <= 0) return false;
+        if (DeveloperCheats.Invincible || director == null || !director.CanPlay || KnockedDown || Time.time < immuneUntil || damage <= 0) return false;
         Health = Mathf.Max(0, Health - damage); immuneUntil = Time.time + 3.2f;
         director.HitFeedback();
         if (Health == 0)director.Fail();

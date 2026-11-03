@@ -10,7 +10,7 @@ public static class SyntyStoryUpgrade {
  const string Props="Assets/Synty/PolygonHeist/Prefab/Props/";
  static string report;
  // 게임플레이 뼈대와 레그돌 참조는 유지하고, Synty 스킨을 현재 뼈대에 저장해 연결한다.
- public static void Skin(Transform root,string path,string key,bool keepBag=false,bool poseMatch=false){
+ public static void Skin(Transform root,string path,string key,bool keepBag=false,bool poseMatch=false,bool articulatedHands=false){
   var target=root.GetComponentInChildren<Animator>(true);if(!target||!target.isHuman)throw new Exception("Missing humanoid "+root.name);
   var dest=root.GetComponentsInChildren<SkinnedMeshRenderer>(true).First(r=>r.sharedMesh&&r.sharedMesh.boneWeights.Length>0);
   var source=UnityEngine.Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(path));try{
@@ -19,6 +19,19 @@ public static class SyntyStoryUpgrade {
 
    source.transform.SetPositionAndRotation(root.position,root.rotation);var fit=dest.bounds;if(root.GetComponent<PlayerAvatar>())foreach(var r in root.GetComponentsInChildren<SkinnedMeshRenderer>())fit.Encapsulate(r.bounds);float scale=fit.size.y/renderer.bounds.size.y;if(poseMatch){float th=target.GetBoneTransform(HumanBodyBones.Head).position.y-target.GetBoneTransform(HumanBodyBones.LeftFoot).position.y;float sh=a.GetBoneTransform(HumanBodyBones.Head).position.y-a.GetBoneTransform(HumanBodyBones.LeftFoot).position.y;scale=th/sh;}source.transform.localScale*=scale;source.transform.position+=Vector3.up*(poseMatch?target.GetBoneTransform(HumanBodyBones.LeftFoot).position.y-a.GetBoneTransform(HumanBodyBones.LeftFoot).position.y:fit.min.y-renderer.bounds.min.y);
    var map=new Dictionary<Transform,Transform>();for(int i=0;i<(int)HumanBodyBones.LastBone;i++){var from=a.GetBoneTransform((HumanBodyBones)i);var to=target.GetBoneTransform((HumanBodyBones)i);if(from&&to)map[from]=to;}map[a.transform]=target.transform;
+   if(articulatedHands){
+    var grip=target.GetComponent<SyntyGripFingers>()??target.gameObject.AddComponent<SyntyGripFingers>();
+    var joints=new List<Transform>();var rests=new List<Quaternion>();var kinds=new List<int>();
+    // 기존 리그에 없는 손가락 본을 보존해서 손 전체가 판처럼 움직이지 않게 한다.
+    for(int i=(int)HumanBodyBones.RightThumbProximal;i<=(int)HumanBodyBones.RightLittleDistal;i++){
+     var bone=a.GetBoneTransform((HumanBodyBones)i);if(!bone)continue;
+     var parent=map.TryGetValue(bone.parent,out var found)?found:target.GetBoneTransform(HumanBodyBones.RightHand);
+     var proxy=parent.Find("Grip "+bone.name);if(!proxy){proxy=new GameObject("Grip "+bone.name).transform;proxy.SetParent(parent,false);}
+     proxy.SetPositionAndRotation(bone.position,bone.rotation);
+     map[bone]=proxy;joints.Add(proxy);rests.Add(proxy.localRotation);kinds.Add((i-(int)HumanBodyBones.RightThumbProximal)/3);
+    }
+    grip.joints=joints.ToArray();grip.rests=rests.ToArray();grip.kinds=kinds.ToArray();EditorUtility.SetDirty(grip);
+   }
    Transform Match(Transform bone){for(var t=bone;t;t=t.parent)if(map.TryGetValue(t,out var match))return match;return target.transform;}
    var mesh=UnityEngine.Object.Instantiate(renderer.sharedMesh);mesh.name="Synty "+key;if(poseMatch){var original=renderer.sharedMesh;var vertices=original.vertices;var normals=original.normals;var weights=original.boneWeights;var matrices=renderer.bones.Select((b,i)=>dest.transform.worldToLocalMatrix*b.localToWorldMatrix*original.bindposes[i]).ToArray();for(int i=0;i<vertices.Length;i++){var w=weights[i];var v=vertices[i];var n=normals[i];vertices[i]=matrices[w.boneIndex0].MultiplyPoint3x4(v)*w.weight0+matrices[w.boneIndex1].MultiplyPoint3x4(v)*w.weight1+matrices[w.boneIndex2].MultiplyPoint3x4(v)*w.weight2+matrices[w.boneIndex3].MultiplyPoint3x4(v)*w.weight3;normals[i]=(matrices[w.boneIndex0].MultiplyVector(n)*w.weight0+matrices[w.boneIndex1].MultiplyVector(n)*w.weight1+matrices[w.boneIndex2].MultiplyVector(n)*w.weight2+matrices[w.boneIndex3].MultiplyVector(n)*w.weight3).normalized;}mesh.vertices=vertices;mesh.normals=normals;}
 

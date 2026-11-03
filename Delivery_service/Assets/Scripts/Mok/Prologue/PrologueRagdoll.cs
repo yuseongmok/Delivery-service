@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
 namespace DeliveryService.Mok {
@@ -10,6 +10,7 @@ public sealed class PrologueRagdoll : MonoBehaviour {
     public Transform hips;
     public bool IsDown { get; private set; }
     public bool Permanent { get; private set; }
+    public float ChainUntil {get;set;}
     Transform[] bones;
     Vector3[] positions;
     Quaternion[] rotations;
@@ -28,12 +29,13 @@ public sealed class PrologueRagdoll : MonoBehaviour {
             foreach(var other in boneColliders)if(c!=other)Physics.IgnoreCollision(c,other);
         }
         foreach(var rb in bodies)rb.isKinematic=true;
+        if(GetComponent<PrologueOfficer>()&&!GetComponent<StunStars>())gameObject.AddComponent<StunStars>();
     }
     public void Knock(Vector3 velocity,bool permanent=false) {
         Permanent|=permanent;
         if(IsDown){if(Permanent&&recovery!=null)StopCoroutine(recovery);return;}
         if(SuppliedAudio.Current&&SuppliedAudio.Current.bodyFall){var sound=GetComponent<AudioSource>();if(!sound)sound=gameObject.AddComponent<AudioSource>();sound.spatialBlend=1;sound.PlayOneShot(SuppliedAudio.Current.bodyFall,.35f*SuppliedAudio.Volume);}
-        IsDown=true;origin=transform.position;heading=transform.rotation;
+        IsDown=true;ChainUntil=Time.time+1.2f;origin=transform.position;heading=transform.rotation;
         for(int i=0;i<bones.Length;i++){positions[i]=bones[i].localPosition;rotations[i]=bones[i].localRotation;}
         if(agent)agent.enabled=false;if(mainCollider)mainCollider.enabled=false;
         animator.enabled=false;
@@ -46,19 +48,20 @@ public sealed class PrologueRagdoll : MonoBehaviour {
         foreach(var rb in bodies){rb.isKinematic=false;rb.useGravity=true;rb.linearVelocity=velocity;rb.angularVelocity=Vector3.zero;}
         if(!Permanent)recovery=StartCoroutine(RecoverAfter());
     }
-    IEnumerator RecoverAfter(){yield return new WaitForSeconds(2);Recover();}
+    IEnumerator RecoverAfter(){yield return new WaitForSeconds(GetComponent<PrologueOfficer>()?3.5f:2);Recover();}
     public void Recover() {
         if(!IsDown||Permanent)return;
         Vector3 landing=origin;
+        var road=GetComponent<PrologueOfficer>();if(road&&road.roadGuard&&road.VehicleStruck)landing=new Vector3(hips.position.x,origin.y,hips.position.z);
         if(NavMesh.SamplePosition(hips.position,out var hit,2,NavMesh.AllAreas))landing=hit.position+Vector3.up*.04f;
         foreach(var rb in bodies){rb.linearVelocity=Vector3.zero;rb.angularVelocity=Vector3.zero;rb.isKinematic=true;}
         foreach(var c in boneColliders)c.enabled=false;
         transform.SetPositionAndRotation(landing,heading);
         for(int i=0;i<bones.Length;i++){bones[i].localPosition=positions[i];bones[i].localRotation=rotations[i];}
         animator.enabled=true;animator.Rebind();
-        animator.SetFloat("RunRate", 1.55f);animator.Update(0);
+        foreach(var p in animator.parameters)if(p.name=="RunRate")animator.SetFloat("RunRate",1.55f);animator.Update(0);
         if(mainCollider)mainCollider.enabled=true;
-        if(agent){agent.enabled=true;agent.Warp(landing);}
+        if(agent&&!(road&&road.roadGuard)){agent.enabled=true;agent.Warp(landing);}
         IsDown=false;
     }
 }

@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+﻿#if UNITY_EDITOR
 using System;using System.Collections;using System.Collections.Generic;using System.Reflection;using UnityEditor;using UnityEngine;using UnityEngine.AI;using UnityEngine.Rendering;
 namespace DeliveryService.Mok.Editor {
 public static class WeaponImpactTest {
@@ -25,12 +25,19 @@ public static class WeaponImpactTest {
    }
   }
   Check(usedSounds.Count==3,"세 무기 서로 다른 오디오 클립");
-  weapon.Equip(WeaponKind.Tuna);yield return null;var enemies=new List<GameObject>();
+  weapon.Equip(WeaponKind.Bat);yield return null;var enemies=new List<GameObject>();
   foreach(float x in new[]{-.65f,.65f}){NavMesh.SamplePosition(p.transform.position+new Vector3(x,0,2),out var spot,2,NavMesh.AllAreas);enemies.Add(Enemy("Male_Adult_NPC_1",spot.position));}yield return null;
   foreach(var e in enemies)e.GetComponent<NavMeshAgent>().isStopped=true;
   p.View.transform.LookAt(p.transform.position+new Vector3(0,1.2f,2));Physics.SyncTransforms();var feedback=p.GetComponent<KickImpactFeedback>();int previous=feedback.HitCount;
-  Check(weapon.Resolve()==2&&feedback.HitCount==previous+1,"참치 2명 동시 타격에도 효과 중첩 없음");foreach(var e in enemies)UnityEngine.Object.Destroy(e);yield return null;
+  Check(weapon.Resolve()==2&&feedback.HitCount==previous+1,"배트 2명 동시 타격에도 효과 중첩 없음");foreach(var e in enemies)UnityEngine.Object.Destroy(e);yield return null;
   var wall=GameObject.CreatePrimitive(PrimitiveType.Cube);wall.transform.position=p.View.transform.position+p.View.transform.forward;wall.transform.localScale=new Vector3(4,3,.4f);Physics.SyncTransforms();Check(weapon.Resolve()==0&&feedback.HitCount==previous+1,"벽 타격 효과 없음");UnityEngine.Object.Destroy(wall);
+  var lead=Enemy("Male_Adult_NPC_1",p.transform.position+Vector3.forward*1.3f);var rear=Enemy("Male_Adult_NPC_1",p.transform.position+Vector3.forward*2.6f);yield return null;
+  lead.GetComponent<NavMeshAgent>().isStopped=true;rear.GetComponent<NavMeshAgent>().isStopped=true;Physics.SyncTransforms();
+  Check(lead.GetComponent<CitizenCombat>().ReceiveKick(p,Vector3.forward,45),"본편 배트 밀쳐내기 시작");
+  float deadline=Time.time+1.5f;while(!rear.GetComponent<NPCControl>().IsKnockedDown&&Time.time<deadline)yield return null;
+  Check(rear.GetComponent<NPCControl>().IsKnockedDown,"본편에서도 실제 몸통 충돌로 연쇄 기절");
+  Check(lead.GetComponent<StunStars>().Visible&&rear.GetComponent<StunStars>().Visible,"본편 연쇄 기절 대상 별 표시");
+  UnityEngine.Object.Destroy(lead);UnityEngine.Object.Destroy(rear);
   KickImpactFeedback.Play(p);Check(feedback.LastWeapon==WeaponKind.None,"기존 발차기 효과 유지");float until=Time.time+.3f;while(Time.time<until)yield return null;Check(!feedback.IsShaking,"흔들림 자동 종료");
  }
 }

@@ -22,7 +22,7 @@ public sealed class VenueFinale : MonoBehaviour {
  public AudioSource sound,engine;public AudioClip stamp,alarm,doorOpen,doorClose;
  public float observeSeconds=3,openingSeconds=5,revealSeconds=3.5f,boardingSeconds=3.2f,driveSeconds=6;
  [TextArea(2,6)]public string[] opening={"민기: 오늘은 문 닫아. 납품 승인, 출입구, 탈출 차량까지 준비됐어.","민기: 박진웅한테 따지러 가는 게 아니야. 왜 우릴 쫓는지, 안 들키고 들어 봐.","정비사: 약속한 곳에 차와 열쇠를 뒀어. 난 먼저 빠질게."};
- [TextArea(2,6)]public string[] overheard={"박진웅: 새 사업 자금은 그 은행 돈으로 채워. 민기한테 맡겼던 일, 아직도 마무리가 안 됐나?","조직원: 실장을 놓쳤습니다. 민기와 같이 일한 놈도 살아 있습니다. 약속한 보수를 기다리는 모양입니다.","박진웅: 보수? 금고 열라고 쓴 놈들이야. 돈 회수하면 실장까지 전부 없애. 우리 이름을 아는 놈을 남길 순 없지.","나: 처음부터 돈만 챙기고 우릴 없앨 생각이었어.\n민기: …들었어. 더 듣지 마. 거기서 나와."};
+ [TextArea(2,6)]public string[] overheard={"박진웅: 새 사업 자금은 그 경쟁 조직의 금고 자금으로 채워. 민기한테 맡겼던 일, 아직도 마무리가 안 됐나?","조직원: 실장을 놓쳤습니다. 민기와 같이 일한 놈도 살아 있습니다. 약속한 보수를 기다리는 모양입니다.","박진웅: 보수? 금고 열라고 쓴 놈들이야. 돈 회수하면 실장까지 전부 없애. 우리 이름을 아는 놈을 남길 순 없지.","나: 처음부터 돈만 챙기고 우릴 없앨 생각이었어.\n민기: …들었어. 더 듣지 마. 거기서 나와."};
  [TextArea(2,6)]public string[] closing={"나: 여기까지 왔어. 차는 두고 갈게.","나: 실장도 우리도, 처음부터 버릴 패였어. 박진웅이 직접 말했어.","민기: 내가 믿고 널 끌어들였어. 미안하다. …여기선 잠깐 쉬어. 앞으로 어떻게 할지 같이 생각하자."};
  public float ObservationProgress{get;private set;}public bool IntelSecured{get;private set;}public string FailureReason{get;private set;}public int EventDay{get;private set;}public CitizenCombat[] Enemies=>enemies.Where(e=>e).ToArray();
  readonly List<CitizenCombat> enemies=new();bool locked,oldMove,oldControl,oldLook,insideVenue,reinforced,turned,announced;int line;float entered,noticeUntil;Vector3 carOrigin;Quaternion carRotation;Camera gameplay;PlayerMove move;CameraMove look;Renderer[] hiddenRenderers;bool[] hiddenStates;PhoneController lockedPhone;bool phoneWasEnabled,phoneWasVisible;GameObject hiddenPhone;
@@ -69,7 +69,7 @@ public sealed class VenueFinale : MonoBehaviour {
  if(State==Phase.Deposit)pizza.SetActive(false);
  var patrol=stealth?stealth.TakeCombatGuards():new CitizenCombat[0];
  // 일찍 들켜도 핵심 단서를 놓쳐 다음 이야기로 진행하지 못하는 일이 없게 한다.
- if(early){IntelSecured=true;StoryPhoneInbox.Current?.SendFrom("민기","급히 잡힌 통신","네가 빠져나오는 동안 남은 통신을 들었어. 은행 돈은 사업 자금이고, 회수하면 우리와 실장을 없앨 계획이었어. 지금은 살아서 나와!");}
+ if(early){IntelSecured=true;StoryPhoneInbox.Current?.SendFrom("민기","급히 잡힌 통신","네가 빠져나오는 동안 남은 통신을 들었어. 경쟁 조직의 금고 자금은 사업 자금이고, 회수하면 우리와 실장을 없앨 계획이었어. 지금은 살아서 나와!");}
  Set(Phase.Exposed);Lock();Shot(Player.View.transform.position,target.position+Vector3.up*1.3f);if(patrol.Length>0){foreach(var guard in patrol){guard.Provoke(Player);enemies.Add(guard);}}else Spawn(interiorPosts,2);foreach(var e in enemies)e.ExternalAttackControl=true;
  Shot(Player.View.transform.position,target.position+Vector3.up*1.3f);
  Notice(early?"박진웅: 저 배달원 잡아! 우리 얘기를 들었어. 살려 보내지 마!\n민기: 들켰어! 들어온 문으로 빠져!":"박진웅: 저 배달원, 언제부터 듣고 있었어? 잡아. 밖으로 나가기 전에 없애!\n민기: 뛰어! 들어온 문으로 빠져!");if(alarm&&(!SuppliedAudio.Current||!SuppliedAudio.Current.escalation))StorySoundMix.Play(sound,alarm,.4f);
@@ -111,7 +111,7 @@ public sealed class VenueFinale : MonoBehaviour {
  case Phase.Exposed:Release();Set(Phase.InteriorEscape);foreach(var e in enemies)if(e)e.ExternalAttackControl=false;Notice("민기: 출구가 봉쇄됐어! 경비 두 명을 제압하고 들어왔던 접수실 입구로 빠져!");break;
  case Phase.Boarding:cinema.nearClipPlane=boardingNear;door.localRotation=Quaternion.identity;passenger.position=seat.position;passenger.rotation=seat.rotation;if(doorClose)StorySoundMix.Play(sound,doorClose,.6f);Set(Phase.Driving);getaway.Begin();Notice("나: 이 차는 추적될 수 있어. 수리점 인근에 버리고 가게로 돌아가자.",7);break;
  case Phase.Abandoning:cinema.nearClipPlane=exitNear;door.localRotation=Quaternion.identity;if(doorClose)StorySoundMix.Play(sound,doorClose,.5f);getaway.Stop();fade.gameObject.SetActive(false);if(engine)engine.Stop();BeginHomecoming();break;
- case Phase.Debrief:Release();Set(Phase.Complete);CleanupProps();Notice("첫 번째 사건 · 마지막 배달 완료\n은행 의뢰의 진실과 조직의 제거 계획 확인",10);StoryPhoneInbox.Current?.Send("첫 번째 사건 완료","돌아와서 다행이야. 은행 일은 조직의 사업 자금을 마련하려던 거였고, 돈을 회수하면 우리까지 없앨 계획이었어. 이제 실장에게도 알려야 해. 오늘은 가게에서 숨을 돌리자.",true);break;}}
+ case Phase.Debrief:Release();Set(Phase.Complete);CleanupProps();Notice("첫 번째 사건 · 마지막 배달 완료\n회수 의뢰의 진실과 조직의 제거 계획 확인",10);StoryPhoneInbox.Current?.Send("첫 번째 사건 완료","돌아와서 다행이야. 금고 회수 작전은 조직의 사업 자금을 마련하려던 거였고, 돈을 회수하면 우리까지 없앨 계획이었어. 이제 실장에게도 알려야 해. 오늘은 가게에서 숨을 돌리자.",true);break;}}
  // 차를 버린 뒤 암전 속에서 실제 플레이어를 가게로 옮기고 민기와 마주한다.
  void BeginHomecoming(){
  Set(Phase.Debrief);Clean();PlacePlayer(safePoint);var mingi=preparation.preparation.delivery.kitchen.actor;var stand=preparation.preparation.delivery.returnPoint;

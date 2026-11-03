@@ -19,11 +19,11 @@ public sealed class BrokerMission : MonoBehaviour {
  public float followSpeed=5.4f,pursuitSpeed=4.5f,reinforcementDelay=14f,safeSeconds=3f;
  [TextArea(2,5)]public string[] meetingLines={
   "실장: 목소리 낮춰. 내 문자, 너희 둘만 봤지?",
-  "나: 조직 일이라며 은행까지 털었어. 그런데 왜 연락을 끊고, 이제 와서 도와 달라는 거야?",
+  "나: 조직 일이라며 다른 조직의 금고까지 들어갔어. 그런데 왜 연락을 끊고, 이제 와서 도와 달라는 거야?",
   "실장: 끊은 게 아니야. 돈 받을 장소로 갔더니 우리 조직 놈들이 날 죽이려 들었어. 이유는 나도 몰라.",
   "조직원: 실장 옆에 저놈도 있다! 놓치지 마!\n실장: 따라붙었어! 여기선 안 돼. 일단 같이 빠져나가자!"};
  [TextArea(2,5)]public string[] endingLines={
-  "실장: 은행 일을 승인한 건 박진웅이야. 조직 돈줄을 쥔 사람이니, 왜 우릴 쫓는지도 알 거야.",
+  "실장: 금고 회수 작전을 승인한 건 박진웅이야. 조직 돈줄을 쥔 사람이니, 왜 우릴 쫓는지도 알 거야.",
   "나: 만나서 직접 물어보라는 거야?\n실장: 그러다 죽어. 비공개 행사에 나온다니, 먼저 무슨 말을 하는지 들어 봐. 납품 담당자 연락처를 줄게.",
   "민기: 받았어. 피자 가게 이름으로 들어가면 되겠네. 내일 시식 납품 약속부터 잡을게. 오늘은 돌아와."};
  CitizenCombat[] enemies=new CitizenCombat[4];NavMeshAgent guide;Animator animator;

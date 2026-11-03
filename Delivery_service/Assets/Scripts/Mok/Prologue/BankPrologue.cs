@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
@@ -31,10 +31,10 @@ public sealed class BankPrologue : MonoBehaviour {
     public CanvasGroup logo;
     [Header("대사 파일 — Project에서 선택해 문장과 시간을 수정")]
     public PrologueStory story;
-    [Header("확장 은행의 탈출 순서")]
+    [Header("금고 시설의 탈출 순서")]
     public Transform[] escapeRoute = new Transform[0];
     public Transform[] policeEntryTargets = new Transform[0];
-    [Header("경찰 증원")]
+    [Header("조직원 증원")]
     [Min(2)] public int initialPolice = 8;
     [Min(1)] public int waveSize = 4, maxActivePolice = 16;
     [Min(1)] public float waveInterval = 7;
@@ -195,8 +195,8 @@ public sealed class BankPrologue : MonoBehaviour {
             if(RouteStep<story.routeLines.Length)subtitle.text=story.routeLines[RouteStep];
         }
         string route=RouteStep<story.routeNames.Length?story.routeNames[RouteStep]:"정문 앞 도주 차량";
-        objective.text = Current == Phase.Robbery ? $"공범이 돈을 챙기는 동안 경찰을 막으세요   {Collected} / {cash.Length}" : $"공범과 함께 탈출  /  {route}";
-        ammo.text = player.Reloading ? "재장전 중…" : $"{player.Ammo} / {player.magazineSize}\nR  재장전";
+        objective.text = Current == Phase.Robbery ? $"공범이 돈을 챙기는 동안 조직원들을 막으세요   {Collected} / {cash.Length}" : $"공범과 함께 탈출  /  {route}";
+        ammo.text = player.Reloading?"재장전 중":$"{player.Ammo} / {player.magazineSize}";
         health.gameObject.SetActive(false);
         UpdateBattleRhythm();
         if (BattleBeat!=CombatBeat.Breather && BattleBeat!=CombatBeat.FirstContact && Time.time >= waveTime && reinforcements < officers.Length) {
@@ -278,7 +278,9 @@ public sealed class BankPrologue : MonoBehaviour {
         subtitle.text=story.boarding.text;
         skip=false;Current=Phase.Driving;bars.alpha=0;
         player.GetComponent<CharacterController>().enabled=false;
-        foreach(var officer in roadPolice){officer.gameObject.SetActive(true);}
+        // 차량 진행 구간에는 사람을 배치하지 않는다.
+        foreach(var officer in officers){officer.Stop();officer.gameObject.SetActive(false);}
+        foreach(var officer in roadPolice){officer.gameObject.SetActive(true);officer.Stop();}
         subtitle.text=story.driving;
         filmCamera.transform.SetPositionAndRotation(getawayCar.TransformPoint(drive.driverEye),getawayCar.rotation);
         // 운전 구간에서는 뒤따르는 경찰차의 공간 사이렌을 듣게 한다.
@@ -332,7 +334,7 @@ public sealed class BankPrologue : MonoBehaviour {
         Current = Phase.Failed;
         foreach (var officer in officers) officer.Stop();
         subtitle.text = story.failure;
-        objective.text = "R  은행에서 다시 시작";
+        objective.text = "R  회수 작전 다시 시작";
         prompt.text = "Esc  메뉴";
         crosshair.SetActive(false);
     }
