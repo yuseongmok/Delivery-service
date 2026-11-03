@@ -1,0 +1,39 @@
+﻿#if UNITY_EDITOR
+using System;using System.IO;using System.Linq;using System.Collections.Generic;using UnityEngine;using UnityEditor;using UnityEditor.SceneManagement;using UnityEngine.SceneManagement;
+namespace DeliveryService.Mok.Editor {
+[CustomEditor(typeof(GameDialogue))]public sealed class GameDialogueInspector:UnityEditor.Editor {
+ public override void OnInspectorGUI(){EditorGUILayout.HelpBox("프롤로그부터 감옥 도입까지의 대사와 문자입니다. 편집 창에서 검색·수정·저장할 수 있습니다.",MessageType.Info);if(GUILayout.Button("대사 편집 창 열기",GUILayout.Height(32)))GameDialogueWindow.Open();EditorGUILayout.LabelField("등록 문장",((GameDialogue)target).entries.Count.ToString());}
+}
+public sealed class GameDialogueWindow:EditorWindow {
+ string search="";int group,page;Vector2 scroll;bool modifiedOnly;GameDialogue book;
+ [MenuItem("Tools/Delivery Service/대사 편집")]
+ public static void Open(){var w=GetWindow<GameDialogueWindow>("게임 대사 편집");w.minSize=new Vector2(620,500);w.Show();}
+ void OnGUI(){book=AssetDatabase.LoadAssetAtPath<GameDialogue>(GameDialogueInstaller.Path);if(!book){EditorGUILayout.HelpBox("대사 목록을 먼저 생성해 주세요.",MessageType.Info);if(GUILayout.Button("대사 목록 생성"))GameDialogueInstaller.Install();return;}
+ EditorGUILayout.HelpBox("문장 내용만 바꿔도 게임 화면에 반영됩니다. 미션 조건·문자 읽음 판정은 유지됩니다. 수정 후 저장을 누르세요. 화자명 뒤의 : 표기를 유지하면 화자 색상이 적용됩니다.",MessageType.Info);
+ using(new EditorGUILayout.HorizontalScope()){search=EditorGUILayout.TextField("문장 / 인물 검색",search);if(GUILayout.Button("저장",GUILayout.Width(70))){AssetDatabase.SaveAssets();ShowNotification(new GUIContent("대사 저장 완료"));}if(GUILayout.Button("에셋 선택",GUILayout.Width(85)))Selection.activeObject=book;}
+ var groups=new[]{"전체"}.Concat(book.entries.Select(e=>e.group).Distinct().OrderBy(t=>t)).ToArray();group=Mathf.Clamp(group,0,groups.Length-1);using(new EditorGUILayout.HorizontalScope()){group=EditorGUILayout.Popup("구간",group,groups);modifiedOnly=EditorGUILayout.ToggleLeft("수정한 문장만",modifiedOnly,GUILayout.Width(120));}
+ var list=book.entries.Where(e=>(group==0||e.group==groups[group])&&(!modifiedOnly||e.text!=e.original)&&(string.IsNullOrEmpty(search)||(e.text??"").Contains(search)||e.original.Contains(search)||e.group.Contains(search))).ToArray();int pages=Mathf.Max(1,Mathf.CeilToInt(list.Length/30f));page=Mathf.Clamp(page,0,pages-1);
+ using(new EditorGUILayout.HorizontalScope()){EditorGUILayout.LabelField(list.Length+"개 문장 · "+(page+1)+" / "+pages);if(GUILayout.Button("이전",GUILayout.Width(60)))page=Mathf.Max(0,page-1);if(GUILayout.Button("다음",GUILayout.Width(60)))page=Mathf.Min(pages-1,page+1);}
+ scroll=EditorGUILayout.BeginScrollView(scroll);foreach(var e in list.Skip(page*30).Take(30)){using(new EditorGUILayout.VerticalScope(EditorStyles.helpBox)){EditorGUILayout.LabelField(e.group,EditorStyles.boldLabel);EditorGUI.BeginChangeCheck();var text=EditorGUILayout.TextArea(e.text??"",GUILayout.MinHeight(64));if(EditorGUI.EndChangeCheck()){Undo.RecordObject(book,"대사 수정");e.text=text;EditorUtility.SetDirty(book);GameDialogue.Invalidate();}using(new EditorGUILayout.HorizontalScope()){EditorGUILayout.LabelField(new GUIContent("원문: "+e.original,e.original),EditorStyles.miniLabel);if(e.text!=e.original&&GUILayout.Button("원문 복구",GUILayout.Width(76))){Undo.RecordObject(book,"대사 복구");e.text=e.original;EditorUtility.SetDirty(book);GameDialogue.Invalidate();}}}}
+ EditorGUILayout.EndScrollView();
+ }
+}
+[InitializeOnLoad]public static class GameDialogueInstaller {
+ public const string Path="Assets/Scripts/Mok/Resources/GameDialogue.asset";
+ [Serializable]public class Seeds{public List<GameDialogue.Entry> entries;}
+ static GameDialogueInstaller(){EditorApplication.update+=Poll;}
+ static void Poll(){if(EditorApplication.isCompiling||EditorApplication.isPlayingOrWillChangePlaymode||!File.Exists("Temp/Dialogue-request"))return;string request=File.ReadAllText("Temp/Dialogue-request").Trim();File.Delete("Temp/Dialogue-request");try{if(request=="prepare-test"){string folder="Logs/Dialogue-scene-backup-"+DateTime.Now.ToString("yyyyMMdd-HHmmss");Directory.CreateDirectory(folder);for(int i=0;i<SceneManager.sceneCount;i++){var scene=SceneManager.GetSceneAt(i);if(!scene.isDirty)continue;if(string.IsNullOrEmpty(scene.path))throw new Exception("Unnamed scene; cannot save for test.");File.Copy(scene.path,folder+"/"+scene.name+"-disk.unity");EditorSceneManager.SaveScene(scene,folder+"/"+scene.name+"-unsaved.unity",true);EditorSceneManager.SaveScene(scene);}File.WriteAllText("Logs/Dialogue-result.txt","PASS scene backups: "+folder);}else Install();}catch(Exception e){File.WriteAllText("Logs/Dialogue-result.txt",e.ToString());}}
+ static string Group(string name){switch(name){case "PrologueStory":case "BankPrologue":case "PrologueShopArrival":return "01 프롤로그";case "PrologueEscapePerformance":return "02 프롤로그 차량 탈출";case "StoryTutorial":return "03 첫 배달 튜토리얼";case "BrokerMission":return "04 연락이 끊긴 중개인";case "SpecialOrderMission":return "05 특별 주문";case "BackdoorMission":return "06 도시의 뒷문";case "MechanicMission":return "07 빚진 정비사";case "ShopEscapeChapter":return "10 매장 탈출 · 감옥 도입";case "StoryPhoneInbox":return "11 휴대폰 문자";case "FirstWantedLesson":return "12 첫 수배 안내";case "RacerNPCInteraction":return "13 레이서";case "VenueGetawayDrive":case "VenueStreetPursuit":case "VenueVehiclePursuit":return "09 마지막 배달 탈출";default:return "08 마지막 배달 · 스토리 안내";}}
+ public static void Install(){
+  var book=AssetDatabase.LoadAssetAtPath<GameDialogue>(Path);if(!book){Directory.CreateDirectory("Assets/Scripts/Mok/Resources");book=ScriptableObject.CreateInstance<GameDialogue>();AssetDatabase.CreateAsset(book,Path);}else File.Copy(Path,"Logs/GameDialogue-before-"+DateTime.Now.ToString("yyyyMMdd-HHmmss")+".asset",true);
+  var seen=new HashSet<string>(book.entries.Select(e=>e.original));int added=0;
+  void Add(string text,string group,string id){if(string.IsNullOrEmpty(text)||text.Length<9||!text.Any(c=>c>='가'&&c<='힣')||!seen.Add(text))return;book.entries.Add(new GameDialogue.Entry{id=id,group=Group(group),original=text,text=text});added++;}
+  // 현재 저장된 사용자 대사를 우선 가져온다. 재실행해도 수정해 둔 항목은 덮어쓰지 않는다.
+  foreach(var path in new[]{StoryTutorialBuilder.Main,BankPrologueBuilder.ScenePath}){var scene=SceneManager.GetSceneByPath(path);if(!scene.isLoaded)scene=EditorSceneManager.OpenScene(path,OpenSceneMode.Additive);foreach(var m in scene.GetRootGameObjects().SelectMany(g=>g.GetComponentsInChildren<MonoBehaviour>(true)).Where(m=>m&&(new[]{"BankPrologue","PrologueShopArrival","PrologueEscapePerformance","StoryTutorial","BrokerMission","SpecialOrderMission","BackdoorMission","MechanicMission","VenueFinale","VenueStealth","VenuePatrolGuard","VenueStreetPursuit","VenueGetawayDrive","VenueVehiclePursuit","ShopEscapeChapter","FirstWantedLesson","StoryPhoneInbox","RacerNPCInteraction"}.Contains(m.GetType().Name)))){var so=new SerializedObject(m);var iterator=so.GetIterator();while(iterator.Next(true))if(iterator.propertyType==SerializedPropertyType.String)Add(iterator.stringValue,m.GetType().Name,path+":"+m.name+"."+iterator.propertyPath);}}
+  foreach(var kind in new[]{"PrologueStory","NightPreparationPlan"})foreach(var guid in AssetDatabase.FindAssets("t:"+kind)){var asset=AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GUIDToAssetPath(guid));var so=new SerializedObject(asset);var it=so.GetIterator();while(it.Next(true))if(it.propertyType==SerializedPropertyType.String)Add(it.stringValue,kind,asset.name+"."+it.propertyPath);}
+  var seeds=JsonUtility.FromJson<Seeds>(File.ReadAllText("Assets/Scripts/Mok/Editor/DialogueSeeds.json"));foreach(var e in seeds.entries)Add(e.original,e.group,e.id);
+  book.entries=book.entries.OrderBy(e=>e.group).ToList();EditorUtility.SetDirty(book);AssetDatabase.SaveAssets();GameDialogue.Invalidate();File.WriteAllText("Logs/Dialogue-result.txt","PASS dialogue catalog saved: "+book.entries.Count+" entries; added="+added);Selection.activeObject=book;
+ }
+}
+}
+#endif

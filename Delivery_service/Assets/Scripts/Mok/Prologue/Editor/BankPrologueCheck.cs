@@ -77,6 +77,8 @@ public static class BankPrologueCheck {
             if(command=="driving-hands")PrologueDrivingHandsBuilder.Apply();
             if(command=="driving-inspect")PrologueCameraUpgrade.InspectDriving();
             if(command=="prologue-camera")PrologueCameraUpgrade.Apply();
+            if(command=="test-conspiracy"){NightPreparationCheck.Backup();SessionState.SetBool(Key+".conspiracy",true);SessionState.SetBool(Key+".night",true);StartTest();}
+            if(command=="test-dialogue"){NightPreparationCheck.Backup();SessionState.SetBool(Key+".dialogue",true);SessionState.SetBool(Key+".night",true);StartTest();}
             if(command=="test-homecoming"){NightPreparationCheck.Backup();SessionState.SetBool(Key+".homecoming",true);SessionState.SetBool(Key+".night",true);StartTest();}
             if(command=="test-story-days"){NightPreparationCheck.Backup();SessionState.SetBool(Key+".storyDays",true);SessionState.SetBool(Key+".night",true);StartTest();}
             if(command=="venue-homecoming")VenueHomecomingEdit.Apply();
@@ -321,6 +323,8 @@ public static class BankPrologueCheck {
         if(SessionState.GetBool(Key+".cheats",false)){SessionState.SetBool(Key+".cheats",false);SessionState.SetBool(Key+".night",false);yield return DeveloperCheatsCheck.Verify();yield break;}
         if(SessionState.GetBool(Key+".role",false)){SessionState.SetBool(Key+".role",false);SessionState.SetBool(Key+".night",false);yield return RoleVisualUpgrade.Verify();yield break;}
         if(SessionState.GetBool(Key+".comfort",false)){SessionState.SetBool(Key+".comfort",false);SessionState.SetBool(Key+".night",false);yield return MissionComfortPlayCheck.Verify();yield break;}
+        if(SessionState.GetBool(Key+".conspiracy",false)){SessionState.SetBool(Key+".conspiracy",false);SessionState.SetBool(Key+".night",false);yield return ConspiracyStoryCheck.Verify();yield break;}
+        if(SessionState.GetBool(Key+".dialogue",false)){SessionState.SetBool(Key+".dialogue",false);SessionState.SetBool(Key+".night",false);yield return GameDialogueCheck.Verify();yield break;}
         if(SessionState.GetBool(Key+".homecoming",false)){SessionState.SetBool(Key+".homecoming",false);SessionState.SetBool(Key+".night",false);yield return StoryDaysCheck.Homecoming();yield break;}
         if(SessionState.GetBool(Key+".storyDays",false)){SessionState.SetBool(Key+".storyDays",false);SessionState.SetBool(Key+".night",false);yield return StoryDaysCheck.Verify();yield break;}
         if(SessionState.GetBool(Key+".reroute",false)){SessionState.SetBool(Key+".reroute",false);SessionState.SetBool(Key+".night",false);yield return VenueFinaleCheck.Reroute();yield break;}

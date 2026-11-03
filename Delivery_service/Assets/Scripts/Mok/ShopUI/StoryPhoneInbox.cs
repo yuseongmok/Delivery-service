@@ -52,7 +52,7 @@ public sealed class StoryPhoneInbox : MonoBehaviour {
   if(Time.timeScale<=0)return;
   PresentPending();
   if(toast.activeSelf&&Time.unscaledTime>=until)toast.SetActive(false);
-  if(StoryTutorial.Active||!mission)return;
+  if(StoryTutorial.Active||!mission||(VenueFinale.Active&&VenueFinale.Current.State==VenueFinale.Phase.Aftermath))return;
   if(!introduced){introduced=true;SendFrom("실장","연락이 끊긴 중개인",invitation,true);}
   if(cycle.IsNightPreparation&&!nightSent&&!mission.Completed){nightSent=true;Send("실장을 만나러 가자",nightMessage,true);}
   if(cycle.IsNightPreparation){

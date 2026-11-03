@@ -3,6 +3,7 @@ using UnityEngine.UI;
 namespace DeliveryService.Mok {
 // 씬에서 연결한 프리팹을 기존 휴대폰 화면에 표시한다.
 public sealed class StoryPhoneApp : MonoBehaviour {
+ void Awake(){EditableStoryText.Bind(this);}
  public NightPreparationPlan plan;public GameObject panel;public Text heading,body,action;public Text[] rows;public Image[] cards;public Image detailPaper;
  public bool MessagesMode {get;private set;}public int Selection {get;private set;}public bool Detail {get;private set;}
  public int VisibleMissionCount { get { int n=1;if(BrokerMission.Current&&BrokerMission.Current.Completed){n=2;if(SpecialOrderMission.Current&&SpecialOrderMission.Current.Completed){n=3;if(BackdoorMission.Current&&BackdoorMission.Current.Completed){n=4;if(MechanicMission.Current&&MechanicMission.Current.Completed)n=5;}}}return Mathf.Min(n,plan.missions.Length); } }

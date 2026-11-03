@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 using DeliveryService.Mok;
@@ -67,7 +67,7 @@ public class RacerNPCInteraction : MonoBehaviour, IInteractable
         {
             var rect = new Rect(Screen.width * .15f, Screen.height * .72f, Screen.width * .7f, Screen.height * .23f);
             GUI.Box(rect, GUIContent.none);
-            GUI.Label(new Rect(rect.x + 20, rect.y + 10, rect.width - 40, rect.height - 20), npcName + "\n" + dialogueMessage + "\n[F] 대화 종료", style);
+            GUI.Label(new Rect(rect.x + 20, rect.y + 10, rect.width - 40, rect.height - 20), npcName + "\n" + GameDialogue.Resolve(dialogueMessage) + "\n[F] 대화 종료", style);
         }
         else if (player && player.CanAct && npc && !npc.IsDead && !npc.IsKnockedDown && !npc.ExternalControl &&
             Physics.Raycast(player.View.transform.position, player.View.transform.forward, out var hit, interactDistance) && hit.collider.GetComponentInParent<RacerNPCInteraction>() == this)

@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 namespace DeliveryService.Mok {
 // 같은 곡을 끊지 않고 이어가며 대화·컷씬에서는 볼륨만 낮춘다.
 [DisallowMultipleComponent]
@@ -13,6 +13,7 @@ public sealed class PrologueMissionMusic : MonoBehaviour {
   if(Time.timeScale<=0||(director&&director.Paused)){if(!paused){source.Pause();paused=true;}return;}
   if(paused){source.UnPause();paused=false;}
   float level=director?PrologueLevel(director.Current):venue?FinaleLevel(venue.State):0;
+  if(venue&&venue.State==VenueFinale.Phase.Aftermath&&venue.aftermath)level=venue.aftermath.InPrison?0:venue.aftermath.State==ShopEscapeChapter.Stage.Escape?.14f:.06f;
   bool active=level>0;
   float volume=level*(StorySoundMix.DuckActive?.42f:1)*Mathf.Clamp01(PlayerPrefs.GetFloat("Yun.Settings.BgmVolume",1));
   if(active&&!source.isPlaying)source.Play();

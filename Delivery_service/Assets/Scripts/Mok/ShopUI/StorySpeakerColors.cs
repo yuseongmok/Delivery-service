@@ -1,11 +1,11 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 namespace DeliveryService.Mok {
 // 대사 원문은 그대로 편집하고, 화면에 표시할 때 화자별 색을 입힌다.
 [DefaultExecutionOrder(10000)]
 [RequireComponent(typeof(Text))]
 public sealed class StorySpeakerColors : MonoBehaviour {
- Text label;string displayed;
+ Text label;string displayed,original;int revision=-1;
  void Awake(){label=GetComponent<Text>();label.supportRichText=true;label.color=Color.white;}
  public static string Format(string source){
   string color="FFF0D4";var lines=source.Split('\n');
@@ -23,6 +23,6 @@ public sealed class StorySpeakerColors : MonoBehaviour {
    lines[i]="<color=#"+(s.StartsWith("[")?"BCC6CD":color)+">"+s+"</color>";
   }return string.Join("\n",lines);
  }
- void LateUpdate(){if(!label||label.text==displayed)return;displayed=Format(label.text);label.text=displayed;}
+ void LateUpdate(){if(!label)return;if(label.text!=displayed)original=label.text;else if(revision==GameDialogue.Revision)return;revision=GameDialogue.Revision;displayed=Format(GameDialogue.Resolve(original??""));label.text=displayed;}
 }
 }

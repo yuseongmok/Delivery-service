@@ -10,7 +10,7 @@ public class PrologueLine {
 public sealed class PrologueStory : ScriptableObject {
     [Header("시작 컷신 — 문장과 표시 시간을 수정하세요")]
     public string title = "프롤로그  /  회수 작전";
-    public PrologueLine vault = new PrologueLine("민기: 다른 조직에 빼앗긴 돈만 되찾는 거래. 금고는 내가 열게. 뒤를 봐 줘.");
+    public PrologueLine vault = new PrologueLine("민기: 박진웅이 야마자키에 빼앗긴 우리 돈을 회수하래. 금고는 내가 열게. 뒤를 봐 줘.");
     public PrologueLine alarm = new PrologueLine("민기: 경보야! 비어 있다더니! 돈은 내가 챙길게. 출구를 지켜!");
     public PrologueLine police = new PrologueLine("조직원: 금고에 침입자다! 얼굴 똑똑히 봤어. 출구 막아!", 3.5f);
     [Header("전투와 탈출")]
@@ -33,11 +33,11 @@ public sealed class PrologueStory : ScriptableObject {
     [Header("도주 후 대화와 피자 가게 — 각 문장과 표시 시간을 수정")]
     public PrologueLine[] carConversation={
         new PrologueLine("나: 비어 있는 금고라더니, 무장한 놈들이 기다리고 있었잖아!",4.5f),
-        new PrologueLine("민기: 빼앗긴 돈만 회수하면 된다고 했어. 우리도 속은 거야.",4.5f),
+        new PrologueLine("민기: 박진웅이 빼앗긴 돈만 회수하면 된다고 했어. 실장도 비어 있다고 했고.",4.5f),
         new PrologueLine("나: 저쪽 조직이 우리 얼굴까지 봤어. 실장은 뭐래?",4f),
         new PrologueLine("민기: 전화가 안 돼. 약속 장소에도 없대.",3.5f),
         new PrologueLine("나: 우리가 미끼였던 건가?",3f),
-        new PrologueLine("민기: 아직은 몰라. 연락 올 때까지 신분을 숨기고 조용히 기다리자.",5f),
+        new PrologueLine("민기: 얼굴이 노출됐어. 연락이 다시 닿을 때까지 우리가 알아서 숨어 있어야 해.",5f),
         new PrologueLine("민기: 아버지가 하던 피자 가게가 있어. 거기로 가자.",4f)
     };
     public PrologueLine[] shopConversation={

@@ -52,6 +52,7 @@ public sealed class CompactHUD : MonoBehaviour {
     static void HideGauge(Image image){if(image==null)return;image.enabled=false;if(image.transform.parent!=null)foreach(var text in image.transform.parent.GetComponentsInChildren<Text>(true))text.enabled=false;}
     void LateUpdate(){using(DeliveryService.Mok.PerformanceMarkers.HUD.Auto()){
         if(timeLabel==null||clock==null)return;
+        var story=VenueFinale.Current?VenueFinale.Current.aftermath:null;bool chapterView=story&&story.State>=ShopEscapeChapter.Stage.Arrest;GetComponent<Canvas>().enabled=!chapterView;if(chapterView)return;
         int minutes=Mathf.FloorToInt(clock.currentTime*60);timeLabel.text=$"DAY {clock.currentDay}  ·  {minutes/60:00}:{minutes%60:00}";
         string value=sourceOrder!=null?sourceOrder.text:"";var lines=value.Split('\n');
         bool active=orders!=null&&orders.HasActiveOrder;
