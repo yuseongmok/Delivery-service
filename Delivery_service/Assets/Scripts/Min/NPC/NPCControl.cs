@@ -243,6 +243,6 @@ public class NPCControl : MonoBehaviour
 
     public void Die()
     {
-        Die(transform.forward * -1f, 15f);
+        Die(-transform.forward, 300f);
     }
 }

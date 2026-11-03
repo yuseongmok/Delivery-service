@@ -6,6 +6,7 @@ public class NPCManager : MonoBehaviour
     [Header("NPC 설정")]
     [SerializeField] private GameObject[] npcPrefabs;
     [SerializeField] private int maxNPCCount = 30;
+    [SerializeField] private GameObject racerNPCPrefab;
 
     [Header("스폰 범위 설정")]
     [SerializeField] private BoxCollider spawnArea;
@@ -47,11 +48,16 @@ public class NPCManager : MonoBehaviour
     {
         if (spawnArea == null) return;
 
-        if (npcPrefabs == null || npcPrefabs.Length == 0)
-            return;
+        if (npcPrefabs != null && npcPrefabs.Length > 0)
+        {
+            for (int i = 0; i < maxNPCCount; i++)
+                SpawnNPC();
+        }
 
-        for (int i = 0; i < maxNPCCount; i++)
-            SpawnNPC();
+        if (racerNPCPrefab != null)
+        {
+            SpawnRacerNPC();
+        }
     }
 
     private void SpawnNPC()
@@ -76,6 +82,27 @@ public class NPCManager : MonoBehaviour
     {
         npc.OnNPCDeath -= HandleNPCDeath;
         SpawnNPC();
+    }
+
+    private void SpawnRacerNPC()
+    {
+        if (racerNPCPrefab == null) return;
+
+        Vector3 spawnPosition = GetRandomNavMeshPosition();
+
+        GameObject newRacer = Instantiate(racerNPCPrefab, spawnPosition, Quaternion.identity, npcParent);
+
+        NPCControl wanderScript = newRacer.GetComponent<NPCControl>();
+        if (wanderScript != null)
+        {
+            wanderScript.OnNPCDeath += HandleRacerNPCDeath;
+        }
+    }
+
+    private void HandleRacerNPCDeath(NPCControl npc)
+    {
+        npc.OnNPCDeath -= HandleRacerNPCDeath;
+        SpawnRacerNPC();
     }
 
     // NavMesh 가장자리 거리만 검사하여 좌표 반환

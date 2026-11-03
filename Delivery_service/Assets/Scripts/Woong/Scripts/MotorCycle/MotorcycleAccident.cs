@@ -43,8 +43,8 @@ public class MotorcycleAccident : MonoBehaviour
             {
                 // NPC 사망 처리 및 신고 접수
                 Vector3 hitDirection = controller.transform.forward;
-                float hitForce = absoluteSpeed * 30f;
-                npc.Die(hitDirection, Mathf.Clamp(hitForce, 15f, 60f));
+                float hitForce = absoluteSpeed * 50f;
+                npc.Die(hitDirection, Mathf.Clamp(hitForce, 100f, 1000f));
                 DeliveryService.Mok.CitizenCrime.ReportPlayerKill(npc);
 
                 // 오토바이 충격 감속
