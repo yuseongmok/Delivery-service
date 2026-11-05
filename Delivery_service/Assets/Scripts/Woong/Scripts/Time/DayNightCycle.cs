@@ -74,7 +74,11 @@ public class DayNightCycle : MonoBehaviour
     {
         if (isShopOpen)
         {
-            currentTime += (Time.deltaTime / 3600f) * timeMultiplier;
+            bool isRaceActive = RaceManager.Instance != null && RaceManager.Instance.IsRaceActive;
+            if (!isRaceActive)
+            {
+                currentTime += (Time.deltaTime / 3600f) * timeMultiplier;
+            }
 
             if (storyDayNightEnabled && currentTime >= 18f && !DeliveryService.Mok.StoryTutorial.Active)
             {

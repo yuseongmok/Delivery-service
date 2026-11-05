@@ -12,7 +12,7 @@ public sealed class PlayerHiding : MonoBehaviour {
         bin=target;savedPosition=transform.position;savedRotation=transform.rotation;camPosition=cam.transform.localPosition;camRotation=cam.transform.localRotation;enteredDay=clock!=null?clock.currentDay:0;
         moveEnabled=move.enabled;interactEnabled=interact.enabled;ccEnabled=cc.enabled;lookEnabled=look!=null&&look.enabled;phoneEnabled=phone!=null&&phone.enabled;
         move.enabled=false;interact.enabled=false;cc.enabled=false;if(look!=null)look.enabled=false;if(phone!=null){phone.ClosePhone();phone.enabled=false;}
-        transform.SetPositionAndRotation(bin.transform.position,bin.transform.rotation);cam.transform.localPosition=new Vector3(0,1.16f,0);cam.transform.localRotation=Quaternion.identity;bin.Open();return true;
+        transform.SetPositionAndRotation(bin.transform.position,bin.transform.rotation);cam.transform.localPosition=new Vector3(0,0.8f,0);cam.transform.localRotation=Quaternion.identity;bin.Open();return true;
     }
     public void Leave(bool relocate=true){if(!IsHidden)return;var old=bin;bin=null;old.Open();
         if(relocate)transform.SetPositionAndRotation(savedPosition,savedRotation);
