@@ -56,6 +56,7 @@ public sealed class CitizenCombat : MonoBehaviour {
         target=player;npc.ExternalControl=true;agent.areaMask=NavMesh.AllAreas;agent.speed=chaseSpeed;agent.stoppingDistance=combatSpacing;nextPunch=Time.time+.5f;
     }
     public bool ReceiveKick(PlayerCombat player,Vector3 direction,int damage) {
+        if(ParkEscapeSequence.Protects(this)){return ReceiveProtectedHit(direction);}
         if(!GetComponent<StunStars>())gameObject.AddComponent<StunStars>();
         if(Health<=0||npc.IsDead||npc.IsKnockedDown)return false;
         var patrol=GetComponent<VenuePatrolGuard>();if(patrol&&patrol.HandleStealthStrike(player,direction))return true;
@@ -65,12 +66,16 @@ public sealed class CitizenCombat : MonoBehaviour {
         npc.KnockDown(direction,7f);StartCoroutine(GetUp());return true;
     }
     public bool ReceiveBullet(PlayerCombat player,Vector3 direction,int damage){
+        if(ParkEscapeSequence.Protects(this)){return ReceiveProtectedHit(direction);}
         if(Health<=0||npc.IsDead||npc.IsKnockedDown)return false;
         if(!GetComponent<StunStars>())gameObject.AddComponent<StunStars>();
         Health=Mathf.Max(0,Health-damage);punching=false;Provoke(player);
         if(Health==0){target=null;npc.Die(direction,7f);if(!missionEnemy&&GetComponent<SlumRobberCombat>()==null)CitizenCrime.ReportPlayerKill(npc);return true;}
         npc.KnockDown(direction,4);StartCoroutine(GetUp());return true;
     }
+    float protectedRecoveryUntil;
+    bool ReceiveProtectedHit(Vector3 direction){if(npc.IsDead||npc.IsKnockedDown||Time.time<protectedRecoveryUntil)return false;punching=false;GetComponent<ParkCoverActor>().Stop();if(!GetComponent<StunStars>())gameObject.AddComponent<StunStars>();npc.KnockDown(direction,4);StartCoroutine(ProtectedGetUp());return true;}
+    IEnumerator ProtectedGetUp(){yield return new WaitForSeconds(2f);while(!npc.IsDead&&!npc.RecoverFromKnockDown())yield return new WaitForSeconds(.3f);protectedRecoveryUntil=Time.time+1.5f;nextPunch=Time.time+1;repath=0;}
     // 탈출 차량에 부딪힌 임무 조직원만 체력을 차감한다. 시민 사고에는 적용하지 않는다.
     public void ReceiveEscapeImpact(int damage,Vector3 direction){
         if(!missionEnemy||Health<=0||npc.IsDead)return;

@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 namespace DeliveryService.Mok {
 public sealed class SyntyGripFingers:MonoBehaviour {
  public Transform[] joints;public Quaternion[] rests;public int[] kinds;
@@ -12,7 +12,7 @@ public sealed class SyntyGripFingers:MonoBehaviour {
    if(!child)continue;
    bool thumb=kinds[i]==0;float height=kinds[i]==1?-.035f:-.085f;
    Vector3 point=thumb?new Vector3(-.025f,segment==0?-.015f:-.035f,-.07f):new Vector3(segment==0?-.008f:-.035f,height,segment==0?-.035f:-.065f);
-   joint.rotation=Quaternion.FromToRotation(child.position-joint.position,gun.TransformPoint(point)-joint.position)*joint.rotation;
+   joint.rotation=Quaternion.FromToRotation(child.position-joint.position,gun.TransformPoint(point+HandgunGeometry.Get(gun).Grip)-joint.position)*joint.rotation;
   }
  }
 }

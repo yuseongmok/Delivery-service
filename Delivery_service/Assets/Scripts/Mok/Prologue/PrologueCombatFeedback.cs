@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.UI;
 namespace DeliveryService.Mok {
 // 작은 고정 풀로 피격 먼지와 소리를 재사용한다. 명중 표시는 실제 피해가 적용될 때만 켠다.
@@ -6,6 +6,7 @@ public sealed class PrologueCombatFeedback : MonoBehaviour {
     public BankPrologue director;
     public Material particleMaterial;
     public AudioClip bodyHit, wallHit, fatalHit;
+    public float bodyVolume=.18f,surfaceVolume=.18f;
     public CanvasGroup hitMarker;
     public Image[] markerStrokes;
     public int ConfirmedHits {get;private set;}
@@ -32,7 +33,7 @@ public sealed class PrologueCombatFeedback : MonoBehaviour {
             sounds[i].playOnAwake=false;sounds[i].spatialBlend=1;sounds[i].minDistance=1;sounds[i].maxDistance=24;
             sounds[i].rolloffMode=AudioRolloffMode.Linear;sounds[i].volume=.18f;StorySoundPause.Attach(sounds[i]);
         }
-        hitMarker.alpha=0;hitMarker.blocksRaycasts=false;hitMarker.interactable=false;
+        if(hitMarker){hitMarker.alpha=0;hitMarker.blocksRaycasts=false;hitMarker.interactable=false;}
     }
     public void Impact(Vector3 point,Vector3 normal,bool person,bool fatal=false,bool metal=false){
         int i=next++%particles.Length;var p=particles[i];p.transform.position=point;
@@ -42,14 +43,15 @@ public sealed class PrologueCombatFeedback : MonoBehaviour {
             var velocity=normal.normalized*Random.Range(.5f,1.7f)+Random.insideUnitSphere*.9f;
             p.Emit(new ParticleSystem.EmitParams{position=point+normal*.015f,velocity=velocity,startSize=Random.Range(.025f,.065f),startLifetime=Random.Range(.12f,.3f),startColor=color},1);
         }
-        sounds[i].pitch=Random.Range(.93f,1.07f);sounds[i].Stop();
+        sounds[i].volume=person?bodyVolume:surfaceVolume;sounds[i].pitch=Random.Range(.93f,1.07f);sounds[i].Stop();
         var clip=person?bodyHit:metal&&SuppliedAudio.Current&&SuppliedAudio.Current.metalImpact?SuppliedAudio.Current.metalImpact:wallHit;if(clip)sounds[i].PlayOneShot(clip,SuppliedAudio.Volume);
         if(person){
-            ConfirmedHits++;markerTime=.16f;hitMarker.alpha=1;
-            foreach(var stroke in markerStrokes)stroke.color=fatal?new Color(1,.47f,.16f):new Color(1,.95f,.79f);
+            ConfirmedHits++;markerTime=.16f;if(hitMarker)hitMarker.alpha=1;
+            if(markerStrokes!=null)foreach(var stroke in markerStrokes)if(stroke)stroke.color=fatal?new Color(1,.47f,.16f):new Color(1,.95f,.79f);
         }else SurfaceHits++;
     }
     void Update(){
+        if(!director||!hitMarker)return;
         if(!director.CanPlay&&!director.Paused){markerTime=0;hitMarker.alpha=0;return;}
         markerTime=Mathf.Max(0,markerTime-Time.deltaTime);hitMarker.alpha=Mathf.Clamp01(markerTime/.07f);
     }

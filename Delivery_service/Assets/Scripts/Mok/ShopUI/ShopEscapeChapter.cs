@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.AI;
@@ -106,8 +106,14 @@ public sealed class ShopEscapeChapter:MonoBehaviour {
   if(State==Stage.Transfer){float t=Time.time-entered;mission.objective.text="챕터 2 · 철창 너머 / 1일차";mission.subtitle.text=LineAt(corruptPrisonLines,t,TransferDuration);mission.fade.gameObject.SetActive(t<2.5f);mission.fade.color=new Color(0,0,0,1-Mathf.InverseLerp(1,2.5f,t));if(t>=TransferDuration||PrologueKeyboard.Pressed(Key.Space)){Set(Stage.Prison);mission.StoryControl(false);mission.Player.GetComponent<PlayerWeapon>()?.Equip(WeaponKind.None);mission.objective.text="챕터 2 · 철창 너머 / 1일차";mission.subtitle.text=LineAt(corruptPrisonLines,TransferDuration,TransferDuration);}return;}
   if(State==Stage.Prison){mission.objective.text="챕터 2 · 철창 너머 / 1일차";mission.marker.gameObject.SetActive(false);if(Time.time-entered>8)mission.subtitle.text="";}
  }
+ Vector3 previousPlayer;float followSpeed=2.2f;
+ public float CompanionFollowSpeed=>followSpeed;
  public void Follow(){
- if(doorway!=null&&doorStep<doorway.Length){var goal=doorway[doorStep].position;var delta=goal-mingi.position;delta.y=0;mingi.position=Vector3.MoveTowards(mingi.position,goal,3.5f*Time.deltaTime);if(delta.sqrMagnitude>.01f)mingi.rotation=Quaternion.RotateTowards(mingi.rotation,Quaternion.LookRotation(delta),240*Time.deltaTime);if(animation)animation.SetFloat("MoveSpeed",3.5f);if(Vector3.Distance(mingi.position,goal)<.15f)doorStep++;return;}
+ var position=mission.Player.transform.position;float moving=Vector3.ProjectOnPlane(position-previousPlayer,Vector3.up).magnitude/Mathf.Max(.001f,Time.deltaTime);previousPlayer=position;if(moving>15)moving=0;
+ float gap=Vector3.Distance(mingi.position,position);float desired=moving>3.4f?Mathf.Max(5.2f,moving):2.2f;if(gap>7)desired=Mathf.Max(desired,6.3f);
+ followSpeed=Mathf.MoveTowards(followSpeed,Mathf.Clamp(desired,2.2f,7.5f),Time.deltaTime*5);
+
+ if(doorway!=null&&doorStep<doorway.Length){var goal=doorway[doorStep].position;var delta=goal-mingi.position;delta.y=0;mingi.position=Vector3.MoveTowards(mingi.position,goal,followSpeed*Time.deltaTime);if(delta.sqrMagnitude>.01f)mingi.rotation=Quaternion.RotateTowards(mingi.rotation,Quaternion.LookRotation(delta),240*Time.deltaTime);if(animation)animation.SetFloat("MoveSpeed",followSpeed);if(Vector3.Distance(mingi.position,goal)<.15f)doorStep++;return;}
  if(guide&&guide.enabled)guide.enabled=false;
  var cc=mingi.GetComponent<CharacterController>();if(cc)cc.enabled=false;
  if(Time.time>=nextPath&&((lastDestination-mission.Player.transform.position).sqrMagnitude>9||followPath.corners.Length<2)){
@@ -118,15 +124,15 @@ public sealed class ShopEscapeChapter:MonoBehaviour {
  if(followPath.corners.Length>1&&Vector3.Distance(mingi.position,mission.Player.transform.position)>2){
   followCorner=Mathf.Min(followCorner,followPath.corners.Length-1);var corner=followPath.corners[followCorner];var delta=corner-mingi.position;
   if(delta.magnitude<.2f&&followCorner<followPath.corners.Length-1)followCorner++;
-  else {var previous=mingi.position;mingi.position=Vector3.MoveTowards(mingi.position,corner,5.5f*Time.deltaTime);speed=Vector3.Distance(previous,mingi.position)/Mathf.Max(.001f,Time.deltaTime);delta.y=0;if(delta.sqrMagnitude>.01f)mingi.rotation=Quaternion.RotateTowards(mingi.rotation,Quaternion.LookRotation(delta),240*Time.deltaTime);}
+  else {var previous=mingi.position;mingi.position=Vector3.MoveTowards(mingi.position,corner,followSpeed*Time.deltaTime);speed=Vector3.Distance(previous,mingi.position)/Mathf.Max(.001f,Time.deltaTime);delta.y=0;if(delta.sqrMagnitude>.01f)mingi.rotation=Quaternion.RotateTowards(mingi.rotation,Quaternion.LookRotation(delta),240*Time.deltaTime);}
  }
  if(animation)animation.SetFloat("MoveSpeed",speed);
- if(speed>.5f&&Time.time>=nextStep){nextStep=Time.time+.4f;var clips=SuppliedAudio.Current?SuppliedAudio.Current.streetSteps:null;if(clips!=null&&clips.Length>0)AudioSource.PlayClipAtPoint(clips[Random.Range(0,clips.Length)],mingi.position,.09f*SuppliedAudio.Volume);}
+ if(speed>.5f&&Time.time>=nextStep){nextStep=Time.time+(speed>3.4f?.28f:.45f);var clips=SuppliedAudio.Current?SuppliedAudio.Current.streetSteps:null;if(clips!=null&&clips.Length>0)AudioSource.PlayClipAtPoint(clips[Random.Range(0,clips.Length)],mingi.position,.09f*SuppliedAudio.Volume);}
  }
 
  public void StopGuide(){if(guide&&guide.enabled){if(guide.isOnNavMesh)guide.isStopped=true;guide.enabled=false;}if(animation)animation.SetFloat("MoveSpeed",0);}
  void Mark(Vector3 position,string text){mission.marker.gameObject.SetActive(true);StoryTargetDiamond.Place(mission.marker,mission.Player.View,position+Vector3.up,mission.Player.transform.position,text);}
- public void StartParkEscape(){Set(Stage.Escape);doorStep=0;followPath.ClearCorners();lastDestination=new Vector3(float.PositiveInfinity,0,0);policeBlock.SetActive(false);}
+ public void StartParkEscape(){previousPlayer=mission.Player.transform.position;followSpeed=2.2f;Set(Stage.Escape);doorStep=0;followPath.ClearCorners();lastDestination=new Vector3(float.PositiveInfinity,0,0);policeBlock.SetActive(false);}
  public void StartInjury(){if(injuryPose)return;StopGuide();injuryStarted=Time.time;injuryPosition=mingi.position;injuryRotation=mingi.rotation;
   var face=mission.Player.transform.position-mingi.position;face.y=0;if(face.sqrMagnitude>.01f)mingi.rotation=Quaternion.LookRotation(face);
  if(animation&&animation.isHuman){injuryAnimatorEnabled=animation.enabled;if(animation.HasState(0,Animator.StringToHash("Base Layer.Idle")))animation.Play("Base Layer.Idle",0,0);animation.Update(0);injurySpine=animation.GetBoneTransform(HumanBodyBones.Spine);injuryHips=animation.GetBoneTransform(HumanBodyBones.Hips);hipsRest=injuryHips.localPosition;foreach(var t in injuryHips.GetComponentsInChildren<Transform>())injuryBones[t]=t.localRotation;var left=animation.GetBoneTransform(HumanBodyBones.LeftFoot);var right=animation.GetBoneTransform(HumanBodyBones.RightFoot);leftFootGoal=left.position;rightFootGoal=right.position;leftFootRotation=left.rotation;rightFootRotation=right.rotation;animation.enabled=false;}injuryPose=true;

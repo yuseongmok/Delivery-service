@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -102,7 +102,7 @@ public sealed class VenueFinale : MonoBehaviour {
  }
  void TryPendingSpawns(){
  for(int i=pendingSpawns.Count-1;i>=0;i--){var request=pendingSpawns[i];if(!request.post){pendingSpawns.RemoveAt(i);continue;}if(!FindHiddenSpawn(request.post,out var point))continue;
- var e=Instantiate(preparation.enemyTemplate,point,request.post.rotation,transform);e.missionEnemy=true;e.gameObject.SetActive(true);e.chaseSpeed=request.speed;e.punchCooldown=2.1f;e.Provoke(Player);enemies.Add(e);VenueActorAudio.Attach(e);HiddenSpawnCount++;pendingSpawns.RemoveAt(i);
+ var e=Instantiate(preparation.enemyTemplate,point,request.post.rotation,transform);e.missionEnemy=true;e.gameObject.SetActive(true);e.chaseSpeed=request.speed;e.punchCooldown=2.1f;e.Provoke(Player);enemies.Add(e);if(aftermath&&aftermath.parkSequence&&aftermath.parkSequence.Current>=ParkEscapeSequence.Beat.LookBack&&aftermath.parkSequence.Current<=ParkEscapeSequence.Beat.Defend)aftermath.parkSequence.PrepareParkEnemy(e);VenueActorAudio.Attach(e);HiddenSpawnCount++;pendingSpawns.RemoveAt(i);
  }
  }
  void Clean(){pendingSpawns.Clear();if(streetPursuit)streetPursuit.ResetPursuit();if(stealth)stealth.EndPatrol();foreach(var e in enemies)if(e){e.EndFight();Destroy(e.gameObject);}enemies.Clear();}

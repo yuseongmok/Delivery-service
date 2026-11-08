@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 namespace DeliveryService.Mok {
 public static class ArmedHandPose {
  public static float WristPitch=25;
@@ -6,13 +6,15 @@ public static class ArmedHandPose {
  // 총은 손 본 밑에 두지 않아 수입 모델의 본 배율을 상속하지 않는다.
  public static void Apply(Animator animator,Transform gun,Vector3 target,bool aiming,bool down){
   if(!animator||!animator.isHuman||!gun)return;var hand=animator.GetBoneTransform(HumanBodyBones.RightHand);if(!hand)return;
-  if(!down&&aiming){var upper=animator.GetBoneTransform(HumanBodyBones.RightUpperArm);var lower=animator.GetBoneTransform(HumanBodyBones.RightLowerArm);var goal=upper.position+(target-upper.position).normalized*.48f-animator.transform.up*.08f;Reach(upper,lower,hand,goal,animator.transform.right);}
+  if(!down&&aiming){var upper=animator.GetBoneTransform(HumanBodyBones.RightUpperArm);var lower=animator.GetBoneTransform(HumanBodyBones.RightLowerArm);var goal=upper.position+(target-upper.position).normalized*.55f-animator.transform.up*.08f;Reach(upper,lower,hand,goal,animator.transform.right);}
   Quaternion rotation=down?hand.rotation:aiming?Quaternion.LookRotation(target-hand.position):animator.transform.rotation*Quaternion.Euler(55,0,0);
   if(!down)Grip(animator,true,rotation);
 
   // 이동·사격 중 손잡이를 쥐고, 기절 중에는 손의 물리 움직임을 따른다.
   var offset=!down?new Vector3(.075f,.10f,.25f):new Vector3(-.015f,.02f,.09f);
   gun.SetPositionAndRotation(hand.position+rotation*offset,rotation);
+  var geometry=HandgunGeometry.Get(gun);if(geometry.Found)gun.position=hand.position+rotation*new Vector3(.015f,-.015f,.065f)-gun.TransformVector(geometry.Grip);
+  if(!down&&aiming){var other=animator.GetBoneTransform(HumanBodyBones.LeftHand);if(other){Reach(animator.GetBoneTransform(HumanBodyBones.LeftUpperArm),animator.GetBoneTransform(HumanBodyBones.LeftLowerArm),other,hand.position+rotation*new Vector3(-.065f,-.015f,.045f),-animator.transform.right);Grip(animator,false,rotation);}}
   var fingers=animator.GetComponent<SyntyGripFingers>();if(fingers)fingers.Apply(gun,!down);
 
  }
