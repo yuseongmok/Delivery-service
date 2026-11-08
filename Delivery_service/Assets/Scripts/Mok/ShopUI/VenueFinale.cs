@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -81,6 +81,7 @@ public sealed class VenueFinale : MonoBehaviour {
  readonly List<PendingEnemy> pendingSpawns=new();float nextSpawnCheck;
  public int PendingSpawnCount=>pendingSpawns.Count;
  public int HiddenSpawnCount{get;private set;}
+ public void StopStorySpawning(){pendingSpawns.Clear();}
  public void SpawnStreetPursuers(Transform[] points,int count,float speed){QueueSpawns(points,count,speed);}
  void Spawn(Transform[] points,int count){QueueSpawns(points,count,4.2f);}
  void QueueSpawns(Transform[] points,int count,float speed){foreach(var post in points.Take(count))if(post)pendingSpawns.Add(new PendingEnemy{post=post,speed=speed});TryPendingSpawns();}

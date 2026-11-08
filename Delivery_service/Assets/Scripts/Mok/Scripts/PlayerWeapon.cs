@@ -1,4 +1,4 @@
-﻿using System.Collections;using System.Collections.Generic;using System.Linq;using UnityEngine;
+using System.Collections;using System.Collections.Generic;using System.Linq;using UnityEngine;
 namespace DeliveryService.Mok {
 // 피자 인벤토리와 독립적인 한 칸짜리 무기 슬롯이다.
 public sealed class PlayerWeapon : MonoBehaviour {
@@ -16,6 +16,8 @@ public sealed class PlayerWeapon : MonoBehaviour {
  public bool Purchase(WeaponKind kind){int i=(int)kind;if(i<0||i>3||MoneyManager.Instance==null)return false;
   if(!MoneyManager.Instance.SpendMoney(WeaponCatalog.Prices[i]))return false;
   Equip(kind);return true;}
+ // 미션 지급 탄약은 상점 결제와 분리한다.
+ public void GrantMissionAmmo(int amount){if(Equipped==WeaponKind.Pistol)Ammo=Mathf.Clamp(Ammo+Mathf.Max(0,amount),0,999);}
  public bool BuyAmmo(){if(Equipped!=WeaponKind.Pistol||Ammo>989||MoneyManager.Instance==null||!MoneyManager.Instance.SpendMoney(3000))return false;Ammo+=10;return true;}
  public void Equip(WeaponKind kind){attackVersion++;animationEnd=0;if(Thrown!=null)Destroy(Thrown.gameObject);Thrown=null;if(held!=null)Destroy(held.gameObject);Equipped=kind;Ammo=0;nextAttack=Time.time+.25f;
   if(kind==WeaponKind.None)return;var prefab=WeaponCatalog.Model(kind);if(prefab==null)return;
