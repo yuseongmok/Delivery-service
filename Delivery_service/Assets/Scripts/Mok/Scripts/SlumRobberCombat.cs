@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 namespace DeliveryService.Mok {
 // 빈민촌에서 생성된 강도는 시민 전투를 사용하고 접촉 강탈 AI는 정지한다.
 public sealed class SlumRobberCombat : MonoBehaviour {
@@ -15,7 +15,7 @@ public sealed class SlumRobberCombat : MonoBehaviour {
  void Start(){player=FindFirstObjectByType<PlayerCombat>(FindObjectsInactive.Include);clock=FindFirstObjectByType<DayNightCycle>();district=FindFirstObjectByType<RobberyDistrict>();day=clock!=null?clock.currentDay:0;if(!FixedGuard&&player!=null){combat.Provoke(player);Engaged=true;}}
  void Update(){
   if(ended||combat.Npc.IsDead)return;
-  bool inside=player!=null&&clock!=null&&clock.currentDay==day&&(clock.isShopOpen||GetComponent<RobberAI>().IsTestSpawn)&&district!=null&&district.Contains(player.transform.position);
+  bool inside=player!=null&&clock!=null&&clock.currentDay==day&&(!StoryTutorial.Active||GetComponent<RobberAI>().IsTestSpawn)&&district!=null&&district.Contains(player.transform.position);
   if(!FixedGuard){if(!inside)EndFight();return;}
   bool pursue=inside&&Time.time>=restUntil&&!player.WaterRescueActive&&!PoliceControl.IsArrestInProgress;
   if(pursue){if(!Engaged||!combat.IsAggressive){combat.Provoke(player);Engaged=true;}return;}

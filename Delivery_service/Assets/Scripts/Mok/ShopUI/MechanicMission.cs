@@ -16,7 +16,7 @@ public sealed class MechanicMission:MonoBehaviour {
  public string FailureReason{get;private set;}public CitizenCombat[] Pursuers=>enemies;
  CitizenCombat[] enemies=new CitizenCombat[0];bool engaged;int day,line;float entered,noticeUntil;Vector3 boxStart;Quaternion boxRotation;
  public PlayerCombat Player=>preparation.Player;DayNightCycle Day=>preparation.delivery.broker.day;
- public int EarliestDay=>preparation.CompletedDay+1;public bool DayUnlocked=>Day.currentDay>=EarliestDay;
+ public int EarliestDay=>preparation.CompletedDay+1;public bool DayUnlocked=>preparation&&preparation.Completed;
  public bool CanStart=>DayUnlocked&&preparation&&preparation.Completed&&!BrokerMission.Active&&!Running&&!Completed&&Day.IsNightPreparation&&!Day.IsTransitioning&&!StoryTutorial.Active&&!Player.IsDown&&!Player.WaterRescueActive&&!PoliceControl.IsArrestInProgress&&!(preparation.delivery.broker.orders&&preparation.delivery.broker.orders.HasActiveOrder);
  void Awake(){Current=this;ui.SetActive(false);parts.SetActive(false);keys.SetActive(false);mechanic.gameObject.SetActive(false);}
  void OnDestroy(){Clean();if(Current==this)Current=null;}

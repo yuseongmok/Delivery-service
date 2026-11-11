@@ -221,8 +221,8 @@ public class MotorcycleController : MonoBehaviour
     private void HandleCameraLook()
     {
         if (bikeCamera == null) return;
-        float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity;
-        float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity;
+        float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * DeliveryService.Yun.Settings.GameSettingsPanel.MouseSensitivity;
+        float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * DeliveryService.Yun.Settings.GameSettingsPanel.MouseSensitivity;
         xRotation -= mouseY;
         xRotation = Mathf.Clamp(xRotation, -60f, 60f);
         yRotation += mouseX;

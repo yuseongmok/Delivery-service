@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -8,7 +8,7 @@ public class DayNightCycle : MonoBehaviour
     public int currentDay = 1;
     public bool isShopOpen = false;
     public bool storyDayNightEnabled = false;
-    public bool IsNightPreparation => storyDayNightEnabled && currentTime >= 18f;
+    public bool IsNightPreparation => !DeliveryService.Mok.StoryTutorial.Active;
     public bool IsTransitioning => isTransitioning;
     public MonoBehaviour cameraLookScript;
 
@@ -70,106 +70,36 @@ public class DayNightCycle : MonoBehaviour
         InitializeDay();
     }
 
+    // ë‚ ì§œ ëŒ€ì‹  ìŠ¤í† ë¦¬ ì§„í–‰ìœ¼ë¡œ ë¯¸ì…˜ì„ í•´ê¸ˆí•œë‹¤. ì‹œê°„ ê°’ì€ ì¡°ëª… í˜¸í™˜ìš©ì´ë‹¤.
     private void Update()
     {
-        if (isShopOpen)
-        {
-            bool isRaceActive = RaceManager.Instance != null && RaceManager.Instance.IsRaceActive;
-            if (!isRaceActive)
-            {
-                currentTime += (Time.deltaTime / 3600f) * timeMultiplier;
-            }
-
-            if (storyDayNightEnabled && currentTime >= 18f && !DeliveryService.Mok.StoryTutorial.Active)
-            {
-                EnterNightPreparation();
-            }
-            else if (!storyDayNightEnabled && currentTime >= 24f && !isTransitioning)
-            {
-                isTransitioning = true;
-                StartCoroutine(TransitionToNextDay());
-            }
-        }
-
+        isShopOpen = DeliveryService.Mok.StoryTutorial.Active;
+        HideCalendarUI();
+        if (PlayerPrefs.HasKey("PendingToppingList")) ToppingStockManager.DeliverAllPendingStock();
         UpdateLighting();
-        UpdateTimeUI();
     }
 
-    private void UpdateTimeUI()
+    private void HideCalendarUI()
     {
-        if (timeText != null)
-        {
-            if (currentTime >= 24f)
-            {
-                timeText.text = "00:00";
-            }
-            else
-            {
-                int hours = Mathf.FloorToInt(currentTime);
-                int minutes = Mathf.FloorToInt((currentTime - hours) * 60f);
-                timeText.text = string.Format("{0:00}:{1:00}", hours, minutes);
-            }
-        }
-    }
-
-    public void OnClick_OpenShop()
-    {
-        if (isShopOpen || isTransitioning || IsNightPreparation) return;
-
-        isShopOpen = true;
-        openShopButton.SetActive(false);
-        closeShopButton.SetActive(true);
-        ClosePCMenu();
-    }
-
-    public void OnClick_CloseShop()
-    {
-        if (DeliveryService.Mok.StoryTutorial.Active) { DeliveryService.Mok.DeliveryRequestNotice.Show("¹Î±â: Ã¹ ¹è´ÞºÎÅÍ ¸¶Ä¡ÀÚ. ¸¶°¨Àº ±× ´ÙÀ½ÀÌ¾ß."); return; }
-        if (!isShopOpen || isTransitioning) return;
-
-        isShopOpen = false;
-        closeShopButton.SetActive(false);
-        pcUIPanel.SetActive(false);
-        summaryPanel.SetActive(true);
-        if (storyDayNightEnabled) DeliveryService.Mok.NightPreparationView.SetClosingLabels(this);
-
-        if (MoneyManager.Instance != null)
-        {
-            if (summaryIncomeText != null) summaryIncomeText.text = $"¿À´ÃÀÇ ¼öÀÍ: {MoneyManager.Instance.dailyIncome}¿ø";
-            if (summaryExpenseText != null) summaryExpenseText.text = $"¿À´ÃÀÇ ÁöÃâ: {MoneyManager.Instance.dailyTotalExpense:N0}¿ø\n{DeliveryService.Mok.DailyRent.Preview(currentDay)}";
-        }
-    }
-
-    public void OnClick_ConfirmClose()
-    {
-        if (DeliveryService.Mok.BrokerMission.Active) return;
-        if (isTransitioning || DeliveryService.Mok.StoryTutorial.Active) return;
-        if (storyDayNightEnabled && !IsNightPreparation) { EnterNightPreparation(); ClosePCMenu(); return; }
-
-        isTransitioning = true;
-        StartCoroutine(TransitionToNextDay());
-    }
-
-    public void OnClick_CancelClose()
-    {
-        if (IsNightPreparation || isTransitioning) return;
-        summaryPanel.SetActive(false);
-        closeShopButton.SetActive(true);
-        pcUIPanel.SetActive(true);
-        isShopOpen = true;
-    }
-
-    public void EnterNightPreparation()
-    {
-        if (!storyDayNightEnabled || isTransitioning || DeliveryService.Mok.StoryTutorial.Active) return;
-        bool announce = isShopOpen || currentTime < 18f;
-        currentTime = 18f;
-        isShopOpen = false;
+        if (dayText) dayText.gameObject.SetActive(false);
+        if (timeText) timeText.gameObject.SetActive(false);
         if (openShopButton) openShopButton.SetActive(false);
         if (closeShopButton) closeShopButton.SetActive(false);
         if (summaryPanel) summaryPanel.SetActive(false);
+    }
+
+    public void OnClick_OpenShop() { isShopOpen = DeliveryService.Mok.StoryTutorial.Active; ClosePCMenu(); }
+    public void OnClick_CloseShop() { EnterNightPreparation(); ClosePCMenu(); }
+    public void OnClick_ConfirmClose() { EnterNightPreparation(); ClosePCMenu(); }
+    public void OnClick_CancelClose() { HideCalendarUI(); ClosePCMenu(); }
+
+    public void EnterNightPreparation()
+    {
+        if (DeliveryService.Mok.StoryTutorial.Active) return;
+        currentTime = 18f;
+        isShopOpen = false;
+        HideCalendarUI();
         FindFirstObjectByType<OrderManager>()?.CloseOrderReception();
-        if (announce) DeliveryService.Mok.DeliveryRequestNotice.Show("³· ¿µ¾÷ Á¾·á ¡¤ ÈÞ´ëÆù ¹®ÀÚ¿Í ¹Ì¼Ç ¾ÛÀ» È®ÀÎÇÏ¼¼¿ä.");
     }
 
     private void ClosePCMenu()
@@ -184,108 +114,12 @@ public class DayNightCycle : MonoBehaviour
         }
     }
 
-    private IEnumerator TransitionToNextDay()
-    {
-        if (fadeScreen != null)
-        {
-            fadeScreen.gameObject.SetActive(true);
-            Color c = fadeScreen.color;
-            float t = 0f;
-            while (t < fadeDuration)
-            {
-                t += Time.deltaTime;
-                c.a = Mathf.Lerp(0f, 1f, t / fadeDuration);
-                fadeScreen.color = c;
-                yield return null;
-            }
-        }
-
-        DeliveryService.Mok.LadderGame.Current?.CompleteRound();
-        DeliveryService.Mok.LoanAccount.Current?.SettleDay(currentDay);
-        DeliveryService.Mok.DailyRent.Current?.SettleDay(currentDay);
-        yield return DeliveryService.Mok.Stocks.StockDebtPrompt.Resolve();
-        if (DeliveryService.Mok.BankruptcyGameOver.TryEndDay(this)) yield break;
-
-        currentDay++;
-        dailyIncome = 0f;
-        dailyExpense = 0f;
-        InitializeDay();
-
-        if (fadeScreen != null)
-        {
-            Color c = fadeScreen.color;
-            float t = 0f;
-            while (t < fadeDuration)
-            {
-                t += Time.deltaTime;
-                c.a = Mathf.Lerp(1f, 0f, t / fadeDuration);
-                fadeScreen.color = c;
-                yield return null;
-            }
-            fadeScreen.gameObject.SetActive(false);
-        }
-    }
-
     private void InitializeDay()
     {
-        currentTime = 6f;
-        isShopOpen = false;
+        // ì´ˆê¸°í™” APIëŠ” ê¸°ì¡´ ì”¬ ì°¸ì¡°ë¥¼ ìœ„í•´ ìœ ì§€í•˜ê³  ì •ì‚°/ë‚ ì§œ ì¦ê°€ëŠ” ì‹¤í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
         isTransitioning = false;
-
-        ToppingStockManager.DeliverAllPendingStock();
-
-        OrderManager orderManager = FindObjectOfType<OrderManager>();
-        if (orderManager != null) orderManager.ResetOrdersForNewDay();
-
-        NavigationManager navManager = FindObjectOfType<NavigationManager>();
-        if (navManager != null) navManager.ResetNavigationForNewDay();
-
-        // °æÂû ¼ö¹è »óÅÂ ÃÊ±âÈ­
-        PoliceManager policeManager = FindObjectOfType<PoliceManager>();
-        if (policeManager != null) policeManager.ClearAllPolice();
-
-        // NPC ½Ãºñ »óÅÂ ÃÊ±âÈ­
-        NPCControl[] allNPCs = FindObjectsOfType<NPCControl>();
-        foreach (var npc in allNPCs)
-        {
-            if (npc != null)
-            {
-                npc.ResetForNewDay();
-            }
-        }
-
-        if (pcUIPanel != null) pcUIPanel.SetActive(false);
-        openShopButton.SetActive(true);
-        closeShopButton.SetActive(false);
-        summaryPanel.SetActive(false);
-
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
-
-        if (dayText != null) dayText.text = $"DAY {currentDay}";
-        if (motorcycle != null)
-        {
-            if (motorcycle.isDriven)
-            {
-                motorcycle.ExitBike();
-            }
-            if (bikeSpawnPoint != null)
-            {
-                motorcycle.RespawnBike(bikeSpawnPoint);
-            }
-        }
-
-        if (player != null && spawnPoint != null)
-        {
-            CharacterController cc = player.GetComponent<CharacterController>();
-            if (cc != null) cc.enabled = false;
-
-            player.transform.position = spawnPoint.position;
-            player.transform.rotation = spawnPoint.rotation;
-
-            if (cc != null) cc.enabled = true;
-        }
-
+        isShopOpen = DeliveryService.Mok.StoryTutorial.Active;
+        HideCalendarUI();
         UpdateLighting();
     }
 

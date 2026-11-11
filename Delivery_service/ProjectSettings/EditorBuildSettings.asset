@@ -14,6 +14,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/JJinCity.unity
     guid: 043baf8f29a81e340b7ab851053efb06
+  - enabled: 1
+    path: Assets/Scenes/PrisonChapter.unity
+    guid: 926fcd7f3abfb794e93760573e434336
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0

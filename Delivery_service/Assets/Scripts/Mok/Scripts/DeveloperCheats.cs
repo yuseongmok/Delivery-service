@@ -46,11 +46,16 @@ public sealed class DeveloperCheats : MonoBehaviour {
   broker.orders.ResetOrdersForNewDay();broker.DeveloperComplete();SpecialOrderMission.Current.DeveloperComplete();BackdoorMission.Current.DeveloperComplete();MechanicMission.Current.DeveloperComplete();
   bool started=finale.DeveloperStart();message=started?"마지막 배달 미션 시작":"현재 상태에서는 미션을 시작할 수 없습니다.";return started;
  }
+ public bool StartPrisonChapter(){
+  if(!Application.CanStreamedLevelBeLoaded(PrisonPreviewTransition.SceneName)){message="빌드 씬 목록에 PrisonChapter가 필요합니다.";return false;}
+  Close();Time.timeScale=1;SetInvincible(false);
+  return PrisonPreviewTransition.Begin();
+ }
  void Update(){
   bool modifier=(PrologueKeyboard.Held(Key.LeftCtrl)||PrologueKeyboard.Held(Key.RightCtrl))&&(PrologueKeyboard.Held(Key.LeftShift)||PrologueKeyboard.Held(Key.RightShift));
   if(modifier&&PrologueKeyboard.Pressed(Key.F12)){if(IsOpen)Close();else Open();return;}
   if(!IsOpen)return;
-  if(PrologueKeyboard.Pressed(Key.UpArrow))selection=(selection+5)%6;if(PrologueKeyboard.Pressed(Key.DownArrow))selection=(selection+1)%6;
+  if(PrologueKeyboard.Pressed(Key.UpArrow))selection=(selection+6)%7;if(PrologueKeyboard.Pressed(Key.DownArrow))selection=(selection+1)%7;
   if(PrologueKeyboard.Pressed(Key.Enter)||PrologueKeyboard.Pressed(Key.NumpadEnter))Activate(selection);
  }
  void Activate(int index){
@@ -60,14 +65,15 @@ public sealed class DeveloperCheats : MonoBehaviour {
   else if(index==2){SetInvincible(!Invincible);message=Invincible?"무적 활성화":"무적 해제";}
   else if(index==3){if(!confirmSkip||confirmationTarget!=SkipTarget){confirmSkip=true;confirmationTarget=SkipTarget;return;}SkipMission();confirmSkip=false;}
   else if(index==4)StartFinalDelivery();
+  else if(index==5)StartPrisonChapter();
   else Close();
  }
  void OnGUI(){if(!IsOpen)return;float scale=Mathf.Clamp(Screen.height/900f,.6f,2f);var matrix=GUI.matrix;GUI.matrix=Matrix4x4.TRS(Vector3.zero,Quaternion.identity,Vector3.one*scale);float width=Screen.width/scale,height=Screen.height/scale;
   var oldFont=GUI.skin.font;GUI.skin.font=MokUIFont.Font;var label=new GUIStyle(GUI.skin.label){fontSize=21,wordWrap=true};var button=new GUIStyle(GUI.skin.button){fontSize=22};
-  GUI.Box(new Rect((width-620)/2,(height-610)/2,620,610),"");GUILayout.BeginArea(new Rect((width-570)/2,(height-570)/2,570,570));
+  GUI.Box(new Rect((width-620)/2,(height-670)/2,620,670),"");GUILayout.BeginArea(new Rect((width-570)/2,(height-630)/2,570,630));
   GUILayout.Label("발표용 치트 · Ctrl + Shift + F12",label);GUILayout.Space(10);GUILayout.Label("스킵 대상: "+SkipTarget,label);
   GUILayout.Label("무적: "+(Invincible?"ON":"OFF")+" · 공격 피해와 피격 레그돌 방지",label);GUILayout.Space(14);
-  string[] buttons={"+ 100,000원","+ 1,000,000원",Invincible?"무적 끄기":"무적 켜기",confirmSkip?"정말 완료 처리하기":"미션 스킵 (완료 처리)","마지막 배달 미션 바로 시작","닫기"};
+  string[] buttons={"+ 100,000원","+ 1,000,000원",Invincible?"무적 끄기":"무적 켜기",confirmSkip?"정말 완료 처리하기":"미션 스킵 (완료 처리)","마지막 배달 미션 바로 시작","감옥 챕터 처음부터 시작","닫기"};
   for(int i=0;i<buttons.Length;i++)if(GUILayout.Button((selection==i?"▶ ":"")+buttons[i],button,GUILayout.Height(48)))Activate(i);
   GUILayout.Space(10);GUILayout.Label(message,label);GUILayout.Label("↑↓ 선택 · Enter 실행 · 마우스 클릭 가능",label);GUILayout.EndArea();GUI.skin.font=oldFont;GUI.matrix=matrix;
  }

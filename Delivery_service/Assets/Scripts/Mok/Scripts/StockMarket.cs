@@ -26,7 +26,7 @@ public sealed class StockMarket : MonoBehaviour {
     public long RealizedProfit {get;private set;}
     public string LastClue {get;private set;}="배달 중 얻은 기업 소식이 아직 없습니다.";
     public int Revision {get;private set;}
-    public bool MarketOpen => clock!=null&&clock.isShopOpen&&clock.currentTime<24&&Time.timeScale>0;
+    public bool MarketOpen => (clock!=null||PrisonMission.Current)&&!StoryTutorial.Active&&Time.timeScale>0;
     public long PortfolioValue => Companies.Where(c=>c!=null).Sum(c=>(long)c.price*c.shares);
     public long PortfolioProfit => Companies.Where(c=>c!=null).Sum(c=>(long)c.price*c.shares-c.cost);
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]static void ResetStatic(){Instance=null;}
@@ -35,20 +35,20 @@ public sealed class StockMarket : MonoBehaviour {
         Initialize(Environment.TickCount);
         gameObject.AddComponent<StockAlerts>();
     }
-    void Start(){clock=FindFirstObjectByType<DayNightCycle>();if(clock!=null)AdvanceDay(clock.currentDay);}
+    void Start(){clock=FindFirstObjectByType<DayNightCycle>();if(clock!=null)AdvanceDay(clock.currentDay);else if(PrisonMission.Current)AdvanceDay(1);}
     public void Initialize(int seed){
         random=new System.Random(seed);Articles.Clear();lastUsed.Clear();day=0;newsRound=0;tick=0;newsTimer=0;marketTrend=0;RealizedProfit=0;LastClue="배달 중 얻은 기업 소식이 아직 없습니다.";
         for(int i=0;i<5;i++){Companies[i]=new Company{price=StockCatalog.StartingPrices[i],openingPrice=StockCatalog.StartingPrices[i]};Companies[i].history.Add(Companies[i].price);stories[i]=null;trends[i]=0;}
     }
     void Update(){
-        if(clock==null)return;
+        if(clock==null&&!PrisonMission.Current)return;
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
         if(Time.timeScale>0){
             if(Input.GetKeyDown(KeyCode.F9))TestNewsRound();
             if(Input.GetKeyDown(KeyCode.F10))TestPriceTicks();
         }
 #endif
-        if(day!=clock.currentDay)AdvanceDay(clock.currentDay);
+        if(clock&&day!=clock.currentDay)AdvanceDay(clock.currentDay);
         if(!MarketOpen)return;
         newsTimer+=Time.deltaTime;
         if(newsTimer>=StockCatalog.NewsInterval){newsTimer%=StockCatalog.NewsInterval;PublishRound();}
@@ -181,3 +181,5 @@ public sealed class StockMarket : MonoBehaviour {
 #endif
     void OnDestroy(){if(Instance==this)Instance=null;}
 }}
+
+

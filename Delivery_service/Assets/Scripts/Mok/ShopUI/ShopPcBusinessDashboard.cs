@@ -40,16 +40,17 @@ namespace DeliveryService.Mok.ShopUI
         {
             if (cycle == null || ledger == null) return;
             if(openingRent==null&&openingGate!=null)openingRent=openingGate.transform.Find("OpeningCard/Description")?.GetComponent<Text>();
-            if(openingRent!=null){openingRent.text="낮에는 주문을 골라 배달하고, 밤에는 휴대폰에서 다음 사건을 준비하세요.";openingRent.font=MokUIFont.Font;openingRent.resizeTextForBestFit=true;openingRent.resizeTextMinSize=18;}
+            if(openingRent!=null){openingRent.text="스토리의 주문을 준비하고 휴대폰에서 다음 임무를 확인하세요.";openingRent.font=MokUIFont.Font;openingRent.resizeTextForBestFit=true;openingRent.resizeTextMinSize=18;}
             bool open = cycle.isShopOpen;
             openingGate.SetActive(!open && !cycle.IsNightPreparation);
             orderList.SetActive(open);
-            closeButton.interactable = open;
+            closeButton.gameObject.SetActive(false);
+            openButton.gameObject.SetActive(false);
             bool current = ledger.HasOpenedToday;
-            periodLabel.text = $"DAY {cycle.currentDay:00}  ·  오늘 개점부터 현재까지";
-            statusLabel.text = cycle.IsNightPreparation ? "낮 영업이 끝났습니다. 미션은 휴대폰에서 확인하세요. 영업 종료 탭에서 다음 날로 넘어갈 수 있습니다." : DailyRent.Preview(cycle.currentDay);
+            periodLabel.text = "이번 플레이 기록";
+            statusLabel.text = "다음 이야기는 휴대폰의 미션 앱에서 이어집니다.";
             statusLabel.resizeTextForBestFit=true;statusLabel.resizeTextMinSize=16;statusLabel.resizeTextMaxSize=22;
-            statusLabel.color=DailyRent.ProjectedBalance(cycle.currentDay)<0?new Color(.7f,.2f,.2f):new Color(.1f,.17f,.23f);
+            statusLabel.color=new Color(.1f,.17f,.23f);
             incomeLabel.text = Won(current ? ledger.Income : 0);
             expenseLabel.text = Won(current ? ledger.Expense : 0);
             long profit = current ? ledger.Profit : 0;

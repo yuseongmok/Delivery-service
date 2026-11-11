@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Linq;
 using UnityEngine;
 namespace DeliveryService.Mok {
@@ -34,7 +34,7 @@ public sealed class PlayerCombat : MonoBehaviour {
         foreach(var h in hits){if(h.transform.IsChildOf(transform))continue;return h.collider.GetComponentInParent<CitizenCombat>();}return null;
     }
     public bool TryPickpocket(){
-        if(!CanAct||IsKicking)return false;var npc=FocusCitizen();if(npc==null||npc.GetComponent<RacerNPCInteraction>())return false;
+        if(!CanAct||IsKicking)return false;var npc=FocusCitizen();if(npc==null||npc.GetComponent<PrisonMissionPoint>()||npc.GetComponent<RacerNPCInteraction>())return false;
         npc.Pickpocket(this);return true;
     }
     public bool TryKick(){if(!CanAct||IsKicking||Time.time<nextKick)return false;nextKick=Time.time+kickCooldown;var target=FocusCitizen(2);var guard=target?target.GetComponent<VenuePatrolGuard>():null;if(guard&&guard.CanSilentStrike(this))StartCoroutine(SilentTakedown(guard));else StartCoroutine(Kick());return true;}

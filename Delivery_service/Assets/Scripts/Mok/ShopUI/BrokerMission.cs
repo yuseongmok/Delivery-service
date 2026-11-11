@@ -35,7 +35,7 @@ public sealed class BrokerMission : MonoBehaviour {
  void OnDestroy(){if(Current==this)Current=null;CleanEnemies();}
  public bool CanStart=>!VenueFinale.Active&&!MechanicMission.Active&&!BackdoorMission.Active&&!SpecialOrderMission.Active&&!Running&&!Completed&&day&&day.IsNightPreparation&&!day.IsTransitioning&&!StoryTutorial.Active&&player&&!player.IsDown&&!PoliceControl.IsArrestInProgress&&!(orders&&orders.HasActiveOrder);
  public bool Begin(){
-  if(!CanStart)return false;CleanEnemies();FailureReason="";startDay=day.currentDay;reinforced=false;safeFor=0;
+  if(!CanStart)return false;day.EnterNightPreparation();CleanEnemies();FailureReason="";startDay=day.currentDay;reinforced=false;safeFor=0;
   broker.gameObject.SetActive(false);broker.SetPositionAndRotation(brokerHome,brokerRotation);broker.gameObject.SetActive(true);
   guide.enabled=true;if(!guide.isOnNavMesh){Fail("실장이 이동할 길을 찾지 못했습니다.");return false;}guide.Warp(brokerHome);guide.isStopped=true;
   FindFirstObjectByType<PhoneController>()?.ClosePhone();day.pcUIPanel.SetActive(false);Cursor.lockState=CursorLockMode.Locked;Cursor.visible=false;

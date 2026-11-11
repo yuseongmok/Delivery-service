@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.AI;
@@ -17,9 +17,9 @@ public sealed class CitizenCombat : MonoBehaviour {
     public int Health { get; private set; }
     public float RobberyReadyAt { get; private set; } = float.NegativeInfinity;
     DayNightCycle clock;
-    public float GameMinute => clock!=null?((clock.currentDay-1)*24f+clock.currentTime)*60f:0;
+    public float GameMinute => clock!=null?Time.time*Mathf.Max(1,clock.timeMultiplier)/60f:0;
     public bool WasRobbed => clock!=null&&GameMinute<RobberyReadyAt;
-    public bool CanBePickpocketed => GetComponent<RacerNPCInteraction>()==null&&!missionEnemy&&GetComponent<SlumRobberCombat>()==null&&clock!=null&&clock.isShopOpen&&!WasRobbed&&Health>0&&!npc.IsDead&&!npc.IsKnockedDown;
+    public bool CanBePickpocketed => GetComponent<RacerNPCInteraction>()==null&&!missionEnemy&&GetComponent<SlumRobberCombat>()==null&&clock!=null&&!StoryTutorial.Active&&!WasRobbed&&Health>0&&!npc.IsDead&&!npc.IsKnockedDown;
     public bool IsAggressive => target != null && Health > 0 && !npc.IsDead;
     public bool IsPunching => punching;
     public NPCControl Npc => npc;
@@ -56,6 +56,7 @@ public sealed class CitizenCombat : MonoBehaviour {
         target=player;npc.ExternalControl=true;agent.areaMask=NavMesh.AllAreas;agent.speed=chaseSpeed;agent.stoppingDistance=combatSpacing;nextPunch=Time.time+.5f;
     }
     public bool ReceiveKick(PlayerCombat player,Vector3 direction,int damage) {
+        var prisonGuard=GetComponent<PrisonGuard>();if(prisonGuard){prisonGuard.Attacked(player);return true;}
         if(ParkEscapeSequence.Protects(this)){return ReceiveProtectedHit(direction);}
         if(!GetComponent<StunStars>())gameObject.AddComponent<StunStars>();
         if(Health<=0||npc.IsDead||npc.IsKnockedDown)return false;
@@ -66,6 +67,7 @@ public sealed class CitizenCombat : MonoBehaviour {
         npc.KnockDown(direction,7f);StartCoroutine(GetUp());return true;
     }
     public bool ReceiveBullet(PlayerCombat player,Vector3 direction,int damage){
+        var prisonGuard=GetComponent<PrisonGuard>();if(prisonGuard){prisonGuard.Attacked(player);return true;}
         if(ParkEscapeSequence.Protects(this)){return ReceiveProtectedHit(direction);}
         if(Health<=0||npc.IsDead||npc.IsKnockedDown)return false;
         if(!GetComponent<StunStars>())gameObject.AddComponent<StunStars>();

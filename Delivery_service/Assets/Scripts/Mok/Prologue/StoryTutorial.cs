@@ -101,7 +101,7 @@ public sealed class StoryTutorial : MonoBehaviour {
             else if(CurrentStep==Step.Return&&!cargo.bikeController.isDriven&&Vector3.Distance(inventory.transform.position,insideStand.position)<2.8f&&Vector3.Distance(actor.position,insideStand.position)<1.4f)SetStep(Step.Goodbye);
             return;
         }
-        if(!day.isShopOpen){SetStep(Step.Open);return;}
+        if(!day.isShopOpen){day.OnClick_OpenShop();return;}
         if(!orders.HasActiveOrder){SetStep(Step.Accept);return;}
         loaded|=cargo.StoredCount>0;rode|=loaded&&cargo.bikeController.isDriven;
         bool packaged=inventory.HasPackagedPizzas()||cargo.StoredCount>0;
@@ -149,9 +149,9 @@ public sealed class StoryTutorial : MonoBehaviour {
     }
     public void DeveloperComplete(){if(!Active)return;orders.ResetOrdersForNewDay();Finish();}
     void Finish(){
-        Completed=true;running=false;day.timeMultiplier=oldMultiplier;orders.EndStoryLesson();
+        Completed=true;running=false;day.timeMultiplier=oldMultiplier;orders.EndStoryLesson();day.EnterNightPreparation();
         FindFirstObjectByType<DeliveryService.Yun.Achievements.AchievementManager>()?.TryUnlock(DeliveryService.Yun.Achievements.AchievementManager.FirstDeliveryId);
-        DeliveryRequestNotice.Show("업적 달성 · 첫 정당한 수입\n이제 스스로 주문을 골라 배달해 보세요.");
+        DeliveryRequestNotice.Show("업적 달성 · 첫 정당한 수입\n휴대폰에서 다음 이야기를 확인하세요.");
         if(highlight)Destroy(highlight);ui.SetActive(false);
     }
     void OnDestroy(){if(Current==this){if(started&&day)day.timeMultiplier=oldMultiplier;Current=null;}if(highlight)Destroy(highlight);}

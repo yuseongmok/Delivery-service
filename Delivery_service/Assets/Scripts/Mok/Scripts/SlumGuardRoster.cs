@@ -13,7 +13,7 @@ public sealed class SlumGuardRoster : MonoBehaviour {
  DayNightCycle clock;int spawnedDay=-1;
  public IReadOnlyList<SlumRobberCombat> Guards=>guards;
  void Start(){clock=FindFirstObjectByType<DayNightCycle>();}
- void Update(){if(clock!=null&&clock.isShopOpen&&spawnedDay!=clock.currentDay)SpawnDay(clock.currentDay);}
+ void Update(){if(clock!=null&&!StoryTutorial.Active&&spawnedDay!=clock.currentDay)SpawnDay(clock.currentDay);}
  public bool SpawnDay(int day){
   if(spawnedDay==day)return false;
   if(robberPrefab==null||posts==null||posts.Length<GuardCount)return false;

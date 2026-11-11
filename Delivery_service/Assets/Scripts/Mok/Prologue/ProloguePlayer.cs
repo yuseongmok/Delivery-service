@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 namespace DeliveryService.Mok {
@@ -51,8 +51,8 @@ public sealed class ProloguePlayer : MonoBehaviour {
         bool mouseReady=Cursor.lockState==CursorLockMode.Locked;
         if(!mouseReady&&Input.GetMouseButtonDown(0)){Cursor.lockState=CursorLockMode.Locked;Cursor.visible=false;}
         if(mouseReady){
-            transform.Rotate(0, Input.GetAxis("Mouse X") * 2, 0);
-            pitch = Mathf.Clamp(pitch - Input.GetAxis("Mouse Y") * 2, -75, 75);
+            transform.Rotate(0, Input.GetAxis("Mouse X") * 2 * DeliveryService.Yun.Settings.GameSettingsPanel.MouseSensitivity, 0);
+            pitch = Mathf.Clamp(pitch - Input.GetAxis("Mouse Y") * 2 * DeliveryService.Yun.Settings.GameSettingsPanel.MouseSensitivity, -75, 75);
         }
         float recovery=1-Mathf.Exp(-10*Time.deltaTime);
         recoil=Mathf.Lerp(recoil,0,recovery);recoilSide=Mathf.Lerp(recoilSide,0,recovery);recoilRoll=Mathf.Lerp(recoilRoll,0,recovery);

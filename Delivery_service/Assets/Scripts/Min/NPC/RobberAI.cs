@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -87,7 +87,7 @@ public class RobberAI : MonoBehaviour
     void Update()
     {
         if(Time.timeScale <= 0) return;
-        if(clock != null && (clock.currentDay != day || (!IsTestSpawn && !clock.isShopOpen))) { DropLoot(); Destroy(gameObject); return; }
+        if(clock != null && (clock.currentDay != day || (!IsTestSpawn && DeliveryService.Mok.StoryTutorial.Active))) { DropLoot(); Destroy(gameObject); return; }
         if(npc.IsDead) { DropLoot(); return; }
         // 시야나 경로 도착 여부와 무관하게 강탈 시점부터 회수 기회를 준다.
         if(HasStolenLoot){

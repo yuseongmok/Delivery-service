@@ -14,6 +14,18 @@ namespace DeliveryService.Yun.Settings
         [SerializeField] private Slider sfxSlider;
         [SerializeField] private Text bgmValue;
         [SerializeField] private Text sfxValue;
+        [SerializeField] private Slider sensitivitySlider;
+        [SerializeField] private Text sensitivityValue;
+        private const string SensitivityKey = "DeliveryService.MouseSensitivity";
+        private static float sensitivity = -1f;
+        public static float MouseSensitivity
+        {
+            get
+            {
+                if (sensitivity < 0f) sensitivity = Mathf.Clamp(PlayerPrefs.GetFloat(SensitivityKey, 1f), .25f, 3f);
+                return sensitivity;
+            }
+        }
         [SerializeField] private Text status;
         [SerializeField] private GameObject settingsWindow;
         [SerializeField] private GameObject achievementsPage;
@@ -26,6 +38,8 @@ namespace DeliveryService.Yun.Settings
         private void OnEnable()
         {
             BackToSettings();
+            if (sensitivitySlider != null) sensitivitySlider.SetValueWithoutNotify(MouseSensitivity);
+            UpdateValues();
             loading = false;
             if (status != null) status.text = "";
             if (audioSettings != null)
@@ -60,6 +74,7 @@ namespace DeliveryService.Yun.Settings
         }
         private void OnDisable()
         {
+            PlayerPrefs.Save();
             pause.Release();
             input.Release();
             if (audioSettings != null) audioSettings.Save();
@@ -75,8 +90,16 @@ namespace DeliveryService.Yun.Settings
             if (audioSettings != null) audioSettings.SetSfxVolume(value);
             UpdateValues();
         }
+        // 기본 도시 감도를 100%로 두고 모든 플레이어 카메라에 같은 배율을 적용한다.
+        public void SetMouseSensitivity(float value)
+        {
+            sensitivity = Mathf.Clamp(value, .25f, 3f);
+            PlayerPrefs.SetFloat(SensitivityKey, sensitivity);
+            UpdateValues();
+        }
         private void UpdateValues()
         {
+            if (sensitivityValue != null) sensitivityValue.text = Mathf.RoundToInt(MouseSensitivity * 100) + "%";
             if (bgmValue != null) bgmValue.text = Mathf.RoundToInt(bgmSlider.value * 100) + "%";
             if (sfxValue != null) sfxValue.text = Mathf.RoundToInt(sfxSlider.value * 100) + "%";
         }

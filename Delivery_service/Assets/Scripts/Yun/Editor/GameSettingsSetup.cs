@@ -12,6 +12,39 @@ namespace DeliveryService.Yun.Editor
 {
     public static class GameSettingsSetup
     {
+        // 기존 설정 화면에 저장되는 감도 행을 추가한다. 실행 중 UI를 생성하지 않는다.
+        public static void AddSensitivity(GameSettingsPanel panel)
+        {
+            var data = new SerializedObject(panel);
+            if (data.FindProperty("sensitivitySlider").objectReferenceValue) return;
+            var window = (RectTransform)panel.transform.Find("Window");
+            window.sizeDelta += new Vector2(0, 86);
+            foreach (RectTransform child in window)
+            {
+                if (child.anchorMin != child.anchorMax) continue;
+                var p = child.anchoredPosition;
+                p.y += p.y >= 0 ? 43 : -43;
+                child.anchoredPosition = p;
+            }
+            foreach (string suffix in new[] { " Card", " Label", " Value", " Slider" })
+            {
+                var original = window.Find("SFX" + suffix);
+                var copy = UnityEngine.Object.Instantiate(original.gameObject, window).GetComponent<RectTransform>();
+                copy.name = "Sensitivity" + suffix;
+                var p = copy.anchoredPosition; p.y = -20; copy.anchoredPosition = p;
+                if (suffix == " Card") copy.SetSiblingIndex(2);
+                if (suffix == " Label") { var label = copy.GetComponent<Text>(); label.text = "마우스 감도"; label.fontSize = 25; copy.sizeDelta = new Vector2(175,48); }
+            }
+            var slider = window.Find("Sensitivity Slider").GetComponent<Slider>();
+            slider.minValue = .25f; slider.maxValue = 3f;
+            slider.onValueChanged = new Slider.SliderEvent();
+            UnityEventTools.AddPersistentListener(slider.onValueChanged, panel.SetMouseSensitivity);
+            slider.SetValueWithoutNotify(1f);
+            var value = window.Find("Sensitivity Value").GetComponent<Text>(); value.text = "100%";
+            data.FindProperty("sensitivitySlider").objectReferenceValue = slider;
+            data.FindProperty("sensitivityValue").objectReferenceValue = value;
+            data.ApplyModifiedPropertiesWithoutUndo();
+        }
         private static Font font;
         private static readonly Color Ink = new Color32(25, 43, 66, 255);
 

@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -27,7 +27,8 @@ public sealed class CompactHUD : MonoBehaviour {
         orderCard=Card("Order",new Vector2(0,1),new Vector2(28,-28),new Vector2(290,126));
         orderTitle=Label(orderCard,18,12,254,30,25);orderBody=Label(orderCard,18,48,304,124,21);
         var time=Card("Time",Vector2.one,new Vector2(-28,-28),new Vector2(264,58));timeLabel=Label(time,16,12,232,34,26);timeLabel.alignment=TextAnchor.MiddleCenter;
-        var balance=Card("Balance",Vector2.one,new Vector2(-28,-94),new Vector2(264,64));
+        time.gameObject.SetActive(false);
+        var balance=Card("Balance",Vector2.one,new Vector2(-28,-28),new Vector2(264,64));
         var currency=Label(balance,16,12,36,40,32);currency.text="$";currency.color=Orange;currency.alignment=TextAnchor.MiddleCenter;cash=Label(balance,56,13,190,38,29);cash.alignment=TextAnchor.MiddleRight;
         popup=Label(balance,-16,72,280,40,26);popup.alignment=TextAnchor.MiddleRight;
         vehicle=Card("Vehicle",Vector2.zero,new Vector2(28,28),new Vector2(270,150)).gameObject;
@@ -38,7 +39,7 @@ public sealed class CompactHUD : MonoBehaviour {
             var track=Rect(row,"Empty track",40,25,190,8).gameObject.AddComponent<Image>();track.color=new Color(.33f,.40f,.44f);
             fills[i]=Rect(track.transform,"Fill",0,0,190,8).gameObject.AddComponent<Image>();fills[i].color=Orange;fills[i].raycastTarget=false;
         }
-        Hide(sourceOrder);Hide(clock.dayText);Hide(clock.timeText);
+        Hide(sourceOrder);if(clock){Hide(clock.dayText);Hide(clock.timeText);}
         if(feedback!=null){Hide(feedback.balanceText);Hide(feedback.popupText);}
         foreach(var bike in bikes){
             var fuel=bike.GetComponent<MotorcycleFuel>();var durability=Durability(bike);
@@ -51,7 +52,9 @@ public sealed class CompactHUD : MonoBehaviour {
     static void Hide(Graphic g){if(g!=null)g.enabled=false;}
     static void HideGauge(Image image){if(image==null)return;image.enabled=false;if(image.transform.parent!=null)foreach(var text in image.transform.parent.GetComponentsInChildren<Text>(true))text.enabled=false;}
     void LateUpdate(){using(DeliveryService.Mok.PerformanceMarkers.HUD.Auto()){
-        if(timeLabel==null||clock==null)return;
+        if(timeLabel==null)return;
+        if(PrisonMission.Current){orderCard.gameObject.SetActive(false);vehicle.SetActive(false);cash.text=$"{(MoneyManager.Instance?MoneyManager.Instance.currentMoney:0):N0}원";popup.text="";return;}
+        if(clock==null)return;
         var story=VenueFinale.Current?VenueFinale.Current.aftermath:null;bool chapterView=story&&story.State>=ShopEscapeChapter.Stage.Arrest;GetComponent<Canvas>().enabled=!chapterView;if(chapterView)return;
         int minutes=Mathf.FloorToInt(clock.currentTime*60);timeLabel.text=$"DAY {clock.currentDay}  ·  {minutes/60:00}:{minutes%60:00}";
         string value=sourceOrder!=null?sourceOrder.text:"";var lines=value.Split('\n');
