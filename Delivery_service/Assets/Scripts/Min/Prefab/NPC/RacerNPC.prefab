@@ -575,7 +575,7 @@ MonoBehaviour:
   minWaitTime: 0.5
   maxWaitTime: 3
   isCrossing: 0
-  mainBone: {fileID: 0}
+  mainBone: {fileID: 4720823613311067198}
 --- !u!114 &8879172045815320807
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -590,6 +590,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DeliveryService.Mok.CitizenCombat
   maximumHealth: 100
   missionEnemy: 0
+  usesFirearm: 0
   chaseSpeed: 4.5
   punchRange: 2.8
   punchCooldown: 1.4
@@ -633,10 +634,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RacerNPCInteraction
   interactDistance: 2.5
+  maxDialogueDistance: 5
   interactKey: 102
-  dialoguePanel: {fileID: 0}
-  npcNameText: {fileID: 0}
-  dialogueText: {fileID: 0}
+  rotateSpeed: 5
   npcName: "\uB808\uC774\uC11C"
   dialogueMessage: "\uB2C8\uAC00 \uADF8\uB807\uAC8C \uC6B4\uC804\uC744 \uC798\uD574?
     \uB3C4\uB85C\uB85C \uB530\uB77C\uC640"
@@ -4047,4 +4047,3 @@ Transform:
   - {fileID: 2846845362299479462}
   m_Father: {fileID: 9160571271716182757}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-

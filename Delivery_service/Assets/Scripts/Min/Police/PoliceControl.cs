@@ -435,6 +435,30 @@ public class PoliceControl : MonoBehaviour
     private void DespawnPolice()
     {
         FindFirstObjectByType<PoliceManager>()?.ReportEscape(this);
+
+        bool hasOtherPolice = false;
+        PoliceControl[] allPolice = FindObjectsOfType<PoliceControl>();
+        foreach (var p in allPolice)
+        {
+            if (p != null && p != this && p.isActiveAndEnabled)
+            {
+                hasOtherPolice = true;
+                break;
+            }
+        }
+
+        if (!hasOtherPolice)
+        {
+            NPCControl[] allNpcs = FindObjectsOfType<NPCControl>();
+            foreach (var npc in allNpcs)
+            {
+                if (npc != null)
+                {
+                    npc.ClearInterest();
+                }
+            }
+        }
+
         Destroy(gameObject);
     }
 }

@@ -242,6 +242,31 @@ public class NPCControl : MonoBehaviour
         Destroy(gameObject, 5f);
     }
 
+    public void ClearInterest()
+    {
+        if (isDead) return;
+
+        // 미션 전용 적 NPC는 수배가 풀려도 관심을 끄지 않음
+        var combat = GetComponent("CitizenCombat");
+        if (combat != null)
+        {
+            var missionField = combat.GetType().GetField("missionEnemy");
+            if (missionField != null && missionField.FieldType == typeof(bool) && (bool)missionField.GetValue(combat))
+            {
+                return;
+            }
+        }
+
+        ExternalControl = false;
+        SendMessage("EndFight", SendMessageOptions.DontRequireReceiver);
+
+        if (!IsKnockedDown && agent != null && agent.enabled && agent.isOnNavMesh)
+        {
+            agent.isStopped = false;
+            SetNewRandomDestination();
+        }
+    }
+
     public void Die()
     {
         Die(transform.forward * -1f, 15f);
