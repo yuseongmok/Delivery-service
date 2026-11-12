@@ -10,6 +10,7 @@ namespace DeliveryService.Mok
         public enum Phase { Cook, Load, Deliver, Infirmary, Talk, Return, Complete }
         public static PrisonMission Current { get; private set; }
         public PrisonMissionText dialogue;
+        public PrisonIntroduction introduction;
         public PlayerCombat player;
         public PrisonMealCart cart;
         public PrisonMissionPoint cooking, infirmary, cell;
@@ -41,10 +42,11 @@ namespace DeliveryService.Mok
         {
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
-            Say(dialogue.introduction, 10);
+            if (!introduction) Say(dialogue.introduction, 10);
         }
         void Update()
         {
+            if (introduction) return;
             if (!Failing && Time.time > subtitleUntil && State != Phase.Complete) Subtitle = "";
             if (State == Phase.Infirmary && Vector3.Distance(player.transform.position, infirmary.transform.position) < 2.5f)
                 State = Phase.Talk;
@@ -52,7 +54,7 @@ namespace DeliveryService.Mok
         public void Say(string line, float seconds = 7) { Subtitle = line; subtitleUntil = Time.time + seconds; }
         public bool Use(PrisonMissionPoint point)
         {
-            if (Busy || Failing || !player.CanAct) return false;
+            if (introduction || Busy || Failing || !player.CanAct) return false;
             if (point == cooking && State == Phase.Cook) { StartCoroutine(Cook()); return true; }
             if (State == Phase.Deliver && Delivered < recipients.Length && point == recipients[Delivered])
             {
@@ -83,7 +85,7 @@ namespace DeliveryService.Mok
         }
         public void LoadCart()
         {
-            if (State != Phase.Load || Busy || Failing) return;
+            if (introduction || State != Phase.Load || Busy || Failing) return;
             PrisonAudio.Clink(cart.transform.position); cart.ShowPrepared(false); cart.SetMeals(3); State = Phase.Deliver;
             Say("손잡이를 잡고 첫 번째 재소자에게 카트를 밀어 가자.");
         }
@@ -118,4 +120,3 @@ namespace DeliveryService.Mok
         }
     }
 }
-

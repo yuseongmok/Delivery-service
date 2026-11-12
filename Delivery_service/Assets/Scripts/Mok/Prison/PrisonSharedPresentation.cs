@@ -21,11 +21,21 @@ namespace DeliveryService.Mok {
             var old=GUI.color;GUI.color=new Color(0,0,0,mission.Fade);
             GUI.DrawTexture(new Rect(0,0,Screen.width,Screen.height),Texture2D.whiteTexture);GUI.color=old;
         }
+        void PresentIntroduction(){
+            var intro=mission.introduction;objective.text=intro.Objective;subtitle.text=intro.Subtitle;subtitle.color=intro.Subtitle.StartsWith("민기:")?new Color(1,.74f,.4f):intro.Subtitle.StartsWith("나:")?new Color(.55f,.82f,1):new Color(1,.94f,.8f);
+            var target=intro.Target;marker.gameObject.SetActive(target&&!mission.Failing);
+            if(!target){if(previous)navigation.StopGuidance();previous=null;return;}
+            if(previous!=target){previous=target;route.Reset();place.entrance=target;place.mapAnchor=target;navigation.SelectPlace(place);}
+            var feet=mission.player.transform.position;feet.y=mission.player.GetComponent<CharacterController>().bounds.min.y+.1f;
+            StoryTargetDiamond.Place(marker,mission.player.View,route.Marker(feet,target.position,false)+Vector3.up,feet,"최형욱");
+            if(Vector3.Distance(feet,target.position)<3.2f)objective.text+=Vector3.Distance(intro.mingi.transform.position,mission.player.transform.position)>6?"\n민기를 기다리세요":"\n[F] 최형욱과 대화";
+        }
         void LateUpdate(){
             if(!mission||!mission.player)return;
             bool menu=Time.timeScale==0;
             ui.SetActive(!menu);
             if(menu)return;
+            if(mission.introduction){PresentIntroduction();return;}
             objective.text=mission.dialogue.objectives[(int)mission.State]+(mission.State==PrisonMission.Phase.Deliver?$" ({mission.Delivered}/3)":"");
             subtitle.text=mission.Subtitle;
             var target=mission.Target;
@@ -46,5 +56,3 @@ namespace DeliveryService.Mok {
         }
     }
 }
-
-
