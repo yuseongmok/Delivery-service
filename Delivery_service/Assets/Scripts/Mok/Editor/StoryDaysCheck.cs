@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;using System.IO;using System.Collections;using System.Linq;using UnityEngine;using UnityEditor;
 namespace DeliveryService.Mok.Editor {
 public static class StoryDaysCheck {
@@ -16,20 +16,18 @@ public static class StoryDaysCheck {
  Check(f.DeveloperStart(),"restart for homecoming check");f.SkipCinematic();typeof(VenueFinale).GetProperty("State").SetValue(f,VenueFinale.Phase.StreetEscape);typeof(VenueFinale).GetField("turned",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).SetValue(f,true);f.PlacePlayer(f.carStand);yield return null;Check(f.Interact(),"board for return check");f.SkipCinematic();f.car.position=f.driveEnd.position;yield return null;f.AbandonCar();yield return Wait(2.6f);Check(f.State==VenueFinale.Phase.Debrief&&Vector3.Distance(f.Player.transform.position,f.safePoint.position)<2,"player reaches shop before dialogue");yield return Wait(1.5f);var mingi=f.preparation.preparation.delivery.kitchen.actor;Check(mingi.gameObject.activeInHierarchy&&Vector3.Angle(f.cinema.transform.forward,mingi.position+Vector3.up*1.45f-f.cinema.transform.position)<3,"first-person camera faces Mingi");Check(!f.fade.gameObject.activeSelf&&f.subtitle.text.Contains("차는 버리고"),"dialogue starts after return fade");BrokerMissionCheck.Capture(b,"Venue-homecoming",f.cinema);f.SkipCinematic();Check(f.State==VenueFinale.Phase.Aftermath&&!f.cinema.enabled,"skip starts shop escape at shop");f.Cancel();
  }
  public static IEnumerator Verify(){
- log="Story dialogue and daily progression\n";yield return Wait(.5f);
- var b=BrokerMission.Current;var s=SpecialOrderMission.Current;var r=BackdoorMission.Current;var m=MechanicMission.Current;var f=VenueFinale.Current;var day=b.day;var inbox=StoryPhoneInbox.Current;inbox.AutoOpenEnabled=false;MoneyManager.Instance.currentMoney=200000;day.EnterNightPreparation();
- var story=AssetDatabase.LoadAssetAtPath<PrologueStory>("Assets/Scripts/Mok/Prologue/Art/BankPrologueStory.asset");Check(story.carConversation.Any(x=>x.text.Contains("박진웅"))&&story.carConversation.Any(x=>x.text.Contains("우리가 알아서 숨어"))&&story.shopConversation.Any(x=>x.text.Contains("누구 돈인지")),"saved prologue explains commission and inaccessible job money");
- Check(b.meetingLines.Any(x=>x.Contains("이유는 나도 몰라"))&&f.overheard.Any(x=>x.Contains("보스가 없어지면 조직은 내가"))&&f.overheard.Any(x=>x.Contains("전부 정리")),"broker uncertainty leads to revealed betrayal at venue");Check(inbox.Messages.Any(x=>x.sender=="실장"&&x.body.Contains("내일")),"first contact is broker message");
- // 실제 완료 프로퍼티와 실제 다음 날 전환으로 검사한다.
- int start=day.currentDay;Complete(b,BrokerMission.Phase.Complete);yield return null;
- Check(b.CompletedDay==start&&!s.DayUnlocked&&!s.Begin(),"same-night special order is blocked");
- var app=UnityEngine.Object.FindFirstObjectByType<StoryPhoneApp>(FindObjectsInactive.Include);app.Open(false);app.Move(1);app.Confirm();app.Refresh();Check(app.action.text.Contains("DAY "+(start+1)),"phone displays next eligible day");app.gameObject.SetActive(false);
- yield return NextDay(day);Check(s.DayUnlocked&&!s.CanStart,"next day still requires night");day.EnterNightPreparation();yield return null;Check(s.Begin(),"special order begins next night");s.Cancel();Check(s.Begin(),"failed mission can retry same night");s.Cancel();Complete(s,SpecialOrderMission.Phase.Complete);Check(!r.DayUnlocked&&!r.Begin(),"recon blocked on delivery completion night");
- yield return NextDay(day);day.EnterNightPreparation();yield return null;Check(r.Begin(),"recon starts following night");r.Cancel();Complete(r,BackdoorMission.Phase.Complete);Check(!m.DayUnlocked&&!m.Begin(),"mechanic blocked on recon completion night");
- yield return NextDay(day);day.EnterNightPreparation();yield return null;Check(m.Begin(),"mechanic starts following night");m.Cancel();Complete(m,MechanicMission.Phase.Complete);Check(f.Ready,"all four separate preparation nights unlock finale");
- int eventBefore=day.currentDay;Check(f.Begin(),"finale departure schedules event day");float until=Time.time+12;while(f.State==VenueFinale.Phase.Scheduling&&Time.time<until)yield return null;Check(day.currentDay==eventBefore+1&&f.State==VenueFinale.Phase.Opening&&!day.isShopOpen,"finale starts next day without pizza sales");f.Cancel();
- Check(inbox.Messages.Count(x=>x.title=="오늘의 약속 · 특별 주문")==1&&inbox.Messages.Count(x=>x.title=="오늘의 준비 · 도시의 뒷문")==1&&inbox.Messages.Count(x=>x.title=="오늘의 약속 · 빚진 정비사")==1,"each next-night invitation sent once");
- Check(f.DeveloperStart(),"presentation cheat still enters finale directly");f.Cancel();
+ log="Story sequence without calendar gates\n";yield return Wait(.5f);
+ var b=BrokerMission.Current;var s=SpecialOrderMission.Current;var r=BackdoorMission.Current;var m=MechanicMission.Current;var f=VenueFinale.Current;var day=b.day;var inbox=StoryPhoneInbox.Current;inbox.AutoOpenEnabled=false;
+ int initial=day.currentDay;var app=UnityEngine.Object.FindFirstObjectByType<StoryPhoneApp>(FindObjectsInactive.Include);
+ void Daytime(){day.currentTime=9;day.isShopOpen=false;}
+ void Open(int index){app.Open(false);app.Move(index);app.Confirm();app.Refresh();}
+ Daytime();Check(!s.CanStart&&!r.CanStart&&!m.CanStart&&!f.CanStart,"future missions locked before story prerequisites");Open(0);Check(app.action.text=="미션 시작","broker phone action has no business gate");app.Confirm();Check(b.Running,"broker starts without closing shop");b.Cancel();b.DeveloperComplete();yield return Wait(.2f);
+ Daytime();Open(1);Check(app.action.text=="미션 시작"&&s.CanStart,"rescue unlocks special order immediately");app.Confirm();Check(s.Running,"special order starts through phone");s.Cancel();s.DeveloperComplete();yield return Wait(.2f);
+ Daytime();Open(2);Check(app.action.text=="미션 시작"&&r.CanStart,"approval unlocks reconnaissance immediately");app.Confirm();Check(r.Running,"reconnaissance starts through phone");r.Cancel();r.DeveloperComplete();yield return Wait(.2f);
+ Daytime();Open(3);Check(app.action.text=="미션 시작"&&m.CanStart,"reconnaissance unlocks mechanic immediately");app.Confirm();Check(m.Running,"mechanic starts through phone");m.Cancel();m.DeveloperComplete();yield return Wait(.2f);
+ Daytime();Open(4);Check(app.action.text=="행사장으로 출발"&&f.CanStart,"vehicle support unlocks finale immediately");app.Confirm();Check(f.State==VenueFinale.Phase.Opening&&day.currentDay==initial,"all missions connect in same calendar day");f.Cancel();
+ foreach(var title in new[]{"다음 준비 · 특별 주문","다음 준비 · 도시의 뒷문","다음 준비 · 빚진 정비사","작전 준비 완료 · 마지막 배달"})Check(inbox.Messages.Count(x=>x.title==title)==1,"single invitation: "+title);
+ Check(f.Begin(),"finale retries without losing preparation");f.Cancel();Check(day.currentDay==initial,"retry never advances calendar");
  }
 }
 }

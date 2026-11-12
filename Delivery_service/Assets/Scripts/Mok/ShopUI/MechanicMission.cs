@@ -1,4 +1,4 @@
-﻿using System.Linq;using UnityEngine;using UnityEngine.InputSystem;using UnityEngine.UI;using UnityEngine.AI;
+using System.Linq;using UnityEngine;using UnityEngine.InputSystem;using UnityEngine.UI;using UnityEngine.AI;
 namespace DeliveryService.Mok {
 // 회수한 부품과 차량 지원은 현재 게임 세션의 준비 성과로 유지한다.
 public sealed class MechanicMission:MonoBehaviour {
@@ -14,13 +14,13 @@ public sealed class MechanicMission:MonoBehaviour {
  [TextArea(2,5)]public string[] briefing={"정비사: 민기가 보냈지? 행사장 뒤에 준비해 둘 차가 필요하다면서.","나: 눈에 안 띄고, 확실하게 움직이는 차면 돼.\n정비사: 차는 있어. 문제는 시동 제어기야. 빚은 다 갚았는데 그놈들이 부품을 담보라고 안 돌려줘.","정비사: 표시한 골목에 공구 상자가 있어. 노란 띠에 내 정비소 표시가 붙어 있지. 그것만 찾아와 줘.","나: 가져오면?\n정비사: 부품을 달고 행사 당일 네가 확인한 합류 지점에 차를 가져다 둘게. 운전은 네가 해."};
  [TextArea(2,5)]public string[] ending={"정비사: 맞아, 이 부품이야. 이제 저 차를 다시 굴릴 수 있겠어.","나: 행사장 골목 끝, 큰길 합류 지점이야. 민기가 위치를 보내 줄 거야.\n정비사: 받았어. 차와 열쇠를 거기 두고 먼저 빠질게. 탈출 후에는 지정한 곳에 차를 버려. 추적될 수 있으니까.","정비사: 이건 예비 열쇠야. 이번 빚은 내가 진 걸로 하자.\n나: 그날 꼭 갚아. 시간이 없을 테니까."};
  public string FailureReason{get;private set;}public CitizenCombat[] Pursuers=>enemies;
- CitizenCombat[] enemies=new CitizenCombat[0];bool engaged;int day,line;float entered,noticeUntil;Vector3 boxStart;Quaternion boxRotation;
+ CitizenCombat[] enemies=new CitizenCombat[0];bool engaged;int line;float entered,noticeUntil;Vector3 boxStart;Quaternion boxRotation;
  public PlayerCombat Player=>preparation.Player;DayNightCycle Day=>preparation.delivery.broker.day;
- public int EarliestDay=>preparation.CompletedDay+1;public bool DayUnlocked=>preparation&&preparation.Completed;
- public bool CanStart=>DayUnlocked&&preparation&&preparation.Completed&&!BrokerMission.Active&&!Running&&!Completed&&Day.IsNightPreparation&&!Day.IsTransitioning&&!StoryTutorial.Active&&!Player.IsDown&&!Player.WaterRescueActive&&!PoliceControl.IsArrestInProgress&&!(preparation.delivery.broker.orders&&preparation.delivery.broker.orders.HasActiveOrder);
+ public int EarliestDay=>preparation.CompletedDay;public bool DayUnlocked=>preparation&&preparation.Completed;
+ public bool CanStart=>DayUnlocked&&preparation&&preparation.Completed&&!BrokerMission.Active&&!VenueFinale.Active&&!SpecialOrderMission.Active&&!BackdoorMission.Active&&!Running&&!Completed&&!Day.IsTransitioning&&!StoryTutorial.Active&&!Player.IsDown&&!Player.WaterRescueActive&&!PoliceControl.IsArrestInProgress;
  void Awake(){Current=this;ui.SetActive(false);parts.SetActive(false);keys.SetActive(false);mechanic.gameObject.SetActive(false);}
  void OnDestroy(){Clean();if(Current==this)Current=null;}
- public bool Begin(){if(!CanStart)return false;Clean();day=Day.currentDay;FailureReason="";engaged=false;mechanic.gameObject.SetActive(true);ui.SetActive(true);keys.SetActive(false);
+ public bool Begin(){if(!CanStart)return false;Clean();FailureReason="";engaged=false;mechanic.gameObject.SetActive(true);ui.SetActive(true);keys.SetActive(false);
   preparation.ui.SetActive(false);preparation.delivery.ui.SetActive(false);
   FindFirstObjectByType<PhoneController>()?.ClosePhone();Day.pcUIPanel.SetActive(false);Cursor.lockState=CursorLockMode.Locked;Cursor.visible=false;
   foreach(var pc in FindObjectsByType<ShopPC>(FindObjectsSortMode.None))if(pc.pcUIPanel==Day.pcUIPanel&&pc.cameraLookScript)pc.cameraLookScript.enabled=true;
@@ -28,7 +28,7 @@ public sealed class MechanicMission:MonoBehaviour {
  }
  void Set(Phase value){State=value;line=0;entered=Time.time;}
  void Notice(string text){subtitle.text=text;noticeUntil=Time.time+8;}
- bool Near(Transform target,float height=1.1f){if(!Player.CanAct||Vector3.Distance(Player.transform.position,target.position)>3.3f)return false;var from=Player.View.transform.position;var delta=target.position+Vector3.up*height-from;var inv=Player.GetComponent<ToppingInventory>();return !Physics.RaycastAll(from,delta.normalized,delta.magnitude,~0,QueryTriggerInteraction.Ignore).Any(h=>!h.transform.IsChildOf(Player.transform)&&!h.transform.IsChildOf(target)&&!h.transform.IsChildOf(parts.transform)&&!(inv&&inv.HoldPoint&&h.transform.IsChildOf(inv.HoldPoint)));}
+ bool Near(Transform target,float height=1.1f){if(!Player.CanAct||Vector3.Distance(Player.transform.position,target.position)>3.3f)return false;var from=Player.View.transform.position;var delta=target.position+Vector3.up*height-from;var inv=Player.GetComponent<ToppingInventory>();return !Physics.RaycastAll(from,delta.normalized,delta.magnitude,~0,QueryTriggerInteraction.Ignore).Any(h=>!h.transform.IsChildOf(Player.transform)&&!h.transform.IsChildOf(target)&&!target.IsChildOf(h.transform)&&!h.transform.IsChildOf(parts.transform)&&!(inv&&inv.HoldPoint&&h.transform.IsChildOf(inv.HoldPoint)));}
  void ShowLine(){var lines=State==Phase.Briefing?briefing:ending;subtitle.text=lines[line]+"\n[F] 계속 · [Space] 대화 건너뛰기";}
  public bool ThreatNearby=>enemies.Any(e=>e&&e.gameObject.activeInHierarchy&&!e.GetComponent<NPCControl>().IsDead&&Vector3.Distance(e.transform.position,Player.transform.position)<16);
  public bool Interact(){
@@ -48,7 +48,7 @@ public sealed class MechanicMission:MonoBehaviour {
  public void Cancel(){if(Running)Fail("미션을 중단했습니다.");}
  public void Fail(string reason){if(!Running)return;Set(Phase.Failed);FailureReason=reason;Clean();parts.SetActive(false);keys.SetActive(false);mechanic.gameObject.SetActive(false);Notice("빚진 정비사 중단 · "+reason+(PartRecovered?"\n회수한 부품은 유지됩니다. 휴대폰에서 다시 시작하세요.":"\n휴대폰에서 다시 시작할 수 있습니다."));}
  void Update(){if(Time.timeScale<=0)return;if(!Running){marker.gameObject.SetActive(false);if(Time.time>noticeUntil)ui.SetActive(false);return;}
-  if(Day.currentDay!=day||!Day.IsNightPreparation){Fail("밤 준비 시간이 끝났습니다.");return;}if(Player.HitsTaken>=3||Player.WaterRescueActive||PoliceControl.IsArrestInProgress){Fail("안전하게 복귀하지 못했습니다.");return;}
+  if(Player.HitsTaken>=3||Player.WaterRescueActive||PoliceControl.IsArrestInProgress){Fail("안전하게 복귀하지 못했습니다.");return;}
   if(State==Phase.Retrieve&&!engaged&&Vector3.Distance(Player.transform.position,caseRest.position)<12){Engage();Notice("조직원: 정비사 놈이 보냈냐? 그 상자에 손대지 마!");}
   if(PrologueKeyboard.Pressed(Key.F))Interact();if(PrologueKeyboard.Pressed(Key.Space))AdvanceDialogue(true);
   if(State==Phase.Handover){float t=Mathf.Clamp01((Time.time-entered)/handoverSeconds);parts.transform.position=Vector3.Lerp(boxStart,benchRest.position,Mathf.SmoothStep(0,1,t))+Vector3.up*Mathf.Sin(t*Mathf.PI)*.15f;parts.transform.rotation=Quaternion.Slerp(boxRotation,benchRest.rotation,t);if(t>=1){keys.SetActive(true);Set(Phase.Debrief);ShowLine();}}

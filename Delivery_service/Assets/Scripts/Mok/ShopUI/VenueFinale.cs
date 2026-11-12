@@ -127,7 +127,7 @@ namespace DeliveryService.Mok
         public PlayerCombat Player => preparation.Player;
         public DayNightCycle Day => preparation.preparation.delivery.broker.day;
         public bool Ready => preparation && preparation.Completed && preparation.preparation.Completed && preparation.preparation.delivery.Completed && preparation.preparation.delivery.broker.Completed;
-        public bool CanStart => Ready && !BrokerMission.Active && !Completed && !Day.IsTransitioning && Day.IsNightPreparation && !StoryTutorial.Active && !Player.IsDown && !Player.RiddenBike && !Player.WaterRescueActive && !PoliceControl.IsArrestInProgress && !(preparation.preparation.delivery.broker.orders && preparation.preparation.delivery.broker.orders.HasActiveOrder);
+        public bool CanStart => Ready && !Running && !BrokerMission.Active && !SpecialOrderMission.Active && !BackdoorMission.Active && !MechanicMission.Active && !Completed && !Day.IsTransitioning && !StoryTutorial.Active && !Player.IsDown && !Player.RiddenBike && !Player.WaterRescueActive && !PoliceControl.IsArrestInProgress;
         private VenueFinaleEnemies enemyRoster;
         private VenueFinaleCinematics cinematic;
         private VenueFinalePresentation presentation;
@@ -817,12 +817,6 @@ namespace DeliveryService.Mok
 
             if (!Running)
             {
-                if (Ready && !Completed && !announced)
-                {
-                    announced = true;
-                    StoryPhoneInbox.Current?.Send("첫 번째 사건 · 마지막 배달", "준비는 끝났어. 내일은 영업을 쉬고 행사장에 들어가자. 휴대폰에서 ‘마지막 배달’을 선택하면 다음 날로 넘어가. 박진웅이 왜 우릴 쫓는지 알아내야 해.", true);
-                }
-
                 presentation.RefreshIdle();
                 return;
             }

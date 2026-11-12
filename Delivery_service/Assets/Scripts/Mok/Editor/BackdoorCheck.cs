@@ -12,20 +12,27 @@ public static class BackdoorCheck {
   foreach(var corner in path.corners.Skip(1)){float until=Time.time+40;while(Vector2.Distance(new(p.transform.position.x,p.transform.position.z),new(corner.x,corner.z))>.4f){if(Time.time>until)throw new Exception("physical route blocked "+p.transform.position+" -> "+corner);var d=corner-p.transform.position;d.y=0;p.View.transform.rotation=Quaternion.LookRotation(d);cc.Move((d.normalized*6+Vector3.down*3)*Time.deltaTime);yield return null;}}
  }
  static IEnumerator Record(BackdoorMission m){
-  m.Player.View.transform.LookAt(m.surveyTargets[m.ConfirmedCount]);yield return null;
+  m.Player.View.transform.LookAt(m.surveyTargets[m.ConfirmedCount]);
   if(!m.CanObserve()){var cam=m.Player.View.transform;var d=m.surveyTargets[m.ConfirmedCount].position-cam.position;log+="Diagnostic "+m.State+" act="+m.Player.CanAct+" suspicion="+m.Suspicion+" camera="+cam.position+" distance="+d.magnitude+" dot="+Vector3.Dot(cam.forward,d.normalized)+" hits="+string.Join(";",Physics.RaycastAll(cam.position,d.normalized,d.magnitude,~0,QueryTriggerInteraction.Ignore).Select(h=>h.collider.name))+"\n";}
   Check(m.CanObserve(),"current objective visible from authored stand "+m.ConfirmedCount);
-  InputSystem.QueueStateEvent(Keyboard.current,new KeyboardState(UnityEngine.InputSystem.Key.F));yield return Wait(m.observeSeconds+.3f);InputSystem.QueueStateEvent(Keyboard.current,new KeyboardState());yield return null;
+  int before=m.ConfirmedCount;
+  m.Observe(true,m.observeSeconds*.5f);Check(m.ConfirmedCount==before,"partial observation does not complete");
+  m.Observe(false,0);Check(m.ObservationProgress==0,"releasing observation resets hold");
+  m.Observe(true,m.observeSeconds+.1f);Check(m.ConfirmedCount==before+1,"aimed observation completes after required hold");yield return null;
  }
  public static IEnumerator Verify(bool isolated=false){
   log="Backdoor mission full chain\n";yield return Wait(.4f);var m=BackdoorMission.Current;Check(m&&m.surveyTargets.Length==4&&m.guards.Length>0,"saved reconnaissance content exists");Check(!m.Begin(),"locked before catering approval");
   if(isolated){typeof(BrokerMission).GetProperty("State").SetValue(m.delivery.broker,BrokerMission.Phase.Complete);typeof(SpecialOrderMission).GetProperty("State").SetValue(m.delivery,SpecialOrderMission.Phase.Complete);m.delivery.broker.day.EnterNightPreparation();Check(m.delivery.Completed,"isolated approved-catering setup");}
   else yield return SpecialOrderCheck.Verify();
   var p=m.Player;var b=m.delivery.broker;var inbox=StoryPhoneInbox.Current;inbox.AutoOpenEnabled=false;var phone=UnityEngine.Object.FindFirstObjectByType<PhoneController>();phone.ClosePhone();
+  b.day.currentTime=9;b.day.isShopOpen=false;yield return Wait(.3f);
+  Check(m.CanStart,"approval unlocks investigation without business or day requirements");
+  Check(inbox.Messages.Count(message=>message.title=="다음 준비 · 도시의 뒷문")==1,"single investigation invitation after approval");
   var app=UnityEngine.Object.FindFirstObjectByType<StoryPhoneApp>(FindObjectsInactive.Include);app.Open(false);app.Move(2);app.Confirm();app.Refresh();Check(app.action.text=="미션 시작","approval unlocks backdoor in phone");app.Confirm();yield return null;Check(m.State==BackdoorMission.Phase.Briefing,"phone begins briefing");
   var move=p.GetComponent<PlayerMove>();move.enabled=false;var look=p.View.GetComponent<CameraMove>();if(look)look.enabled=false;
   Place(p,m.reportPoint.position+m.delivery.kitchen.actor.forward*2);p.View.transform.LookAt(m.delivery.kitchen.actor.position+Vector3.up*1.2f);yield return Wait(.2f);yield return Key(UnityEngine.InputSystem.Key.Space);Check(m.State==BackdoorMission.Phase.Survey&&m.ActiveGuards.Length==1,"briefing skip gives control and activates patrol");
   int day=b.day.currentDay;b.day.OnClick_ConfirmClose();Check(!b.day.IsTransitioning&&b.day.currentDay==day,"active reconnaissance blocks settlement");
+  b.day.currentDay++;yield return null;Check(m.State==BackdoorMission.Phase.Survey,"legacy calendar change does not cancel investigation");b.day.currentDay=day;
   var guard=m.ActiveGuards[0];guard.enabled=false;var agent=guard.GetComponent<NavMeshAgent>();agent.isStopped=true;agent.updateRotation=false;var combat=guard.GetComponent<CitizenCombat>();combat.ExternalAttackControl=true;
   Vector3 eyeTest=guard.transform.position+guard.transform.forward*5;if(NavMesh.SamplePosition(eyeTest,out var h,2,NavMesh.AllAreas))eyeTest=h.position;Place(p,eyeTest);guard.transform.LookAt(new Vector3(p.transform.position.x,guard.transform.position.y,p.transform.position.z));yield return null;
   Check(guard.CanSee(p),"guard sees player within view cone");var cover=GameObject.CreatePrimitive(PrimitiveType.Cube);cover.transform.position=(guard.transform.position+p.transform.position)*.5f+Vector3.up;cover.transform.localScale=new Vector3(3,3,3);Physics.SyncTransforms();Check(!guard.CanSee(p),"solid cover blocks guard vision");UnityEngine.Object.Destroy(cover);yield return null;yield return Wait(3f);Check(!m.Alerted,"brief exposure does not trigger pursuit");yield return Wait(3.7f);log+="Detection diagnostic suspicion="+m.Suspicion+" seen="+guard.CanSee(p)+" alerted="+m.Alerted+" fighting="+combat.IsAggressive+" guard="+guard.transform.position+" player="+p.transform.position+"\n";Check(m.Alerted&&combat.IsAggressive,"sustained detection starts existing NPC pursuit");

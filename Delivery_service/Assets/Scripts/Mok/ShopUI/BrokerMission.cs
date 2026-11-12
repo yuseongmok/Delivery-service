@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.InputSystem;
@@ -33,7 +33,7 @@ public sealed class BrokerMission : MonoBehaviour {
  public BrokerPassenger passenger;
  void Awake(){Current=this;brokerHome=broker.position;brokerRotation=broker.rotation;guide=broker.GetComponent<NavMeshAgent>();animator=broker.GetComponentInChildren<Animator>();animator.enabled=true;animator.speed=1;animator.applyRootMotion=false;animator.cullingMode=AnimatorCullingMode.AlwaysAnimate;broker.gameObject.SetActive(false);missionUI.SetActive(false);}
  void OnDestroy(){if(Current==this)Current=null;CleanEnemies();}
- public bool CanStart=>!VenueFinale.Active&&!MechanicMission.Active&&!BackdoorMission.Active&&!SpecialOrderMission.Active&&!Running&&!Completed&&day&&day.IsNightPreparation&&!day.IsTransitioning&&!StoryTutorial.Active&&player&&!player.IsDown&&!PoliceControl.IsArrestInProgress&&!(orders&&orders.HasActiveOrder);
+ public bool CanStart=>!VenueFinale.Active&&!MechanicMission.Active&&!BackdoorMission.Active&&!SpecialOrderMission.Active&&!Running&&!Completed&&day&&!day.IsTransitioning&&!StoryTutorial.Active&&player&&!player.IsDown&&!PoliceControl.IsArrestInProgress;
  public bool Begin(){
   if(!CanStart)return false;day.EnterNightPreparation();CleanEnemies();FailureReason="";startDay=day.currentDay;reinforced=false;safeFor=0;
   broker.gameObject.SetActive(false);broker.SetPositionAndRotation(brokerHome,brokerRotation);broker.gameObject.SetActive(true);
@@ -70,7 +70,7 @@ public sealed class BrokerMission : MonoBehaviour {
  void Update(){
   if(Time.timeScale<=0)return;
   if(!Running){if(missionUI&&Time.time>messageUntil)missionUI.SetActive(false);if(objective)objective.text=Completed?"연락이 끊긴 중개인 · 준비 완료":"";if(marker)marker.gameObject.SetActive(false);return;}
-  if(day.currentDay!=startDay||!day.IsNightPreparation){Fail("준비 시간이 종료되었습니다.");return;}
+
   if(player.HitsTaken>=3||player.WaterRescueActive||PoliceControl.IsArrestInProgress){Fail("추격을 벗어나지 못했습니다.");return;}
   if(Time.time>messageUntil&&State!=Phase.Conversation&&State!=Phase.Debrief)subtitle.text="";
   if(player.CanAct){
@@ -105,3 +105,4 @@ public sealed class BrokerMission : MonoBehaviour {
  }
 }
 }
+

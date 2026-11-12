@@ -29,6 +29,7 @@ public sealed class ProloguePlayer : MonoBehaviour {
     public int Health { get; private set; } = 100;
     public int Ammo { get; private set; } = 30;
     public bool Reloading { get; private set; }
+    public int HitsSinceFall { get; private set; }
     CharacterController body;
     PlayerTacticalStance stance;
     float pitch, vertical, nextShot, immuneUntil, recoil;
@@ -127,10 +128,13 @@ public sealed class ProloguePlayer : MonoBehaviour {
     }
     public bool ReceiveHit(int damage) {
         if (DeveloperCheats.Invincible || director == null || !director.CanPlay || KnockedDown || Time.time < immuneUntil || damage <= 0) return false;
-        Health = Mathf.Max(0, Health - damage); immuneUntil = Time.time + 3.2f;
+        Health = Mathf.Max(0, Health - damage); immuneUntil = Time.time + .65f;
+        HitsSinceFall++; recoil = Mathf.Max(recoil, 1.2f); recoilRoll = Random.Range(-1.4f, 1.4f);
         director.HitFeedback();
         if (Health == 0)director.Fail();
-        if(ragdoll)StartCoroutine(FallAndRise());
+        if(ragdoll && (HitsSinceFall >= 3 || Health == 0)) {
+            HitsSinceFall = 0; immuneUntil = Time.time + 3.2f; StartCoroutine(FallAndRise());
+        }
         return true;
     }
     IEnumerator FallAndRise(){
@@ -158,3 +162,4 @@ public sealed class ProloguePlayer : MonoBehaviour {
     public void Teleport(Vector3 position) { body.enabled = false; transform.position = position; body.enabled = true; vertical = 0; }
 }
 }
+

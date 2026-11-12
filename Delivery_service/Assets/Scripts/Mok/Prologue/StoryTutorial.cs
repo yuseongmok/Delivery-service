@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.AI;
@@ -25,6 +25,8 @@ public sealed class StoryTutorial : MonoBehaviour {
     public Transform pc,actor,insideStand,outsideStand;
     public Transform[] guideRoute;
     public Topping dough,sauce,cheese;
+    public StoryCoverTransition coverTransition;
+    bool finishing;
     public Text objective,subtitle,marker;
     public GameObject ui;
     [TextArea(2,4)] public string[] dialogue={
@@ -67,7 +69,7 @@ public sealed class StoryTutorial : MonoBehaviour {
         guideBody.Move((motion+Vector3.down*3)*Time.deltaTime);
         if(animator)animator.SetFloat("MoveSpeed",motion.magnitude,.15f,Time.deltaTime);
     }
-    string[] tasks={"PC에서 개점하기","첫 치즈피자 주문 수락하기","도우를 제작대에 놓기","도우에 소스 바르기","치즈 올리기","피자를 오븐에서 굽기","상자에 포장하고 챙기기","오토바이 배달통에 싣기","지도 앱에서 배달지 안내 시작","오토바이에 탑승하기","피자를 꺼내 첫 손님에게 전달","핸드폰 별점 앱에서 리뷰 보기","피자 가게로 돌아오기","민기와 첫 배달 이야기","첫 정당한 수입 · 일반 영업 시작"};
+    string[] tasks={"PC에서 개점하기","첫 치즈피자 주문 수락하기","도우를 제작대에 놓기","도우에 소스 바르기","치즈 올리기","피자를 오븐에서 굽기","상자에 포장하고 챙기기","오토바이 배달통에 싣기","지도 앱에서 배달지 안내 시작","오토바이에 탑승하기","피자를 꺼내 첫 손님에게 전달","핸드폰 별점 앱에서 리뷰 보기","피자 가게로 돌아오기","민기와 첫 배달 이야기","위장 생활의 시작"};
     void Awake(){
 #if UNITY_EDITOR
         Requested|=UnityEditor.SessionState.GetBool("Mok.BankPrologue.Check.tutorial",false);
@@ -85,15 +87,15 @@ public sealed class StoryTutorial : MonoBehaviour {
         if(guideBody)guideBody.enabled=false;
         actor.position=insideStand.position;
         if(guideBody)guideBody.enabled=true;
-        SetStep(Step.Open);
+        SetStep(Step.Accept);
     }
     public void DeliveryCompleted(){if(running){delivered=true;SetStep(Step.Review);}}
     void Update(){
-        if(!running||!started||Time.timeScale==0)return;
+        if(!running||!started||finishing||Time.timeScale==0)return;
         MoveGuide();
         if(Time.time<nextPoll)return;nextPoll=Time.time+.15f;
         if(CurrentStep==Step.Goodbye){
-            if(Time.time-enteredAt>7&&Time.time-enteredAt<8)subtitle.text=dialogue[(int)Step.Complete];
+            if(Time.time-enteredAt>7&&Time.time-enteredAt<8)subtitle.text=coverTransition?GameDialogue.Resolve(coverTransition.settlingLine):dialogue[(int)Step.Complete];
             if(Time.time-enteredAt>13)Finish();return;
         }
         if(delivered){
@@ -127,7 +129,7 @@ public sealed class StoryTutorial : MonoBehaviour {
     int navigationRevision;
     void SetStep(Step step){
         if(CurrentStep==step&&objective.text.Length>0)return;
-        CurrentStep=step;enteredAt=Time.time;objective.text="첫 영업일  ·  "+tasks[(int)step];subtitle.text=dialogue[(int)step];
+        CurrentStep=step;enteredAt=Time.time;objective.text="위장 생활  ·  "+tasks[(int)step];subtitle.text=dialogue[(int)step];
         target=step==Step.Open||step==Step.Accept?pc:step==Step.Dough?dough.transform:step==Step.Sauce?sauce.transform:step==Step.Cheese?cheese.transform:step==Step.Bake?oven.transform:step==Step.Pack?packing.transform:step==Step.Load||step==Step.Ride?cargo.transform:step==Step.Deliver?destination.transform:step==Step.Return?insideStand:null;
         if(step==Step.Load)navigationRevision=navigation.RouteRevision;
         if(step==Step.Load&&guideRoute!=null&&guideRoute.Length>0){guideDirection=1;guideIndex=0;}
@@ -148,12 +150,16 @@ public sealed class StoryTutorial : MonoBehaviour {
         StoryTargetDiamond.Place(marker,cam,target.position+Vector3.up,inventory.transform.position,"목표");
     }
     public void DeveloperComplete(){if(!Active)return;orders.ResetOrdersForNewDay();Finish();}
-    void Finish(){
+    void Finish(){if(finishing)return;finishing=true;StartCoroutine(FinishStory());}
+    System.Collections.IEnumerator FinishStory(){
+        if(coverTransition)yield return coverTransition.Play();
         Completed=true;running=false;day.timeMultiplier=oldMultiplier;orders.EndStoryLesson();day.EnterNightPreparation();
         FindFirstObjectByType<DeliveryService.Yun.Achievements.AchievementManager>()?.TryUnlock(DeliveryService.Yun.Achievements.AchievementManager.FirstDeliveryId);
         DeliveryRequestNotice.Show("업적 달성 · 첫 정당한 수입\n휴대폰에서 다음 이야기를 확인하세요.");
         if(highlight)Destroy(highlight);ui.SetActive(false);
+        StoryPhoneInbox.Current?.IntroduceBroker(coverTransition?coverTransition.invitation:null);
     }
     void OnDestroy(){if(Current==this){if(started&&day)day.timeMultiplier=oldMultiplier;Current=null;}if(highlight)Destroy(highlight);}
 }
 }
+

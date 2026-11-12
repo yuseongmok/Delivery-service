@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
@@ -34,6 +34,7 @@ public sealed class BackdoorMission : MonoBehaviour {
   "민기: 동선은?\n나: 납품 출입구와 숨을 곳을 확인했어. 들키면 들어온 문으로 나와 모퉁이를 돌아 큰길로 빠지면 돼.",
   "민기: 박진웅에게 들키면 설명할 기회도 없을 거야. 알아낼 것만 알아내고 바로 빠져.",
   "나: 둘러싸이면 오토바이로는 어렵겠어.\n민기: 내일 정비사를 만나 봐. 차를 구해 보자. 낮에 기름값이랑 준비 비용도 더 벌어 두고."};
+ [TextArea(2,5)] public string completionMessage="출입구와 탈출 경로는 확보했어. 이제 탈출에 쓸 차를 구하자. 내가 아는 정비사에게 연락해 둘게.";
  public int ConfirmedCount {get;private set;}
  public float ObservationProgress {get;private set;}
  public bool Alerted {get;private set;}
@@ -41,17 +42,17 @@ public sealed class BackdoorMission : MonoBehaviour {
  public string FailureReason {get;private set;}
  BackdoorGuard[] activeGuards=new BackdoorGuard[0];
  public BackdoorGuard[] ActiveGuards=>activeGuards;
- int line,startDay;float noticeUntil,hiddenFor,senseElapsed;bool warned;Vector3 mingiPosition;Quaternion mingiRotation;bool mingiWasActive,showingMingi;
+ int line;float noticeUntil,hiddenFor,senseElapsed;bool warned;Vector3 mingiPosition;Quaternion mingiRotation;bool mingiWasActive,showingMingi;
  public PlayerCombat Player=>delivery.broker.player;
  DayNightCycle Day=>delivery.broker.day;
  Transform Mingi=>delivery.kitchen.actor;
- public int EarliestDay=>delivery.CompletedDay+1;public bool DayUnlocked=>delivery&&delivery.Completed;
- public bool CanStart=>DayUnlocked&&!VenueFinale.Active&&!MechanicMission.Active&&delivery&&delivery.Completed&&!delivery.Running&&!delivery.broker.Running&&!Running&&!Completed&&Day.IsNightPreparation&&!Day.IsTransitioning&&!StoryTutorial.Active&&!Player.IsDown&&!Player.WaterRescueActive&&!PoliceControl.IsArrestInProgress&&!(delivery.broker.orders&&delivery.broker.orders.HasActiveOrder);
+ public int EarliestDay=>delivery.CompletedDay;public bool DayUnlocked=>delivery&&delivery.Completed;
+ public bool CanStart=>DayUnlocked&&!VenueFinale.Active&&!MechanicMission.Active&&delivery&&delivery.Completed&&!delivery.Running&&!delivery.broker.Running&&!Running&&!Completed&&!Day.IsTransitioning&&!StoryTutorial.Active&&!Player.IsDown&&!Player.WaterRescueActive&&!PoliceControl.IsArrestInProgress;
  void Awake(){Current=this;ui.SetActive(false);foreach(var g in guards)g.gameObject.SetActive(false);}
  void OnDestroy(){StopGuards();RestoreMingi();if(Current==this)Current=null;}
  void OnDisable(){RestoreMingi();}
  public bool Begin(){
-  if(!CanStart)return false;FailureReason="";startDay=Day.currentDay;Alerted=false;Suspicion=0;hiddenFor=0;senseElapsed=0;warned=false;ObservationProgress=0;
+  if(!CanStart)return false;FailureReason="";Alerted=false;Suspicion=0;hiddenFor=0;senseElapsed=0;warned=false;ObservationProgress=0;
   FindFirstObjectByType<PhoneController>()?.ClosePhone();Day.pcUIPanel.SetActive(false);Cursor.lockState=CursorLockMode.Locked;Cursor.visible=false;
   foreach(var pc in FindObjectsByType<ShopPC>(FindObjectsSortMode.None))if(pc.pcUIPanel==Day.pcUIPanel&&pc.cameraLookScript)pc.cameraLookScript.enabled=true;
   ShowMingi();ui.SetActive(true);State=Phase.Briefing;line=0;ShowLine();return true;
@@ -70,7 +71,7 @@ public sealed class BackdoorMission : MonoBehaviour {
   if(!InDialogue||!NearMingi())return;var lines=State==Phase.Briefing?briefing:debrief;line++;
   if(!skip&&line<lines.Length){ShowLine();return;}
   if(State==Phase.Briefing){State=ConfirmedCount>=surveyTargets.Length?Phase.Return:Phase.Survey;activeGuards=guards.Select(g=>Instantiate(g,transform)).ToArray();foreach(var g in activeGuards)g.Activate();Notice("주황색 표식을 따라 행사장 주변을 조사하세요. 오토바이는 접근할 때 이용하고, 조사는 내려서 진행하세요.");}
-  else{State=Phase.Complete;StopGuards();RestoreMingi();Notice("도시의 뒷문 · 준비 완료\n서비스 출입구와 탈출 경로 확보");StoryPhoneInbox.Current?.Send("현장 조사 완료","현장 조사는 끝났어. 정비사와 내일 밤 약속을 잡았어. 낮에는 가게를 열고, 마감 후 수리점에서 만나 봐. 차량만 확보하면 준비가 끝나.",true);}
+  else{State=Phase.Complete;StopGuards();RestoreMingi();Notice("도시의 뒷문 · 준비 완료\n서비스 출입구와 탈출 경로 확보");StoryPhoneInbox.Current?.Send("현장 조사 완료",completionMessage,true);}
  }
  void Notice(string message){subtitle.text=message;noticeUntil=Time.time+Mathf.Clamp(message.Length*.065f,6,11);}
  public bool CanObserve(){
@@ -105,7 +106,6 @@ public sealed class BackdoorMission : MonoBehaviour {
  public void Fail(string reason){if(!Running)return;FailureReason=reason;State=Phase.Failed;ObservationProgress=0;StopGuards();RestoreMingi();Notice("도시의 뒷문 중단 · "+reason+"\n확인한 정보 "+ConfirmedCount+"/4 · 휴대폰에서 재시도할 수 있습니다.");}
  void Update(){
   if(Time.timeScale<=0)return;if(!Running){marker.gameObject.SetActive(false);if(Time.time>noticeUntil)ui.SetActive(false);return;}
-  if(Day.currentDay!=startDay||!Day.IsNightPreparation){Fail("밤 준비 시간이 끝났습니다.");return;}
   if(Player.HitsTaken>=3||Player.WaterRescueActive||PoliceControl.IsArrestInProgress){Fail("현장 조사를 계속할 수 없습니다.");return;}
   senseElapsed+=Time.deltaTime;if(senseElapsed>=.1f){Sense(senseElapsed);senseElapsed=0;}
   if(InDialogue){if(PrologueKeyboard.Pressed(Key.F))AdvanceDialogue();else if(PrologueKeyboard.Pressed(Key.Space))AdvanceDialogue(true);}

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -16,6 +16,9 @@ public sealed class StoryPhoneInbox : MonoBehaviour {
  [TextArea] public string invitation="나 실장이야 우리 조직 움직임이 이상해 놈들이 날 없애려고 해\n내일 밤에 표시한 장소로 와 민기와 너 말고는 아무에게도 말하지 말고.";
  [TextArea] public string nightMessage="어젯밤 실장이 보낸 약속, 오늘이야. 왜 연락을 끊었는지 직접 들어 보자. 남은 배달을 정리하고 미션 앱에서 ‘연락이 끊긴 중개인’을 시작해.";
  [TextArea] public string followup="실장이 준 연락처로 내일 시식 납품을 잡았어. 박진웅에게 대놓고 다가갈 순 없어. 정식 배달원으로 들어가 먼저 속내를 알아내자. 내일 낮에는 가게를 열고, 마감 후 ‘특별 주문’을 준비해.";
+ [TextArea(2,5)] public string backdoorInvitation="납품 승인은 받았어. 하지만 들어가는 것만큼 빠져나오는 길도 중요해. 행사장 서비스 출입구와 경비의 시야, 골목 탈출로, 차가 기다릴 자리를 확인하자. 미션 앱에서 ‘도시의 뒷문’을 시작해.";
+ [TextArea(2,5)] public string mechanicInvitation="탈출 경로는 확인했으니 이제 차를 확보하자. 정비사에게 연락해 뒀어. 수리점에서 만나 부탁을 들어 봐. 미션 앱에서 ‘빚진 정비사’를 시작하면 돼.";
+ [TextArea(2,5)] public string finaleInvitation="납품 승인, 확인한 출입구와 탈출로, 정비사의 차량까지 준비됐어. 이제 피자 배달원으로 행사장에 들어가 박진웅의 말을 들어 보자. 미션 앱에서 ‘마지막 배달’을 시작해. 들키면 조사한 길로 빠져나와 준비된 차를 타는 거야.";
  public readonly List<Message> Messages=new();
  public int Unread=>Messages.FindAll(m=>!m.read).Count;
  readonly HashSet<string> readyNotices=new();
@@ -48,22 +51,24 @@ public sealed class StoryPhoneInbox : MonoBehaviour {
   var next=pending.Peek();if(next.read&&!next.localConversation){pending.Dequeue();return;}
   if(planner.OpenIncoming(next))pending.Dequeue();
  }
+ public void IntroduceBroker(string body=null){if(introduced)return;introduced=true;nightSent=true;SendFrom("실장","연락이 끊긴 중개인",string.IsNullOrEmpty(body)?invitation:body,true);}
  void Update(){
   if(Time.timeScale<=0)return;
   PresentPending();
   if(toast.activeSelf&&Time.unscaledTime>=until)toast.SetActive(false);
   if(StoryTutorial.Active||!mission||(VenueFinale.Active&&VenueFinale.Current.State==VenueFinale.Phase.Aftermath))return;
-  if(!introduced){introduced=true;SendFrom("실장","연락이 끊긴 중개인",invitation,true);}
+  if(!introduced)IntroduceBroker();
   if(cycle.IsNightPreparation&&!nightSent&&!mission.Completed){nightSent=true;Send("실장을 만나러 가자",nightMessage,true);}
-  if(cycle.IsNightPreparation){
+  {
  var special=SpecialOrderMission.Current;var backdoor=BackdoorMission.Current;var mechanic=MechanicMission.Current;
- if(mission.Completed&&special&&!special.Completed&&special.DayUnlocked&&!special.Running&&readyNotices.Add("special"))Send("오늘의 약속 · 특별 주문","시식 납품 약속이 오늘이야. 가게 이름으로 승인받으면 박진웅에게 접근할 수 있어. 미션 앱에서 ‘특별 주문’을 시작해.",true);
- else if(special&&special.Completed&&backdoor&&!backdoor.Completed&&backdoor.DayUnlocked&&!backdoor.Running&&readyNotices.Add("backdoor"))Send("오늘의 준비 · 도시의 뒷문","오늘은 행사장 주변을 살피자. 납품 출입구와 경비 시야, 탈출로를 확인해야 해. 미션 앱에서 ‘도시의 뒷문’을 시작해.",true);
- else if(backdoor&&backdoor.Completed&&mechanic&&!mechanic.Completed&&mechanic.DayUnlocked&&!mechanic.Running&&readyNotices.Add("mechanic"))Send("오늘의 약속 · 빚진 정비사","정비사와 약속한 날이야. 수리점에서 만나 탈출에 쓸 차를 부탁해 봐. 미션 앱에서 ‘빚진 정비사’를 시작해.",true);
+ if(mission.Completed&&special&&!special.Completed&&special.DayUnlocked&&!special.Running&&readyNotices.Add("special"))Send("다음 준비 · 특별 주문",followup,true);
+ else if(special&&special.Completed&&backdoor&&!backdoor.Completed&&backdoor.DayUnlocked&&!backdoor.Running&&readyNotices.Add("backdoor"))Send("다음 준비 · 도시의 뒷문",backdoorInvitation,true);
+ else if(backdoor&&backdoor.Completed&&mechanic&&!mechanic.Completed&&mechanic.DayUnlocked&&!mechanic.Running&&readyNotices.Add("mechanic"))Send("다음 준비 · 빚진 정비사",mechanicInvitation,true);
+ else if(VenueFinale.Current&&VenueFinale.Current.Ready&&!VenueFinale.Current.Completed&&!VenueFinale.Current.Running&&readyNotices.Add("finale"))Send("작전 준비 완료 · 마지막 배달",finaleInvitation,true);
  }
  if(previous==mission.State)return;previous=mission.State;
-  if(mission.Completed)Send("다음 준비 · 특별 주문",followup,true);
-  else if(mission.State==BrokerMission.Phase.Failed)Send("괜찮아? 다시 준비하자",mission.FailureReason+"\n몸을 추스르고 미션 앱에서 다시 시작해. 밤이 끝나기 전이라면 다시 만날 수 있어.");
+  if(mission.State==BrokerMission.Phase.Failed)Send("괜찮아? 다시 준비하자",mission.FailureReason+"\n몸을 추스르고 미션 앱에서 다시 시작해.");
  }
 }
 }
+

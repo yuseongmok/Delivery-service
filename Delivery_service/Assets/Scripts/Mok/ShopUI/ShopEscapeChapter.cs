@@ -69,6 +69,7 @@ namespace DeliveryService.Mok
         public string[] corruptCustodyLines = {"경찰: 너희 둘! 무기 내려놓고 손 보여. 반항하면 동료도 무사하지 못해.", "나: 내려놓을게. 민기부터 치료해 줘.", "민기: 경찰들도 한패였어… 그렇다면 교도소도 안전하지 않을 거야…!"};
         [TextArea(2, 6)]
         public string[] corruptPrisonLines = {"경찰은 박진웅의 조직원들을 보내고, 플레이어와 민기만 체포했다.", "민기의 치료와 형식적인 조사 이후, 두 사람은 구금되었다.", "민기: 여기서도 누굴 믿어야 할지 몰라. 둘이 같이 빠져나갈 방법을 찾자."};
+        public string prisonChapterTitle = "챕터 2 · 철창 너머";
         public float dialogueLineSeconds = 4.5f;
         private static int Count(string[] lines) => lines == null ? 0 : lines.Length;
         private float WoundedEnd => Mathf.Max(1, Count(woundedLines)) * Mathf.Max(1, dialogueLineSeconds);
@@ -669,7 +670,7 @@ namespace DeliveryService.Mok
         private void TickTransfer()
         {
             float t = Time.time - entered;
-            mission.objective.text = "챕터 2 · 철창 너머 / 1일차";
+            mission.objective.text = GameDialogue.Resolve(prisonChapterTitle);
             mission.subtitle.text = LineAt(corruptPrisonLines, t, TransferDuration);
             mission.fade.gameObject.SetActive(t < 2.5f);
             mission.fade.color = new Color(0, 0, 0, 1 - Mathf.InverseLerp(1, 2.5f, t));
@@ -683,7 +684,7 @@ namespace DeliveryService.Mok
 
                 mission.StoryControl(false);
                 mission.Player.GetComponent<PlayerWeapon>()?.Equip(WeaponKind.None);
-                mission.objective.text = "챕터 2 · 철창 너머 / 1일차";
+                mission.objective.text = GameDialogue.Resolve(prisonChapterTitle);
                 mission.subtitle.text = LineAt(corruptPrisonLines, TransferDuration, TransferDuration);
             }
 
@@ -692,7 +693,7 @@ namespace DeliveryService.Mok
 
         private void TickPrison()
         {
-            mission.objective.text = "챕터 2 · 철창 너머 / 1일차";
+            mission.objective.text = GameDialogue.Resolve(prisonChapterTitle);
             mission.marker.gameObject.SetActive(false);
             if (Time.time - entered > 8)
             {

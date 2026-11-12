@@ -40,6 +40,7 @@ namespace DeliveryService.Mok
         public CanvasGroup bars;
         public CanvasGroup fade;
         public CanvasGroup pausePanel;
+        public DeliveryService.Yun.Settings.GameSettingsPanel settingsPanel;
         public Image damageFlash;
         public Image progress;
         public GameObject crosshair;
@@ -176,6 +177,7 @@ namespace DeliveryService.Mok
                 return;
             }
 
+            if (Paused && settingsPanel && !settingsPanel.gameObject.activeSelf) SetPaused(false);
             if (AcceptInput && PrologueKeyboard.Pressed(Key.Escape))
             {
                 SetPaused(!Paused);
@@ -426,7 +428,7 @@ namespace DeliveryService.Mok
 
         public void HitFeedback()
         {
-            hitOpacity = .26f;
+            hitOpacity = .38f;
         }
 
         public void Fail()
@@ -450,9 +452,10 @@ namespace DeliveryService.Mok
 
         public void SetPaused(bool value)
         {
+            if (settingsPanel) settingsPanel.gameObject.SetActive(value);
             Paused = value;
             Time.timeScale = value ? 0 : 1;
-            pausePanel.alpha = value ? 1 : 0;
+            pausePanel.alpha = value && !settingsPanel ? 1 : 0;
             pauseText.text = "일시정지\n\nEnter  계속하기\nR  프롤로그 다시 시작\nL  로비로 돌아가기";
             Cursor.lockState = value ? CursorLockMode.None : CursorLockMode.Locked;
             Cursor.visible = value;
@@ -506,3 +509,4 @@ namespace DeliveryService.Mok
         }
     }
 }
+

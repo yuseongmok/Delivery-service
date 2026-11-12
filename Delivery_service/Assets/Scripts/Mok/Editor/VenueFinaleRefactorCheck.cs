@@ -200,7 +200,18 @@ namespace DeliveryService.Mok.Editor
             look.enabled = true;
             int money = MoneyManager.Instance.currentMoney;
 
-            Check(mission.DeveloperStart(), "developer start enters opening");
+            mission.Day.currentTime = 9;
+            mission.Day.isShopOpen = false;
+            int originalDay = mission.Day.currentDay;
+            yield return Wait(.3f);
+            Check(mission.CanStart, "completed preparations unlock finale without business or day requirements");
+            Check(StoryPhoneInbox.Current.Messages.Count(m => m.title == "작전 준비 완료 · 마지막 배달") == 1, "one finale invitation");
+            var phoneApp = UnityEngine.Object.FindFirstObjectByType<StoryPhoneApp>(FindObjectsInactive.Include);
+            phoneApp.Open(false);phoneApp.Move(4);phoneApp.Confirm();phoneApp.Refresh();
+            Check(phoneApp.action.text == "행사장으로 출발", "phone offers immediate departure");
+            phoneApp.Confirm();
+            Check(mission.State == VenueFinale.Phase.Opening && mission.Day.currentDay == originalDay, "phone enters opening without advancing day");
+            Check(!mission.Begin(), "running finale cannot restart itself");
             Check(mission.cinema.enabled && !move.enabled && !mission.Player.View.enabled, "cutscene owns camera and movement");
             mission.SkipCinematic();
             Check(mission.State == VenueFinale.Phase.Entrance && move.enabled && move.isControllable

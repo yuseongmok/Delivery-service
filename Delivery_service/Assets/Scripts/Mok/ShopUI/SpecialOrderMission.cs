@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -17,6 +17,7 @@ public sealed class SpecialOrderMission : MonoBehaviour {
  public bool InDialogue=>State==Phase.Briefing||State==Phase.Approval||State==Phase.Debrief||State==Phase.Handover;
  public BrokerMission broker;public StoryTutorial kitchen;public Transform attendant,approach,boxRest,returnPoint;
  public GameObject ui,box,approvalPaper;public Text objective,subtitle,marker;
+ [TextArea(2,5)] public string completionMessage="승인서는 잘 보관해 둬. 이제 배달원으로 들어갈 자격은 생겼어. 다음은 행사장 주변을 살피고 출입구와 탈출로를 확인하자.";
  public int payment=5000;public float handoverSeconds=1.4f,interactionRange=3f;
  public AudioSource sound;public AudioClip boxSound,paperSound;
  [TextArea(2,5)]public string[] briefing={
@@ -37,8 +38,8 @@ public sealed class SpecialOrderMission : MonoBehaviour {
  int line,startDay;float entered,noticeUntil,nextPoll;Vector3 boxStart;Quaternion boxRotation;
  bool mingiWasActive;Vector3 mingiPosition;Quaternion mingiRotation;bool showingMingi;
  ToppingInventory Inventory=>broker.player.GetComponent<ToppingInventory>();
- public int EarliestDay=>broker.CompletedDay+1;public bool DayUnlocked=>broker&&broker.Completed;
- public bool CanStart=>DayUnlocked&&!VenueFinale.Active&&!MechanicMission.Active&&!BackdoorMission.Active&&broker&&broker.Completed&&!broker.Running&&!Running&&!Completed&&broker.day.IsNightPreparation&&!broker.day.IsTransitioning&&!StoryTutorial.Active&&!broker.player.IsDown&&!broker.player.WaterRescueActive&&!PoliceControl.IsArrestInProgress&&!(broker.orders&&broker.orders.HasActiveOrder);
+ public int EarliestDay=>broker.CompletedDay;public bool DayUnlocked=>broker&&broker.Completed;
+ public bool CanStart=>DayUnlocked&&!VenueFinale.Active&&!MechanicMission.Active&&!BackdoorMission.Active&&broker&&broker.Completed&&!broker.Running&&!Running&&!Completed&&!broker.day.IsTransitioning&&!StoryTutorial.Active&&!broker.player.IsDown&&!broker.player.WaterRescueActive&&!PoliceControl.IsArrestInProgress;
  void Awake(){Current=this;ui.SetActive(false);attendant.gameObject.SetActive(false);box.SetActive(false);approvalPaper.SetActive(false);}
  void OnDestroy(){RestoreMingi();if(Current==this)Current=null;}
  void OnDisable(){RestoreMingi();}
@@ -56,7 +57,7 @@ public sealed class SpecialOrderMission : MonoBehaviour {
  bool Near(Transform target){
   var p=broker.player;if(!p.CanAct||Vector3.Distance(p.transform.position,target.position)>interactionRange)return false;
   Vector3 from=p.View.transform.position,to=target.position+Vector3.up*1.1f;
-  return !Physics.RaycastAll(from,(to-from).normalized,Vector3.Distance(from,to),~0,QueryTriggerInteraction.Ignore).Any(h=>!h.transform.IsChildOf(p.transform)&&!h.transform.IsChildOf(target)&&!(Inventory.HoldPoint&&h.transform.IsChildOf(Inventory.HoldPoint)));
+  return !Physics.RaycastAll(from,(to-from).normalized,Vector3.Distance(from,to),~0,QueryTriggerInteraction.Ignore).Any(h=>!h.transform.IsChildOf(p.transform)&&!h.transform.IsChildOf(target)&&!target.IsChildOf(h.transform)&&!(Inventory.HoldPoint&&h.transform.IsChildOf(Inventory.HoldPoint)));
  }
  public bool Interact(){
   if(!Running||State==Phase.Handover)return false;
@@ -79,7 +80,7 @@ public sealed class SpecialOrderMission : MonoBehaviour {
   line++;if(!skip&&Lines!=null&&line<Lines.Length){ShowLine();return;}
   if(State==Phase.Briefing){Set(Phase.Prepare);Notice("치즈피자 한 판을 만들어 포장하세요. 민기가 도우·소스·치즈 재료비를 지원합니다. 실패해도 다시 만들 수 있어요. 휴대폰 미션에서 중단·재시도할 수 있습니다.");}
   else if(State==Phase.Approval){approvalPaper.SetActive(false);if(sound&&paperSound)sound.PlayOneShot(paperSound,.3f);ShowMingi();Set(Phase.Return);Notice("정식 납품 승인서 확보 · 가게로 돌아가 민기와 다음 준비를 의논하세요.");}
-  else{Set(Phase.Complete);showingMingi=false;MoneyManager.Instance?.AddMoney(payment);Notice("특별 주문 완료 · 정식 납품 승인\n시식 납품 대금 "+payment.ToString("N0")+"원");StoryPhoneInbox.Current?.Send("납품 승인서 확보","승인서는 잘 보관해 둬. 현장 조사는 내일 밤이야. 낮에는 평소처럼 장사하고, 마감 후 ‘도시의 뒷문’에서 출입구와 탈출로를 확인하자.",true);}
+  else{Set(Phase.Complete);showingMingi=false;MoneyManager.Instance?.AddMoney(payment);Notice("특별 주문 완료 · 정식 납품 승인\n시식 납품 대금 "+payment.ToString("N0")+"원");StoryPhoneInbox.Current?.Send("납품 승인서 확보",completionMessage,true);}
  }
  void ShowMingi(){if(showingMingi)return;showingMingi=true;mingiWasActive=kitchen.actor.gameObject.activeSelf;mingiPosition=kitchen.actor.position;mingiRotation=kitchen.actor.rotation;kitchen.actor.position=returnPoint.position;kitchen.actor.gameObject.SetActive(true);}
  void RestoreMingi(){if(!showingMingi||!kitchen||!kitchen.actor)return;kitchen.actor.gameObject.SetActive(false);kitchen.actor.SetPositionAndRotation(mingiPosition,mingiRotation);kitchen.actor.gameObject.SetActive(mingiWasActive);showingMingi=false;}
@@ -89,7 +90,6 @@ public sealed class SpecialOrderMission : MonoBehaviour {
  void Update(){
   if(Time.timeScale<=0)return;
   if(!Running){marker.gameObject.SetActive(false);if(Time.time>noticeUntil)ui.SetActive(false);return;}
-  if(broker.day.currentDay!=startDay||!broker.day.IsNightPreparation){Fail("밤 준비 시간이 끝났습니다.");return;}
   if(broker.player.HitsTaken>=3||broker.player.WaterRescueActive||PoliceControl.IsArrestInProgress){Fail("안전하게 납품하지 못했습니다.");return;}
   if(PrologueKeyboard.Pressed(Key.F))Interact();if(PrologueKeyboard.Pressed(Key.Space))AdvanceDialogue(true);
   if(State==Phase.Handover){float t=Mathf.Clamp01((Time.time-entered)/Mathf.Max(.3f,handoverSeconds));box.transform.position=Vector3.Lerp(boxStart,boxRest.position,Mathf.SmoothStep(0,1,t))+Vector3.up*Mathf.Sin(t*Mathf.PI)*.18f;box.transform.rotation=Quaternion.Slerp(boxRotation,boxRest.rotation,t);if(t>=1){approvalPaper.SetActive(true);Set(Phase.Approval);ShowLine();}}
@@ -114,3 +114,4 @@ public sealed class SpecialOrderMission : MonoBehaviour {
  }
 }
 }
+

@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections;
 using System.IO;
@@ -145,6 +145,7 @@ public static class BankPrologueCheck {
             if(command=="backdoor-install")BackdoorBuilder.Install();
             if(command=="test-backdoor"){NightPreparationCheck.Backup();SessionState.SetBool(Key+".backdoor",true);SessionState.SetBool(Key+".night",true);StartTest();}
             if(command=="special-order-install")SpecialOrderBuilder.Install();
+            if(command=="test-special-ui"){NightPreparationCheck.Backup();SessionState.SetBool(Key+".specialUI",true);SessionState.SetBool(Key+".night",true);StartTest();}
             if(command=="test-special-order"){NightPreparationCheck.Backup();SessionState.SetBool(Key+".specialOrder",true);SessionState.SetBool(Key+".night",true);StartTest();}
             if(command=="companion-install")StoryCompanionInstaller.Install();
             if(command=="companion-inspect")StoryCompanionInstaller.Inspect();
@@ -338,6 +339,7 @@ public static class BankPrologueCheck {
         if(SessionState.GetBool(Key+".streetRepair",false)){SessionState.SetBool(Key+".streetRepair",false);SessionState.SetBool(Key+".night",false);yield return StreetRepairCheck.Verify();yield break;}
         if(SessionState.GetBool(Key+".backdoorFocus",false)){SessionState.SetBool(Key+".backdoorFocus",false);SessionState.SetBool(Key+".night",false);yield return BackdoorCheck.Verify(true);yield break;}
         if(SessionState.GetBool(Key+".backdoor",false)){SessionState.SetBool(Key+".backdoor",false);SessionState.SetBool(Key+".night",false);yield return BackdoorCheck.Verify();yield break;}
+        if(SessionState.GetBool(Key+".specialUI",false)){SessionState.SetBool(Key+".specialUI",false);SessionState.SetBool(Key+".night",false);yield return SpecialOrderCheck.CompletionUI();yield break;}
         if(SessionState.GetBool(Key+".specialOrder",false)){SessionState.SetBool(Key+".specialOrder",false);SessionState.SetBool(Key+".night",false);yield return SpecialOrderCheck.Verify();yield break;}
         if(SessionState.GetBool(Key+".companion",false)){SessionState.SetBool(Key+".companion",false);SessionState.SetBool(Key+".night",false);yield return StoryCompanionCheck.Verify();yield break;}
         if(SessionState.GetBool(Key+".missionPolish",false)){SessionState.SetBool(Key+".missionPolish",false);SessionState.SetBool(Key+".night",false);yield return MissionPolishCheck.Verify();yield break;}
@@ -524,7 +526,7 @@ public static class BankPrologueCheck {
         var cam=t.inventory.GetComponent<PlayerInteraction>().InteractionCamera;var cp=cam.transform.position;var cr=cam.transform.rotation;
         cam.transform.position=t.actor.position+new Vector3(-2.6f,1.5f,2.2f);cam.transform.LookAt(t.actor.position+Vector3.up*.9f);Capture(cam,"tutorial-grounded");cam.transform.SetPositionAndRotation(cp,cr);
         Check(t.orders.StoryLesson&&t.day.timeMultiplier==0,"lesson isolates orders and freezes day clock");
-        t.day.OnClick_OpenShop();yield return WaitLesson(.5f);
+        yield return WaitLesson(.5f);
         Check(t.orders.PendingOrders.Count==1&&PizzaRecipes.Title(t.orders.PendingOrders[0])=="치즈피자","opening produces exactly one cheese order");
         Check(t.orders.TryAcceptOrder(t.orders.PendingOrders[0]),"nearby tutorial destination is registered and accepts order");
         yield return WaitLesson(.3f);int cash=MoneyManager.Instance.currentMoney;
@@ -566,11 +568,18 @@ public static class BankPrologueCheck {
         var app=UnityEngine.Object.FindObjectsByType<ReviewPhoneApp>(FindObjectsInactive.Include,FindObjectsSortMode.None).First();
         for(var parent=app.transform;parent!=null;parent=parent.parent)parent.gameObject.SetActive(true);app.Open();yield return WaitLesson(8);
         Check(t.CurrentStep==StoryTutorial.Step.Return,"review app advances return-to-shop objective");
-        cc.enabled=false;t.inventory.transform.position=t.insideStand.position+Vector3.forward*1.6f;yield return WaitLesson(15);
+        cc.enabled=false;t.inventory.transform.position=t.insideStand.position+Vector3.forward*1.6f;cc.enabled=true;yield return WaitLesson(23);
         File.WriteAllText("Logs/Tutorial-guide-return.txt","actor "+t.actor.position+" target "+t.insideStand.position+" route index "+typeof(StoryTutorial).GetField("guideIndex",BindingFlags.NonPublic|BindingFlags.Instance).GetValue(t)+" nearby "+string.Join(",",Physics.OverlapSphere(t.actor.position+Vector3.up,.6f).Select(c=>c.name)));
         Check(Vector3.Distance(t.actor.position,t.insideStand.position)<1.4f,"Mingi returns inside through doorway before final conversation");
-        Check(t.Completed&&!StoryTutorial.Active&&!t.orders.StoryLesson&&t.day.timeMultiplier>0,"return dialogue completes and restores normal day and order rules");
-        yield return WaitLesson(1);Check(t.orders.PendingOrders.Count==OrderManager.PendingCapacity,"normal order queue refills after lesson");
+        Check(t.Completed&&!StoryTutorial.Active&&!t.orders.StoryLesson&&t.day.timeMultiplier>0,"return dialogue and time passage finish the first delivery");
+                yield return WaitLesson(1);Check(t.orders.PendingOrders.Count==0,"no repeat business orders after cover lesson");
+        var inbox=StoryPhoneInbox.Current;Check(inbox.Messages.Count(x=>x.sender=="실장")==1,"one broker invitation after time passage");
+        Check(inbox.Messages.First(x=>x.sender=="실장").body==t.coverTransition.invitation,"editable immediate meeting invitation");
+        Check(t.day.currentDay==1&&t.day.currentTime==18&&!t.day.isShopOpen,"story changes lighting without day or business progression");
+        Check(!t.coverTransition.Playing&&t.inventory.GetComponent<PlayerMove>().isControllable,"transition releases player control");
+        var broker=BrokerMission.Current;Check(broker.CanStart,"broker unlocks with no opening or closing business");
+        Check(broker.Begin()&&broker.State==BrokerMission.Phase.Find,"broker rescue starts from completed cover story");
+        broker.Cancel();Check(broker.CanStart,"broker rescue retry stays available");
     }
     static IEnumerator RunKeyboard(BankPrologue d){
         var keyboard=InputSystem.AddDevice<Keyboard>();
@@ -850,6 +859,8 @@ public sealed class TutorialRideProbe:MonoBehaviour {
 }
 }
 #endif
+
+
 
 
 

@@ -259,8 +259,12 @@ namespace DeliveryService.Mok.Editor
             var alreadyHidden = citizens[0];
             alreadyHidden.gameObject.SetActive(false);
             int money = MoneyManager.Instance.currentMoney;
+            int originalDay = mission.Day.currentDay;
+            mission.Day.currentTime = 9;
+            mission.Day.isShopOpen = false;
             chapter.Begin();
-            Check(chapter.State == ShopEscapeChapter.Stage.Packing && park.Current == ParkEscapeSequence.Beat.Pickup, "aftermath begins at wall pistol objective");
+            Check(chapter.State == ShopEscapeChapter.Stage.Packing && park.Current == ParkEscapeSequence.Beat.Pickup, "aftermath begins at wall pistol objective without business requirements");
+            Check(mission.Day.currentDay == originalDay, "raid does not advance calendar");
             Check(citizens.All(n => !n.gameObject.activeSelf) && chapter.mingi.gameObject.activeInHierarchy, "raid hides citizens but preserves Mingi");
             citizens[1].gameObject.SetActive(true);
             yield return Wait(1.2f);
@@ -291,7 +295,7 @@ namespace DeliveryService.Mok.Editor
             yield return null; yield return null;
             Check(Quaternion.Angle(frozen, mission.cinema.transform.rotation) < .01f, "pause freezes look-back camera");
             Time.timeScale = 1;
-            park.fightSeconds = 12;
+            park.fightSeconds = 120;
             park.defendSeconds = 8;
             park.lineSeconds = 2;
             yield return Until(() => park.Current == ParkEscapeSequence.Beat.Fight, 6, "look-back hands controls to firefight");
@@ -303,6 +307,8 @@ namespace DeliveryService.Mok.Editor
                 {
                     if (!actor) continue;
                     var agent = actor.GetComponent<NavMeshAgent>();
+                    // 단계 연결 검사는 엄폐 도착 위치를 고정해 이동 AI와 분리한다.
+                    if (agent && agent.enabled && agent.isOnNavMesh && !actor.AtCover) agent.Warp(actor.cover.position);
                     File.AppendAllText(ResultPath, "COVER active=" + actor.isActiveAndEnabled + " " + actor.name + " pos=" + actor.transform.position + " target=" + actor.cover.position + " at=" + actor.AtCover + " agent=" + (agent ? agent.enabled + "/" + agent.isOnNavMesh + "/" + agent.pathStatus + "/" + agent.velocity : "none") + "\n");
                 }
             }
@@ -312,9 +318,11 @@ namespace DeliveryService.Mok.Editor
             var enemy = mission.Enemies.FirstOrDefault(e => e && e.Health > 0 && !e.Npc.IsKnockedDown);
             Check(enemy && ParkEscapeSequence.Protects(enemy), "park enemies retain nonfatal combat rule");
             Check(enemy.ReceiveBullet(mission.Player, Vector3.forward, 999) && enemy.Health > 0, "heavy hit knocks enemy down without ending encounter");
+            yield return Until(() => mission.Player.CanReceiveBullet, 15, "player can receive next hit after recovery protection");
             Check(mission.Player.ReceiveBullet(Vector3.back), "player bullet hit starts protected reaction");
             yield return Until(() => mission.Player.IsDown, 2, "player still ragdolls during protected encounter");
             yield return Until(() => !mission.Player.IsDown, 10, "player recovers without hospital transfer");
+            park.fightSeconds = 0;
             yield return Until(() => park.Current == ParkEscapeSequence.Beat.Wounded, 35, "combat leads to Mingi injury cinematic");
             Check(chapter.mingi.GetComponentInChildren<Animator>().enabled == false && !park.mingiGun.gameObject.activeSelf, "injury pose owns Mingi bones and lowers gun");
             yield return Wait(1);
@@ -342,6 +350,9 @@ namespace DeliveryService.Mok.Editor
             Check(mission.getaway.HiddenTrafficCount == 0, "traffic restored after park encounter");
             Check(citizens.Skip(1).All(n => !n || n.gameObject.activeSelf) && !alreadyHidden.gameObject.activeSelf, "arrest restores ambient citizens; inactive=" + string.Join(",", citizens.Skip(1).Where(n => n && !n.gameObject.activeSelf).Select(n => n.name)) + " originalHidden=" + alreadyHidden.gameObject.activeSelf);
             Check(MoneyManager.Instance.currentMoney == money, "story arrest does not charge a fine or hospital fee");
+            Check(mission.Day.currentDay == originalDay, "park combat and arrest never require next day");
+            yield return null;
+            Check(!mission.objective.text.Contains("일차"), "detention title does not show calendar day");
             Capture(mission, "detention");
             yield return Until(() => UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "PrisonChapter", 45, "detention transfers to prison preview scene");
             File.AppendAllText(ResultPath, "ALL CHECKS PASSED\n");
