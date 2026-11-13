@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using UnityEngine;
 
 namespace DeliveryService.Mok
@@ -10,6 +10,17 @@ namespace DeliveryService.Mok
         public GameObject preparedMeals;
         public GameObject[] meals;
         public int Count { get; private set; }
+        // 식당 옆 좁은 연결 통로에서는 보행자 경로 대신 카트가 통과할 중앙을 안내한다.
+        public static Vector3 ClearancePoint(Vector3 point)
+        {
+            if(point.y<1&&point.x>14&&point.x<16&&point.z>-20&&point.z<1)point.x=15;
+            // 2층 복도에서도 철창과 난간 사이 중앙으로 카트를 안내한다.
+            if(point.y>3&&point.y<4&&point.z>-29&&point.z<20){
+                if(point.x>-6&&point.x<-3)point.x=-4.5f;
+                else if(point.x>3&&point.x<6)point.x=4.5f;
+            }
+            return point;
+        }
         float stepTop;
         bool stepping;
         bool restoreCollisions;
@@ -86,3 +97,4 @@ namespace DeliveryService.Mok
         }
     }
 }
+

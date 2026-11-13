@@ -9,12 +9,14 @@ namespace DeliveryService.Mok
         public Animator animator;
         public NavMeshAgent agent;
         public bool Following;
+        public bool ScriptedTravel;
         float nextPath;
         void Start() { StoryActorFootsteps.Attach(transform, animator, null); }
         void Update()
         {
             if (!agent || !agent.enabled || !agent.isOnNavMesh) return;
             if (Time.timeScale <= 0) return;
+            if (ScriptedTravel) { animator.SetFloat("MoveSpeed", agent.velocity.magnitude, .15f, Time.deltaTime); return; }
             if (!Following || !follow) { if (agent.hasPath) agent.ResetPath(); }
             else if (Time.time >= nextPath)
             {

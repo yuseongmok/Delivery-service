@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a2e97b6362a650a4984eacf270697642, type: 3}
+  m_Name: "\uAC04\uC218\uC7A5\uC2E4 \uC870\uC0AC \uB300\uC0AC"
+  m_EditorClassIdentifier: Assembly-CSharp::DeliveryService.Mok.PrisonOfficeText
+  start: "\uBBFC\uAE30: \uC7A0\uB4E4\uC5C8\uC5B4. \uC18C\uB9AC \uB0B4\uC9C0 \uB9D0\uACE0
+    \uAC04\uC218\uBCF5\uC774\uB791 \uCC28\uB7C9 \uC5F4\uC1E0\uB97C \uCC3E\uC544\uBCF4\uC790."
+  opened: "\uB098: \uC548\uC5D0 \uBB54\uAC00 \uC788\uC5B4. \uCC59\uAE30\uC790."
+  uniforms: "\uB098: \uC608\uBE44 \uAC04\uC218\uBCF5 \uB450 \uBC8C\uC774\uC57C. \uC6B0\uB9AC
+    \uB458 \uB2E4 \uC785\uC744 \uC218 \uC788\uACA0\uC5B4."
+  keys: "\uBBFC\uAE30: \uD638\uC1A1\uCC28\uB7C9 \uC5F4\uC1E0\uB2E4. \uC783\uC5B4\uBC84\uB9AC\uC9C0
+    \uC54A\uAC8C \uCC59\uACA8."
+  password: "\uD478\uB978 \uAE4C\uB9C8\uADC0"
+  passwordLine: "\uBBFC\uAE30: \uC624\uB298\uC758 \uC554\uAD6C\uD638\uB124. \uC815\uBB38\uC5D0\uC11C
+    \uBB3C\uC5B4\uBCFC \uC218\uB3C4 \uC788\uC73C\uB2C8 \uAE30\uC5B5\uD574 \uB46C."
+  complete: "\uBBFC\uAE30: \uAC04\uC218\uBCF5\uC5D0 \uCC28\uB7C9 \uC5F4\uC1E0, \uC554\uAD6C\uD638\uAE4C\uC9C0
+    \uD655\uBCF4\uD588\uC5B4. \uC774\uC81C \uD0C8\uCD9C \uC900\uBE44\uAC00 \uB410\uC5B4."
+  subtitleSeconds: 6

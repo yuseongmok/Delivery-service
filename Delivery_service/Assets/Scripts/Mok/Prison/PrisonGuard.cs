@@ -9,6 +9,7 @@ namespace DeliveryService.Mok
         public Transform gun;
         public bool infirmaryWatch;
         public bool holdPost;
+        [HideInInspector] public bool receivingMeal;
         public Vector3 postPosition;
         public float postYaw;
         public Bounds restrictedArea = new Bounds(new Vector3(-30, 2, 4), new Vector3(26, 5, 22));
@@ -41,6 +42,8 @@ namespace DeliveryService.Mok
             if (!mission || !agent || !agent.isOnNavMesh || mission.Failing || shooting) return;
             if (npc.IsKnockedDown || npc.IsDead) return;
             if (animator) animator.SetFloat(MoveSpeed, agent.velocity.magnitude, .15f, Time.deltaTime);
+            // 배식 대상은 카트를 피해서 상호작용 범위 밖으로 이동하지 않는다.
+            if(receivingMeal){if(agent.hasPath)agent.ResetPath();agent.isStopped=true;Face(mission.player.transform.position);return;}
             if (holdPost && Time.time >= distractedUntil && (transform.position-postPosition).sqrMagnitude < .5f)
                 transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.Euler(0,postYaw+Mathf.Sin(Time.time*.35f+GetInstanceID()%20)*40,0),35*Time.deltaTime);
             if (Time.time < nextThink) return;
@@ -102,11 +105,12 @@ namespace DeliveryService.Mok
         }
         void LateUpdate()
         {
-            if (gun && animator && PrisonMission.Current && npc && !npc.IsDead && !npc.IsKnockedDown)
+            if (gun && gun.gameObject.activeInHierarchy && animator && PrisonMission.Current && npc && !npc.IsDead && !npc.IsKnockedDown)
                 ArmedHandPose.Apply(animator, gun, PrisonMission.Current.player.View.transform.position, shooting, false);
         }
     }
 }
+
 
 
 

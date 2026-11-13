@@ -18,7 +18,7 @@ namespace DeliveryService.Mok.Editor
         static double deadline;
         const string Log="Logs/Prison-introduction-check.txt";
         static PrisonIntroductionCheck(){EditorApplication.update+=Tick;EditorApplication.playModeStateChanged+=s=>{if(s==PlayModeStateChange.EnteredPlayMode&&SessionState.GetBool("PrisonIntroCheck",false)){running=true;stage=0;captured=cellCaptured=false;deadline=EditorApplication.timeSinceStartup+160;SessionState.SetBool("PrisonIntroCheck",false);}};}
-        public static void Run(){EditorSceneManager.OpenScene("Assets/Scenes/PrisonChapter.unity");File.WriteAllText(Log,"Prison introduction play-mode check\n");SessionState.SetBool("PrisonIntroCheck",true);EditorApplication.EnterPlaymode();}
+        public static void Run(){if(!PrisonChapterCheck.Active)EditorSceneManager.OpenScene("Assets/Scenes/PrisonChapter.unity");File.WriteAllText(Log,"Prison introduction play-mode check\n");SessionState.SetBool("PrisonIntroCheck",true);EditorApplication.EnterPlaymode();}
         static void Check(bool ok,string text){File.AppendAllText(Log,(ok?"PASS ":"FAIL ")+text+"\n");if(!ok)throw new Exception(text);}
         static void Tick()
         {
@@ -42,8 +42,8 @@ namespace DeliveryService.Mok.Editor
                     else{if(Vector3.Distance(intro.mingi.transform.position,player.transform.position)>6)return;Check(intro.mingi.animator.enabled&&intro.mingi.agent.isOnNavMesh,"Mingi follows player to yard with animator");player.GetComponent<PlayerMove>().enabled=true;Check(intro.BeginMeeting(),"walking route reaches interactable informant; player="+player.transform.position+" target="+intro.informant.position+" failing="+intro.mission.Failing+" stage="+intro.State+" scale="+Time.timeScale);stage=3;}
                 }
                 if(stage==3&&intro.State==PrisonIntroduction.Stage.Conversation&&intro.Subtitle.Length>0){Capture(intro.filmCamera,"Logs/Prison-intro-meeting.png");stage=4;}
-                if(stage==4&&intro.State==PrisonIntroduction.Stage.Complete){Check(!intro.Cinematic&&intro.mission.player.CanAct,"meeting ends with restored player controls");Check(intro.Target==null,"completed mission clears target");running=false;EditorApplication.ExitPlaymode();}
-            }catch(Exception e){File.AppendAllText(Log,e+"\n");running=false;EditorApplication.ExitPlaymode();}
+                if(stage==4&&intro.State==PrisonIntroduction.Stage.Complete){Check(!intro.Cinematic&&intro.mission.player.CanAct,"meeting ends with restored player controls");Check(intro.Target==null,"completed mission clears target");running=false;if(PrisonChapterCheck.Active)PrisonChapterCheck.Finish(!System.IO.File.ReadAllText(Log).Contains("Exception"));else EditorApplication.ExitPlaymode();}
+            }catch(Exception e){File.AppendAllText(Log,e+"\n");running=false;if(PrisonChapterCheck.Active)PrisonChapterCheck.Finish(!System.IO.File.ReadAllText(Log).Contains("Exception"));else EditorApplication.ExitPlaymode();}
         }
         static void Capture(Camera camera,string path){var previous=camera.targetTexture;var rt=new RenderTexture(1280,720,24);var active=RenderTexture.active;camera.targetTexture=rt;camera.Render();RenderTexture.active=rt;var image=new Texture2D(1280,720,TextureFormat.RGB24,false);image.ReadPixels(new Rect(0,0,1280,720),0,0);image.Apply();File.WriteAllBytes(path,image.EncodeToPNG());camera.targetTexture=previous;RenderTexture.active=active;Object.DestroyImmediate(image);Object.DestroyImmediate(rt);}
     }

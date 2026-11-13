@@ -13,6 +13,7 @@ namespace DeliveryService.Mok
         public PrisonCompanion mingi;
         public Transform informant, cellSpawn, cellMingi, mugshotActor, mugshotCamera, cellCamera, portraitCamera;
         public Camera filmCamera;
+        public PrisonMeetingPresentation meetingPresentation;
         public Stage State { get; private set; }
         public bool Cinematic { get; private set; }
         public string Subtitle { get; private set; } = "";
@@ -76,12 +77,11 @@ namespace DeliveryService.Mok
         IEnumerator Meeting()
         {
             State=Stage.Conversation;mingi.Following=false;SetCinematic(true);
-            filmCamera.transform.SetPositionAndRotation(portraitCamera.position,portraitCamera.rotation);
+            if(meetingPresentation)meetingPresentation.Begin(filmCamera);
+            else { filmCamera.transform.position=informant.position+informant.forward*2+Vector3.up*1.55f;filmCamera.transform.LookAt(informant.position+Vector3.up*1.4f); }
             yield return Wait(1.5f);
-            // 인물 소개 뒤에는 주인공의 눈높이로 대화를 이어간다.
-            filmCamera.transform.position=mission.player.View.transform.position;
-            filmCamera.transform.LookAt(informant.position+Vector3.up*1.5f);
-            foreach(string line in dialogue.meeting){Subtitle=line;yield return Wait(dialogue.lineSeconds);}
+            foreach(string line in dialogue.meeting){Subtitle=line;if(meetingPresentation)meetingPresentation.ShowLine(line);yield return Wait(dialogue.lineSeconds);}
+            if(meetingPresentation)meetingPresentation.End();
             Subtitle="";State=Stage.Complete;SetCinematic(false);mingi.Following=true;
         }
         IEnumerator Photograph()
@@ -100,7 +100,7 @@ namespace DeliveryService.Mok
         void PlacePlayer()
         {
             var body=mission.player.GetComponent<CharacterController>();body.enabled=false;
-            mission.player.transform.SetPositionAndRotation(cellSpawn.position,cellSpawn.rotation);body.enabled=true;
+            mission.player.transform.SetPositionAndRotation(cellSpawn.position,Quaternion.Euler(0f,cellSpawn.eulerAngles.y,0f));body.enabled=true;
         }
         void SetCinematic(bool value)
         {
@@ -115,7 +115,7 @@ namespace DeliveryService.Mok
             filmCamera.fieldOfView=55;
             var ears=mission.player.View.GetComponent<AudioListener>();if(ears)ears.enabled=!value;
             filmCamera.GetComponent<AudioListener>().enabled=value;
-            if(!value){mission.player.View.fieldOfView=originalFov;if(look)look.SyncViewFromTransform();Cursor.lockState=CursorLockMode.Locked;Cursor.visible=false;}
+            if(!value){mission.player.transform.rotation=Quaternion.Euler(0f,mission.player.transform.eulerAngles.y,0f);mission.player.View.fieldOfView=originalFov;if(look)look.SyncViewFromTransform();Cursor.lockState=CursorLockMode.Locked;Cursor.visible=false;}
         }
         void OnGUI()
         {
