@@ -30,11 +30,12 @@ namespace DeliveryService.Mok {
    _=>"치킨 완성"
   };
   void Awake(){knifeRest=knife.localPosition;bottleRest=pourBottle.localRotation;}
-  public void ResetRecipe(){Current=Step.Cut;Amount=0;Temperature=100;Cuts=Flips=0;mixed=0;hasAngle=false;Message="";rawChicken.SetActive(true);cookedChicken.SetActive(false);}
-  public void Begin(){openedFrame=Time.frameCount;Open=true;hasAngle=false;Message="";}
-  public void Close(){Open=false;if(knife)knife.localPosition=knifeRest;if(pourBottle)pourBottle.localRotation=bottleRest;}
+  public void ResetRecipe(){ if (PrisonChickenQuest.Current) PrisonChickenQuest.Current.ResetCustomRecipe(); Current =Step.Cut;Amount=0;Temperature=100;Cuts=Flips=0;mixed=0;hasAngle=false;Message="";rawChicken.SetActive(true);cookedChicken.SetActive(false);}
+  public void Begin(){openedFrame=Time.frameCount;Open=true;hasAngle=false;Message=""; if (PrisonChickenQuest.Current) PrisonChickenQuest.Current.BeginCustomCooking(); }
+  public void Close(){Open=false;if(knife)knife.localPosition=knifeRest;if(pourBottle)pourBottle.localRotation=bottleRest; if(PrisonChickenQuest.Current) PrisonChickenQuest.Current.CloseCustomCooking(); }
   void Update(){
-   if(Time.frameCount==openedFrame||!Open||Time.timeScale<=0||!mission.CookingActive)return;
+            if (PrisonChickenQuest.Current != null) return;
+            if (Time.frameCount==openedFrame||!Open||Time.timeScale<=0||!mission.CookingActive)return;
    if(Keyboard.current!=null&&Keyboard.current.fKey.wasPressedThisFrame){mission.LeaveCooking();return;}
    var mouse=Mouse.current;if(mouse==null)return;
    if(Current==Step.Cut){

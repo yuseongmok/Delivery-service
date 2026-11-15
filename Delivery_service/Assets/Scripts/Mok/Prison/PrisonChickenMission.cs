@@ -116,7 +116,12 @@ namespace DeliveryService.Mok {
   }
   void OnGUI(){
    if(!Active||Time.timeScale<=0)return;var old=GUI.color;
-   var style=new GUIStyle(GUI.skin.label){font=MokUIFont.Font,fontSize=Mathf.RoundToInt(Screen.height*.025f),alignment=TextAnchor.MiddleCenter,wordWrap=true};
+            if (PrisonChickenQuest.Current != null)
+            {
+                if (Fade > 0) { GUI.color = new Color(0, 0, 0, Fade); GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), Texture2D.whiteTexture); }
+                GUI.color = old; return;
+            }
+            var style=new GUIStyle(GUI.skin.label){font=MokUIFont.Font,fontSize=Mathf.RoundToInt(Screen.height*.025f),alignment=TextAnchor.MiddleCenter,wordWrap=true};
    if(CookingActive){GUI.Label(new Rect(Screen.width*.25f,Screen.height*.17f,Screen.width*.5f,Screen.height*.065f),$"주방장이 깨어나기까지 {Mathf.FloorToInt(Remaining/60):00}:{Mathf.FloorToInt(Remaining%60):00}   소음 {Noise}/3",style);}
    if(cooking.Open&&CookingActive){
     GUI.color=new Color(.03f,.07f,.09f,.92f);GUI.DrawTexture(new Rect(Screen.width*.16f,Screen.height*.69f,Screen.width*.68f,Screen.height*.27f),Texture2D.whiteTexture);GUI.color=Color.white;

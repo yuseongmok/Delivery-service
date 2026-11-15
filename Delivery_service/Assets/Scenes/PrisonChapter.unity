@@ -5585,6 +5585,7 @@ MonoBehaviour:
   gun: {fileID: 1544169282}
   infirmaryWatch: 0
   holdPost: 0
+  receivingMeal: 0
   postPosition: {x: 0, y: 0, z: 0}
   postYaw: 0
   restrictedArea:
@@ -38376,7 +38377,7 @@ Transform:
   m_GameObject: {fileID: 150844407}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 35.5, y: 0.025, z: -24.7}
+  m_LocalPosition: {x: 35.5, y: 0.159, z: -24.7}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -144357,6 +144358,7 @@ MonoBehaviour:
   gun: {fileID: 295036479}
   infirmaryWatch: 0
   holdPost: 1
+  receivingMeal: 0
   postPosition: {x: -35, y: 0.040286377, z: 19}
   postYaw: 0
   restrictedArea:
@@ -152292,7 +152294,8 @@ Transform:
   m_LocalPosition: {x: 29.84, y: 0.865, z: -30.38}
   m_LocalScale: {x: 1.1, y: 0.045, z: 0.7}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1058066042}
   m_Father: {fileID: 1542286524}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!23 &634240915
@@ -155684,6 +155687,7 @@ MonoBehaviour:
   gun: {fileID: 631565134}
   infirmaryWatch: 0
   holdPost: 1
+  receivingMeal: 0
   postPosition: {x: 13, y: 0.012099743, z: -8.039999}
   postYaw: 0
   restrictedArea:
@@ -179334,6 +179338,11 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1542286524}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &743100150 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8248910576699818053, guid: 4cba9d3d457152049b62cf3a45ae656f, type: 3}
+  m_PrefabInstance: {fileID: 1308400940}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &743238908
 GameObject:
   m_ObjectHideFlags: 0
@@ -182167,6 +182176,7 @@ MonoBehaviour:
   gun: {fileID: 1829624217}
   infirmaryWatch: 0
   holdPost: 1
+  receivingMeal: 0
   postPosition: {x: -5, y: 0.012099743, z: -2}
   postYaw: 90
   restrictedArea:
@@ -191720,6 +191730,7 @@ MonoBehaviour:
   gun: {fileID: 1876995901}
   infirmaryWatch: 0
   holdPost: 1
+  receivingMeal: 0
   postPosition: {x: 10, y: 0.013363221, z: 37}
   postYaw: 335.32315
   restrictedArea:
@@ -195421,7 +195432,7 @@ Transform:
   m_GameObject: {fileID: 804047319}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 28, y: 0.025, z: -22.8}
+  m_LocalPosition: {x: 28, y: 0.185, z: -22.8}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -228527,6 +228538,7 @@ MonoBehaviour:
   gun: {fileID: 2015269548}
   infirmaryWatch: 0
   holdPost: 1
+  receivingMeal: 0
   postPosition: {x: 2, y: 0, z: -20}
   postYaw: 180
   restrictedArea:
@@ -229391,6 +229403,7 @@ MonoBehaviour:
   gun: {fileID: 1280415170}
   infirmaryWatch: 0
   holdPost: 1
+  receivingMeal: 0
   postPosition: {x: 34, y: 0.012099743, z: 15.48}
   postYaw: 0
   restrictedArea:
@@ -252017,8 +252030,8 @@ Transform:
   m_GameObject: {fileID: 1058066041}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 29.84, y: 0.94000006, z: -30.38}
-  m_LocalScale: {x: 0.85, y: 1, z: 1.15}
+  m_LocalPosition: {x: 0, y: 1.6666675, z: 0}
+  m_LocalScale: {x: 0.7727273, y: 22.22222, z: 1.642857}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 420348453}
@@ -252027,7 +252040,7 @@ Transform:
   - {fileID: 255030637}
   - {fileID: 1560594886}
   - {fileID: 2122061662}
-  m_Father: {fileID: 1542286524}
+  m_Father: {fileID: 634240914}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1058140741
 GameObject:
@@ -252918,6 +252931,7 @@ MonoBehaviour:
   gun: {fileID: 714325776}
   infirmaryWatch: 0
   holdPost: 1
+  receivingMeal: 0
   postPosition: {x: -23, y: 0.012099743, z: 24.6}
   postYaw: 0
   restrictedArea:
@@ -253927,6 +253941,7 @@ MonoBehaviour:
   gun: {fileID: 703699692}
   infirmaryWatch: 0
   holdPost: 1
+  receivingMeal: 0
   postPosition: {x: -14.2, y: 3.75, z: -31}
   postYaw: 180
   restrictedArea:
@@ -268227,6 +268242,7 @@ MonoBehaviour:
   gun: {fileID: 2001045452}
   infirmaryWatch: 0
   holdPost: 1
+  receivingMeal: 0
   postPosition: {x: 40.000004, y: 0.012099743, z: -8}
   postYaw: 296.56528
   restrictedArea:
@@ -274602,6 +274618,7 @@ MonoBehaviour:
   gun: {fileID: 646768771}
   infirmaryWatch: 0
   holdPost: 1
+  receivingMeal: 0
   postPosition: {x: 28, y: 0.012099743, z: -14}
   postYaw: 0
   restrictedArea:
@@ -278747,6 +278764,7 @@ MonoBehaviour:
   gun: {fileID: 1658399077}
   infirmaryWatch: 0
   holdPost: 1
+  receivingMeal: 0
   postPosition: {x: 25, y: 0.012099743, z: 28}
   postYaw: 54.6375
   restrictedArea:
@@ -290217,7 +290235,7 @@ Transform:
   m_GameObject: {fileID: 1215125147}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 37, y: 0.025, z: -28}
+  m_LocalPosition: {x: 37, y: 0.256, z: -28}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -290831,6 +290849,7 @@ MonoBehaviour:
   gun: {fileID: 320297961}
   infirmaryWatch: 0
   holdPost: 0
+  receivingMeal: 0
   postPosition: {x: -49, y: 0, z: 5}
   postYaw: 180
   restrictedArea:
@@ -303335,6 +303354,7 @@ MonoBehaviour:
   gun: {fileID: 775213449}
   infirmaryWatch: 0
   holdPost: 0
+  receivingMeal: 0
   postPosition: {x: 0, y: 0, z: 0}
   postYaw: 0
   restrictedArea:
@@ -307708,6 +307728,7 @@ MonoBehaviour:
   gun: {fileID: 1325701431}
   infirmaryWatch: 0
   holdPost: 1
+  receivingMeal: 0
   postPosition: {x: -5, y: 0.012099743, z: -26}
   postYaw: 90
   restrictedArea:
@@ -309637,6 +309658,7 @@ MonoBehaviour:
   gun: {fileID: 55661301}
   infirmaryWatch: 1
   holdPost: 0
+  receivingMeal: 0
   postPosition: {x: 0, y: 0, z: 0}
   postYaw: 0
   restrictedArea:
@@ -314952,6 +314974,139 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1308280484}
   m_Mesh: {fileID: 4300000, guid: 2f8fa0d33299bb24dab10f1bfa9ff671, type: 2}
+--- !u!1001 &1308400940
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 19837289787704437, guid: 4cba9d3d457152049b62cf3a45ae656f, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 29.317
+      objectReference: {fileID: 0}
+    - target: {fileID: 19837289787704437, guid: 4cba9d3d457152049b62cf3a45ae656f, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 1.519
+      objectReference: {fileID: 0}
+    - target: {fileID: 19837289787704437, guid: 4cba9d3d457152049b62cf3a45ae656f, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -19.868
+      objectReference: {fileID: 0}
+    - target: {fileID: 19837289787704437, guid: 4cba9d3d457152049b62cf3a45ae656f, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 19837289787704437, guid: 4cba9d3d457152049b62cf3a45ae656f, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 19837289787704437, guid: 4cba9d3d457152049b62cf3a45ae656f, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 19837289787704437, guid: 4cba9d3d457152049b62cf3a45ae656f, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 19837289787704437, guid: 4cba9d3d457152049b62cf3a45ae656f, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 19837289787704437, guid: 4cba9d3d457152049b62cf3a45ae656f, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 19837289787704437, guid: 4cba9d3d457152049b62cf3a45ae656f, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 253426470446393056, guid: 4cba9d3d457152049b62cf3a45ae656f, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 444734103362842194, guid: 4cba9d3d457152049b62cf3a45ae656f, type: 3}
+      propertyPath: teamCooking
+      value: 
+      objectReference: {fileID: 126267397}
+    - target: {fileID: 444734103362842194, guid: 4cba9d3d457152049b62cf3a45ae656f, type: 3}
+      propertyPath: teamMission
+      value: 
+      objectReference: {fileID: 1542286523}
+    - target: {fileID: 444734103362842194, guid: 4cba9d3d457152049b62cf3a45ae656f, type: 3}
+      propertyPath: kitchenEntranceWall
+      value: 
+      objectReference: {fileID: 743100150}
+    - target: {fileID: 546480665608481209, guid: 4cba9d3d457152049b62cf3a45ae656f, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2259664238718267033, guid: 4cba9d3d457152049b62cf3a45ae656f, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3130070454177642773, guid: 4cba9d3d457152049b62cf3a45ae656f, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3254829089500231256, guid: 4cba9d3d457152049b62cf3a45ae656f, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3986888622377948366, guid: 4cba9d3d457152049b62cf3a45ae656f, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4676075069684423514, guid: 4cba9d3d457152049b62cf3a45ae656f, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5862688119305083145, guid: 4cba9d3d457152049b62cf3a45ae656f, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5953868037538284594, guid: 4cba9d3d457152049b62cf3a45ae656f, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6111707611298653351, guid: 4cba9d3d457152049b62cf3a45ae656f, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6350198063452275462, guid: 4cba9d3d457152049b62cf3a45ae656f, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7138800521855340375, guid: 4cba9d3d457152049b62cf3a45ae656f, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7406434482527799526, guid: 4cba9d3d457152049b62cf3a45ae656f, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8537864394136205250, guid: 4cba9d3d457152049b62cf3a45ae656f, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8907926404174643612, guid: 4cba9d3d457152049b62cf3a45ae656f, type: 3}
+      propertyPath: m_Name
+      value: "22_\uCE58\uD0A8_\uB9CC\uB4E4\uAE30"
+      objectReference: {fileID: 0}
+    - target: {fileID: 9001909284074429303, guid: 4cba9d3d457152049b62cf3a45ae656f, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9062787111405181626, guid: 4cba9d3d457152049b62cf3a45ae656f, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 4cba9d3d457152049b62cf3a45ae656f, type: 3}
 --- !u!1 &1308414575
 GameObject:
   m_ObjectHideFlags: 0
@@ -317945,6 +318100,7 @@ MonoBehaviour:
   gun: {fileID: 2036181043}
   infirmaryWatch: 0
   holdPost: 1
+  receivingMeal: 0
   postPosition: {x: 39.933537, y: 0.012099743, z: 27.468307}
   postYaw: 0
   restrictedArea:
@@ -350093,6 +350249,7 @@ MonoBehaviour:
   gun: {fileID: 1232610992}
   infirmaryWatch: 0
   holdPost: 1
+  receivingMeal: 0
   postPosition: {x: 28, y: 0.024777729, z: 1}
   postYaw: 0
   restrictedArea:
@@ -361777,6 +361934,7 @@ MonoBehaviour:
   gun: {fileID: 1793426752}
   infirmaryWatch: 0
   holdPost: 1
+  receivingMeal: 0
   postPosition: {x: 40, y: 0.012099743, z: 40}
   postYaw: 187.49574
   restrictedArea:
@@ -365735,6 +365893,7 @@ MonoBehaviour:
   gun: {fileID: 1049695697}
   infirmaryWatch: 0
   holdPost: 1
+  receivingMeal: 0
   postPosition: {x: -2.5, y: 0, z: 49}
   postYaw: 180
   restrictedArea:
@@ -371211,7 +371370,6 @@ Transform:
   - {fileID: 1914104593}
   - {fileID: 126267396}
   - {fileID: 634240914}
-  - {fileID: 1058066042}
   - {fileID: 2016321684}
   - {fileID: 899893835}
   - {fileID: 97786210}
@@ -387485,6 +387643,7 @@ MonoBehaviour:
   gun: {fileID: 1097541633}
   infirmaryWatch: 0
   holdPost: 1
+  receivingMeal: 0
   postPosition: {x: 10, y: 0.012099743, z: 16}
   postYaw: 180
   restrictedArea:
@@ -424164,6 +424323,7 @@ MonoBehaviour:
   gun: {fileID: 256487228}
   infirmaryWatch: 0
   holdPost: 1
+  receivingMeal: 0
   postPosition: {x: -29, y: 3.75, z: -26}
   postYaw: 90
   restrictedArea:
@@ -425449,6 +425609,7 @@ MonoBehaviour:
   gun: {fileID: 1442569410}
   infirmaryWatch: 0
   holdPost: 0
+  receivingMeal: 0
   postPosition: {x: 0, y: 0, z: 0}
   postYaw: 0
   restrictedArea:
@@ -427683,6 +427844,7 @@ MonoBehaviour:
   gun: {fileID: 1153424334}
   infirmaryWatch: 0
   holdPost: 1
+  receivingMeal: 0
   postPosition: {x: -2, y: 0, z: 3}
   postYaw: 180
   restrictedArea:
@@ -461634,13 +461796,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1914104592}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 28.2, y: 1.2, z: -21.75}
+  m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
+  m_LocalPosition: {x: 27.99, y: 2.117, z: -19.352}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1542286524}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
 --- !u!102 &1914104594
 TextMesh:
   serializedVersion: 3
@@ -478904,7 +479066,7 @@ Transform:
   m_GameObject: {fileID: 1986652938}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 32.8, y: 0.025, z: -22.6}
+  m_LocalPosition: {x: 32.8, y: 0.198, z: -22.6}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -487524,6 +487686,7 @@ MonoBehaviour:
   gun: {fileID: 1357607944}
   infirmaryWatch: 1
   holdPost: 0
+  receivingMeal: 0
   postPosition: {x: 0, y: 0, z: 0}
   postYaw: 0
   restrictedArea:
@@ -491095,13 +491258,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2028296988}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 28.2, y: 1.1, z: -21.7}
+  m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
+  m_LocalPosition: {x: 27.99, y: 2.07, z: -19.46}
   m_LocalScale: {x: 0.52, y: 0.5, z: 0.06}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1542286524}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
 --- !u!23 &2028296990
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -496053,6 +496216,7 @@ MonoBehaviour:
   gun: {fileID: 503733868}
   infirmaryWatch: 0
   holdPost: 1
+  receivingMeal: 0
   postPosition: {x: -23, y: 0.012099743, z: 37}
   postYaw: 0
   restrictedArea:
@@ -510111,6 +510275,7 @@ MonoBehaviour:
   gun: {fileID: 1352475481}
   infirmaryWatch: 0
   holdPost: 1
+  receivingMeal: 0
   postPosition: {x: -11, y: 0.012099743, z: 19}
   postYaw: 180
   restrictedArea:
@@ -654396,6 +654561,7 @@ SceneRoots:
   - {fileID: 1039303527}
   - {fileID: 1257860207}
   - {fileID: 396401593}
+  - {fileID: 1308400940}
   - {fileID: 1542286524}
   - {fileID: 1291268472}
   - {fileID: 405953360}
