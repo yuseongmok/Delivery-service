@@ -39,7 +39,7 @@ public sealed class SpecialOrderMission : MonoBehaviour {
  bool mingiWasActive;Vector3 mingiPosition;Quaternion mingiRotation;bool showingMingi;
  ToppingInventory Inventory=>broker.player.GetComponent<ToppingInventory>();
  public int EarliestDay=>broker.CompletedDay;public bool DayUnlocked=>broker&&broker.Completed;
- public bool CanStart=>DayUnlocked&&!VenueFinale.Active&&!MechanicMission.Active&&!BackdoorMission.Active&&broker&&broker.Completed&&!broker.Running&&!Running&&!Completed&&!broker.day.IsTransitioning&&!StoryTutorial.Active&&!broker.player.IsDown&&!broker.player.WaterRescueActive&&!PoliceControl.IsArrestInProgress;
+ public bool CanStart=>!GameModeSession.IsChallenge&&DayUnlocked&&!VenueFinale.Active&&!MechanicMission.Active&&!BackdoorMission.Active&&broker&&broker.Completed&&!broker.Running&&!Running&&!Completed&&!broker.day.IsTransitioning&&!StoryTutorial.Active&&!broker.player.IsDown&&!broker.player.WaterRescueActive&&!PoliceControl.IsArrestInProgress;
  void Awake(){Current=this;ui.SetActive(false);attendant.gameObject.SetActive(false);box.SetActive(false);approvalPaper.SetActive(false);}
  void OnDestroy(){RestoreMingi();if(Current==this)Current=null;}
  void OnDisable(){RestoreMingi();}

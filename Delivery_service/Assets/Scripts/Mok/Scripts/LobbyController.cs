@@ -31,6 +31,12 @@ public sealed class LobbyController : MonoBehaviour {
         sfx.onValueChanged.AddListener(v=>{audioSettings.SetSfxVolume(v);UpdateValues();});
         startButton.onClick.AddListener(OpenModes);settingsButton.onClick.AddListener(OpenSettings);quitButton.onClick.AddListener(Quit);
         if(modeMenu){modeMenu.gameObject.SetActive(false);modeBackdrop.SetActive(false);storyButton.onClick.AddListener(StartGame);modeSettingsButton.onClick.AddListener(OpenSettings);modeBackButton.onClick.AddListener(CloseModes);}
+        if(modeMenu){
+            var challenge=modeMenu.transform.Find("Challenge mode")?.GetComponent<Button>();
+            if(challenge){challenge.interactable=true;challenge.onClick.AddListener(StartChallenge);
+                var feedback=challenge.GetComponent<LobbyMenuFeedback>();if(feedback)feedback.enabled=true;
+                var label=challenge.transform.Find("Action")?.GetComponent<Text>();if(label){label.text="경영 시작";label.color=new Color(.62f,.29f,.08f);}}
+        }
         backButton.onClick.AddListener(CloseSettings);screenButton.onClick.AddListener(ToggleScreen);
         brightness=new float[warmLights.Length];for(int i=0;i<warmLights.Length;i++)brightness[i]=warmLights[i]?warmLights[i].intensity:0;
         UpdateValues();StartCoroutine(Reveal());
@@ -47,15 +53,17 @@ public sealed class LobbyController : MonoBehaviour {
     void UpdateValues(){bgmValue.text=Mathf.RoundToInt(bgm.value*100)+"%";sfxValue.text=Mathf.RoundToInt(sfx.value*100)+"%";screenValue.text=Screen.fullScreen?"전체 화면":"창 모드";}
     void ToggleScreen(){Screen.fullScreen=!Screen.fullScreen;StartCoroutine(ScreenLabel());}
     IEnumerator ScreenLabel(){yield return null;yield return null;UpdateValues();}
-    public void StartGame(){if(loading)return;if(!Application.CanStreamedLevelBeLoaded(gameScene)){status.text="게임 씬을 불러올 수 없습니다.";return;}loading=true;StartCoroutine(EnterGame());}
-    IEnumerator EnterGame(){
+    public void StartChallenge(){BeginMode(true);}
+    public void StartGame(){BeginMode(false);}
+    void BeginMode(bool challenge){if(loading)return;string destination=challenge?"Assets/Scenes/JJinCity.unity":gameScene;if(!Application.CanStreamedLevelBeLoaded(destination)){status.text="게임 씬을 불러올 수 없습니다.";return;}GameModeSession.Select(challenge);loading=true;StartCoroutine(EnterGame(destination));}
+    IEnumerator EnterGame(string destination){
         audioSettings.Save();menu.interactable=false;menu.blocksRaycasts=false;if(modeMenu){modeMenu.interactable=false;modeMenu.blocksRaycasts=false;}fade.blocksRaycasts=true;status.text="배달 준비 중…";
         for(float t=0;t<1.2f;t+=Time.unscaledDeltaTime){float f=Mathf.SmoothStep(0,1,t/1.2f);lobbyCamera.transform.position=initialCamera+lobbyCamera.transform.forward*(f*.8f);menu.alpha=1-f;fade.alpha=f;yield return null;}
         fade.alpha=1;Time.timeScale=1;
         // 로비로 돌아온 뒤 다시 시작해도 첫날의 자금과 재고로 시작한다.
         if(MoneyManager.Instance!=null)Destroy(MoneyManager.Instance.gameObject);
         NewGameStockReset.ResetForNewGame();yield return null;
-        var op=SceneManager.LoadSceneAsync(gameScene,LoadSceneMode.Single);while(!op.isDone)yield return null;
+        var op=SceneManager.LoadSceneAsync(destination,LoadSceneMode.Single);while(!op.isDone)yield return null;
     }
     public void Quit(){audioSettings.Save();
 #if UNITY_EDITOR

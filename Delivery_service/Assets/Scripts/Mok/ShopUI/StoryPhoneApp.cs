@@ -3,18 +3,20 @@ using UnityEngine.UI;
 namespace DeliveryService.Mok {
 // 씬에서 연결한 프리팹을 기존 휴대폰 화면에 표시한다.
 public sealed class StoryPhoneApp : MonoBehaviour {
- void Awake(){EditableStoryText.Bind(this);}
+ int originalBodySize;float originalLineSpacing;bool originalBestFit;int originalMin,originalMax;
+ void Awake(){EditableStoryText.Bind(this);originalBodySize=body.fontSize;originalLineSpacing=body.lineSpacing;originalBestFit=body.resizeTextForBestFit;originalMin=body.resizeTextMinSize;originalMax=body.resizeTextMaxSize;}
  public NightPreparationPlan plan;public GameObject panel;public Text heading,body,action;public Text[] rows;public Image[] cards;public Image detailPaper;
  public bool MessagesMode {get;private set;}public int Selection {get;private set;}public bool Detail {get;private set;}
- public int VisibleMissionCount { get { int n=1;if(BrokerMission.Current&&BrokerMission.Current.Completed){n=2;if(SpecialOrderMission.Current&&SpecialOrderMission.Current.Completed){n=3;if(BackdoorMission.Current&&BackdoorMission.Current.Completed){n=4;if(MechanicMission.Current&&MechanicMission.Current.Completed)n=5;}}}return Mathf.Min(n,plan.missions.Length); } }
+ public int VisibleMissionCount { get { if(plan==null||plan.missions==null||StoryTutorial.Active)return 0;int n=1;if(BrokerMission.Current&&BrokerMission.Current.Completed){n=2;if(SpecialOrderMission.Current&&SpecialOrderMission.Current.Completed){n=3;if(BackdoorMission.Current&&BackdoorMission.Current.Completed){n=4;if(MechanicMission.Current&&MechanicMission.Current.Completed)n=5;}}}return Mathf.Min(n,plan.missions.Length); } }
  bool Finished(int i){switch(plan.missions[i].id){case "finale":return VenueFinale.Current&&VenueFinale.Current.Completed;case "mechanic":return MechanicMission.Current&&MechanicMission.Current.Completed;case "backdoor":return BackdoorMission.Current&&BackdoorMission.Current.Completed;case "special_order":return SpecialOrderMission.Current&&SpecialOrderMission.Current.Completed;default:return BrokerMission.Current&&BrokerMission.Current.Completed;}}
  string ListStatus(int index){switch(plan.missions[index].id){case "finale":return FinaleStatus();case "mechanic":return MechanicStatus();case "backdoor":return BackdoorStatus();case "special_order":return SpecialStatus();default:var b=BrokerMission.Current;return b&&b.Running?"진행 중":b&&b.CanStart?"시작 가능":"튜토리얼 완료 후 시작";}}
  bool cancelConfirm;float nextRefresh,readAt;StoryPhoneInbox.Message displayedMessage;
- public void Open(bool messages){MessagesMode=messages;Selection=0;Detail=false;displayedMessage=null;cancelConfirm=false;gameObject.SetActive(true);Refresh();}
+ public void Open(bool messages){MessagesMode=messages;Selection=messages?0:Mathf.Max(0,VisibleMissionCount-1);Detail=false;displayedMessage=null;cancelConfirm=false;gameObject.SetActive(true);Refresh();}
  public void OpenMessage(StoryPhoneInbox.Message message){Open(true);displayedMessage=message;Detail=true;readAt=Time.unscaledTime+1;Refresh();}
  public void Move(int delta){if(Detail)return;int count=MessagesMode?(StoryPhoneInbox.Current?.Messages.Count??0):VisibleMissionCount;if(count>0)Selection=Mathf.Clamp(Selection+delta,0,count-1);Refresh();}
  public bool Back(){if(!Detail)return false;Detail=false;displayedMessage=null;cancelConfirm=false;Refresh();return true;}
- public void Confirm(){ if(PrisonMission.Current){Detail=!Detail;Refresh();return;}
+ public void Confirm(){ if(GameModeSession.IsChallenge)return; if(PrisonMission.Current){Detail=!Detail;Refresh();return;}
+  if(!MessagesMode&&VisibleMissionCount==0)return;
   if(!Detail){Detail=true;if(MessagesMode&&StoryPhoneInbox.Current.Messages.Count>0){displayedMessage=StoryPhoneInbox.Current.Messages[Selection];readAt=Time.unscaledTime+1;}Refresh();return;}
   if(MessagesMode){if(displayedMessage!=null&&displayedMessage.missionUpdate)FindFirstObjectByType<DeliveryService.Mok.Navigation.NavigationPlanner>().Show(DeliveryService.Mok.Navigation.NavigationPlanner.Screen.Missions);return;}
   var m=BrokerMission.Current;
@@ -55,19 +57,44 @@ public sealed class StoryPhoneApp : MonoBehaviour {
   return m.State==BackdoorMission.Phase.Failed?"다시 시작 · 확인한 정보 유지":detail?"미션 시작":"시작 가능";
  }
  void RefreshPrison(){
-  var m=PrisonMission.Current;
-  heading.text=MessagesMode?"연락함":"민기를 찾아서";
-  if(detailPaper)detailPaper.gameObject.SetActive(Detail);
+  var presentation=FindFirstObjectByType<PrisonSharedPresentation>();
+  heading.text=MessagesMode?"연락함":"감옥 · 현재 이야기";
+  if(detailPaper)detailPaper.gameObject.SetActive(true);
   action.transform.parent.gameObject.SetActive(false);
   foreach(var card in cards)card.gameObject.SetActive(false);
   body.rectTransform.anchoredPosition=new Vector2(44,-170);body.rectTransform.sizeDelta=new Vector2(452,580);
-  body.text=MessagesMode?"아직 도착한 문자가 없습니다.":(m.State==PrisonMission.Phase.Complete?"완료":"진행 중")+"\n\n"+m.dialogue.objectives[(int)m.State]+"\n\n"+(m.Delivered<3?"배식하며 민기의 소식을 알아보자.":"민기는 의무실에 있다. 배관 소리로 간수의 시선을 돌릴 수 있다.");
+  if(MessagesMode){body.text="아직 도착한 문자가 없습니다.";return;}
+  string goal=presentation?presentation.objective.text:PrisonMission.Current.dialogue.objectives[(int)PrisonMission.Current.State];
+  string reason="감옥에서 벗어날 방법을 찾기 위해 민기와 정보를 모으자.";
+  if(presentation){
+   if(presentation.escape&&presentation.escape.Active)reason="확보한 간수복과 차량 열쇠로 검문을 통과하고 민기와 함께 탈출하자.";
+   else if(presentation.office&&presentation.office.Active)reason="탈출에 필요한 간수복과 차량 열쇠, 검문 정보를 찾아야 한다.";
+   else if(presentation.keys&&presentation.keys.Active)reason="창고 재료로 피자를 만들어 간수들에게 대접하고 간수장실에 접근하자.";
+   else if(presentation.medicine&&presentation.medicine.Active)reason="간수들의 경계를 피해 간수장실에 들어갈 수단이 필요하다. 수면제를 가진 죄수를 찾자.";
+   else if(presentation.chicken&&presentation.chicken.Active)reason="최형욱은 치킨을 대가로 정보를 주겠다고 했다. 주방장을 깨우지 않고 치킨을 준비하자.";
+   else if(presentation.mission.introduction)reason="민기가 알아낸 정보통 최형욱을 만나 탈출의 단서를 얻자.";
+  }
+  bool complete=presentation&&presentation.escape&&presentation.escape.State==PrisonEscapeMission.Stage.Complete;
+  body.text=complete?"<color=#317260><b>탈옥 완료</b></color>\n\n민기와 함께 감옥을 빠져나왔습니다.":"<b>현재 목표</b>\n"+goal+"\n\n<b>이 미션을 하는 이유</b>\n"+reason;
  }
- public void Refresh(){ if(PrisonMission.Current){RefreshPrison();return;}
+ public void Refresh(){ body.fontSize=originalBodySize;body.lineSpacing=originalLineSpacing;body.resizeTextForBestFit=originalBestFit;body.resizeTextMinSize=originalMin;body.resizeTextMaxSize=originalMax; if(GameModeSession.IsChallenge){
+  heading.text=MessagesMode?"연락함":"도전 모드";
+  foreach(var card in cards)card.gameObject.SetActive(false);
+  if(detailPaper)detailPaper.gameObject.SetActive(true);
+  action.transform.parent.gameObject.SetActive(false);
+  body.rectTransform.anchoredPosition=new Vector2(44,-170);body.rectTransform.sizeDelta=new Vector2(452,580);
+  body.text=MessagesMode?"새로운 스토리 연락은 없습니다.":"PC에서 영업을 시작하세요.\n\n주문 수락 → 피자 제작 → 포장 → 배달\n\n재료비와 연료비를 관리하고 매일 고정비를 납부하며 오래 살아남으세요.\n\n마감 정산 후 잔액이 음수가 되면 도전이 종료됩니다.";return;
+ } if(PrisonMission.Current){RefreshPrison();return;}
+ if(!MessagesMode&&StoryTutorial.Active){
+  heading.text="위장 생활";foreach(var card in cards)card.gameObject.SetActive(false);
+  if(detailPaper)detailPaper.gameObject.SetActive(true);action.transform.parent.gameObject.SetActive(false);
+  body.rectTransform.anchoredPosition=new Vector2(44,-170);body.rectTransform.sizeDelta=new Vector2(452,580);
+  body.text="<b>현재 목표</b>\n"+StoryTutorial.Current.objective.text+"\n\n<b>이 미션을 하는 이유</b>\n얼굴이 알려진 두 사람은 피자 가게에서 위장 생활을 시작했다. 첫 주문을 배달하며 가게 일을 익히자.";return;
+ }
   var inbox=StoryPhoneInbox.Current;var m=BrokerMission.Current;if(detailPaper)detailPaper.gameObject.SetActive(Detail);
   action.transform.parent.gameObject.SetActive(Detail&&(!MessagesMode||displayedMessage!=null&&displayedMessage.missionUpdate));
   body.rectTransform.anchoredPosition=new Vector2(Detail?44:28,Detail?-170:-770);body.rectTransform.sizeDelta=new Vector2(Detail?452:484,Detail?580:110);
-  heading.text=MessagesMode?"연락함 · 안읽음 "+(inbox?.Unread??0):"밤 준비 미션";body.text="";action.text="";
+  heading.text=MessagesMode?"연락함 · 안읽음 "+(inbox?.Unread??0):"미션 기록";body.text="";action.text="";
   int count=MessagesMode?(inbox?.Messages.Count??0):VisibleMissionCount;
   Selection=Mathf.Clamp(Selection,0,Mathf.Max(0,count-1));int first=Mathf.Max(0,Selection-rows.Length+1);
   for(int i=0;i<rows.Length;i++){int index=first+i;cards[i].gameObject.SetActive(!Detail&&index<count);if(index>=count)continue;cards[i].color=index==Selection?new Color(1,.76f,.43f):Color.white;
@@ -78,16 +105,17 @@ public sealed class StoryPhoneApp : MonoBehaviour {
    else if(plan.missions[index].id=="special_order"){rows[i].text=plan.missions[index].title+"\n"+SpecialStatus();}
    else {var item=plan.missions[index];rows[i].text=item.title+"\n"+(index==0&&m?(m.Completed?"완료":m.Running?"진행 중":m.State==BrokerMission.Phase.Failed?"재시도":m.CanStart?"시작 가능":"튜토리얼 완료 후 시작"):"준비 중");}
   }
-  for(int i=0;i<rows.Length;i++){int index=first+i;if(index>=count)continue;rows[i].supportRichText=true;if(!MessagesMode){bool done=Finished(index);rows[i].text="<size=20>"+(done?"완료  /  COMPLETED":"MISSION "+(index+1).ToString("00"))+"</size>\n"+plan.missions[index].title+"\n<size=20>"+(done?"준비 성과 확보":ListStatus(index))+"</size>";rows[i].color=done?new Color(.18f,.42f,.34f):new Color(.1f,.17f,.21f);if(done&&index!=Selection)cards[i].color=new Color(.83f,.92f,.87f);}}
-  if(!Detail){body.text=count==0?"아직 도착한 문자가 없습니다.":MessagesMode?"최근 연락부터 표시됩니다.\n"+(Selection+1)+" / "+count:"해금된 미션  "+count+"개   ·   완료 "+System.Linq.Enumerable.Count(System.Linq.Enumerable.Range(0,count),Finished)+"개\n"+(Selection+1)+" / "+count;return;}
+  for(int i=0;i<rows.Length;i++){int index=first+i;if(index>=count)continue;rows[i].supportRichText=true;if(!MessagesMode){bool done=Finished(index);rows[i].text="<size=20>"+(done?"완료한 미션":"현재 이야기")+"</size>\n"+plan.missions[index].title+"\n<size=20>"+(done?"완료한 결과 보기":ListStatus(index))+"</size>";rows[i].color=done?new Color(.18f,.42f,.34f):new Color(.1f,.17f,.21f);if(done)cards[i].color=index==Selection?new Color(.72f,.86f,.79f):new Color(.85f,.91f,.87f);}}
+  if(!Detail){body.text=count==0?(MessagesMode?"아직 도착한 문자가 없습니다.":"진행 중인 첫 배달을 마치면 다음 미션이 열립니다."):MessagesMode?"최근 연락부터 표시됩니다.\n"+(Selection+1)+" / "+count:"완료 "+System.Linq.Enumerable.Count(System.Linq.Enumerable.Range(0,count),Finished)+"개   ·   선택 "+(Selection+1)+" / "+count+"\n방향키로 선택 · Enter로 목표 확인";return;}
   if(count==0)return;
   if(MessagesMode){var msg=displayedMessage??inbox.Messages[Selection];heading.text=msg.sender+" · "+(msg.localConversation?"대화 기록":msg.read?"읽음":"안읽음");body.text="<size=22><color=#597077>"+(msg.localConversation?"대화 기록":"문자 메시지")+"</color></size>\n\n<b>"+msg.title+"</b>\n\n"+msg.body;action.text=msg.missionUpdate?"미션 확인":"";return;}
-  var selected=plan.missions[Selection];heading.text=(Finished(Selection)?"완료  ·  ":"")+selected.title;body.text=selected.description+"\n\n준비 성과\n"+selected.result;
-  if(Finished(Selection)){action.text="완료 · 준비 성과 확보";return;}
+  body.supportRichText=true;body.fontSize=25;body.lineSpacing=1.12f;body.resizeTextForBestFit=true;body.resizeTextMinSize=21;body.resizeTextMaxSize=25;
+  var selected=plan.missions[Selection];heading.text=(Finished(Selection)?"완료  ·  ":"")+selected.title;body.text=StoryMissionBrief.Detail(selected,Finished(Selection));
+  if(Finished(Selection)){action.text="완료한 미션";action.transform.parent.gameObject.SetActive(false);return;}
   if(selected.id=="finale"){action.text=FinaleStatus(true);return;}
   if(selected.id=="mechanic"){action.text=MechanicStatus(true);return;}
   if(selected.id=="backdoor"){action.text=BackdoorStatus(true);return;}
-  if(selected.id=="special_order"){body.text+="\n\n치즈피자 준비 중 기본 재료 무료 지원\n진행 중에는 아래에서 중단·재시도 가능";action.text=SpecialStatus(true);return;}
+  if(selected.id=="special_order"){action.text=SpecialStatus(true);return;}
   action.text=Selection!=0?"아직 준비 중인 미션입니다":!m?"미션을 불러올 수 없습니다":m.Completed?"준비 완료":m.Running?(cancelConfirm?"한 번 더 확인하면 중단합니다":"진행 중 · 미션 중단"):StoryTutorial.Active?"튜토리얼 완료 후 시작할 수 있습니다":!m.CanStart?"지금은 시작할 수 없습니다":m.State==BrokerMission.Phase.Failed?"다시 시작":"미션 시작";
  }
 }

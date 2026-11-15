@@ -47,7 +47,7 @@ public sealed class BackdoorMission : MonoBehaviour {
  DayNightCycle Day=>delivery.broker.day;
  Transform Mingi=>delivery.kitchen.actor;
  public int EarliestDay=>delivery.CompletedDay;public bool DayUnlocked=>delivery&&delivery.Completed;
- public bool CanStart=>DayUnlocked&&!VenueFinale.Active&&!MechanicMission.Active&&delivery&&delivery.Completed&&!delivery.Running&&!delivery.broker.Running&&!Running&&!Completed&&!Day.IsTransitioning&&!StoryTutorial.Active&&!Player.IsDown&&!Player.WaterRescueActive&&!PoliceControl.IsArrestInProgress;
+ public bool CanStart=>!GameModeSession.IsChallenge&&DayUnlocked&&!VenueFinale.Active&&!MechanicMission.Active&&delivery&&delivery.Completed&&!delivery.Running&&!delivery.broker.Running&&!Running&&!Completed&&!Day.IsTransitioning&&!StoryTutorial.Active&&!Player.IsDown&&!Player.WaterRescueActive&&!PoliceControl.IsArrestInProgress;
  void Awake(){Current=this;ui.SetActive(false);foreach(var g in guards)g.gameObject.SetActive(false);}
  void OnDestroy(){StopGuards();RestoreMingi();if(Current==this)Current=null;}
  void OnDisable(){RestoreMingi();}

@@ -27,8 +27,10 @@ public sealed class CompactHUD : MonoBehaviour {
         orderCard=Card("Order",new Vector2(0,1),new Vector2(28,-28),new Vector2(290,126));
         orderTitle=Label(orderCard,18,12,254,30,25);orderBody=Label(orderCard,18,48,304,124,21);
         var time=Card("Time",Vector2.one,new Vector2(-28,-28),new Vector2(264,58));timeLabel=Label(time,16,12,232,34,26);timeLabel.alignment=TextAnchor.MiddleCenter;
-        time.gameObject.SetActive(false);
-        var balance=Card("Balance",Vector2.one,new Vector2(-28,-28),new Vector2(264,64));
+        time.gameObject.SetActive(GameModeSession.IsChallenge);
+        var balance=Card("Balance",Vector2.one,new Vector2(-28,GameModeSession.IsChallenge?-96:-28),new Vector2(264,64));
+        balance.gameObject.SetActive(GameModeSession.IsChallenge);
+        orderCard.gameObject.SetActive(GameModeSession.IsChallenge);
         var currency=Label(balance,16,12,36,40,32);currency.text="$";currency.color=Orange;currency.alignment=TextAnchor.MiddleCenter;cash=Label(balance,56,13,190,38,29);cash.alignment=TextAnchor.MiddleRight;
         popup=Label(balance,-16,72,280,40,26);popup.alignment=TextAnchor.MiddleRight;
         vehicle=Card("Vehicle",Vector2.zero,new Vector2(28,28),new Vector2(270,150)).gameObject;
@@ -55,16 +57,21 @@ public sealed class CompactHUD : MonoBehaviour {
         if(timeLabel==null)return;
         if(PrisonMission.Current){orderCard.gameObject.SetActive(false);vehicle.SetActive(false);cash.text=$"{(MoneyManager.Instance?MoneyManager.Instance.currentMoney:0):N0}원";popup.text="";return;}
         if(clock==null)return;
-        var story=VenueFinale.Current?VenueFinale.Current.aftermath:null;bool chapterView=story&&story.State>=ShopEscapeChapter.Stage.Arrest;GetComponent<Canvas>().enabled=!chapterView;if(chapterView)return;
+        var story=VenueFinale.Current?VenueFinale.Current.aftermath:null;bool chapterView=story&&story.State>=ShopEscapeChapter.Stage.Arrest;bool settlement=GameModeSession.IsChallenge&&clock.IsTransitioning;GetComponent<Canvas>().enabled=!chapterView&&!settlement;if(chapterView||settlement)return;
         int minutes=Mathf.FloorToInt(clock.currentTime*60);timeLabel.text=$"DAY {clock.currentDay}  ·  {minutes/60:00}:{minutes%60:00}";
         string value=sourceOrder!=null?sourceOrder.text:"";var lines=value.Split('\n');
         bool active=orders!=null&&orders.HasActiveOrder;
         bool cancelled=value.Contains("주문 취소");
-        orderTitle.text=active?orders.ActiveOrder.orderName:cancelled?"주문 취소":"주문 대기 중";
+        orderTitle.text=active?orders.ActiveOrder.orderName:cancelled?"주문 취소":GameModeSession.IsChallenge&&!clock.isShopOpen?"PC에서 영업 시작":"주문 대기 중";
         orderTitle.color=cancelled?Danger:Orange;
-        orderBody.text=active?PizzaRecipes.Title(orders.ActiveOrder)+"\n"+orders.CurrentTargetDeliveryID+"\n"+(lines.Length>3?lines[3]:""):cancelled?"피자를 폐기하세요":"";
+        orderBody.text=active?PizzaRecipes.Title(orders.ActiveOrder)+"\n"+orders.CurrentTargetDeliveryID+"\n"+(lines.Length>3?lines[3]:""):cancelled?"피자를 폐기하세요":GameModeSession.IsChallenge&&!clock.isShopOpen?$"오늘 고정비 {DailyRent.Cost(clock.currentDay):N0}원":"";
         orderBody.color=active&&orders.ElapsedDeliveryMinutes>orders.RecommendedDeliveryMinutes?Orange:Cream;
-        orderCard.sizeDelta=new Vector2(340,active?180:cancelled?92:54);
+        orderCard.gameObject.SetActive(GameModeSession.IsChallenge || !StoryObjectiveCard.AnyVisible);
+        if(!GameModeSession.IsChallenge){
+            orderTitle.text="다음 이야기";orderTitle.color=Orange;
+            orderBody.text="휴대폰에서 연락과 다음 미션을 확인하세요.";orderBody.color=Cream;
+        }
+        orderCard.sizeDelta=new Vector2(GameModeSession.IsChallenge?340:440,!GameModeSession.IsChallenge?120:active?180:cancelled||GameModeSession.IsChallenge&&!clock.isShopOpen?100:54);
         cash.text=$"{Mathf.RoundToInt(feedback!=null?feedback.DisplayedBalance:MoneyManager.Instance!=null?MoneyManager.Instance.currentMoney:0):N0}원";
         cash.color=MoneyManager.Instance!=null&&MoneyManager.Instance.currentMoney<0?Danger:Cream;
         popup.text=feedback!=null&&feedback.PopupVisible?$"{feedback.PopupAmount:+#,0;-#,0;0}원":"";

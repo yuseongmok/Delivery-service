@@ -53,7 +53,7 @@ public sealed class StoryPhoneInbox : MonoBehaviour {
  }
  public void IntroduceBroker(string body=null){if(introduced)return;introduced=true;nightSent=true;SendFrom("실장","연락이 끊긴 중개인",string.IsNullOrEmpty(body)?invitation:body,true);}
  void Update(){
-  if(Time.timeScale<=0)return;
+  if(GameModeSession.IsChallenge||Time.timeScale<=0)return;
   PresentPending();
   if(toast.activeSelf&&Time.unscaledTime>=until)toast.SetActive(false);
   if(StoryTutorial.Active||!mission||(VenueFinale.Active&&VenueFinale.Current.State==VenueFinale.Phase.Aftermath))return;

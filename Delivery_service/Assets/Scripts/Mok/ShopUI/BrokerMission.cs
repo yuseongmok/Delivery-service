@@ -33,7 +33,7 @@ public sealed class BrokerMission : MonoBehaviour {
  public BrokerPassenger passenger;
  void Awake(){Current=this;brokerHome=broker.position;brokerRotation=broker.rotation;guide=broker.GetComponent<NavMeshAgent>();animator=broker.GetComponentInChildren<Animator>();animator.enabled=true;animator.speed=1;animator.applyRootMotion=false;animator.cullingMode=AnimatorCullingMode.AlwaysAnimate;broker.gameObject.SetActive(false);missionUI.SetActive(false);}
  void OnDestroy(){if(Current==this)Current=null;CleanEnemies();}
- public bool CanStart=>!VenueFinale.Active&&!MechanicMission.Active&&!BackdoorMission.Active&&!SpecialOrderMission.Active&&!Running&&!Completed&&day&&!day.IsTransitioning&&!StoryTutorial.Active&&player&&!player.IsDown&&!PoliceControl.IsArrestInProgress;
+ public bool CanStart=>!GameModeSession.IsChallenge&&!VenueFinale.Active&&!MechanicMission.Active&&!BackdoorMission.Active&&!SpecialOrderMission.Active&&!Running&&!Completed&&day&&!day.IsTransitioning&&!StoryTutorial.Active&&player&&!player.IsDown&&!PoliceControl.IsArrestInProgress;
  public bool Begin(){
   if(!CanStart)return false;day.EnterNightPreparation();CleanEnemies();FailureReason="";startDay=day.currentDay;reinforced=false;safeFor=0;
   broker.gameObject.SetActive(false);broker.SetPositionAndRotation(brokerHome,brokerRotation);broker.gameObject.SetActive(true);

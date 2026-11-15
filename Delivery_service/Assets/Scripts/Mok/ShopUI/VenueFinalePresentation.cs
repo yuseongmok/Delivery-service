@@ -52,7 +52,7 @@ namespace DeliveryService.Mok
             string label = GetGoalLabel(goal, turned);
             mission.objective.text = BuildObjective(goal, label, turned);
             mission.marker.gameObject.SetActive(true);
-            StoryTargetDiamond.Place(mission.marker, mission.Player.View, GetMarkerPosition(goal), mission.Player.transform.position, label);
+            StoryTargetDiamond.Place(mission.marker, mission.Player.View, GetMarkerPosition(goal), mission.Player.transform.position, label, Vector3.Distance(mission.Player.transform.position,goal.position));
             if (mission.State == Phase.Conversation)
             {
                 mission.marker.gameObject.SetActive(false);

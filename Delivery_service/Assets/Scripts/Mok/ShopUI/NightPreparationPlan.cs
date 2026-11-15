@@ -6,6 +6,8 @@ public sealed class NightPreparationPlan : ScriptableObject {
  [Serializable] public class Mission {
   public string id,title;public bool optional;
   [TextArea(2,5)] public string description;
+  [TextArea(2,4)] public string purpose;
+  [TextArea(1,3)] public string startingObjective;
   [TextArea(1,3)] public string result;
  }
  public string chapterTitle="첫 번째 사건 · 마지막 배달";

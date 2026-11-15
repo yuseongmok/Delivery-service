@@ -160,7 +160,7 @@ namespace DeliveryService.Mok
 
         public int EarliestDay => preparation.CompletedDay;
         public bool DayUnlocked => preparation && preparation.Completed;
-        public bool CanStart =>
+        public bool CanStart => !GameModeSession.IsChallenge &&
             DayUnlocked &&
             preparation &&
             preparation.Completed &&

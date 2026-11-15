@@ -127,7 +127,7 @@ namespace DeliveryService.Mok
         public PlayerCombat Player => preparation.Player;
         public DayNightCycle Day => preparation.preparation.delivery.broker.day;
         public bool Ready => preparation && preparation.Completed && preparation.preparation.Completed && preparation.preparation.delivery.Completed && preparation.preparation.delivery.broker.Completed;
-        public bool CanStart => Ready && !Running && !BrokerMission.Active && !SpecialOrderMission.Active && !BackdoorMission.Active && !MechanicMission.Active && !Completed && !Day.IsTransitioning && !StoryTutorial.Active && !Player.IsDown && !Player.RiddenBike && !Player.WaterRescueActive && !PoliceControl.IsArrestInProgress;
+        public bool CanStart => !GameModeSession.IsChallenge && Ready && !Running && !BrokerMission.Active && !SpecialOrderMission.Active && !BackdoorMission.Active && !MechanicMission.Active && !Completed && !Day.IsTransitioning && !StoryTutorial.Active && !Player.IsDown && !Player.RiddenBike && !Player.WaterRescueActive && !PoliceControl.IsArrestInProgress;
         private VenueFinaleEnemies enemyRoster;
         private VenueFinaleCinematics cinematic;
         private VenueFinalePresentation presentation;

@@ -74,7 +74,7 @@ public sealed class StoryTutorial : MonoBehaviour {
 #if UNITY_EDITOR
         Requested|=UnityEditor.SessionState.GetBool("Mok.BankPrologue.Check.tutorial",false);
 #endif
-        if(!Requested){ui.SetActive(false);actor.gameObject.SetActive(false);enabled=false;return;}
+        if(GameModeSession.IsChallenge||!Requested){ui.SetActive(false);actor.gameObject.SetActive(false);enabled=false;return;}
         Requested=false;Current=this;running=true;orders.BeginStoryLesson(destination);
     }
     void Start(){

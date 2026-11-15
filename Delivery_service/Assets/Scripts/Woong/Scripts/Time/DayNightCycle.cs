@@ -8,8 +8,8 @@ public class DayNightCycle : MonoBehaviour
     public int currentDay = 1;
     public bool isShopOpen = false;
     public bool storyDayNightEnabled = false;
-    public bool IsNightPreparation => !DeliveryService.Mok.StoryTutorial.Active;
-    public bool IsTransitioning => isTransitioning;
+    public bool IsNightPreparation => !DeliveryService.Mok.GameModeSession.IsChallenge && !DeliveryService.Mok.StoryTutorial.Active;
+    public bool IsTransitioning => isTransitioning || (DeliveryService.Mok.GameModeSession.IsChallenge && summaryPanel && summaryPanel.activeSelf);
     public MonoBehaviour cameraLookScript;
 
     public float dailyIncome = 0f;
@@ -60,6 +60,7 @@ public class DayNightCycle : MonoBehaviour
     private Material skydomeMaterial;
 
     private bool isTransitioning = false;
+    private DeliveryService.Mok.ChallengeRun challenge;
 
     private void Start()
     {
@@ -67,12 +68,22 @@ public class DayNightCycle : MonoBehaviour
         if (moon != null) defaultMoonIntensity = moon.intensity;
         if (skydomeRenderer != null) skydomeMaterial = skydomeRenderer.material;
 
-        InitializeDay();
+        if (DeliveryService.Mok.GameModeSession.IsChallenge)
+        {
+            HideCalendarUI();
+            challenge = gameObject.AddComponent<DeliveryService.Mok.ChallengeRun>();
+            challenge.Initialize(this);
+        }
+        else InitializeDay();
     }
 
     // 날짜 대신 스토리 진행으로 미션을 해금한다. 시간 값은 조명 호환용이다.
     private void Update()
     {
+        if (DeliveryService.Mok.GameModeSession.IsChallenge)
+        {
+            challenge.Tick(); UpdateLighting(); return;
+        }
         isShopOpen = DeliveryService.Mok.StoryTutorial.Active;
         HideCalendarUI();
         if (PlayerPrefs.HasKey("PendingToppingList")) ToppingStockManager.DeliverAllPendingStock();
@@ -88,14 +99,14 @@ public class DayNightCycle : MonoBehaviour
         if (summaryPanel) summaryPanel.SetActive(false);
     }
 
-    public void OnClick_OpenShop() { isShopOpen = DeliveryService.Mok.StoryTutorial.Active; ClosePCMenu(); }
-    public void OnClick_CloseShop() { EnterNightPreparation(); ClosePCMenu(); }
-    public void OnClick_ConfirmClose() { EnterNightPreparation(); ClosePCMenu(); }
-    public void OnClick_CancelClose() { HideCalendarUI(); ClosePCMenu(); }
+    public void OnClick_OpenShop() { if (DeliveryService.Mok.GameModeSession.IsChallenge) { challenge?.OpenShop(); return; } isShopOpen = DeliveryService.Mok.StoryTutorial.Active; ClosePCMenu(); }
+    public void OnClick_CloseShop() { if (DeliveryService.Mok.GameModeSession.IsChallenge) { challenge?.RequestClose(); return; } EnterNightPreparation(); ClosePCMenu(); }
+    public void OnClick_ConfirmClose() { if (DeliveryService.Mok.GameModeSession.IsChallenge) { challenge?.Confirm(); return; } EnterNightPreparation(); ClosePCMenu(); }
+    public void OnClick_CancelClose() { if (DeliveryService.Mok.GameModeSession.IsChallenge) { challenge?.CancelClose(); return; } HideCalendarUI(); ClosePCMenu(); }
 
     public void EnterNightPreparation()
     {
-        if (DeliveryService.Mok.StoryTutorial.Active) return;
+        if (DeliveryService.Mok.GameModeSession.IsChallenge || DeliveryService.Mok.StoryTutorial.Active) return;
         currentTime = 18f;
         isShopOpen = false;
         HideCalendarUI();

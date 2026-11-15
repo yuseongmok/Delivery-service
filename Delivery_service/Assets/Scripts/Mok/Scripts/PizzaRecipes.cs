@@ -20,6 +20,6 @@ public static class PizzaRecipes {
 public sealed class DeliveryRequestNotice : MonoBehaviour {
     string message;float until;
     public static void Show(string value){var n=FindFirstObjectByType<DeliveryRequestNotice>();if(n==null)n=new GameObject("Delivery request notice").AddComponent<DeliveryRequestNotice>();n.message=value;n.until=Time.unscaledTime+3;}
-    void OnGUI(){if(Time.unscaledTime>=until)return;var style=new GUIStyle(GUI.skin.box){font=MokUIFont.Font,fontSize=Mathf.RoundToInt(Screen.height*.024f),alignment=TextAnchor.MiddleCenter};GUI.Box(new Rect(Screen.width*.25f,Screen.height*.76f,Screen.width*.5f,Screen.height*.10f),message,style);}
+    void OnGUI(){if(Time.unscaledTime>=until||(GameModeSession.IsChallenge&&Time.timeScale<=0))return;var style=new GUIStyle(GUI.skin.box){font=MokUIFont.Font,fontSize=Mathf.RoundToInt(Screen.height*.024f),alignment=TextAnchor.MiddleCenter};GUI.Box(new Rect(Screen.width*.25f,Screen.height*.76f,Screen.width*.5f,Screen.height*.10f),message,style);}
 }
 }

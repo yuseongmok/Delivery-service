@@ -21,6 +21,8 @@ MonoBehaviour:
     \uB2E8\uC11C\uB97C \uB530\uB77C \uBC15\uC9C4\uC6C5\uC758 \uC18D\uB0B4\uB97C \uD655\uC778\uD558\uC138\uC694."
   missions:
   - id: broker
+    purpose: "실장이 연락을 끊은 이유를 알아야 한다. 조직에게 쫓기는 실장을 구하고 박진웅에게 접근할 단서를 얻자."
+    startingObjective: "표시된 약속 장소에서 실장 만나기"
     title: "\uC5F0\uB77D\uC774 \uB04A\uAE34 \uC911\uAC1C\uC778"
     optional: 0
     description: "\uBA70\uCE60 \uB9CC\uC5D0 \uC5F0\uB77D\uD574 \uC628 \uC2E4\uC7A5\uC774
@@ -32,6 +34,8 @@ MonoBehaviour:
       \uB2F4\uB2F9\uC790 \uC5F0\uB77D\uCC98 \uD655\uBCF4 \xB7 \uD2B9\uBCC4 \uC8FC\uBB38
       \uC900\uBE44 \uAC00\uB2A5"
   - id: special_order
+    purpose: "박진웅의 행사장에 들어가려면 정식 납품 승인이 필요하다. 시식 주문을 완수해 배달원으로 출입할 자격을 얻자."
+    startingObjective: "행사 납품 담당자 만나기"
     title: "\uD2B9\uBCC4 \uC8FC\uBB38"
     optional: 0
     description: "\uC2E4\uC7A5\uC5D0\uAC8C \uC5BB\uC740 \uC5F0\uB77D\uCC98\uB85C
@@ -44,6 +48,8 @@ MonoBehaviour:
     result: "\uC815\uC2DD \uB0A9\uD488 \uC2B9\uC778 \xB7 \uD589\uC0AC\uC7A5 \uC8FC\uBCC0
       \uC870\uC0AC \uAC00\uB2A5"
   - id: backdoor
+    purpose: "행사장에 들어가도 안전하게 빠져나올 길이 필요하다. 출입구와 경비, 탈출 동선을 미리 확인하자."
+    startingObjective: "행사장 주변의 조사 지점 확인하기"
     title: "\uB3C4\uC2DC\uC758 \uB4B7\uBB38"
     optional: 0
     description: "\uB0A9\uD488 \uC2B9\uC778\uC744 \uBC1B\uC558\uC73C\uB2C8 \uD589\uC0AC\uC7A5
@@ -57,6 +63,8 @@ MonoBehaviour:
       \uD655\uBCF4 \xB7 \uC815\uBE44\uC0AC\uC5D0\uAC8C \uCC28\uB7C9 \uC694\uCCAD
       \uAC00\uB2A5"
   - id: mechanic
+    purpose: "행사장에서 들키면 곧바로 탈출해야 한다. 정비사의 부탁을 해결하고 도주 차량의 지원을 확보하자."
+    startingObjective: "수리점에서 정비사 만나기"
     title: "\uBE5A\uC9C4 \uC815\uBE44\uC0AC"
     optional: 0
     description: "\uD589\uC0AC\uC7A5 \uCD9C\uC785\uAD6C\uC640 \uD0C8\uCD9C \uACBD\uB85C\uB97C
@@ -69,6 +77,8 @@ MonoBehaviour:
     result: "\uD0C8\uCD9C \uCC28\uB7C9 \uC9C0\uC6D0 \uD655\uBCF4 \xB7 \uB9C8\uC9C0\uB9C9
       \uBC30\uB2EC \uCD9C\uBC1C \uAC00\uB2A5"
   - id: finale
+    purpose: "박진웅이 우리를 이용한 이유를 알아내야 한다. 납품 승인과 조사한 경로를 이용해 잠입하고, 그의 대화를 엿듣자."
+    startingObjective: "피자를 준비해 행사장 납품 출입구로 이동하기"
     title: "\uCCAB \uBC88\uC9F8 \uC0AC\uAC74 \xB7 \uB9C8\uC9C0\uB9C9 \uBC30\uB2EC"
     optional: 0
     description: "\uC900\uBE44\uD55C \uB0A9\uD488 \uC2B9\uC778\uC73C\uB85C \uD589\uC0AC\uC7A5\uC5D0
@@ -76,6 +86,4 @@ MonoBehaviour:
       \uB300\uD654\uB97C \uC5FF\uB4E4\uC73C\uC138\uC694. \uB4E4\uD0A4\uBA74 \uC870\uC0AC\uD55C
       \uCD9C\uC785\uAD6C\uC640 \uACE8\uBAA9 \uACBD\uB85C\uB85C \uD0C8\uCD9C\uD574
       \uC815\uBE44\uC0AC\uAC00 \uB9C8\uB828\uD55C \uCC28\uB97C \uD0C0\uACE0 \uBE60\uC838\uB098\uC635\uB2C8\uB2E4."
-    result: "\uC870\uC9C1 \uAC04 \uCDA9\uB3CC\uACFC \uB450\uBAA9 \uC790\uB9AC \uD0C8\uCDE8
-      \uACC4\uD68D \uD655\uC778 \xB7 \uB9E4\uC7A5 \uD0C8\uCD9C \xB7 \uAC10\uC625
-      \uCC55\uD130 \uB3C4\uC785"
+    result: "박진웅의 계획을 확인하고 행사장에서 빠져나오기"

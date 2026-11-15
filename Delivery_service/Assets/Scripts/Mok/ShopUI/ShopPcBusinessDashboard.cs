@@ -25,7 +25,7 @@ namespace DeliveryService.Mok.ShopUI
             if (cycle == null || cycle.isShopOpen) return;
             cycle.OnClick_OpenShop();
             if (!cycle.isShopOpen) return; // 중복 전환 방지를 유지한다.
-            if (!ledger.HasOpenedToday && MoneyManager.Instance != null)
+            if (!GameModeSession.IsChallenge && !ledger.HasOpenedToday && MoneyManager.Instance != null)
                 MoneyManager.Instance.ResetDailyStats();
             ledger.BeginDay();
             gameObject.SetActive(true);
@@ -40,15 +40,15 @@ namespace DeliveryService.Mok.ShopUI
         {
             if (cycle == null || ledger == null) return;
             if(openingRent==null&&openingGate!=null)openingRent=openingGate.transform.Find("OpeningCard/Description")?.GetComponent<Text>();
-            if(openingRent!=null){openingRent.text="스토리의 주문을 준비하고 휴대폰에서 다음 임무를 확인하세요.";openingRent.font=MokUIFont.Font;openingRent.resizeTextForBestFit=true;openingRent.resizeTextMinSize=18;}
+            if(openingRent!=null){openingRent.text=GameModeSession.IsChallenge?$"오늘의 고정비 {DailyRent.Cost(cycle.currentDay):N0}원\n주문을 받아 피자를 배달하고 마감 비용을 마련하세요.":"스토리의 주문을 준비하고 휴대폰에서 다음 임무를 확인하세요.";openingRent.font=MokUIFont.Font;openingRent.resizeTextForBestFit=true;openingRent.resizeTextMinSize=18;}
             bool open = cycle.isShopOpen;
             openingGate.SetActive(!open && !cycle.IsNightPreparation);
             orderList.SetActive(open);
-            closeButton.gameObject.SetActive(false);
-            openButton.gameObject.SetActive(false);
+            closeButton.gameObject.SetActive(GameModeSession.IsChallenge && open);
+            openButton.gameObject.SetActive(GameModeSession.IsChallenge && !open && cycle.currentTime < ChallengeRun.ClosingHour);
             bool current = ledger.HasOpenedToday;
-            periodLabel.text = "이번 플레이 기록";
-            statusLabel.text = "다음 이야기는 휴대폰의 미션 앱에서 이어집니다.";
+            periodLabel.text = GameModeSession.IsChallenge?$"DAY {cycle.currentDay} 영업 기록":"이번 플레이 기록";
+            statusLabel.text = GameModeSession.IsChallenge?(cycle.currentTime>=ChallengeRun.ClosingHour?"주문 접수 종료 · 남은 배달을 완료하면 정산합니다.":DailyRent.Preview(cycle.currentDay)):"다음 이야기는 휴대폰의 미션 앱에서 이어집니다.";
             statusLabel.resizeTextForBestFit=true;statusLabel.resizeTextMinSize=16;statusLabel.resizeTextMaxSize=22;
             statusLabel.color=new Color(.1f,.17f,.23f);
             incomeLabel.text = Won(current ? ledger.Income : 0);
