@@ -81,7 +81,89 @@ namespace DeliveryService.Mok.Editor
             gv.Show();gv.Focus();
             GameModeSession.Select(false);if(!SessionState.GetBool(Key+".keepScene",false))SceneManager.LoadScene("PrisonChapter");for(int i=0;i<40;i++)yield return null;
             var m=UnityEngine.Object.FindFirstObjectByType<PrisonChickenMission>();var intro=m.prison.introduction;
+            if(File.Exists("Temp/PrisonCameraStartCheck")){File.Delete("Temp/PrisonCameraStartCheck");float startCheckuntil=Time.time+100;while(intro.State!=PrisonIntroduction.Stage.Yard && Time.time<startCheckuntil)yield return null;Check(intro.State==PrisonIntroduction.Stage.Yard,"normal prison introduction hands control to player");for(int i=0;i<30;i++)yield return null;ScreenCapture.CaptureScreenshot(Output+"camera-prison-start.png");for(int i=0;i<5;i++)yield return null;var startCheckview=m.prison.player.View;var startCheckat=startCheckview.transform.position;var startCheckbody=m.prison.player.GetComponent<CharacterController>();for(int i=0;i<60;i++){startCheckbody.Move(m.prison.player.transform.forward*Time.deltaTime);yield return null;}Check(Vector3.Distance(startCheckat,startCheckview.transform.position)>.3f,"gameplay camera follows walking after introduction");Check(startCheckview.enabled && !intro.filmCamera.enabled,"film camera disabled after introduction");ScreenCapture.CaptureScreenshot(Output+"camera-prison-walk.png");for(int i=0;i<10;i++)yield return null;yield break;}
             intro.StopAllCoroutines();Invoke(intro,"SetCinematic",false);Set(intro,"State",PrisonIntroduction.Stage.Complete);Set(intro,"Fade",0f);Set(intro,"Card","");Set(intro,"Subtitle","");intro.mugshotActor.gameObject.SetActive(false);
+            if(File.Exists("Temp/KeysContinuousCheck")){File.Delete("Temp/KeysContinuousCheck");m.enabled=false;var flow=PrisonKeysFlowCheck.Run();while(flow.MoveNext())yield return null;yield break;}
+            if(File.Exists("Temp/LockInteractionCheck"))
+            {
+                File.Delete("Temp/LockInteractionCheck");m.enabled=false;
+                var lockMission=UnityEngine.Object.FindFirstObjectByType<PrisonKeysMission>();lockMission.previous.enabled=false;lockMission.Begin();yield return null;lockMission.FinishTheft();
+                lockMission.keyGuard.enabled=false;var lockAgent=lockMission.keyGuard.GetComponent<UnityEngine.AI.NavMeshAgent>();lockAgent.isStopped=true;
+                lockMission.keyGuard.transform.rotation=Quaternion.LookRotation(lockMission.keyGuard.transform.position-lockMission.keyLock.transform.position);
+                var lockPlayer=m.prison.player;var lockController=lockPlayer.GetComponent<CharacterController>();lockController.enabled=false;lockPlayer.transform.position=lockMission.keyLock.transform.position-lockMission.keyLock.transform.forward*1.1f;lockController.enabled=true;
+                Check(lockMission.Interact(),"warehouse interaction starts");var action=lockMission.GetComponent<PrisonLockInteraction>();
+                for(int i=0;i<40;i++)yield return null;
+                Vector2 KeyPoint(int index){var t=lockMission.keyLock.keyModels[index].transform;var screen=lockMission.camera.WorldToScreenPoint(t.position-t.forward*.078f);return new Vector2(screen.x/Screen.width*1920,(1-screen.y/Screen.height)*1080);}
+                Check(action.Playing && lockMission.SelectingKey,"key selection active");
+                ScreenCapture.CaptureScreenshot(Output+"warehouse-key-selection.png");for(int i=0;i<4;i++)yield return null;
+                Vector2 lockMouse=KeyPoint(0);Mouse(lockMouse,false);yield return null;Mouse(lockMouse,true);yield return null;
+                for(float wait=0;wait<1.1f;wait+=Time.deltaTime){Mouse(lockMouse,false);yield return null;}
+                Check(action.State==PrisonLockInteraction.Phase.Turn,"selected key inserted with animation");
+                lockMouse=KeyPoint(0);Mouse(lockMouse,false);yield return null;Mouse(lockMouse,true);yield return null;
+                for(int i=0;i<20;i++){lockMouse.x+=4;Mouse(lockMouse,true);yield return null;}
+                Mouse(lockMouse,false);for(int i=0;i<45;i++)yield return null;
+                Check(action.State==PrisonLockInteraction.Phase.Choose && lockMission.State==PrisonKeysMission.Stage.Unlock,"wrong key rejects and returns to selection");
+                lockMouse=KeyPoint(lockMission.keyLock.correctKey);Mouse(lockMouse,false);yield return null;Mouse(lockMouse,true);yield return null;
+                lockMission.keyGuard.transform.rotation=Quaternion.LookRotation(Vector3.ProjectOnPlane(lockPlayer.transform.position-lockMission.keyGuard.transform.position,Vector3.up));yield return null;
+                Check(action.GuardLooking,"guard turning toward player gives advance warning");
+                // 삽입 중 취소해도 훔친 열쇠와 미션 단계는 유지한다.
+                UnityEngine.InputSystem.InputSystem.QueueStateEvent(UnityEngine.InputSystem.Keyboard.current,new UnityEngine.InputSystem.LowLevel.KeyboardState(UnityEngine.InputSystem.Key.F));yield return null;
+                UnityEngine.InputSystem.InputSystem.QueueStateEvent(UnityEngine.InputSystem.Keyboard.current,new UnityEngine.InputSystem.LowLevel.KeyboardState());Mouse(lockMouse,false);yield return null;
+                Check(!action.Playing && !lockMission.SelectingKey && lockPlayer.View.enabled && lockMission.State==PrisonKeysMission.Stage.Unlock,"F interrupts insertion immediately and preserves stolen keys");
+                lockMission.keyGuard.transform.rotation=Quaternion.LookRotation(lockMission.keyGuard.transform.position-lockMission.keyLock.transform.position);
+                Check(lockMission.Interact(),"lock resumes after hiding");for(int i=0;i<35;i++)yield return null;
+                lockMouse=KeyPoint(lockMission.keyLock.correctKey);Mouse(lockMouse,false);yield return null;Mouse(lockMouse,true);yield return null;
+                for(float wait=0;wait<1.1f;wait+=Time.deltaTime){Mouse(lockMouse,false);yield return null;}
+                Check(action.State==PrisonLockInteraction.Phase.Turn,"correct key fully inserted (phase="+action.State+", playing="+action.Playing+", insertion="+action.Insertion+")");
+                Time.timeScale=0;float lockProgress=action.Rotation;yield return null;yield return null;Check(action.Rotation==lockProgress,"pause holds lock progress");Time.timeScale=1;
+                ScreenCapture.CaptureScreenshot(Output+"warehouse-key-inserted.png");for(int i=0;i<5;i++)yield return null;
+                lockMouse=KeyPoint(lockMission.keyLock.correctKey);Mouse(lockMouse,false);yield return null;Mouse(lockMouse,true);yield return null;
+                for(int i=0;i<70 && action.Playing;i++){lockMouse.x+=4;Mouse(lockMouse,true);yield return null;}
+                Mouse(lockMouse,false);for(int i=0;i<70;i++)yield return null;
+                Check(!action.Playing && lockPlayer.View.enabled && !lockMission.SelectingKey,"turn completion returns movement and camera");
+                Check(lockMission.State==PrisonKeysMission.Stage.Gather && lockMission.keyLock.Opened && lockMission.supplies.All(x=>x.activeSelf),"door opens and four warehouse ingredients activate");
+                yield break;
+            }
+            if(File.Exists("Temp/PickpocketCheck"))
+            {
+                File.Delete("Temp/PickpocketCheck");m.enabled=false;
+                var keys=UnityEngine.Object.FindFirstObjectByType<PrisonKeysMission>();
+                keys.previous.enabled=false;keys.Begin();yield return null;
+                var theftPlayer=m.prison.player;var theftController=theftPlayer.GetComponent<CharacterController>();theftController.enabled=false;
+                theftPlayer.transform.position=keys.keyGuard.transform.position-keys.keyGuard.transform.forward*1.1f;theftController.enabled=true;
+                yield return null;
+                Check(keys.CanSteal(),"rear approach accepted");
+                Check(keys.Interact(),"F interaction starts physical theft");
+                var theft=keys.GetComponent<PrisonPickpocket>();
+                for(int k=0;k<40;k++)yield return null;
+                Check(theft.Playing && !theftPlayer.View.enabled,"theft camera active");
+                float heldProgress=theft.Progress;Time.timeScale=0;yield return null;yield return null;Check(theft.Progress==heldProgress && theft.Playing,"pause preserves theft progress");Time.timeScale=1;
+                ScreenCapture.CaptureScreenshot(Output+"pickpocket-preview.png");
+                for(int k=0;k<5;k++)yield return null;
+                theft.End(false);yield return null;
+                Check(keys.State==PrisonKeysMission.Stage.Steal && keys.keyRing.activeSelf && theftPlayer.View.enabled,"cancel restores camera and leaves keys on guard");
+                keys.Interact();for(int k=0;k<30;k++)yield return null;
+                Vector3 sp=keys.camera.WorldToScreenPoint(keys.keyRing.transform.position);
+                Vector2 pos=new Vector2(sp.x/Screen.width*1920,(1-sp.y/Screen.height)*1080);
+                Mouse(pos,false);yield return null;Mouse(pos,true);yield return null;
+                for(int k=0;k<240 && theft.Playing;k++){pos.y-=2;Mouse(pos,true);yield return null;}
+                Mouse(pos,false);yield return null;
+                Check(keys.State==PrisonKeysMission.Stage.Unlock && !keys.keyRing.activeSelf,"slow mouse extraction succeeds and unlock stage begins");
+                Check(theftPlayer.View.enabled && keys.keyGuard.enabled,"success restores theftPlayer view and guard patrol");
+                keys.TheftCaught();for(int k=0;k<100;k++)yield return null;
+                Check(!keys.Failing && keys.State==PrisonKeysMission.Stage.Steal && keys.keyRing.activeSelf,"checkpoint resets stolen keys and mission");
+                theftController.enabled=false;theftPlayer.transform.position=keys.keyGuard.transform.position-keys.keyGuard.transform.forward*1.1f;theftController.enabled=true;
+                Check(keys.Interact(),"retry allows another theft");for(int k=0;k<30;k++)yield return null;
+                sp=keys.camera.WorldToScreenPoint(keys.keyRing.transform.position);pos=new Vector2(sp.x/Screen.width*1920,(1-sp.y/Screen.height)*1080);
+                Mouse(pos,false);yield return null;Mouse(pos,true);yield return null;
+                for(int k=0;k<8;k++){pos.x+=k%2==0?40:-40;Mouse(pos,true);yield return null;}
+                Check(theft.Noise>=.6f,"rapid mouse movement raises guard warning");
+                for(int k=0;k<180 && theft.Playing;k++){pos.x+=k%2==0?40:-40;Mouse(pos,true);yield return null;}
+                Mouse(pos,false);for(int k=0;k<100;k++)yield return null;
+                Check(!theft.Playing && !keys.Failing && keys.State==PrisonKeysMission.Stage.Steal,"ignoring noise warning fails and resets checkpoint");
+                Check(keys.keyLock!=null && keys.supplies.Length==4,"existing warehouse lock and four ingredients retained");
+                yield break;
+            }
             if(File.Exists("Temp/DenseKitchenPreview"))
             {
                 File.Delete("Temp/DenseKitchenPreview");m.prison.player.View.enabled=false;m.camera.enabled=true;
@@ -304,25 +386,3 @@ Check(!m.cooking.rawChicken.activeSelf,"board chicken hidden before ingredients"
     }
 }
 #endif
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

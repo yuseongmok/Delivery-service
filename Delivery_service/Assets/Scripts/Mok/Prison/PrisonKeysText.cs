@@ -4,6 +4,13 @@ namespace DeliveryService.Mok
     [CreateAssetMenu(menuName="Delivery Service/감옥 소매치기 미션 대사")]
     public sealed class PrisonKeysText:ScriptableObject
     {
+        [TextArea] public string theftGrab="열쇠고리를 클릭해서 잡으세요 · 천천히 위로 당기기";
+        [TextArea] public string theftPull="천천히 위로 빼내기 · 손을 놓으면 소음이 가라앉습니다";
+        [TextArea] public string theftWarning="간수: 무슨 소리지? · F로 손을 빼고 물러나세요!";
+        [TextArea] public string lockChoose="열쇠를 클릭해 자물쇠에 넣기 · 휠로 선택";
+        [TextArea] public string lockInsert="열쇠를 조심스럽게 넣고 있습니다";
+        [TextArea] public string lockTurn="열쇠 머리를 잡고 오른쪽으로 드래그해서 돌리기 · 우클릭으로 빼기";
+        [TextArea] public string lockWarning="민기: 간수가 이쪽을 본다! 손을 빼고 숨어!";
         [Min(.1f)] public float lineSeconds=4;
         [TextArea] public string start="민기: 의무실 뒤 창고야. 간수가 등을 돌렸을 때 열쇠를 빼 오자. 나는 망을 볼게.";
         [TextArea] public string stolen="민기: 좋아! 열쇠가 여러 개네. 창고 문에 맞는 걸 찾아봐. 간수가 돌아보면 멈추고 숨어.";

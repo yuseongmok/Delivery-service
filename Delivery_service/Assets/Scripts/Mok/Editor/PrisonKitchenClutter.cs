@@ -9,7 +9,9 @@ namespace DeliveryService.Mok.Editor
 {
  [InitializeOnLoad] public static class PrisonKitchenClutter
  {
-  static PrisonKitchenClutter(){EditorApplication.update+=Poll;}
+  static PrisonKitchenClutter(){EditorApplication.update+=Poll;EditorApplication.delayCall+=ClearReviewCameras;}
+  // 과거 검수 중 예외로 남은 카메라만 정리한다. 씬의 카메라는 대상이 아니다.
+  static void ClearReviewCameras(){foreach(var c in Resources.FindObjectsOfTypeAll<Camera>())if(c && c.name=="Kitchen clutter review camera" && (c.gameObject.hideFlags & HideFlags.DontSave)!=0){c.enabled=false;UnityEngine.Object.DestroyImmediate(c.gameObject);}}
   static void Poll(){if(EditorApplication.isPlayingOrWillChangePlaymode||EditorApplication.isCompiling||EditorApplication.isUpdating||!File.Exists("Temp/PrisonKitchenClutter"))return;var mode=File.ReadAllText("Temp/PrisonKitchenClutter").Trim();File.Delete("Temp/PrisonKitchenClutter");try{if(EditorSceneManager.GetActiveScene().name!="PrisonChapter")throw new Exception("Open prison scene first");if(mode=="build")Build();else if(mode=="capture")Capture();else Inspect();}catch(Exception e){File.WriteAllText("Logs/KitchenClutter.txt",e.ToString());}}
   static void Build()
   {
@@ -77,11 +79,28 @@ namespace DeliveryService.Mok.Editor
   {
    File.WriteAllText("Logs/KitchenFloorHeight.txt",string.Join("\n",Physics.RaycastAll(new Vector3(30,2,-23),Vector3.down,5,~0,QueryTriggerInteraction.Ignore).Select(h=>h.collider.name+" "+h.point)));
    File.AppendAllText("Logs/KitchenFloorHeight.txt","\n"+string.Join("\n",UnityEngine.Object.FindObjectsByType<Renderer>(FindObjectsSortMode.None).Where(r=>r.bounds.min.x<30&&r.bounds.max.x>30&&r.bounds.min.z< -23&&r.bounds.max.z> -23&&r.bounds.center.y<1).Select(r=>r.name+" "+r.bounds)));
-   var go=new GameObject("Kitchen clutter review camera"){hideFlags=HideFlags.HideAndDontSave};var camera=go.AddComponent<Camera>();camera.fieldOfView=78;camera.nearClipPlane=.05f;camera.cullingMask=UnityEngine.Object.FindFirstObjectByType<PrisonMission>().player.View.cullingMask;
-   var map=UnityEngine.Object.FindObjectsByType<Renderer>(FindObjectsSortMode.None).FirstOrDefault(r=>r.name=="Mok Navigation Map");bool mapEnabled=map&&map.enabled;if(map)map.enabled=false;
-   var texture=new RenderTexture(1280,720,24);var previous=RenderTexture.active;camera.targetTexture=texture;
-   try{go.transform.position=new Vector3(30,2.25f,-21.2f);go.transform.LookAt(new Vector3(31,.1f,-28.5f));camera.Render();RenderTexture.active=texture;var image=new Texture2D(1280,720,TextureFormat.RGB24,false);image.ReadPixels(new Rect(0,0,1280,720),0,0);image.Apply();Directory.CreateDirectory("../Documents/Chicken_Cooking_Flow");File.WriteAllBytes("../Documents/Chicken_Cooking_Flow/kitchen-dense-floor.png",image.EncodeToPNG());UnityEngine.Object.DestroyImmediate(image);}
-   finally{if(map)map.enabled=mapEnabled;RenderTexture.active=previous;camera.targetTexture=null;texture.Release();UnityEngine.Object.DestroyImmediate(texture);UnityEngine.Object.DestroyImmediate(go);}
+   ClearReviewCameras();
+   GameObject go=null;RenderTexture texture=null;Texture2D image=null;
+   var previous=RenderTexture.active;Renderer map=null;bool mapEnabled=false;
+   try{
+    var mission=UnityEngine.Object.FindFirstObjectByType<PrisonMission>();
+    if(!mission || !mission.player || !mission.player.View)throw new Exception("Prison player camera is missing");
+    go=new GameObject("Kitchen clutter review camera"){hideFlags=HideFlags.HideAndDontSave};
+    var camera=go.AddComponent<Camera>();camera.enabled=false;
+    camera.fieldOfView=78;camera.nearClipPlane=.05f;camera.cullingMask=mission.player.View.cullingMask;
+    map=UnityEngine.Object.FindObjectsByType<Renderer>(FindObjectsSortMode.None).FirstOrDefault(r=>r.name=="Mok Navigation Map");
+    mapEnabled=map&&map.enabled;if(map)map.enabled=false;
+    texture=new RenderTexture(1280,720,24);camera.targetTexture=texture;
+    go.transform.position=new Vector3(30,2.25f,-21.2f);go.transform.LookAt(new Vector3(31,.1f,-28.5f));camera.Render();RenderTexture.active=texture;
+    image=new Texture2D(1280,720,TextureFormat.RGB24,false);image.ReadPixels(new Rect(0,0,1280,720),0,0);image.Apply();
+    Directory.CreateDirectory("../Documents/Chicken_Cooking_Flow");File.WriteAllBytes("../Documents/Chicken_Cooking_Flow/kitchen-dense-floor.png",image.EncodeToPNG());
+   }
+   finally{
+    if(map)map.enabled=mapEnabled;RenderTexture.active=previous;
+    if(go){go.GetComponent<Camera>().targetTexture=null;UnityEngine.Object.DestroyImmediate(go);}
+    if(image)UnityEngine.Object.DestroyImmediate(image);
+    if(texture){texture.Release();UnityEngine.Object.DestroyImmediate(texture);}
+   }
   }
   static void Inspect(){
    var m=UnityEngine.Object.FindFirstObjectByType<PrisonChickenMission>();string s="Station "+m.station.transform.position+" Chef "+m.chef.position+"\n";

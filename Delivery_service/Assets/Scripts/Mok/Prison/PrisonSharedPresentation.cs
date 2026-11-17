@@ -98,6 +98,7 @@ namespace DeliveryService.Mok {
             if(Vector3.Distance(feet,target.position)<3)objective.text+="\n[F] 상호작용";
         }
         void PresentKeys(){
+            if(keys.SelectingKey){objective.text="";subtitle.text="";marker.gameObject.SetActive(false);return;}
             objective.text=keys.Objective;subtitle.text=keys.Subtitle;subtitle.color=keys.Subtitle.StartsWith("민기:")?new Color(1,.74f,.4f):keys.Subtitle.StartsWith("나:")?new Color(.55f,.82f,1):new Color(1,.94f,.8f);
             var target=keys.Target;marker.gameObject.SetActive(target&&!keys.Failing);
             if(!target){if(previous)navigation.StopGuidance();previous=null;return;}
@@ -108,5 +109,3 @@ namespace DeliveryService.Mok {
         }
     }
 }
-
-

@@ -65,7 +65,8 @@ namespace DeliveryService.Mok
             }
             else if (route.Length > 0 && Time.time >= waitUntil)
             {
-                if (!agent.hasPath && !agent.pathPending && PrisonTraffic.PathBudget()) agent.SetDestination(route[waypoint].position);
+                // 일반 NPC 초기화나 카트 회피가 남긴 경로를 지정 순찰 경로로 되돌린다.
+                if (!agent.pathPending && (!agent.hasPath || (agent.destination-route[waypoint].position).sqrMagnitude>.25f) && PrisonTraffic.PathBudget()) agent.SetDestination(route[waypoint].position);
                 if (agent.hasPath && !agent.pathPending && agent.remainingDistance < .5f)
                 { agent.ResetPath(); waypoint = (waypoint + 1) % route.Length; waitUntil = Time.time + Random.Range(1f, 3f); }
             }
@@ -110,7 +111,3 @@ namespace DeliveryService.Mok
         }
     }
 }
-
-
-
-
