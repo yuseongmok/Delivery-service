@@ -32,6 +32,7 @@ namespace DeliveryService.Mok
 
         [Header("주방 입구 자동 진입 설정")]
         public GameObject kitchenEntranceWall;
+        public PrisonKitchenAccess kitchenAccess;
         public float autoEnterRadius = 3.2f;
 
         [Header("1단계: 닭 자르기 횟수 설정")]
@@ -161,7 +162,7 @@ namespace DeliveryService.Mok
             if (teamMission)
             {
                 ing.OnPickedUp();
-                PrisonAudio.Clink(ing.transform.position, 0.3f);
+                PrisonCookingAudio.Cue("pickup");
             }
         }
 
@@ -198,6 +199,7 @@ namespace DeliveryService.Mok
 
         public void CloseCustomCooking()
         {
+            PrisonCookingAudio.For(this)?.StopAction();
             IsPlayingCustomCooking = false;
             InMinigameUI = false;
             continuousShake = 0f;
@@ -212,7 +214,7 @@ namespace DeliveryService.Mok
         {
             if (Time.timeScale <= 0) return;
 
-            if (teamMission != null && player != null)
+            if (teamMission != null && player != null && kitchenAccess == null)
             {
                 if (teamMission.State != PrisonChickenMission.Stage.Waiting && kitchenEntranceWall != null && kitchenEntranceWall.activeSelf)
                 {
@@ -291,6 +293,9 @@ namespace DeliveryService.Mok
 
         private void SetupCurrentStep()
         {
+            PrisonCookingAudio.For(this)?.StopAction();
+            PrisonKnifePresentation.Attach(this); // Visual-only duplicate knife suppression.
+
             if (teamCooking && teamCooking.knife)
             {
                 teamCooking.knife.gameObject.SetActive(currentStep == CustomStep.Step1_Cut);
@@ -375,22 +380,13 @@ namespace DeliveryService.Mok
             isTracingCut = false;
             cutProgress = 0f;
 
-            // 1920x1080 화면 중앙(도마 위 영역)에서 넓은 범위로 중심점과 각도 설정
-            Vector2 center = new Vector2(960f + Random.Range(-180f, 180f), 420f + Random.Range(-90f, 90f));
-            float angleRad = Random.Range(-70f, 70f) * Mathf.Deg2Rad;
-            if (Random.value > 0.5f) angleRad += Mathf.PI; // 방향 다양화
-
-            float halfLen = Random.Range(190f, 260f); // 전체 길이 380 ~ 520px로 큼직하게!
-            Vector2 dir = new Vector2(Mathf.Cos(angleRad), Mathf.Sin(angleRad));
-
-            cutStartGui = center - dir * halfLen;
-            cutEndGui = center + dir * halfLen;
-
-            // 화면 상단 타이머나 하단 UI 패널을 침범하지 않도록 안전 클램프
-            cutStartGui.x = Mathf.Clamp(cutStartGui.x, 350f, 1570f);
-            cutStartGui.y = Mathf.Clamp(cutStartGui.y, 160f, 640f);
-            cutEndGui.x = Mathf.Clamp(cutEndGui.x, 350f, 1570f);
-            cutEndGui.y = Mathf.Clamp(cutEndGui.y, 160f, 640f);
+            if (teamCooking && teamMission && ChickenCutSurface.TryLine(teamCooking.rawChicken,
+                teamMission.camera, out Vector2 start, out Vector2 end))
+            {
+                cutStartGui = start;
+                cutEndGui = end;
+            }
+            // No screen-space random fallback: never place a cut in empty air.
         }
 
         private void GenerateThreeSafeDials()
@@ -466,12 +462,12 @@ namespace DeliveryService.Mok
 
                     if (mouse.leftButton.wasPressedThisFrame)
                     {
-                        if (Vector2.Distance(mGui, cutStartGui) <= 115f)
+                        if (Vector2.Distance(mGui, cutStartGui) <= lineLen * (115f / 450f))
                         {
                             isTracingCut = true;
                             cutProgress = 0f;
                         }
-                        else if (Vector2.Distance(mGui, cutEndGui) <= 115f)
+                        else if (Vector2.Distance(mGui, cutEndGui) <= lineLen * (115f / 450f))
                         {
                             Vector2 temp = cutStartGui; cutStartGui = cutEndGui; cutEndGui = temp;
                             isTracingCut = true;
@@ -488,7 +484,7 @@ namespace DeliveryService.Mok
                         float proj = Vector2.Dot(toMouse, lineDir);
                         float perpDist = Vector2.Distance(cutStartGui + lineDir * Mathf.Clamp(proj, 0, lineLen), mGui);
 
-                        if (perpDist > 125f)
+                        if (perpDist > lineLen * (125f / 450f))
                         {
                             isTracingCut = false;
                             cutProgress = 0f;
@@ -505,7 +501,8 @@ namespace DeliveryService.Mok
                         {
                             isTracingCut = false;
                             cutCurrentCount++;
-                            PrisonAudio.Clink(transform.position, 0.55f);
+                            PrisonCuttingUI.Success(cutStartGui, cutEndGui);
+                            PrisonCookingAudio.Cue("cut");
                             TriggerShake(0.038f, 0.18f);
                             ShowJudge($"PERFECT! ({cutCurrentCount}/{cutTargetCount})", new Color(0.25f, 1f, 0.45f));
 
@@ -526,7 +523,8 @@ namespace DeliveryService.Mok
                         if (cutProgress >= 0.78f)
                         {
                             cutCurrentCount++;
-                            PrisonAudio.Clink(transform.position, 0.55f);
+                            PrisonCuttingUI.Success(cutStartGui, cutEndGui);
+                            PrisonCookingAudio.Cue("cut");
                             TriggerShake(0.038f, 0.18f);
                             ShowJudge($"PERFECT! ({cutCurrentCount}/{cutTargetCount})", new Color(0.25f, 1f, 0.45f));
                             if (cutCurrentCount >= cutTargetCount) AdvanceToNextStep();
@@ -566,6 +564,7 @@ namespace DeliveryService.Mok
                     }
 
                     isPouringNow = mouse.leftButton.isPressed;
+                    if(isPouringNow) PrisonCookingAudio.For(this)?.Sustain(currentStep == CustomStep.Step2_Flour ? "flour" : "liquid");
                     if (isPouringNow)
                     {
                         float diff = Mathf.Abs(spoutX - bowlX);
@@ -600,7 +599,7 @@ namespace DeliveryService.Mok
                     {
                         pourFillProgress = 1.0f;
                         isPouringNow = false;
-                        PrisonAudio.Clink(transform.position, 0.55f);
+                        PrisonCookingAudio.Cue("success");
                         ShowJudge("100% 계량 성공!", new Color(0.3f, 1f, 0.4f));
                         AdvanceToNextStep();
                     }
@@ -638,6 +637,7 @@ namespace DeliveryService.Mok
 
                     float instPower = (frameDeg * 1.4f + mouseMoveDist * 1.2f) / Mathf.Max(0.0001f, Time.deltaTime);
                     currentStirPower = Mathf.Lerp(currentStirPower, instPower, Time.deltaTime * 10f);
+                    if(instPower > 10f) PrisonCookingAudio.For(this)?.Sustain("stir", currentStirPower / 600f);
 
                     if (teamCooking && teamCooking.bowl && currentStirPower > 50f)
                     {
@@ -677,7 +677,7 @@ namespace DeliveryService.Mok
                     if (stirProgress >= 1.0f)
                     {
                         stirProgress = 1.0f;
-                        PrisonAudio.Clink(transform.position, 0.6f);
+                        PrisonCookingAudio.Cue("success");
                         ShowJudge("100% 반죽 완성!", new Color(0.3f, 1f, 0.4f));
                         AdvanceToNextStep();
                     }
@@ -701,7 +701,7 @@ namespace DeliveryService.Mok
                     if (turnDir != 0 && currentDialSlot < 3)
                     {
                         dialIndices[currentDialSlot] = (dialIndices[currentDialSlot] + turnDir + 20) % 20;
-                        PrisonAudio.Clink(transform.position, 0.15f);
+                        PrisonCookingAudio.Cue("tick");
                     }
 
                     if (kb.spaceKey.wasPressedThisFrame || mouse.leftButton.wasPressedThisFrame)
@@ -713,7 +713,7 @@ namespace DeliveryService.Mok
                         {
                             dialLocked[currentDialSlot] = true;
                             currentDialSlot++;
-                            PrisonAudio.Clink(transform.position, 0.55f);
+                            PrisonCookingAudio.Cue("success");
                             TriggerShake(0.025f, 0.15f);
                             ShowJudge($"{targetNum}번 다이얼 고정!", new Color(0.3f, 1f, 0.4f), 0.7f);
                             if (currentDialSlot >= 3)
@@ -736,6 +736,7 @@ namespace DeliveryService.Mok
                 // 7. 스타포스 치킨 튀기기
                 // =========================================================================
                 case CustomStep.Step7_StarforceFry:
+                    PrisonCookingAudio.For(this)?.Sustain("fry");
                     float speedFry = 0.75f + frySuccessCount * 0.20f;
                     fryCursor += fryDir * speedFry * Time.deltaTime;
                     if (fryCursor >= 1f) { fryCursor = 1f; fryDir = -1f; }
@@ -749,7 +750,8 @@ namespace DeliveryService.Mok
                         if (fryCursor >= minZ && fryCursor <= maxZ)
                         {
                             frySuccessCount++;
-                            PrisonAudio.Clink(transform.position, 0.65f);
+                            PrisonFryingUI.Success(frySuccessCount); // Visual only.
+                            PrisonCookingAudio.Cue("flip");
                             if (teamCooking && teamCooking.rawChicken) teamCooking.rawChicken.transform.Rotate(0, 0, 180f);
 
                             if (frySuccessCount == 1) continuousShake = 0f;
@@ -782,6 +784,7 @@ namespace DeliveryService.Mok
                 // 8. 브러시로 화면 전체 빨간 양념소스 칠하기 (3번 요청 완벽 반영!)
                 // =========================================================================
                 case CustomStep.Step8_Sauce:
+                    PrisonCookingAudio.For(this)?.Brush(mGui, mouse.leftButton.isPressed, sauceCanvasRect.Contains(mGui));
                     if (mouse.leftButton.isPressed)
                     {
                         float cellW = sauceCanvasRect.width / SauceCols;
@@ -807,14 +810,11 @@ namespace DeliveryService.Mok
                             }
                         }
 
-                        if (newlyPainted && Random.value < 0.25f)
-                        {
-                            PrisonAudio.Clink(transform.position, 0.15f);
-                        }
+                        
 
                         if (saucePaintedCount >= sauceTotalCells)
                         {
-                            PrisonAudio.Clink(transform.position, 0.7f);
+                            PrisonCookingAudio.Cue("complete");
                             ShowJudge("양념 치킨 완성!!", new Color(1f, 0.3f, 0.2f), 1.0f);
                             AdvanceToNextStep();
                         }
@@ -859,6 +859,53 @@ namespace DeliveryService.Mok
                 return;
             }
 
+            // Temperature presentation is separate; input and judgement remain in this quest.
+            if (currentStep == CustomStep.Step6_SafeDialHeat)
+            {
+                PrisonFryerTemperatureUI.Draw(safeDials, dialIndices, dialLocked, currentDialSlot,
+                    bigJudgeText, bigJudgeColor, bigJudgeTimer > 0f);
+                GUI.matrix = prevMatrix;
+                return;
+            }
+            // Pouring visuals consume the existing state without changing input or scoring.
+            if (currentStep == CustomStep.Step2_Flour || currentStep == CustomStep.Step3_Water ||
+                currentStep == CustomStep.Step5_Oil)
+            {
+                PrisonPouringUI.Draw((int)currentStep, bowlX, spoutX, pourFillProgress,
+                    isPouringNow, feverSpotActive, bigJudgeText, bigJudgeColor, bigJudgeTimer > 0f);
+                GUI.matrix = prevMatrix;
+                return;
+            }
+            // Read-only spoon animation follows the angle already measured by the quest.
+            if (currentStep == CustomStep.Step4_Stir)
+            {
+                PrisonStirringUI.Draw(lastMouseAngle, stirProgress, stirRemainingTime, feedbackMessage,
+                    bigJudgeText, bigJudgeColor, bigJudgeTimer > 0f);
+                GUI.matrix = prevMatrix;
+                return;
+            }
+            if (currentStep == CustomStep.Step7_StarforceFry)
+            {
+                PrisonFryingUI.Draw(fryCursor, fryZoneCenter, fryZoneHalfWidth, frySuccessCount,
+                    bigJudgeText, bigJudgeColor, bigJudgeTimer > 0f);
+                GUI.matrix = prevMatrix;
+                return;
+            }
+            if (currentStep == CustomStep.Step8_Sauce)
+            {
+                PrisonSauceUI.Draw(sauceCanvasRect, sauceGrid, saucePaintedCount, sauceTotalCells,
+                    bigJudgeText, bigJudgeColor, bigJudgeTimer > 0f);
+                PrisonFryingUI.DrawFinalFlip();
+                GUI.matrix = prevMatrix;
+                return;
+            }
+            if (currentStep == CustomStep.Step1_Cut)
+            {
+                PrisonCuttingUI.Draw(cutStartGui, cutEndGui, cutProgress, isTracingCut, cutCurrentCount,
+                    cutTargetCount, bigJudgeText, bigJudgeColor, bigJudgeTimer > 0f);
+                GUI.matrix = prevMatrix;
+                return;
+            }
             Rect panelRect = new Rect(360f, 700f, 1200f, 330f);
             GUI.color = new Color(0.03f, 0.06f, 0.10f, 0.96f);
             GUI.DrawTexture(panelRect, Texture2D.whiteTexture);

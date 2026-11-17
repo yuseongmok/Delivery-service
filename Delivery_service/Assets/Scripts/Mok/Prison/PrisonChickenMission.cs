@@ -41,10 +41,10 @@ namespace DeliveryService.Mok {
   bool wasMoving,wasLooking,wasInteraction,wasPhone;
   bool locked;
   Quaternion chefRest;
-  void Start(){chefRest=chef.localRotation;carrying.SetActive(false);foreach(var e in enemies)e.gameObject.SetActive(false);}
+  void Start(){cooking.rawChicken.SetActive(false);chefRest=chef.localRotation;carrying.SetActive(false);foreach(var e in enemies)e.gameObject.SetActive(false);}
   void Update(){
    if(Time.timeScale<=0)return;
-   if(State==Stage.Waiting){if(prison.introduction.State==PrisonIntroduction.Stage.Complete){State=Stage.Kitchen;Say(dialogue.start,8);}return;}
+   if(State==Stage.Waiting){if(prison.introduction.State==PrisonIntroduction.Stage.Complete){State=Stage.Kitchen;PrisonCookingAudio.For(PrisonChickenQuest.Current);Say(dialogue.start,8);}return;}
    if(Time.time>noticeUntil&&State!=Stage.Conversation&&!Failing)Subtitle="";
    if(CookingActive){Remaining=Mathf.Max(0,Remaining-Time.deltaTime);if(!chefReaction)chef.localRotation=chefRest*Quaternion.Euler(Mathf.Sin(Time.time)*3,0,0);if(Remaining==0)Fail(false);}
    if(State==Stage.Carry&&(Vector3.Distance(Player.transform.position,ambushPoint.position)<5||Vector3.Distance(Player.transform.position,prison.introduction.informant.position)<7))StartAmbush();
@@ -54,9 +54,9 @@ namespace DeliveryService.Mok {
   public void Say(string text,float seconds=4){Subtitle=text;noticeUntil=Time.time+seconds;}
   public bool Use(ChickenInteraction point){
    if(!Active||Failing||!Player.CanAct||Vector3.Distance(Player.transform.position,point.transform.position)>3.6f)return false;
-   if(point.entrance&&State==Stage.Kitchen){ResetKitchen();return true;}
+   if(point.entrance&&State==Stage.Kitchen){if(PrisonChickenQuest.Current&&PrisonChickenQuest.Current.kitchenAccess)return false;ResetKitchen();return true;}
    if(!CookingActive)return false;
-   if(point.ingredient>=0){Collected[point.ingredient]=true;point.gameObject.SetActive(false);PrisonAudio.Clink(point.transform.position,.1f);return true;}
+   if(point.ingredient>=0){Collected[point.ingredient]=true;if(point.ingredient==0)cooking.rawChicken.SetActive(true);point.gameObject.SetActive(false);PrisonCookingAudio.Cue("pickup");return true;}
    if(point==station){if(!Collected.All(v=>v)){Say("재료 다섯 가지를 먼저 준비하자.");return false;}Lock(true,cookView);cooking.Begin();return true;}
    return false;
   }
@@ -134,4 +134,9 @@ namespace DeliveryService.Mok {
   }
  }
 }
+
+
+
+
+
 

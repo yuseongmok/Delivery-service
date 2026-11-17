@@ -29,10 +29,14 @@ namespace DeliveryService.Mok {
    Step.Sauce=>"좌클릭으로 양념소스를 곁들여 완성",
    _=>"치킨 완성"
   };
-  void Awake(){knifeRest=knife.localPosition;bottleRest=pourBottle.localRotation;}
-  public void ResetRecipe(){ if (PrisonChickenQuest.Current) PrisonChickenQuest.Current.ResetCustomRecipe(); Current =Step.Cut;Amount=0;Temperature=100;Cuts=Flips=0;mixed=0;hasAngle=false;Message="";rawChicken.SetActive(true);cookedChicken.SetActive(false);}
+  void Awake(){rawChicken.SetActive(false);knifeRest=knife.localPosition;bottleRest=pourBottle.localRotation;}
+  public void ResetRecipe(){ if (PrisonChickenQuest.Current) PrisonChickenQuest.Current.ResetCustomRecipe(); Current =Step.Cut;Amount=0;Temperature=100;Cuts=Flips=0;mixed=0;hasAngle=false;Message="";rawChicken.SetActive(false);cookedChicken.SetActive(false);}
   public void Begin(){openedFrame=Time.frameCount;Open=true;hasAngle=false;Message=""; if (PrisonChickenQuest.Current) PrisonChickenQuest.Current.BeginCustomCooking(); }
   public void Close(){Open=false;if(knife)knife.localPosition=knifeRest;if(pourBottle)pourBottle.localRotation=bottleRest; if(PrisonChickenQuest.Current) PrisonChickenQuest.Current.CloseCustomCooking(); }
+  void LateUpdate(){
+   bool visible=mission && mission.State==PrisonChickenMission.Stage.Cook && mission.Collected[0];
+   if(rawChicken && rawChicken.activeSelf!=visible)rawChicken.SetActive(visible);
+  }
   void Update(){
             if (PrisonChickenQuest.Current != null) return;
             if (Time.frameCount==openedFrame||!Open||Time.timeScale<=0||!mission.CookingActive)return;
@@ -58,4 +62,7 @@ namespace DeliveryService.Mok {
   void RejectMeasure(){int ingredient=Current==Step.Flour?1:Current==Step.Water?3:2;Amount=0;mission.DiscardIngredient(ingredient);Message="정량을 넘겼어요. 해당 재료를 다시 가져오세요.";mission.LeaveCooking();}
  }
 }
+
+
+
 

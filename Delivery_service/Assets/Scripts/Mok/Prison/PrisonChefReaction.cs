@@ -14,9 +14,11 @@ namespace DeliveryService.Mok
         Vector3 sleepingPosition;
         Quaternion sleepingRotation;
         bool awake;
+        public bool IsSleeping => !awake;
 
         void Awake()
         {
+            if(!GetComponent<PrisonChefSleep>())gameObject.AddComponent<PrisonChefSleep>();
             sleepingPosition = actor.position;
             sleepingRotation = actor.rotation;
         }
@@ -33,6 +35,8 @@ namespace DeliveryService.Mok
         public IEnumerator Wake(Camera camera)
         {
             awake = true;
+            var cue=PrisonCookingSounds.Current;
+            if(cue && cue.detected)AudioSource.PlayClipAtPoint(cue.detected,actor.position,.32f*SuppliedAudio.Volume);
             camera.fieldOfView = 55;
             var view = playerView ? playerView : wideShot;
             camera.transform.SetPositionAndRotation(view.position, view.rotation);
@@ -52,7 +56,7 @@ namespace DeliveryService.Mok
             var facing = camera.transform.position - actor.position;
             facing.y = 0;
             if (facing.sqrMagnitude > .01f) actor.rotation = Quaternion.LookRotation(facing);
-            PrisonAudio.Clink(actor.position, .2f);
+
             camera.transform.LookAt(head.position);
             yield return new WaitForSeconds(reactionSeconds);
             Vector3 start = camera.transform.position;
@@ -71,3 +75,4 @@ namespace DeliveryService.Mok
         }
     }
 }
+

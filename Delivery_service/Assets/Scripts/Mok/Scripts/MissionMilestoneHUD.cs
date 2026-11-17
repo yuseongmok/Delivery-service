@@ -56,6 +56,11 @@ namespace DeliveryService.Mok
             var finale=VenueFinale.Current;if(finale)Add("마지막 배달","박진웅의 계획 확인 · 행사장 탈출",()=>finale&&finale.Running,()=>finale&&(finale.Completed||finale.State==VenueFinale.Phase.Aftermath));
             if(prison)
             {
+                if(!prison.chicken)prison.chicken=FindFirstObjectByType<PrisonChickenMission>();
+                if(!prison.medicine)prison.medicine=FindFirstObjectByType<PrisonMedicineMission>();
+                if(!prison.keys)prison.keys=FindFirstObjectByType<PrisonKeysMission>();
+                if(!prison.office)prison.office=FindFirstObjectByType<PrisonOfficeSearch>();
+                if(!prison.escape)prison.escape=FindFirstObjectByType<PrisonEscapeMission>();
                 var intro=prison.mission.introduction;
                 if(intro)Add("정보거래","최형욱과 정보 거래 성립",()=>intro&&intro.State==PrisonIntroduction.Stage.Yard,()=>intro&&intro.State==PrisonIntroduction.Stage.Complete);
                 var chicken=prison.chicken;if(chicken)Add("갓 튀긴 치킨","간수장실에 관한 단서 확보",()=>chicken&&chicken.Active,()=>chicken&&chicken.State==PrisonChickenMission.Stage.Complete);
@@ -71,7 +76,7 @@ namespace DeliveryService.Mok
         }
         private bool Blocked()
         {
-            if(StoryCutsceneHUD.Active)return true;
+            if(StoryCutsceneHUD.Active || PrisonFeaturePolicy.Cooking)return true;
             if(Time.timeScale<=0||(phone&&phone.IsPhoneOpen())||(day&&day.pcUIPanel&&day.pcUIPanel.activeInHierarchy))return true;
             var f=VenueFinale.Current;if(f&&(f.Cinematic||f.State==VenueFinale.Phase.Scheduling||f.State==VenueFinale.Phase.Conversation))return true;
             var b=BrokerMission.Current;if(b&&(b.State==BrokerMission.Phase.Conversation||b.State==BrokerMission.Phase.Debrief))return true;
@@ -81,7 +86,7 @@ namespace DeliveryService.Mok
             if(StoryTutorial.Active&&StoryTutorial.Current.CurrentStep>=StoryTutorial.Step.Goodbye)return true;
             if(prison)
             {
-                if(prison.subtitle&&!string.IsNullOrWhiteSpace(prison.subtitle.text))return true;
+                if(prison.mission.player && !prison.mission.player.View.enabled)return true;
                 var i=prison.mission.introduction;if(i&&(i.State==PrisonIntroduction.Stage.Mugshot||i.State==PrisonIntroduction.Stage.Cell||i.State==PrisonIntroduction.Stage.Conversation))return true;
                 var e=prison.escape;if(e&&e.Active&&e.State!=PrisonEscapeMission.Stage.Change&&e.State!=PrisonEscapeMission.Stage.Vehicle&&e.State!=PrisonEscapeMission.Stage.Complete)return true;
             }
@@ -109,10 +114,10 @@ namespace DeliveryService.Mok
             }
             if(current==null){group.alpha=0;return;}
             elapsed+=Time.deltaTime;
-            float duration=current.complete?4.2f:3.0f;
-            float fade=Mathf.Min(Mathf.Clamp01(elapsed/.4f),Mathf.Clamp01((duration-elapsed)/.5f));
+            float duration=prison?(current.complete?1.8f:2.2f):(current.complete?4.2f:3.0f);
+            float fade=Mathf.Min(Mathf.Clamp01(elapsed/(prison?.18f:.4f)),Mathf.Clamp01((duration-elapsed)/.5f));
             group.alpha=Mathf.SmoothStep(0,1,fade);
-            card.anchoredPosition=new Vector2(0,-150-10*(1-group.alpha));
+            card.anchoredPosition=prison?new Vector2(0,-10*(1-group.alpha)):new Vector2(0,-150-10*(1-group.alpha));
             if(elapsed>=duration){current=null;group.alpha=0;}
         }
         private void Build()
@@ -121,6 +126,7 @@ namespace DeliveryService.Mok
             var scaler=gameObject.AddComponent<CanvasScaler>();scaler.uiScaleMode=CanvasScaler.ScaleMode.ScaleWithScreenSize;scaler.referenceResolution=new Vector2(1920,1080);scaler.matchWidthOrHeight=.5f;
             group=gameObject.AddComponent<CanvasGroup>();group.alpha=0;group.blocksRaycasts=false;group.interactable=false;
             card=Rect(transform,"Mission notice",620,146);card.anchorMin=card.anchorMax=new Vector2(.5f,1);card.pivot=new Vector2(.5f,1);
+            if(prison){card.anchorMin=card.anchorMax=new Vector2(.5f,.5f);card.pivot=new Vector2(.5f,.5f);}
             var bg=card.gameObject.AddComponent<HudShape>();bg.Kind=-1;bg.color=new Color(.03f,.06f,.09f,.91f);
             var line=Rect(card,"Accent",70,3);line.anchoredPosition=new Vector2(0,-13);accent=line.gameObject.AddComponent<Image>();accent.raycastTarget=false;
             status=Label(card,"Status",-24,20);title=Label(card,"Title",-53,32);result=Label(card,"Result",-98,22);
@@ -137,3 +143,5 @@ namespace DeliveryService.Mok
         }
     }
 }
+
+

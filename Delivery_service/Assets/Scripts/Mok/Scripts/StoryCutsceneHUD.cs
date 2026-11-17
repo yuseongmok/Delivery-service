@@ -47,6 +47,7 @@ namespace DeliveryService.Mok
         }
         private bool InCutscene()
         {
+            if(PrisonFeaturePolicy.Cooking)return true;
             if(prologue&&prologue.IsCinematic)return true;
             var finale=VenueFinale.Current;
             if(finale&&(finale.Cinematic||finale.State==VenueFinale.Phase.Conversation||finale.State==VenueFinale.Phase.Scheduling))return true;
@@ -59,7 +60,8 @@ namespace DeliveryService.Mok
             if(prison)
             {
                 if(prison.mission.introduction&&prison.mission.introduction.Cinematic)return true;
-                if(prison.subtitle&&!string.IsNullOrWhiteSpace(prison.subtitle.text))return true;
+                // Walking dialogue is not a cutscene; use the actual camera handoff instead.
+                if(prison.mission.player && !prison.mission.player.View.enabled)return true;
                 var escape=prison.escape;
                 if(escape&&escape.Active&&escape.State!=PrisonEscapeMission.Stage.Change&&escape.State!=PrisonEscapeMission.Stage.Vehicle&&escape.State!=PrisonEscapeMission.Stage.Complete)return true;
                 if(prison.chicken&&prison.chicken.Failing)return true;
@@ -73,3 +75,5 @@ namespace DeliveryService.Mok
         private void OnDestroy(){foreach(var group in hidden)if(group)Destroy(group);if(current==this)current=null;}
     }
 }
+
+

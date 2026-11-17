@@ -23,6 +23,7 @@ public sealed class StockAlerts : MonoBehaviour {
         emergencies.Add($"{StockCatalog.Names[article.company]} {(article.priceChange>0?"급등":"급락")} {article.priceChange*100:+0.0;-0.0;0.0}%");
     }
     void Round(){
+        if(PrisonFeaturePolicy.Active){emergencies.Clear();remaining=0;return;}
         emergency=emergencies.Count>0;
         message=emergency?"긴급 시세 알림\n"+string.Join(" · ",emergencies):"새 기업 뉴스가 도착했습니다\n핸드폰 · 매장 PC에서 확인";
         emergencies.Clear();remaining=emergency?7:4;
@@ -30,7 +31,7 @@ public sealed class StockAlerts : MonoBehaviour {
     }
     void Update(){if(Time.timeScale>0)remaining-=Time.unscaledDeltaTime;}
     void OnGUI(){
-        if(remaining<=0||Time.timeScale<=0)return;
+        if(PrisonFeaturePolicy.Active||remaining<=0||Time.timeScale<=0)return;
         var matrix=GUI.matrix;int depth=GUI.depth;var color=GUI.color;
         GUI.matrix=Matrix4x4.TRS(Vector3.zero,Quaternion.identity,new Vector3(Screen.width/1920f,Screen.height/1080f,1));GUI.depth=-15000;
         GUI.color=new Color(1,1,1,Mathf.Clamp01(remaining));
@@ -42,3 +43,4 @@ public sealed class StockAlerts : MonoBehaviour {
     void OnDestroy(){if(market!=null){market.ArticlePublished-=Article;market.NewsPublished-=Round;}if(normal!=null)Destroy(normal);if(urgent!=null)Destroy(urgent);}
 }
 }
+

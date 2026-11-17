@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 
 public class PhoneController : MonoBehaviour
@@ -53,6 +53,7 @@ public class PhoneController : MonoBehaviour
 
     private void Update()
     {
+        if (DeliveryService.Mok.PrisonFeaturePolicy.Active) { ClosePhone(); return; }
         if (phoneTransform == null)
             return;
 
@@ -90,10 +91,11 @@ public class PhoneController : MonoBehaviour
 
     public void TogglePhone()
     {
+        if (DeliveryService.Mok.PrisonFeaturePolicy.Active) { ClosePhone(); return; }
         isPhoneOpen = !isPhoneOpen;
     }
 
-    public void OpenPhone(){isPhoneOpen=true;}
+    public void OpenPhone(){if(DeliveryService.Mok.PrisonFeaturePolicy.Active){ClosePhone();return;}isPhoneOpen=true;}
 
 
     public bool IsPhoneOpen()
@@ -101,3 +103,4 @@ public class PhoneController : MonoBehaviour
         return isPhoneOpen;
     }
 }
+

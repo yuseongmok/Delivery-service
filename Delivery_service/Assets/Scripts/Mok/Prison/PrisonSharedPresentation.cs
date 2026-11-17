@@ -41,13 +41,14 @@ namespace DeliveryService.Mok {
             if(previous!=target){previous=target;route.Reset();place.entrance=target;place.mapAnchor=target;navigation.SelectPlace(place);}
             var feet=mission.player.transform.position;feet.y=mission.player.GetComponent<CharacterController>().bounds.min.y+.1f;
             StoryTargetDiamond.Place(marker,mission.player.View,route.Marker(feet,target.position,false)+Vector3.up,feet,target.name,Vector3.Distance(mission.player.transform.position,target.position));
-            if(!chicken.cooking.Open&&Vector3.Distance(feet,target.position)<3.2f)objective.text+="\n[F] 상호작용";
+            if(!chicken.cooking.Open&&Vector3.Distance(feet,target.position)<3.2f)objective.text+=chicken.State==PrisonChickenMission.Stage.Kitchen?"\n주방 안으로 들어가세요":"\n[F] 상호작용";
         }
         void LateUpdate(){
             if(!mission||!mission.player)return;
             bool menu=Time.timeScale==0;
             ui.SetActive(!menu);
             if(menu)return;
+            if(PrisonFeaturePolicy.Cooking){objective.text="";subtitle.text="";marker.gameObject.SetActive(false);return;}
             if(escape&&escape.Active){PresentEscape();return;} if(office&&office.Active){PresentOffice();return;} if(keys&&keys.Active){PresentKeys();return;}
             if(medicine&&medicine.Active){PresentMedicine();return;}
             if(chicken&&chicken.Active){PresentChicken();return;}
@@ -107,3 +108,5 @@ namespace DeliveryService.Mok {
         }
     }
 }
+
+
