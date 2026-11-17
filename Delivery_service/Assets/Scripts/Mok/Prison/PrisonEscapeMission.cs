@@ -135,6 +135,7 @@ namespace DeliveryService.Mok
             // 다음 챕터가 연결되기 전에는 탈옥 완료 화면에서 마무리한다.
             if(engine)engine.Stop();Cursor.lockState=CursorLockMode.None;Cursor.visible=true;State = Stage.Complete;
         }
+        public void DeveloperComplete(){StopAllCoroutines();if(engine)engine.Stop();State=Stage.Complete;Fade=1;Subtitle=dialogue.escaped;Cursor.lockState=CursorLockMode.None;Cursor.visible=true;}
         IEnumerator Drive(Vector3 target, float seconds)
         {
             var start = vehicle.position;

@@ -56,6 +56,13 @@ namespace DeliveryService.Mok.Editor
         [MenuItem("Delivery Service/감옥/첫 임무 배치")]
         public static void Build()
         {
+            // 기존 임무를 먼저 검사하여 중단 시 도시 씬이 추가로 열린 채 남지 않게 한다.
+            var existingPrison = SceneManager.GetSceneByName("PrisonChapter");
+            if (existingPrison.IsValid() && existingPrison.isLoaded && All(existingPrison).Any(t=>t.GetComponent<PrisonMission>()))
+            {
+                Debug.LogWarning("감옥 첫 임무가 이미 배치되어 있어 추가 배치를 건너뜁니다.");
+                return;
+            }
             Directory.CreateDirectory(Folder);
             AssetDatabase.Refresh();
             var original = SceneManager.GetActiveScene();
@@ -66,7 +73,10 @@ namespace DeliveryService.Mok.Editor
             if (cityOpened) city = EditorSceneManager.OpenScene("Assets/Scenes/JJinCity.unity",OpenSceneMode.Additive);
             var prison = SceneManager.GetSceneByName("PrisonChapter");
             if (!prison.IsValid()) prison = EditorSceneManager.OpenScene("Assets/Scenes/PrisonChapter.unity",OpenSceneMode.Additive);
-            if (All(prison).Any(t=>t.GetComponent<PrisonMission>())) throw new Exception("이미 첫 임무가 배치되어 있습니다. 씬 편집 내용을 보존하기 위해 덮어쓰지 않습니다.");
+            if (All(prison).Any(t=>t.GetComponent<PrisonMission>())) {
+                if(cityOpened) EditorSceneManager.CloseScene(city,true);
+                throw new Exception("이미 첫 임무가 배치되어 있습니다. 씬 편집 내용을 보존하기 위해 덮어쓰지 않습니다.");
+            }
             EditorSceneManager.SaveScene(prison,"../.codex-work/prison-mission/PrisonChapter.editor-before.unity",true);
             SceneManager.SetActiveScene(prison);
             foreach (var behaviour in All(prison).SelectMany(t=>t.GetComponents<MonoBehaviour>()).Where(b=>b&&b.GetType().Name=="PrisonPreviewWalker")) behaviour.gameObject.SetActive(false);

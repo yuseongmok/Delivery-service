@@ -87,7 +87,8 @@ public sealed class CitizenCombat : MonoBehaviour {
     IEnumerator GetUp() {
         yield return new WaitForSeconds(knockdownSeconds);
         // 착지점이 일시적으로 NavMesh 밖이면 다시 시도한다.
-        while(!npc.IsDead && !npc.RecoverFromKnockDown())yield return new WaitForSeconds(.5f);
+        var prisonBrawler=GetComponentInParent<PrisonBrawler>();
+        while(!npc.IsDead && !(prisonBrawler?prisonBrawler.RecoverOnSameFloor():npc.RecoverFromKnockDown()))yield return new WaitForSeconds(.5f);
         if(!npc.IsDead){nextPunch=Time.time+1f;repath=0;}
     }
     public void EndFight() {

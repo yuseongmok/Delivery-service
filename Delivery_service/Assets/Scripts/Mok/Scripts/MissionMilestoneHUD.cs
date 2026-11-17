@@ -117,7 +117,7 @@ namespace DeliveryService.Mok
             float duration=prison?(current.complete?1.8f:2.2f):(current.complete?4.2f:3.0f);
             float fade=Mathf.Min(Mathf.Clamp01(elapsed/(prison?.18f:.4f)),Mathf.Clamp01((duration-elapsed)/.5f));
             group.alpha=Mathf.SmoothStep(0,1,fade);
-            card.anchoredPosition=prison?new Vector2(0,-10*(1-group.alpha)):new Vector2(0,-150-10*(1-group.alpha));
+            card.anchoredPosition=new Vector2(0,-10*(1-group.alpha));
             if(elapsed>=duration){current=null;group.alpha=0;}
         }
         private void Build()
@@ -125,8 +125,8 @@ namespace DeliveryService.Mok
             var canvas=gameObject.AddComponent<Canvas>();canvas.renderMode=RenderMode.ScreenSpaceOverlay;canvas.sortingOrder=3;
             var scaler=gameObject.AddComponent<CanvasScaler>();scaler.uiScaleMode=CanvasScaler.ScaleMode.ScaleWithScreenSize;scaler.referenceResolution=new Vector2(1920,1080);scaler.matchWidthOrHeight=.5f;
             group=gameObject.AddComponent<CanvasGroup>();group.alpha=0;group.blocksRaycasts=false;group.interactable=false;
-            card=Rect(transform,"Mission notice",620,146);card.anchorMin=card.anchorMax=new Vector2(.5f,1);card.pivot=new Vector2(.5f,1);
-            if(prison){card.anchorMin=card.anchorMax=new Vector2(.5f,.5f);card.pivot=new Vector2(.5f,.5f);}
+            card=Rect(transform,"Mission notice",620,146);card.anchorMin=card.anchorMax=new Vector2(.5f,.72f);card.pivot=new Vector2(.5f,.5f);
+
             var bg=card.gameObject.AddComponent<HudShape>();bg.Kind=-1;bg.color=new Color(.03f,.06f,.09f,.91f);
             var line=Rect(card,"Accent",70,3);line.anchoredPosition=new Vector2(0,-13);accent=line.gameObject.AddComponent<Image>();accent.raycastTarget=false;
             status=Label(card,"Status",-24,20);title=Label(card,"Title",-53,32);result=Label(card,"Result",-98,22);
@@ -143,5 +143,6 @@ namespace DeliveryService.Mok
         }
     }
 }
+
 
 

@@ -5,6 +5,9 @@ namespace DeliveryService.Mok
     public sealed class PrisonMedicineText : ScriptableObject
     {
         [Min(.1f)] public float lineSeconds=4;
+        public string nextDayTitle="다음 날 아침";
+        [TextArea] public string nextDayLine="민기: 준비됐지? 오늘은 창고 열쇠를 구하자.";
+        [Min(.5f)] public float nextDaySeconds=2.5f;
         [TextArea] public string clue="민기: 작업실로 가 보자. 최형욱이 말한 놈은 왼팔에 파란 완장을 하고 있대.";
         [TextArea] public string wrong="죄수: 수면제? 난 그런 거 없어. 파란 완장을 한 녀석에게 물어봐.";
         [TextArea] public string[] demand={"나: 의무실에서 받은 수면제를 가지고 있다며? 우리에게 좀 넘겨줘.","죄수: 너희가 뭔데? 여기 물건은 공짜가 아니야.","민기: 좋게 말할 때 끝내자.","죄수: 얘들아, 이 신입들한테 규칙 좀 알려 줘!"};

@@ -28,8 +28,9 @@ public sealed class DeveloperCheats : MonoBehaviour {
   if(MechanicMission.Current&&!MechanicMission.Current.Completed)return 5;
   if(VenueFinale.Current&&!VenueFinale.Current.Completed)return 6;return -1;
  }
- public string SkipTarget{get{int target=Target();return target<0?"스킵할 미션 없음":new[]{"프롤로그 → 피자 가게 튜토리얼","첫 배달 튜토리얼","연락이 끊긴 중개인","특별 주문","도시의 뒷문","빚진 정비사","첫 번째 사건 · 마지막 배달"}[target];}}
+ public string SkipTarget{get{var prison=PrisonMissionSkip.Target;if(prison!=null)return prison;int target=Target();return target<0?"스킵할 미션 없음":new[]{"프롤로그 → 피자 가게 튜토리얼","첫 배달 튜토리얼","연락이 끊긴 중개인","특별 주문","도시의 뒷문","빚진 정비사","첫 번째 사건 · 마지막 배달"}[target];}}
  public bool SkipMission(){
+  if(PrisonMissionSkip.Target!=null){Close();bool done=PrisonMissionSkip.Complete();message=done?"감옥 미션 완료 처리":"진행 중인 연출·기절이 끝난 뒤 다시 사용하세요.";return done;}
   var p=BrokerMission.Current?BrokerMission.Current.player:null;var day=BrokerMission.Current?BrokerMission.Current.day:null;
   if((p&&(p.IsDown||p.WaterRescueActive||(p.avatar&&p.avatar.IsPhysical)))||PoliceControl.IsArrestInProgress||(day&&day.IsTransitioning)||(VenueFinale.Active&&VenueFinale.Current.State==VenueFinale.Phase.Scheduling)){message="기절·구조·체포·날짜 전환이 끝난 뒤 사용하세요.";return false;}
   int target=Target();string title=SkipTarget;if(target<0)return false;Close();

@@ -16,6 +16,7 @@ namespace DeliveryService.Mok {
   public Camera camera;
   public GameObject carrying;
   public ChickenAmbusher[] enemies;
+  public PrisonChickenDefense defense;
   public Stage State{get;private set;}
   public bool Active=>State!=Stage.Waiting;
   public bool CookingActive=>State==Stage.Cook&&!Failing;
@@ -26,11 +27,11 @@ namespace DeliveryService.Mok {
   public float Fade{get;private set;}
   public string Subtitle{get;private set;}="";
   public readonly bool[] Collected=new bool[5];
-  public string Objective=>Failing?"주방 입구에서 다시 준비합니다":State switch {
+  public string Objective=>Failing?(State==Stage.Fight?"치킨을 지키던 지점에서 다시 준비합니다":"주방 입구에서 다시 준비합니다"):State==Stage.Fight&&camera.enabled?"":State switch {
    Stage.Kitchen=>"갓 튀긴 치킨 · 주방으로 가기",
    Stage.Cook=>Collected.All(v=>v)?"갓 튀긴 치킨 · 조리대에서 치킨 만들기":"갓 튀긴 치킨 · 재료 모으기 ("+Collected.Count(v=>v)+"/5)",
    Stage.Carry=>"갓 튀긴 치킨 · 최형욱에게 전달하기",
-   Stage.Fight=>"치킨을 지키세요 · 죄수들을 제압하기",
+   Stage.Fight=>defense&&!defense.Ready?"치킨을 노리는 죄수들 · 민기에게 다가가기":"민기와 치킨을 지키세요 · 죄수들을 제압하기",
    Stage.Deliver=>"최형욱에게 치킨 전달하기",
    Stage.Conversation=>"최형욱과 정보 거래",
    Stage.Complete=>"갓 튀긴 치킨 완료 · 다음 단서: 작업실의 죄수",_=>""
@@ -47,11 +48,14 @@ namespace DeliveryService.Mok {
    if(State==Stage.Waiting){if(prison.introduction.State==PrisonIntroduction.Stage.Complete){State=Stage.Kitchen;PrisonCookingAudio.For(PrisonChickenQuest.Current);Say(dialogue.start,8);}return;}
    if(Time.time>noticeUntil&&State!=Stage.Conversation&&!Failing)Subtitle="";
    if(CookingActive){Remaining=Mathf.Max(0,Remaining-Time.deltaTime);if(!chefReaction)chef.localRotation=chefRest*Quaternion.Euler(Mathf.Sin(Time.time)*3,0,0);if(Remaining==0)Fail(false);}
-   if(State==Stage.Carry&&(Vector3.Distance(Player.transform.position,ambushPoint.position)<5||Vector3.Distance(Player.transform.position,prison.introduction.informant.position)<7))StartAmbush();
-   if(State==Stage.Fight&&enemies.All(e=>!e||!e.combat||e.combat.Health<=0||e.combat.Npc.IsDead)){State=Stage.Deliver;Say(dialogue.fightCleared,6);}
+   if(State==Stage.Carry&&!Failing&&(Vector3.Distance(Player.transform.position,ambushPoint.position)<5||Vector3.Distance(Player.transform.position,prison.introduction.informant.position)<7))StartAmbush();
+   if(State==Stage.Fight&&!Failing&&defense&&defense.Ready&&defense.AllSpawned&&!defense.MingiDown&&enemies.All(e=>!e||!e.combat||e.combat.Health<=0||e.combat.Npc.IsDead)){State=Stage.Deliver;defense.Victory();Say(dialogue.fightCleared,6);}
    if(State==Stage.Deliver&&!Failing&&Player.CanAct&&Vector3.Distance(Player.transform.position,prison.introduction.informant.position)<3.2f&&Keyboard.current!=null&&Keyboard.current.fKey.wasPressedThisFrame)StartCoroutine(Deliver());
   }
   public void Say(string text,float seconds=4){Subtitle=text;noticeUntil=Time.time+seconds;}
+  Renderer[] handoffHidden;
+  public void BeginHandoff(){handoffHidden=Player.GetComponentsInChildren<Renderer>().Where(r=>r.enabled&&!r.transform.IsChildOf(carrying.transform)).ToArray();foreach(var r in handoffHidden)r.enabled=false;Lock(true,Player.View.transform);}
+  public void EndHandoff(){if(handoffHidden==null)return;foreach(var r in handoffHidden)if(r)r.enabled=true;handoffHidden=null;Lock(false,null);}
   public bool Use(ChickenInteraction point){
    if(!Active||Failing||!Player.CanAct||Vector3.Distance(Player.transform.position,point.transform.position)>3.6f)return false;
    if(point.entrance&&State==Stage.Kitchen){if(PrisonChickenQuest.Current&&PrisonChickenQuest.Current.kitchenAccess)return false;ResetKitchen();return true;}
@@ -61,7 +65,7 @@ namespace DeliveryService.Mok {
    return false;
   }
   public void ResetKitchen(){
-   State=Stage.Cook;Noise=Hits=0;Remaining=dialogue.kitchenSeconds;nextNoise=Time.time+1;nextHit=0;
+   if(defense)defense.ResetDefense();State=Stage.Cook;Noise=Hits=0;Remaining=dialogue.kitchenSeconds;nextNoise=Time.time+1;nextHit=0;
    for(int i=0;i<5;i++){Collected[i]=false;ingredients[i].gameObject.SetActive(true);}
    cooking.ResetRecipe();carrying.SetActive(false);chef.localRotation=chefRest;if(chefReaction)chefReaction.Sleep();
    prison.introduction.mingi.Following=false;
@@ -69,6 +73,7 @@ namespace DeliveryService.Mok {
    Say(dialogue.start,7);
   }
   public void DiscardIngredient(int index){Collected[index]=false;ingredients[index].gameObject.SetActive(true);Say("정량 초과 · "+ingredients[index].name+" 다시 가져오기");}
+  public void DeveloperComplete(){StopAllCoroutines();if(defense)defense.ResetDefense();if(PrisonChickenQuest.Current)PrisonChickenQuest.Current.CloseCustomCooking();LeaveCooking();if(prison.introduction.meetingPresentation)prison.introduction.meetingPresentation.End();carrying.SetActive(false);foreach(var e in enemies)e.gameObject.SetActive(false);Fade=0;Failing=false;Subtitle="";State=Stage.Complete;prison.introduction.mingi.Following=true;}
   public void LeaveCooking(){cooking.Close();Lock(false,null);}
   public void FinishCooking(){LeaveCooking();State=Stage.Carry;carrying.SetActive(true);prison.introduction.mingi.Following=true;Say(dialogue.cooked);}
   public void MakeNoise(bool oil){
@@ -77,11 +82,10 @@ namespace DeliveryService.Mok {
    if(Noise>=3)Fail(false);
   }
   public void StartAmbush(){
-   if(State!=Stage.Carry)return;State=Stage.Fight;Say(dialogue.ambush,6);
-   foreach(var enemy in enemies){enemy.gameObject.SetActive(true);enemy.Begin();}
+   if(State!=Stage.Carry)return;State=Stage.Fight;defense.Begin();
   }
   public void Hit(Vector3 direction){
-   if(State!=Stage.Fight||Failing||Time.time<nextHit||DeveloperCheats.Invincible)return;
+   if(State!=Stage.Fight||!defense||!defense.Ready||Failing||Time.time<nextHit||DeveloperCheats.Invincible)return;
    var rig=Player.GetComponentInChildren<PlayerRagdoll>();if(rig&&rig.IsActive)return;
    nextHit=Time.time+3.5f;Hits++;if(rig)rig.Launch(direction*2+Vector3.up,2.2f);if(Hits>=3)Fail(true);
   }
@@ -89,16 +93,18 @@ namespace DeliveryService.Mok {
   IEnumerator Retry(bool fight){
    Failing=true;cooking.Close();foreach(var e in enemies)if(e)e.Hold=true;
    var rig=Player.GetComponentInChildren<PlayerRagdoll>();while(rig&&rig.IsActive)yield return null;
-   Lock(true,chefView);if(!fight&&chefReaction)yield return chefReaction.Wake(camera);Say(fight?dialogue.defeated:dialogue.caught,10);
+   while(defense&&defense.MingiDown)yield return null;
+   Lock(true,fight?Player.View.transform:chefView);if(!fight&&chefReaction)yield return chefReaction.Wake(camera);Say(fight?(defense&&defense.MingiHits>=3?dialogue.mingiDefeated:dialogue.defeated):dialogue.caught,10);
    yield return new WaitForSeconds(2);
    yield return Blackout(1);
-   var cc=Player.GetComponent<CharacterController>();cc.enabled=false;Player.transform.SetPositionAndRotation(checkpoint.position,Quaternion.Euler(0,checkpoint.eulerAngles.y,0));cc.enabled=true;
+   var cc=Player.GetComponent<CharacterController>();cc.enabled=false;Player.transform.SetPositionAndRotation(fight?defense.RetryPosition:checkpoint.position,fight?defense.RetryRotation:Quaternion.Euler(0,checkpoint.eulerAngles.y,0));cc.enabled=true;
    foreach(var e in enemies)if(e)e.ResetActor();
-   ResetKitchen();Lock(false,null);yield return Blackout(0);Failing=false;
+   if(fight){defense.ResetDefense();Hits=0;nextHit=0;State=Stage.Carry;carrying.SetActive(true);var m=prison.introduction.mingi;var filter=new NavMeshQueryFilter{agentTypeID=m.agent.agentTypeID,areaMask=NavMesh.AllAreas};if(NavMesh.SamplePosition(Player.transform.position-Player.transform.forward*1.5f,out var spot,2,filter))m.agent.Warp(spot.position);}
+   else ResetKitchen();Lock(false,null);yield return Blackout(0);Failing=false;
   }
   IEnumerator Blackout(float target){float from=Fade;for(float t=0;t<.55f;t+=Time.deltaTime){Fade=Mathf.Lerp(from,target,t/.55f);yield return null;}Fade=target;}
   IEnumerator Deliver(){
-   State=Stage.Conversation;carrying.SetActive(false);prison.introduction.mingi.Following=false;
+   State=Stage.Conversation;carrying.SetActive(false);if(defense)defense.ResetDefense();prison.introduction.mingi.Following=false;
    Lock(true,prison.introduction.portraitCamera);
    var meeting=prison.introduction.meetingPresentation;if(meeting){meeting.Begin(camera);yield return new WaitForSeconds(1.2f);}
    foreach(var line in dialogue.delivery){Subtitle=line;if(meeting)meeting.ShowLine(line);for(float t=0;t<dialogue.lineSeconds;t+=Time.deltaTime){if(Time.timeScale>0&&Keyboard.current!=null&&Keyboard.current.spaceKey.wasPressedThisFrame)break;yield return null;}}
@@ -134,9 +140,3 @@ namespace DeliveryService.Mok {
   }
  }
 }
-
-
-
-
-
-

@@ -29,7 +29,7 @@ namespace DeliveryService.Mok {
    Step.Sauce=>"좌클릭으로 양념소스를 곁들여 완성",
    _=>"치킨 완성"
   };
-  void Awake(){rawChicken.SetActive(false);knifeRest=knife.localPosition;bottleRest=pourBottle.localRotation;}
+  void Awake(){if(rawChicken)rawChicken.SetActive(false);if(knife)knifeRest=knife.localPosition;if(pourBottle)bottleRest=pourBottle.localRotation;}
   public void ResetRecipe(){ if (PrisonChickenQuest.Current) PrisonChickenQuest.Current.ResetCustomRecipe(); Current =Step.Cut;Amount=0;Temperature=100;Cuts=Flips=0;mixed=0;hasAngle=false;Message="";rawChicken.SetActive(false);cookedChicken.SetActive(false);}
   public void Begin(){openedFrame=Time.frameCount;Open=true;hasAngle=false;Message=""; if (PrisonChickenQuest.Current) PrisonChickenQuest.Current.BeginCustomCooking(); }
   public void Close(){Open=false;if(knife)knife.localPosition=knifeRest;if(pourBottle)pourBottle.localRotation=bottleRest; if(PrisonChickenQuest.Current) PrisonChickenQuest.Current.CloseCustomCooking(); }

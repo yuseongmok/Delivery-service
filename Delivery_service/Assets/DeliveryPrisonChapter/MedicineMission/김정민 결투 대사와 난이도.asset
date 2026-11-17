@@ -1,0 +1,58 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c02fd2d8f1c3e7849bccdaa5fe440474, type: 3}
+  m_Name: "\uAE40\uC815\uBBFC \uACB0\uD22C \uB300\uC0AC\uC640 \uB09C\uC774\uB3C4"
+  m_EditorClassIdentifier: Assembly-CSharp::DeliveryService.Mok.PrisonDuelSettings
+  bossName: "\uAE40\uC815\uBBFC"
+  challenge:
+  - "\uB098: \uAE40\uC815\uBBFC\uC774\uC9C0? \uC218\uBA74\uC81C\uB97C \uC880 \uB098\uB220
+    \uC92C\uC73C\uBA74 \uD558\uB294\uB370."
+  - "\uAE40\uC815\uBBFC: \uC2EB\uC740\uB370? \uC2E0\uC785\uC774 \uAC10\uD788 \uB204\uAD6C\uD55C\uD14C
+    \uB0B4\uB193\uC73C\uB77C\uB294 \uAC70\uC57C. \uAEBC\uC838."
+  - "\uB098: \uB9D0\uB85C\uB294 \uC548 \uB418\uACA0\uB124. \uADF8\uB7FC \uC8FC\uBA39\uC73C\uB85C
+    \uD574\uACB0\uD558\uC790."
+  - "\uBBFC\uAE30: \uC6B4\uB3D9\uC7A5\uC73C\uB85C \uB098\uC640. \uB2E4\uB978 \uB188\uB4E4\uC740
+    \uB07C\uC5B4\uB4E4\uC9C0 \uB9D0\uACE0."
+  - "\uC8C4\uC218: \uC2F8\uC6C0\uC774\uC57C! \uAE40\uC815\uBBFC\uC774 \uC2E0\uC785\uACFC
+    \uC2F8\uC6B4\uB300!"
+  arena:
+  - "\uC8C4\uC218: \uBE44\uCF1C, \uBE44\uCF1C! \uB458\uC774 \uBD99\uAC8C \uC790\uB9AC
+    \uB9CC\uB4E4\uC5B4!"
+  - "\uAE40\uC815\uBBFC: \uAC81\uB3C4 \uC5C6\uAD70. \uC5B4\uB514 \uD55C\uBC88 \uBC84\uD168
+    \uBD10."
+  - "\uBBFC\uAE30: \uC5B4\uAE68\uB97C \uC798 \uBD10! \uBC18\uB300\uB85C \uD53C\uD558\uACE0
+    \uBC14\uB85C \uBC1B\uC544\uCCD0!"
+  won: "\uBBFC\uAE30: \uB410\uC5B4! \uB5A8\uC5B4\uC9C4 \uC218\uBA74\uC81C \uCC59\uAE30\uACE0
+    \uAC00\uC790."
+  lost: "\uAE40\uC815\uBBFC\uC5D0\uAC8C \uC81C\uC555\uB2F9\uD588\uC2B5\uB2C8\uB2E4."
+  tutorial: "\u2190 Q    \uD68C\uD53C    R \u2192"
+  perfect: "\uC544\uC2AC\uC544\uC2AC\uD55C \uD68C\uD53C!"
+  counter: "\uBE48\uD2C8\uC774\uB2E4! \uC790\uB3D9 \uBC18\uACA9"
+  early: "\uB108\uBB34 \uBE68\uB790\uB2E4! \uACF5\uACA9 \uC9C1\uC804\uC5D0 \uB20C\uB7EC\uC57C
+    \uD574."
+  wrong: "\uACF5\uACA9 \uBC18\uB300\uCABD\uC73C\uB85C \uD53C\uD574\uC57C \uD574!"
+  hit: "\uD53C\uACA9! \uB2E4\uC74C \uACF5\uACA9\uC744 \uC0B4\uD3B4\uBCF4\uC138\uC694."
+  guarded: "\uC544\uC9C1 \uBE48\uD2C8\uC774 \uC5C6\uB2E4! \uD68C\uD53C \uD6C4 \uBC18\uACA9\uD558\uC138\uC694."
+  lineSeconds: 3
+  bossHealth: 120
+  playerHealth: 100
+  enemyDamage: 25
+  counterDamage: 20
+  perfectDamage: 30
+  teachingTell: 1.15
+  normalTell: 0.9
+  fastTell: 0.72
+  dodgeWindow: 0.27
+  perfectWindow: 0.12
+  counterWindow: 0.85
+  slowScale: 0.045
+  slowSeconds: 0.8

@@ -13,15 +13,18 @@ namespace DeliveryService.Mok
         float next;
         public bool Restricted(Vector3 point){foreach(var zone in zones)if(zone.Contains(point))return true;return false;}
         void Area(Vector3 point,Vector3 size){zones.Add(new Bounds(point,size));}
+        public void RefreshNow(){next=0;Update();}
         void Update(){
             if(Time.timeScale==0||Time.time<next)return;next=Time.time+.25f;zones.Clear();
             var keys=missions.keys;
-            if(keys&&keys.Active){
-                if(keys.State<=PrisonKeysMission.Stage.Gather)Area(new Vector3(-49,2,8),new Vector3(12,8,26));
+            var duelMission=missions.medicine;
+            if(duelMission&&duelMission.duel&&(duelMission.State==PrisonMedicineMission.Stage.Conversation||duelMission.State==PrisonMedicineMission.Stage.Fight)){Area(duelMission.duel.center.position,new Vector3(22,8,22));Area(duelMission.workshop.position,new Vector3(22,8,22));}
+            else if(keys&&keys.Active){
+                if(keys.State<=PrisonKeysMission.Stage.Gather||keys.State==PrisonKeysMission.Stage.Rejoin)Area(keys.keyLock.transform.position-keys.keyLock.transform.forward*5+Vector3.up,new Vector3(12,8,26));
                 else if(keys.State<=PrisonKeysMission.Stage.Load)Area(new Vector3(30,2,-27),new Vector3(30,8,18));
                 else {Area(new Vector3(0,3,-8),new Vector3(30,12,56));Area(new Vector3(-29,5,-27),new Vector3(32,8,20));}
-            }else if(missions.medicine&&missions.medicine.Active){var m=missions.medicine;Area(m.State==PrisonMedicineMission.Stage.Return?m.cell.position:m.workshop.position,new Vector3(22,8,22));}
-            else if(missions.chicken&&missions.chicken.Active){var c=missions.chicken; if(c.CookingActive||c.State==PrisonChickenMission.Stage.Kitchen)Area(new Vector3(30,2,-27),new Vector3(30,8,18));else if(c.Target)Area(c.Target.position,new Vector3(20,8,20));}
+            }else if(missions.medicine&&missions.medicine.Active){var m=missions.medicine;Area(m.duel&&m.duel.Active?m.duel.center.position:m.State==PrisonMedicineMission.Stage.Return?m.cell.position:m.workshop.position,new Vector3(22,8,22));}
+            else if(missions.chicken&&missions.chicken.Active){var c=missions.chicken; if(c.CookingActive||c.State==PrisonChickenMission.Stage.Kitchen)Area(new Vector3(30,2,-27),new Vector3(30,8,18));else if(c.State==PrisonChickenMission.Stage.Fight)Area(c.prison.player.transform.position,new Vector3(24,8,24));else if(c.Target)Area(c.Target.position,new Vector3(20,8,20));}
             else if(missions.mission.introduction&&missions.mission.introduction.Target)Area(missions.mission.introduction.Target.position,new Vector3(16,8,16));
             foreach(var slot in population.slots){
                 if(!slot.actor)continue;var go=slot.actor.gameObject;
@@ -35,3 +38,6 @@ namespace DeliveryService.Mok
         void OnDisable(){foreach(var go in hidden)if(go)go.SetActive(true);hidden.Clear();}
     }
 }
+
+
+

@@ -22,10 +22,8 @@ MonoBehaviour:
     \uBA39\uACA0\uB2E4\uB294 \uAC74 \uC544\uB2C8\uC9C0?"
   cooked: "\uBBFC\uAE30: \uCE58\uD0A8 \uC644\uC131\uC774\uB124! \uCD5C\uD615\uC6B1\uC5D0\uAC8C
     \uAC00\uC838\uAC00\uC790."
-  fightCleared: "\uBBFC\uAE30: \uC798 \uC9C0\uCF30\uC5B4. \uC774\uC81C \uCD5C\uD615\uC6B1\uC5D0\uAC8C
-    \uAC00\uC838\uAC00\uC790."
-  defeated: "\uCE58\uD0A8\uC744 \uC9C0\uD0A4\uC9C0 \uBABB\uD588\uB2E4. \uC8FC\uBC29
-    \uC785\uAD6C\uC5D0\uC11C \uB2E4\uC2DC \uC900\uBE44\uD558\uC790."
+  fightCleared: "민기: 잘 지켰어. 식기 전에 최형욱한테 가져가자."
+  defeated: "치킨을 지키지 못했습니다. 치킨을 들고 오던 지점에서 다시 도전합니다."
   delivery:
   - "\uCD5C\uD615\uC6B1: \uC774 \uB0C4\uC0C8\uB294\u2026 \uC774\uAC8C \uC5BC\uB9C8\uB9CC\uC774\uC57C!"
   - "\uB098: \uB118\uACA8\uC8FC\uAE30 \uC804\uC5D0 \uC6B0\uB9AC \uBD80\uD0C1\uBD80\uD130
@@ -46,3 +44,9 @@ MonoBehaviour:
     \uC21C\uC21C\uD788 \uB0B4\uC904 \uB140\uC11D\uC740 \uC544\uB2D0 \uAC70\uB2E4."
   - "\uB098: \uC77C\uB2E8 \uB9CC\uB098 \uBD10\uC57C\uACA0\uB124."
   lineSeconds: 4
+  smell: "죄수: 잠깐… 어디서 치킨 냄새 안 나냐? 저쪽이다!"
+  handoff: "민기: 치킨은 내가 들게. 저 녀석들 좀 막아 줘!"
+  protect: "민기와 치킨을 지키세요. 민기가 세 번 맞으면 실패합니다."
+  mingiHurt: "민기: 윽! 치킨을 노리고 있어! 이쪽도 막아 줘!"
+  mingiDefeated: "민기가 더는 버틸 수 없습니다. 치킨을 든 상태부터 다시 도전합니다."
+  encounterLineSeconds: 2.5

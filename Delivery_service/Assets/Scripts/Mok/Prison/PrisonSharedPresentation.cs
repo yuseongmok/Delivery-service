@@ -32,7 +32,8 @@ namespace DeliveryService.Mok {
             if(!target){if(previous)navigation.StopGuidance();previous=null;return;}
             if(previous!=target){previous=target;route.Reset();place.entrance=target;place.mapAnchor=target;navigation.SelectPlace(place);}
             var feet=mission.player.transform.position;feet.y=mission.player.GetComponent<CharacterController>().bounds.min.y+.1f;
-            StoryTargetDiamond.Place(marker,mission.player.View,route.Marker(feet,target.position,false)+Vector3.up,feet,"최형욱",Vector3.Distance(mission.player.transform.position,target.position));
+            StoryTargetDiamond.Place(marker,mission.player.View,route.Marker(feet,target.position,false)+Vector3.up,feet,intro.State==PrisonIntroduction.Stage.Work?(intro.firstWork.Returning?"내 방":"작업대"):"최형욱",Vector3.Distance(mission.player.transform.position,target.position));
+            if(intro.State==PrisonIntroduction.Stage.Work){if(Vector3.Distance(feet,target.position)<2.5f)objective.text+="\n"+intro.firstWork.Prompt;return;}
             if(Vector3.Distance(feet,target.position)<3.2f)objective.text+=Vector3.Distance(intro.mingi.transform.position,mission.player.transform.position)>6?"\n민기를 기다리세요":"\n[F] 최형욱과 대화";
         }
         void PresentChicken(){
@@ -79,6 +80,7 @@ namespace DeliveryService.Mok {
             if(previous!=target){previous=target;route.Reset();place.entrance=target;place.mapAnchor=target;navigation.SelectPlace(place);}
             var feet=mission.player.transform.position;feet.y=mission.player.GetComponent<CharacterController>().bounds.min.y+.1f;
             StoryTargetDiamond.Place(marker,mission.player.View,route.Marker(feet,target.position,false)+Vector3.up,feet,target.name,Vector3.Distance(mission.player.transform.position,target.position));
+            
             if(Vector3.Distance(feet,target.position)<3.2f)objective.text+=medicine.State==PrisonMedicineMission.Stage.Search?"\n죄수를 바라보고 [F] 대화":"\n[F] 상호작용";
         }
                 void PresentOffice(){
@@ -99,13 +101,16 @@ namespace DeliveryService.Mok {
         }
         void PresentKeys(){
             if(keys.SelectingKey){objective.text="";subtitle.text="";marker.gameObject.SetActive(false);return;}
-            objective.text=keys.Objective;subtitle.text=keys.Subtitle;subtitle.color=keys.Subtitle.StartsWith("민기:")?new Color(1,.74f,.4f):keys.Subtitle.StartsWith("나:")?new Color(.55f,.82f,1):new Color(1,.94f,.8f);
+            objective.text=keys.Objective;subtitle.text=keys.Subtitle;
+            subtitle.color=keys.Subtitle.StartsWith("민기:")?new Color(1,.74f,.4f):keys.Subtitle.StartsWith("간수:")?new Color(1,.64f,.5f):new Color(1,.94f,.8f);
             var target=keys.Target;marker.gameObject.SetActive(target&&!keys.Failing);
             if(!target){if(previous)navigation.StopGuidance();previous=null;return;}
             if(previous!=target){previous=target;route.Reset();place.entrance=target;place.mapAnchor=target;navigation.SelectPlace(place);}
             var feet=mission.player.transform.position;feet.y=mission.player.GetComponent<CharacterController>().bounds.min.y+.1f;
             var guide=route.Marker(feet,target.position,false);if(keys.State==PrisonKeysMission.Stage.Serve)guide=PrisonMealCart.ClearancePoint(guide);StoryTargetDiamond.Place(marker,mission.player.View,guide+Vector3.up,feet,target.name,Vector3.Distance(mission.player.transform.position,target.position));
-            if(Vector3.Distance(feet,target.position)<3&&keys.State!=PrisonKeysMission.Stage.Steal)objective.text+="\n[F] 상호작용";
+            if(Vector3.Distance(feet,target.position)<3&&!keys.LeadingGuard&&keys.State!=PrisonKeysMission.Stage.Steal&&keys.State!=PrisonKeysMission.Stage.Rejoin)objective.text+="\n[F] 상호작용";
         }
     }
 }
+
+

@@ -3,12 +3,19 @@ namespace DeliveryService.Mok {
  [CreateAssetMenu(menuName="Delivery Service/감옥 치킨 미션 대사")]
  public sealed class PrisonChickenText:ScriptableObject {
   [Min(60)] public float kitchenSeconds=360;
+  [Header("치킨 보호 전투")]
+  [TextArea] public string smell="죄수: 잠깐… 어디서 치킨 냄새 안 나냐? 저쪽이다!";
+  [TextArea] public string handoff="민기: 치킨은 내가 들게. 저 녀석들 좀 막아 줘!";
+  [TextArea] public string protect="민기와 치킨을 지키세요. 민기가 세 번 맞으면 실패합니다.";
+  [TextArea] public string mingiHurt="민기: 윽! 치킨을 노리고 있어! 이쪽도 막아 줘!";
+  [TextArea] public string mingiDefeated="민기가 더는 버틸 수 없습니다. 치킨을 든 상태부터 다시 도전합니다.";
+  [Min(.5f)] public float encounterLineSeconds=2.5f;
   [TextArea] public string start="민기: 주방장이 낮잠 자는 동안 만들자. 나는 입구를 볼게. 바닥 조심해.";
   [TextArea] public string caught="주방장: 내 신성한 주방에서 당장 꺼져!";
   [TextArea] public string ambush="죄수: 잠깐. 그 치킨 냄새… 혼자 먹겠다는 건 아니지?";
   [TextArea] public string cooked="민기: 치킨 완성이네! 최형욱에게 가져가자.";
   [TextArea] public string fightCleared="민기: 잘 지켰어. 이제 최형욱에게 가져가자.";
-  [TextArea] public string defeated="치킨을 지키지 못했다. 주방 입구에서 다시 준비하자.";
+  [TextArea] public string defeated="치킨을 지키지 못했습니다. 치킨을 들고 오던 지점에서 다시 도전합니다.";
   [TextArea] public string[] delivery={
    "최형욱: 이 냄새는… 이게 얼마만이야!",
    "나: 넘겨주기 전에 우리 부탁부터 들어주셔야지.",
@@ -24,3 +31,4 @@ namespace DeliveryService.Mok {
   [Min(1)] public float lineSeconds=4;
  }
 }
+
