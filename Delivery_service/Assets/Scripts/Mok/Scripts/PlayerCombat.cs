@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Linq;
 using UnityEngine;
 namespace DeliveryService.Mok
@@ -21,7 +21,8 @@ namespace DeliveryService.Mok
         public bool CanAct => isActiveAndEnabled && RiddenBike == null && CanReceiveHit && !IsDown && (avatar == null || !avatar.IsPhysical) && Time.timeScale > 0 && Cursor.lockState == CursorLockMode.Locked && (move == null || move.isControllable) && (phone == null || !phone.IsPhoneOpen());
         public bool WaterRescueActive { get; set; }
         public void ResetAfterWaterRescue() { HitsTaken = 0; BulletHitsTaken = 0; Health = maximumHealth; recoveryUntil = Time.time + 2; }
-        public bool CanReceiveHit => !(VenueFinale.Active && VenueFinale.Current.Cinematic) && !WaterRescueActive && (isActiveAndEnabled || RiddenBike != null) && (avatar == null || !avatar.IsPhysical) && !(GetComponent<PlayerHiding>() != null && GetComponent<PlayerHiding>().IsHidden) && !PoliceControl.IsArrestInProgress && !IsDown;
+        PrisonRecovery PrisonRecoveryHandler => PrisonMission.Current&&PrisonMission.Current.player==this?PrisonMission.Current.recovery:null;
+        public bool CanReceiveHit => !(PrisonRecoveryHandler&&PrisonRecoveryHandler.BlocksDamage) && !(VenueFinale.Active && VenueFinale.Current.Cinematic) && !WaterRescueActive && (isActiveAndEnabled || RiddenBike != null) && (avatar == null || !avatar.IsPhysical) && !(GetComponent<PlayerHiding>() != null && GetComponent<PlayerHiding>().IsHidden) && !PoliceControl.IsArrestInProgress && !IsDown;
         Camera view; PlayerMove move; PhoneController phone; MotorcycleController[] bikes; CharacterController controller;
         float nextKick, recoveryUntil; Font font;
         public MotorcycleController RiddenBike => bikes == null ? null : bikes.FirstOrDefault(b => b && b.isDriven);
@@ -101,6 +102,7 @@ namespace DeliveryService.Mok
             IsDown = true; if (avatar != null) avatar.StopKick();
             if (kickVisual != null) kickVisual.gameObject.SetActive(false);
             bool respawn = HitsTaken >= 3;
+            if(respawn&&PrisonRecoveryHandler){yield return PrisonRecoveryHandler.Recover(direction);IsDown=false;recoveryUntil=Time.time+2;RestoreControlIfUnblocked();yield break;}
             if (respawn) FindFirstObjectByType<PoliceManager>()?.CancelReplacements();
             if (respawn) foreach (var citizen in FindObjectsByType<CitizenCombat>(FindObjectsSortMode.None)) citizen.EndFight();
             Coroutine blackout = respawn && hospitalFade != null ? StartCoroutine(hospitalFade.DarkenAfter(1.5f)) : null;

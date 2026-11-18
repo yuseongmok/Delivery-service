@@ -11,6 +11,7 @@ namespace DeliveryService.Mok
         public static PrisonMission Current { get; private set; }
         public PrisonMissionText dialogue;
         public PrisonIntroduction introduction;
+        public PrisonRecovery recovery;
         public PlayerCombat player;
         public PrisonMealCart cart;
         public PrisonMissionPoint cooking, infirmary, cell;
@@ -99,6 +100,7 @@ namespace DeliveryService.Mok
         }
         public void Fail(bool assault)
         {
+            if(assault&&recovery)return; // 간수의 실제 사격과 체력 고갈로 의무실 복귀한다.
             if (Failing || (!assault && State == Phase.Complete)) return;
             StartCoroutine(Retry(assault));
         }

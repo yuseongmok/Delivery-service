@@ -1,4 +1,4 @@
-using DeliveryService.Mok.Navigation;
+﻿using DeliveryService.Mok.Navigation;
 using UnityEngine;
 using UnityEngine.UI;
 namespace DeliveryService.Mok {
@@ -10,6 +10,9 @@ namespace DeliveryService.Mok {
         public PrisonKeysMission keys;
         public PrisonOfficeSearch office;
         public PrisonEscapeMission escape;
+        public PrisonCctvMission cctv;
+        public PrisonNightMission night;
+        public PrisonTransportEscape transport;
         public GameObject ui;
         public Text objective,subtitle,marker;
         public NavigationManager navigation;
@@ -50,6 +53,9 @@ namespace DeliveryService.Mok {
             ui.SetActive(!menu);
             if(menu)return;
             if(PrisonFeaturePolicy.Cooking){objective.text="";subtitle.text="";marker.gameObject.SetActive(false);return;}
+            if(transport&&transport.Active){PresentTransport();return;}
+            if(night&&night.Active){PresentNight();return;}
+            if(cctv&&cctv.Active){PresentCctv();return;}
             if(escape&&escape.Active){PresentEscape();return;} if(office&&office.Active){PresentOffice();return;} if(keys&&keys.Active){PresentKeys();return;}
             if(medicine&&medicine.Active){PresentMedicine();return;}
             if(chicken&&chicken.Active){PresentChicken();return;}
@@ -72,6 +78,36 @@ namespace DeliveryService.Mok {
                 if(hint.Length>0)objective.text+="\n[F] "+hint;
             }
         }
+        void PresentTransport()
+        {
+            objective.text=transport.State==PrisonTransportEscape.Stage.Ready||transport.Complete?transport.Objective:"";
+            subtitle.text=transport.Subtitle;subtitle.color=new Color(1,.85f,.6f);
+            var target=transport.Target;marker.gameObject.SetActive(target);
+            if(previous){navigation.StopGuidance();previous=null;}
+            if(target)StoryTargetDiamond.Place(marker,mission.player.View,target.position+Vector3.up*.4f,mission.player.transform.position,"[F] 차량 밑으로 숨기",Vector3.Distance(mission.player.transform.position,target.position));
+        }
+        void PresentNight()
+        {
+            objective.text = night.Busy ? "" : night.Objective;
+            subtitle.text = night.Card.Length > 0 ? "" : night.Subtitle;
+            subtitle.color = new Color(1,.85f,.6f);
+            var target = night.Target;
+            marker.gameObject.SetActive(target);
+            if (!target) { if(previous) navigation.StopGuidance(); previous=null; return; }
+            if(previous!=target){previous=target;route.Reset();place.entrance=target;place.mapAnchor=target;navigation.SelectPlace(place);}
+            var feet=mission.player.transform.position;
+            feet.y=mission.player.GetComponent<CharacterController>().bounds.min.y+.1f;
+            StoryTargetDiamond.Place(marker,mission.player.View,route.Marker(feet,target.position,false)+Vector3.up*.4f,feet,target.name,Vector3.Distance(feet,target.position));
+        }
+        void PresentCctv(){
+            objective.text=cctv.Busy?"":cctv.Objective;subtitle.text=cctv.wirePanel&&cctv.wirePanel.Playing?"":cctv.Subtitle;subtitle.color=new Color(1,.85f,.6f);
+            var target=cctv.Target;marker.gameObject.SetActive(target);
+            if(!target){if(previous)navigation.StopGuidance();previous=null;return;}
+            if(previous!=target){previous=target;route.Reset();place.entrance=target;place.mapAnchor=target;navigation.SelectPlace(place);}
+            var feet=mission.player.transform.position;
+            StoryTargetDiamond.Place(marker,mission.player.View,route.Marker(feet,target.position,false)+Vector3.up*.4f,feet,target.name,Vector3.Distance(feet,target.position));
+            if(Vector3.Distance(feet,target.position)<2.5f&&(cctv.State==PrisonCctvMission.Stage.Change||cctv.State==PrisonCctvMission.Stage.Infiltrate||(cctv.State==PrisonCctvMission.Stage.Disable&&cctv.wirePanel)))objective.text+="\n[F] 상호작용";
+        }
         void PresentMedicine(){
             objective.text=medicine.Objective;subtitle.text=medicine.Subtitle;
             subtitle.color=medicine.Subtitle.StartsWith("민기:")?new Color(1,.74f,.4f):medicine.Subtitle.StartsWith("나:")?new Color(.55f,.82f,1):new Color(1,.94f,.8f);
@@ -84,7 +120,7 @@ namespace DeliveryService.Mok {
             if(Vector3.Distance(feet,target.position)<3.2f)objective.text+=medicine.State==PrisonMedicineMission.Stage.Search?"\n죄수를 바라보고 [F] 대화":"\n[F] 상호작용";
         }
                 void PresentOffice(){
-            objective.text=office.Objective;subtitle.text=office.Subtitle;subtitle.color=office.Subtitle.StartsWith("나:")?new Color(.55f,.82f,1):new Color(1,.74f,.4f);
+            objective.text=office.evidence&&office.evidence.Busy?"":office.Objective;subtitle.text=office.evidence&&office.evidence.Busy?office.evidence.Subtitle:office.Subtitle;subtitle.color=office.Subtitle.StartsWith("나:")?new Color(.55f,.82f,1):new Color(1,.74f,.4f);
             var target=office.Target;marker.gameObject.SetActive(target);if(!target){if(previous)navigation.StopGuidance();previous=null;return;}
             if(previous!=target){previous=target;route.Reset();place.entrance=target;place.mapAnchor=target;navigation.SelectPlace(place);}
             var feet=mission.player.transform.position;StoryTargetDiamond.Place(marker,mission.player.View,target.position+Vector3.up*.3f,feet,target.name,Vector3.Distance(mission.player.transform.position,target.position));

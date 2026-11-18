@@ -15,6 +15,7 @@ namespace DeliveryService.Mok
             int index = 0;
             while (!mission.Complete)
             {
+                if(mission.evidence&&!mission.evidence.Authorized){yield return null;continue;}
                 var point = mission.points[index % 2]; index++;
                 var goal = point.transform.position + point.transform.right * 1.2f - point.transform.forward * .9f;
                 if (agent.enabled && agent.isOnNavMesh)

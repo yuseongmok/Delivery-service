@@ -22,7 +22,9 @@ namespace DeliveryService.Mok
         int waypoint;
         float waitUntil, distractedUntil;
         Vector3 distraction;
-        bool shooting;
+        bool shooting;float nextShot;
+        public bool IsAggressive=>shooting;
+        public int ShotsFired {get;private set;}
         float nextThink, lastThink, yieldUntil, nextYield;
         NavMeshPath yieldPath;
         static readonly int MoveSpeed = Animator.StringToHash("MoveSpeed");
@@ -34,13 +36,15 @@ namespace DeliveryService.Mok
             agent.speed = Random.Range(1.65f, 1.95f); agent.stoppingDistance = .25f;
             nextThink = Time.time + Random.Range(0f, .2f); lastThink = Time.time;
         }
-        public void ResetWatch() { Suspicion = 0; distractedUntil = 0; }
+        public void ResetWatch() { shooting=false;Suspicion=0;distractedUntil=0;waitUntil=0;yieldUntil=0;nextShot=Time.time+1;if(npc)npc.ExternalControl=true;if(agent&&agent.enabled&&agent.isOnNavMesh){agent.ResetPath();agent.isStopped=false;} }
         public void Distract(Vector3 point) { distraction = point; distractedUntil = Time.time + distractionSeconds; Suspicion = 0; }
         void Update()
         {
             var mission = PrisonMission.Current;
-            if (!mission || !agent || !agent.isOnNavMesh || mission.Failing || shooting) return;
+            if (!mission || !agent || !agent.isOnNavMesh || mission.Failing) return;
             if (npc.IsKnockedDown || npc.IsDead) return;
+            if(Time.timeScale<=0)return;
+            if(shooting){PursueAndShoot(mission.player);return;}
             if (animator) animator.SetFloat(MoveSpeed, agent.velocity.magnitude, .15f, Time.deltaTime);
             // 배식 대상은 카트를 피해서 상호작용 범위 밖으로 이동하지 않는다.
             if(receivingMeal){if(agent.hasPath)agent.ResetPath();agent.isStopped=true;Face(mission.player.transform.position);return;}
@@ -91,18 +95,29 @@ namespace DeliveryService.Mok
         }
         public void Attacked(PlayerCombat player)
         {
-            if (shooting || !PrisonMission.Current || PrisonMission.Current.Failing) return;
-            shooting = true;
-            if (agent && agent.isOnNavMesh) agent.isStopped = true;
+            if(shooting||!PrisonMission.Current||PrisonMission.Current.Failing||PrisonMission.Current.recovery&&PrisonMission.Current.recovery.Recovering)return;
+            shooting=true;nextShot=Time.time+.35f;Suspicion=1;
+            if(npc)npc.ExternalControl=true;
             Face(player.transform.position);
-            if (gun)
-            {
-                ArmedHandPose.Apply(animator, gun, player.View.transform.position, true, false);
-                var muzzle = HandgunGeometry.Get(gun).Muzzle;
-                GunshotSound.Play(gameObject, true); GunShotFeedback.Fire(gun, muzzle);
-                PrologueTracer.Spawn(gun.TransformPoint(muzzle), player.View.transform.position, new Color(1,.65f,.2f));
-            }
-            PrisonMission.Current.Fail(true);
+        }
+        void PursueAndShoot(PlayerCombat player)
+        {
+            var recovery=PrisonMission.Current.recovery;
+            if(player.Health<=0||recovery&&recovery.Recovering){if(agent.hasPath)agent.ResetPath();return;}
+            Vector3 eye=transform.position+Vector3.up*1.5f,target=player.View.transform.position;
+            bool visible=true;
+            foreach(var hit in Physics.RaycastAll(eye,(target-eye).normalized,Vector3.Distance(eye,target),~0,QueryTriggerInteraction.Ignore))
+                if(!hit.transform.IsChildOf(transform)&&!hit.transform.IsChildOf(player.transform)){visible=false;break;}
+            float distance=Vector3.Distance(transform.position,player.transform.position);
+            if((!visible||distance>10)&&Time.time>=nextThink){nextThink=Time.time+.3f;agent.isStopped=false;if(NavMesh.SamplePosition(player.transform.position,out var p,1.5f,NavMesh.AllAreas))agent.SetDestination(p.position);}
+            else if(visible&&distance<=10){if(agent.hasPath)agent.ResetPath();agent.isStopped=true;}
+            Face(player.transform.position);if(animator)animator.SetFloat(MoveSpeed,agent.velocity.magnitude,.15f,Time.deltaTime);
+            if(!visible||distance>25||Time.time<nextShot||!gun)return;
+            nextShot=Time.time+.7f;ShotsFired++;
+            ArmedHandPose.Apply(animator,gun,target,true,false);var muzzle=HandgunGeometry.Get(gun).Muzzle;
+            GunshotSound.Play(gameObject,true);GunShotFeedback.Fire(gun,muzzle);
+            PrologueTracer.Spawn(gun.TransformPoint(muzzle),target,new Color(1,.65f,.2f));
+            player.ReceiveBullet((player.transform.position-transform.position).normalized);
         }
         void LateUpdate()
         {

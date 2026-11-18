@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace DeliveryService.Mok
 {
@@ -18,6 +18,14 @@ namespace DeliveryService.Mok
                 if(keys&&keys.State!=PrisonKeysMission.Stage.Complete)return "소매치기와 배식";
                 var office=Object.FindFirstObjectByType<PrisonOfficeSearch>();
                 if(office&&!office.Complete)return "간수장실 조사";
+                var cctv=Object.FindFirstObjectByType<PrisonCctvMission>();
+                if(cctv&&cctv.State!=PrisonCctvMission.Stage.Complete)return "CCTV 무력화";
+                var night=Object.FindFirstObjectByType<PrisonNightMission>();
+                if(night&&!night.Complete)return "야간 잠입";
+                var transport=Object.FindFirstObjectByType<PrisonTransportEscape>();
+                if(transport)return transport.Complete?"스킵할 미션 없음":"호송차량 탈출";
+                if(night)return "스킵할 미션 없음";
+                if(cctv)return "스킵할 미션 없음";
                 var escape=Object.FindFirstObjectByType<PrisonEscapeMission>();
                 return escape&&escape.State!=PrisonEscapeMission.Stage.Complete?"탈옥":"스킵할 미션 없음";
             }
@@ -41,7 +49,11 @@ namespace DeliveryService.Mok
                 case "간수장실 조사":
                     var office=Object.FindFirstObjectByType<PrisonOfficeSearch>();
                     if(office.GetComponent<PrisonOfficePickup>().Busy)return false;
+                    if(office.evidence)office.evidence.DeveloperComplete();
                     office.Collect(PrisonOfficePoint.Kind.Uniforms);office.Collect(PrisonOfficePoint.Kind.VehicleKey);office.Collect(PrisonOfficePoint.Kind.Password);return true;
+                case "CCTV 무력화":Object.FindFirstObjectByType<PrisonCctvMission>().DeveloperComplete();return true;
+                case "야간 잠입":Object.FindFirstObjectByType<PrisonNightMission>().DeveloperComplete();return true;
+                case "호송차량 탈출":Object.FindFirstObjectByType<PrisonTransportEscape>().DeveloperComplete();return true;
                 case "탈옥":Object.FindFirstObjectByType<PrisonEscapeMission>().DeveloperComplete();return true;
                 default:return false;
             }

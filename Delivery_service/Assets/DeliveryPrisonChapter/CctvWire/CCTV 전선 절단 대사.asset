@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 432ca092b5d37944385af2c9297fcc95, type: 3}
+  m_Name: "CCTV \uC804\uC120 \uC808\uB2E8 \uB300\uC0AC"
+  m_EditorClassIdentifier: Assembly-CSharp::DeliveryService.Mok.PrisonCctvWireText
+  title: "CCTV \uC804\uC6D0 \uCC28\uB2E8"
+  hint: "\uBBFC\uAE30: \uBC30\uC120\uB3C4\uB97C \uBD10. \uC601\uC0C1 \uC804\uC6D0\uB9CC
+    \uB04A\uC5B4\uC57C \uD574. \uB2E4\uB978 \uC120\uC740 \uACBD\uBCF4 \uD68C\uB85C\uC57C."
+  controls: "\uB9C8\uC6B0\uC2A4\uB85C \uC804\uC120 \uC120\uD0DD \xB7 \uC88C\uD074\uB9AD\uC73C\uB85C
+    \uC808\uB2E8    |    F \uB3CC\uC544\uAC00\uAE30"
+  failed: "\uACBD\uBCF4 \uD68C\uB85C\uAC00 \uB04A\uACBC\uC2B5\uB2C8\uB2E4. \uBC30\uC804\uD310
+    \uC55E\uBD80\uD130 \uB2E4\uC2DC \uC2DC\uB3C4\uD569\uB2C8\uB2E4."
+  retry: "\uBBFC\uAE30: \uBC30\uC120\uB3C4\uC758 \uB2E8\uC790 \uBC88\uD638\uB97C
+    \uD655\uC778\uD574. \uC601\uC0C1 \uC804\uC6D0\uC5D0 \uC5F0\uACB0\uB41C \uC120\uC744
+    \uB04A\uC5B4."
+  success: "\uBBFC\uAE30: \uB410\uC5B4. \uCE74\uBA54\uB77C \uD654\uBA74\uB3C4 \uAEBC\uC84C\uC5B4.
+    \uC774\uC81C \uB098\uAC00\uC790."

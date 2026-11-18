@@ -8,6 +8,7 @@ namespace DeliveryService.Mok
     {
         public enum Stage { Waiting, Change, Vehicle, Boarding, Checkpoint, Retry, Leaving, Complete }
         public PrisonOfficeSearch previous;
+        public bool cctvRoute;
         public PrisonEscapeText dialogue;
         public Transform changePoint, vehicle, boardingPoint, gateLeft, gateRight, gateStop, exitPoint;
         public Camera filmCamera;
@@ -32,6 +33,7 @@ namespace DeliveryService.Mok
         Quaternion cameraRotation;
         void Update()
         {
+            if(cctvRoute)return;
             if(engine){engine.volume=.16f*SuppliedAudio.Volume;if(Time.timeScale<=0)engine.Pause();else if(!engine.isPlaying&&State!=Stage.Complete)engine.UnPause();}
             if (Time.timeScale <= 0) return;
             if (State == Stage.Waiting)
@@ -51,6 +53,7 @@ namespace DeliveryService.Mok
         }
         public bool Interact()
         {
+            if(cctvRoute)return false;
             if (!Target || !Player.CanAct || Vector3.Distance(Player.transform.position, Target.position) > 3) return false;
             if (State == Stage.Change) { StartCoroutine(Change()); return true; }
             if (State == Stage.Vehicle)
@@ -73,6 +76,7 @@ namespace DeliveryService.Mok
             yield return Black(0);
             Lock(false); State = Stage.Vehicle;
         }
+        public void ApplyDisguise(){Dress(Player.transform);Dress(Friend.transform);Disguised=true;Friend.Following=true;}
         void Dress(Transform actor)
         {
             foreach (var r in actor.GetComponentsInChildren<Renderer>(true))

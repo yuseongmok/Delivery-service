@@ -13,8 +13,11 @@ public sealed class PrisonOfficePoint:MonoBehaviour,IInteractable {
  bool moving;
  public void Interact(ToppingInventory inventory){TryInteract();}
  public bool TryInteract(){
+  if(mission.cctv&&kind!=Kind.Uniforms)return false;
   if(!mission.Active||moving||mission.GetComponent<PrisonOfficePickup>().Busy||Time.timeScale<=0)return false;
   var p=mission.previous.previous.prison.player;if(!p.CanAct||Vector3.Distance(p.transform.position,transform.position)>3)return false;
+  if(mission.evidence&&mission.evidence.Busy)return false;
+  if(mission.evidence&&!mission.evidence.Authorized&&kind!=Kind.Password){mission.Say(mission.evidence.dialogue.lockedSupplies);return false;}
   if(kind==Kind.Password){mission.Collect(kind);return true;}
   if(mission.Found(kind))return false;
   if(!Opened){StartCoroutine(Open());return true;}

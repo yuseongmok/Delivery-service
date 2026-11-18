@@ -24,6 +24,7 @@ namespace DeliveryService.Mok
         public PrisonGuard warden;
         public Camera camera;
         public PizzaMaker maker;
+        public PrisonPizzaService serving;
         public Oven oven;
         public PizzaToppingData[] ingredients;
         public Stage State{get;private set;}
@@ -35,8 +36,8 @@ namespace DeliveryService.Mok
         public int Gathered{get;private set;}
         public int Served{get;private set;}
         public string Subtitle{get;private set;}="";
-        public Transform Target=>LeadingGuard?Prison.introduction.mingi.transform:State==Stage.Rejoin?Prison.introduction.mingi.transform:State==Stage.Steal?keyGuard.transform:State==Stage.Unlock?keyLock.transform:State==Stage.Gather?supplies.FirstOrDefault(g=>g.activeSelf)?.transform:State==Stage.Cook?kitchen:State==Stage.Load?loadPoint:State==Stage.Serve?(Served<diners.Length?diners[Served].transform:officeDoor):State==Stage.Office?warden.transform:null;
-        public string Objective=>LeadingGuard?"민기가 간수를 유도하는 동안 기다리기":Failing?"창고 앞에서 다시 시도합니다":State switch{Stage.Steal=>theft && theft.Playing?"소매치기 · 소리를 내지 않고 열쇠 빼내기":"소매치기 · 간수의 움직임을 살피고 뒤에서 [F] 열쇠 살펴보기",Stage.Unlock=>"소매치기 · 소리를 내지 않고 창고 문 열기",Stage.Gather=>$"소매치기 · 피자 재료 챙기기 ({Gathered}/4)",Stage.Rejoin=>"골목 입구에서 민기와 합류하기",Stage.Cook=>"페페로니 피자를 만들어 오븐에서 굽기",Stage.Load=>"구운 피자를 배식카트에 싣기",Stage.Serve=>$"피자 배식 · 지정 간수에게 전달하기 ({Served}/{diners.Length})",Stage.Office=>"간수장실 · 염윤태에게 피자 전달하기",Stage.Conversation=>"대화 중",Stage.Complete=>"소매치기 완료 · 간수장실 잠입 성공",_=>""};
+        public Transform Target=>serving&&serving.Meal&&!serving.Carrying&&(State==Stage.Serve||State==Stage.Office)?serving.Meal.transform:LeadingGuard?Prison.introduction.mingi.transform:State==Stage.Rejoin?Prison.introduction.mingi.transform:State==Stage.Steal?keyGuard.transform:State==Stage.Unlock?keyLock.transform:State==Stage.Gather?supplies.FirstOrDefault(g=>g.activeSelf)?.transform:State==Stage.Cook?kitchen:State==Stage.Load?loadPoint:State==Stage.Serve?(Served<diners.Length?diners[Served].transform:officeDoor):State==Stage.Office?warden.transform:null;
+        public string Objective=>LeadingGuard?"민기가 간수를 유도하는 동안 기다리기":Failing?"창고 앞에서 다시 시도합니다":State switch{Stage.Steal=>theft && theft.Playing?"소매치기 · 소리를 내지 않고 열쇠 빼내기":"소매치기 · 간수의 움직임을 살피고 뒤에서 [F] 열쇠 살펴보기",Stage.Unlock=>"소매치기 · 소리를 내지 않고 창고 문 열기",Stage.Gather=>$"소매치기 · 피자 재료 챙기기 ({Gathered}/4)",Stage.Rejoin=>"골목 입구에서 민기와 합류하기",Stage.Cook=>serving?"수면제를 재료처럼 넣고 페페로니 피자 굽기":"페페로니 피자를 만들어 오븐에서 굽기",Stage.Load=>serving?"구운 피자를 접시에 담기":"구운 피자를 배식카트에 싣기",Stage.Serve=>$"피자 배식 · 지정 간수에게 전달하기 ({Served}/{diners.Length})",Stage.Office=>"간수장실 · 염윤태에게 피자 전달하기",Stage.Conversation=>"대화 중",Stage.Complete=>"소매치기 완료 · 간수장실 잠입 성공",_=>""};
         PrisonMission Prison=>previous.prison;
         PlayerCombat Player=>Prison.player;
         ToppingInventory Inventory=>Player.GetComponent<ToppingInventory>();
@@ -47,7 +48,7 @@ namespace DeliveryService.Mok
         Vector3 guardStart;Quaternion guardRotation;
         void Start(){guardStart=keyGuard.transform.position;guardRotation=keyGuard.transform.rotation;keyGuard.gameObject.SetActive(false);cookingSupplies.SetActive(false);pizzaOnCart.SetActive(false);foreach(var g in supplies)g.SetActive(false);foreach(var g in diners)g.gameObject.SetActive(false);warden.gameObject.SetActive(false);}
         void Update(){
-            if(Time.timeScale<=0||lockCancelledFrame==Time.frameCount)return;
+            if(Time.timeScale<=0||Player.IsDown||lockCancelledFrame==Time.frameCount)return;
             if(State==Stage.Waiting){if(previous.State==PrisonMedicineMission.Stage.Complete)Begin();return;}
             if(!busy&&Time.time>noticeUntil)Subtitle="";
             if(Failing||busy)return;
@@ -63,6 +64,7 @@ namespace DeliveryService.Mok
             if(theft && theft.Playing) return;
             if(State==Stage.Cook&&Inventory.HeldPizza){var pizza=Inventory.HeldPizza.GetComponent<Pizza>();if(pizza&&ValidPizza(pizza)){State=Stage.Load;Say(dialogue.baked);}}
             if(State==Stage.Load&&!Inventory.HeldPizza)State=Stage.Cook;
+            if(State==Stage.Load&&serving&&Inventory.HeldPizza){StartCoroutine(LoadPizza());return;}
             if(SelectingKey)return;
             if(Player.CanAct&&Keyboard.current!=null&&Keyboard.current.fKey.wasPressedThisFrame)Interact();
         }
@@ -71,7 +73,7 @@ namespace DeliveryService.Mok
         IEnumerator DeveloperFinish(){
             if(diversion)diversion.Rejoin();
             if(theft&&theft.Playing)theft.End(false);CancelLock();busy=true;
-            keyRing.SetActive(false);pizzaOnCart.SetActive(false);foreach(var s in supplies)s.SetActive(false);
+            keyRing.SetActive(false);pizzaOnCart.SetActive(false);if(serving)serving.Finish();foreach(var s in supplies)s.SetActive(false);
             foreach(var g in diners){g.gameObject.SetActive(false);}warden.gameObject.SetActive(false);
             Gathered=supplies.Length;Served=diners.Length;Suspicion=0;
             yield return officeDoor.GetComponent<PrisonOfficeEntrance>().Open();
@@ -85,7 +87,7 @@ namespace DeliveryService.Mok
         public void FinishLock(){if(State==Stage.Unlock&&!Failing&&!busy)StartCoroutine(OpenStore());}
         public void TheftCaught(){if(!Failing)StartCoroutine(Retry());}
         public bool CanSteal(){Vector3 delta=Vector3.ProjectOnPlane(Player.transform.position-keyGuard.transform.position,Vector3.up);return delta.magnitude<1.7f&&Vector3.Dot(keyGuard.transform.forward,delta.normalized)<-.35f&&!keyGuard.CanSee(Player);}
-        public bool ValidPizza(Pizza pizza)=>pizza.IsBaked&&ingredients.All(i=>pizza.currentToppings.Contains(i.toppingName));
+        public bool ValidPizza(Pizza pizza)=>pizza.IsBaked&&ingredients.All(i=>pizza.currentToppings.Contains(i.toppingName))&&(!serving||serving.Seasoned(pizza));
         bool Near(Transform target,float range=2.8f)=>Vector3.Distance(Player.transform.position,target.position)<range;
         public bool Interact(){
             if(busy||Failing||!Player.CanAct)return false;
@@ -93,14 +95,25 @@ namespace DeliveryService.Mok
             if(State==Stage.Unlock&&Near(keyLock.transform,2.1f)){SelectingKey=true;if(!lockInteraction)lockInteraction=GetComponent<PrisonLockInteraction>();if(!lockInteraction)lockInteraction=gameObject.AddComponent<PrisonLockInteraction>();lockInteraction.Begin(this);return true;}
             if(State==Stage.Gather){foreach(var item in supplies)if(item.activeSelf&&Near(item.transform)){item.SetActive(false);Gathered++;PrisonCookingAudio.Cue("pickup");if(Gathered==supplies.Length){State=Stage.Rejoin;Say(dialogue.meetAgain,8);}return true;}}
             if(State==Stage.Load&&Near(loadPoint)&&Inventory.HeldPizza){var pizza=Inventory.HeldPizza.GetComponent<Pizza>();if(!pizza||!ValidPizza(pizza))return false;StartCoroutine(LoadPizza());return true;}
-            if(State==Stage.Serve&&Near(diners[Served].transform)&&Vector3.Distance(Prison.cart.transform.position,diners[Served].transform.position)<4){StartCoroutine(Serve());return true;}
-            if(State==Stage.Office&&Near(warden.transform)){StartCoroutine(Warden());return true;}return false;
+            if(State==Stage.Serve&&Near(diners[Served].transform)&&(serving?serving.Carrying:Vector3.Distance(Prison.cart.transform.position,diners[Served].transform.position)<4)){StartCoroutine(Serve());return true;}
+            if(State==Stage.Office&&Near(warden.transform)&&(!serving||serving.Carrying)){StartCoroutine(Warden());return true;}return false;
         }
         IEnumerator OpenStore(){busy=true;SelectingKey=false;Lock(false);yield return keyLock.Open();foreach(var s in supplies)s.SetActive(true);if(!diversion)diversion=gameObject.AddComponent<PrisonWarehouseDiversion>();yield return diversion.LeadAway(this);State=Stage.Gather;Suspicion=0;busy=false;}
-        IEnumerator LoadPizza(){busy=true;Prison.cart.StopPushing();var food=Inventory.RemovePizza();food.transform.SetParent(pizzaOnCart.transform,false);food.transform.localPosition=Vector3.zero;food.transform.localRotation=Quaternion.identity;food.transform.localScale=Vector3.one*.75f;food.GetComponent<Pizza>().SetHeld(false);foreach(var collider in food.GetComponentsInChildren<Collider>())collider.enabled=false;Lock(true);yield return Lines(dialogue.load);pizzaOnCart.SetActive(true);foreach(var guard in diners){guard.receivingMeal=true;guard.gameObject.SetActive(true);}warden.gameObject.SetActive(true);Lock(false);State=Stage.Serve;busy=false;}
-        IEnumerator Serve(){busy=true;Prison.cart.StopPushing();var guard=diners[Served];if(Served==diners.Length-1){Lock(true);camera.transform.LookAt(guard.transform.position+Vector3.up*1.4f);yield return Lines(dialogue.officer);Lock(false);}else{Say(dialogue.served);yield return new WaitForSeconds(1.3f);}yield return Sleep(guard);Served++;if(Served==diners.Length){yield return officeDoor.GetComponent<PrisonOfficeEntrance>().Open();State=Stage.Office;Say(dialogue.officeOpen);}busy=false;}
-        IEnumerator Warden(){busy=true;Lock(true);camera.transform.LookAt(warden.transform.position+Vector3.up*1.4f);yield return Lines(dialogue.warden.Take(Mathf.Max(0,dialogue.warden.Length-1)).ToArray());yield return Sleep(warden,dialogue.warden.LastOrDefault());pizzaOnCart.SetActive(false);Say(dialogue.end,8);yield return new WaitForSeconds(dialogue.lineSeconds);Lock(false);State=Stage.Complete;busy=false;}
-        IEnumerator Sleep(PrisonGuard guard,string taste=null){var eating=guard.GetComponent<PrisonPizzaEating>();if(eating){yield return eating.Play(pizzaOnCart.transform,()=>{if(!string.IsNullOrEmpty(taste))Say(taste,4);});}else{guard.enabled=false;guard.gun?.gameObject.SetActive(false);guard.GetComponent<NPCControl>().KnockDown(Vector3.zero,0);}}
+        IEnumerator LoadPizza(){busy=true;if(serving){serving.Plate();Lock(true);yield return Lines(dialogue.load);foreach(var guard in diners){guard.receivingMeal=true;guard.gameObject.SetActive(true);}warden.gameObject.SetActive(true);Lock(false);State=Stage.Serve;busy=false;yield break;}Prison.cart.StopPushing();var food=Inventory.RemovePizza();food.transform.SetParent(pizzaOnCart.transform,false);food.transform.localPosition=Vector3.zero;food.transform.localRotation=Quaternion.identity;food.transform.localScale=Vector3.one*.75f;food.GetComponent<Pizza>().SetHeld(false);foreach(var collider in food.GetComponentsInChildren<Collider>())collider.enabled=false;Lock(true);yield return Lines(dialogue.load);pizzaOnCart.SetActive(true);foreach(var guard in diners){guard.receivingMeal=true;guard.gameObject.SetActive(true);}warden.gameObject.SetActive(true);Lock(false);State=Stage.Serve;busy=false;}
+        IEnumerator Serve(){
+            busy=true;if(!serving)Prison.cart.StopPushing();var guard=diners[Served];bool officer=Served==diners.Length-1;
+            if(officer){Lock(true);yield return FrameGuard(guard);yield return Lines(dialogue.officer.Take(3).ToArray());}
+            else{Say(dialogue.served);yield return new WaitForSeconds(1.3f);}
+            yield return Sleep(guard,officer?dialogue.officerTaste:null);Served++;
+            if(officer){yield return new WaitForSeconds(.4f);Lock(false);}
+            if(Served==diners.Length){yield return officeDoor.GetComponent<PrisonOfficeEntrance>().Open();State=Stage.Office;Say(dialogue.officeOpen);}busy=false;
+        }
+        IEnumerator FrameGuard(PrisonGuard guard){
+            var begin=camera.transform.rotation;var end=Quaternion.LookRotation(guard.transform.position+Vector3.up*1.4f-camera.transform.position);
+            for(float t=0;t<.45f;t+=Time.deltaTime){camera.transform.rotation=Quaternion.Slerp(begin,end,Mathf.SmoothStep(0,1,t/.45f));yield return null;}
+        }
+        IEnumerator Warden(){busy=true;Lock(true);yield return FrameGuard(warden);yield return Lines(dialogue.warden.Take(Mathf.Max(0,dialogue.warden.Length-1)).ToArray());yield return Sleep(warden,dialogue.warden.LastOrDefault());pizzaOnCart.SetActive(false);if(serving)serving.Finish();Say(dialogue.end,8);yield return new WaitForSeconds(dialogue.lineSeconds);Lock(false);State=Stage.Complete;busy=false;}
+        IEnumerator Sleep(PrisonGuard guard,string taste=null){var eating=guard.GetComponent<PrisonPizzaEating>();if(eating){yield return eating.Play(serving?serving.Tray:pizzaOnCart.transform,()=>{if(!string.IsNullOrEmpty(taste))Say(taste,4);});}else{guard.enabled=false;guard.gun?.gameObject.SetActive(false);guard.GetComponent<NPCControl>().KnockDown(Vector3.zero,0);}}
         IEnumerator Retry(){if(diversion)diversion.ResetDiversion();if(theft&&theft.Playing)theft.End(false);CancelLock();Failing=true;SelectingKey=false;keyLock.Cancel();Say(dialogue.caught,8);Lock(true);yield return Blackout(1);var cc=Player.GetComponent<CharacterController>();cc.enabled=false;Player.transform.SetPositionAndRotation(checkpoint.position,checkpoint.rotation);cc.enabled=true;var agent=keyGuard.GetComponent<UnityEngine.AI.NavMeshAgent>();agent.Warp(guardStart);agent.ResetPath();keyGuard.transform.rotation=guardRotation;keyGuard.ResetWatch();keyLock.ResetDoor();State=Stage.Steal;TheftProgress=Suspicion=0;detectionGraceUntil=Time.time+1.5f;keyRing.SetActive(true);Lock(false);yield return Blackout(0);Failing=false;}
         IEnumerator Blackout(float value){float from=Fade;for(float t=0;t<.5f;t+=Time.deltaTime){Fade=Mathf.Lerp(from,value,t/.5f);yield return null;}Fade=value;}
         IEnumerator Lines(string[] lines){foreach(var line in lines){Subtitle=line;for(float t=0;t<dialogue.lineSeconds;t+=Time.deltaTime){if(Time.timeScale>0&&Keyboard.current!=null&&Keyboard.current.spaceKey.wasPressedThisFrame)break;yield return null;}}Subtitle="";}

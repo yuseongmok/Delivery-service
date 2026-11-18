@@ -36,7 +36,8 @@ public sealed class PrisonPizzaEating:MonoBehaviour {
   spine.rotation=Quaternion.AngleAxis(tired*28,transform.right)*spine.rotation;
   head.rotation=Quaternion.AngleAxis(tired*32+((elapsed>eatStart&&elapsed<eatStart+chewSeconds)?Mathf.Sin(elapsed*10)*2:0),transform.right)*head.rotation;
   Vector3 chest=spine.position+Vector3.up*.12f+transform.forward*.38f+transform.right*.12f;
-  Vector3 mouth=head.position+transform.forward*.30f-Vector3.up*.15f;
+  var visual=GetComponentInChildren<PrisonWardenVisual>();var mouthHead=visual&&visual.visualAnimator?visual.visualAnimator.GetBoneTransform(HumanBodyBones.Head):head;
+  Vector3 mouth=mouthHead.position+transform.forward*.24f-Vector3.up*.10f;
   Vector3 target;
   if(elapsed<receiveSeconds)target=Vector3.Lerp(source,chest,Mathf.SmoothStep(0,1,elapsed/receiveSeconds));
   else if(elapsed<eatStart)target=Vector3.Lerp(chest,mouth,Mathf.SmoothStep(0,1,(elapsed-receiveSeconds)/raiseSeconds));

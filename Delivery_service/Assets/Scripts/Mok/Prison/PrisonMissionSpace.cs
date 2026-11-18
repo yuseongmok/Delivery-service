@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 namespace DeliveryService.Mok
@@ -18,7 +18,9 @@ namespace DeliveryService.Mok
             if(Time.timeScale==0||Time.time<next)return;next=Time.time+.25f;zones.Clear();
             var keys=missions.keys;
             var duelMission=missions.medicine;
-            if(duelMission&&duelMission.duel&&(duelMission.State==PrisonMedicineMission.Stage.Conversation||duelMission.State==PrisonMedicineMission.Stage.Fight)){Area(duelMission.duel.center.position,new Vector3(22,8,22));Area(duelMission.workshop.position,new Vector3(22,8,22));}
+            if(missions.night&&missions.night.Active)Area(new Vector3(0,3,32),new Vector3(96,12,36));
+            else if(missions.cctv&&missions.cctv.Active)Area(missions.cctv.console.position,new Vector3(24,6,18));
+            else if(duelMission&&duelMission.duel&&(duelMission.State==PrisonMedicineMission.Stage.Conversation||duelMission.State==PrisonMedicineMission.Stage.Fight)){Area(duelMission.duel.center.position,new Vector3(22,8,22));Area(duelMission.workshop.position,new Vector3(22,8,22));}
             else if(keys&&keys.Active){
                 if(keys.State<=PrisonKeysMission.Stage.Gather||keys.State==PrisonKeysMission.Stage.Rejoin)Area(keys.keyLock.transform.position-keys.keyLock.transform.forward*5+Vector3.up,new Vector3(12,8,26));
                 else if(keys.State<=PrisonKeysMission.Stage.Load)Area(new Vector3(30,2,-27),new Vector3(30,8,18));
