@@ -13,6 +13,8 @@ namespace DeliveryService.Mok
         public Transform vehicle, start, destination, playerExit, friendExit;
         public PrisonTransportRoute road;
         public Transform gateShot;
+        [Tooltip("탈옥 이후 돈 회수와 새 매장 시네마틱")]
+        public string aftermathScene = "PrisonAftermath";
         bool gateOpened;
         public Transform playerHang, friendHang, eye, gateLeft, gateRight;
         public PrisonTransportPose playerActor, friendActor;
@@ -20,6 +22,12 @@ namespace DeliveryService.Mok
         public PrisonTransportHands hands;
         [Min(8)] public float rideSeconds = 22;
         [Range(.01f,.5f)] public float drainPerSecond = .13f, tapRecovery = .085f;
+        [Range(1,6)] public float finalDrainMultiplier=3.8f;
+        public float Fatigue=>Mathf.SmoothStep(0,1,Progress);
+        public float CurrentDrain=>drainPerSecond*Mathf.Lerp(1,finalDrainMultiplier,Fatigue);
+        public float LastTapTime{get;private set;}
+        public bool GateOpened=>gateOpened;
+        float gateProgress;
         public Stage State { get; private set; }
         public bool Active => State != Stage.Waiting;
         public bool Complete => State == Stage.Complete;
@@ -42,11 +50,13 @@ namespace DeliveryService.Mok
         void Awake()
         {
             leftClosed=gateLeft.rotation;rightClosed=gateRight.rotation;
+            if(road){float best=float.MaxValue;var center=(gateLeft.position+gateRight.position)*.5f;for(int i=0;i<=1000;i++){float t=i/1000f;float d=(road.Position(t)-center).sqrMagnitude;if(d<best){best=d;gateProgress=t;}}}
+            if(hands)hands.mission=this;
             playerActor.gameObject.SetActive(false);friendActor.gameObject.SetActive(false);if(hands)hands.gameObject.SetActive(false);
         }
         void Update()
         {
-            if(engine){engine.volume=.2f*SuppliedAudio.Volume;if(Time.timeScale<=0)engine.Pause();else if((State==Stage.Riding||State==Stage.Relief)&&!engine.isPlaying)engine.UnPause();}
+            if(engine){engine.volume=.2f*SuppliedAudio.Volume;if(Time.timeScale<=0||State==Stage.Gate)engine.Pause();else if((State==Stage.Riding||State==Stage.Relief)&&!engine.isPlaying)engine.UnPause();}
             if(Time.timeScale<=0)return;
             if(State==Stage.Waiting){if(previous.Complete){State=Stage.Ready;Say(dialogue.ready,12);}return;}
             if(Time.time>subtitleUntil)Subtitle="";
@@ -55,7 +65,7 @@ namespace DeliveryService.Mok
             if(State==Stage.Relief&&Vector3.Distance(vehicle.position,destination.position)<18)vehicle.position+=vehicle.forward*2*Time.deltaTime;
             if(State!=Stage.Riding)return;
             if(keyboard!=null&&keyboard.spaceKey.wasPressedThisFrame)Tap();
-            Grip=Mathf.Max(0,Grip-drainPerSecond*Time.deltaTime);
+            Grip=Mathf.Max(0,Grip-CurrentDrain*Time.deltaTime);
             if(Grip<=0){StartCoroutine(Fall());return;}
             if(Grip<.3f&&!warned){warned=true;Say(dialogue.warning);}
             if(Grip>.5f)warned=false;
@@ -63,9 +73,10 @@ namespace DeliveryService.Mok
             float ramp=Mathf.Min(2,rideSeconds*.1f);
             float travel=age<ramp?age*age/(2*ramp):age>rideSeconds-ramp?rideSeconds-ramp-Mathf.Pow(Mathf.Max(0,rideSeconds-age),2)/(2*ramp):age-ramp*.5f;
             Progress=Mathf.Clamp01(travel/(rideSeconds-ramp));
+            if(!gateOpened&&road&&Progress>=Mathf.Max(0,gateProgress-10/road.Length)){StartCoroutine(GatePass());return;}
             if(road)vehicle.SetPositionAndRotation(road.Position(Progress),road.Rotation(Progress));
             else vehicle.position=Vector3.Lerp(start.position,destination.position,Progress);
-            if(!gateOpened&&vehicle.position.z>gateLeft.position.z-8&&vehicle.position.z<gateLeft.position.z&&Mathf.Abs(vehicle.position.x)<5){StartCoroutine(GatePass());return;}
+            if(!gateOpened&&!road&&Vector3.Distance(vehicle.position,(gateLeft.position+gateRight.position)*.5f)<12){StartCoroutine(GatePass());return;}
             if(!gatePassed&&vehicle.position.z>Mathf.Max(gateLeft.position.z,gateRight.position.z)+3){gatePassed=true;Say(dialogue.clearGate);shake=.035f;}
             shake=Mathf.MoveTowards(shake,0,Time.deltaTime*.08f);
             if(Progress>=1)StartCoroutine(Escape());
@@ -74,8 +85,9 @@ namespace DeliveryService.Mok
         {
             if(State!=Stage.Riding&&State!=Stage.Retry)return;
             film.transform.SetPositionAndRotation(eye.position,eye.rotation);
-            float tremor=.006f+(1-Grip)*.012f+shake;
-            film.transform.position+=vehicle.up*Mathf.Sin(Time.time*25)*tremor+vehicle.right*Mathf.Sin(Time.time*17)*tremor*.4f;
+            float tremor=.006f+Fatigue*Fatigue*.055f+(1-Grip)*.03f+shake;
+            film.transform.position+=vehicle.up*Mathf.Sin(Time.time*25)*tremor+vehicle.right*Mathf.Sin(Time.time*17)*tremor*.6f;
+            film.transform.rotation*=Quaternion.Euler(Mathf.Sin(Time.time*19)*Fatigue*1.1f,0,Mathf.Sin(Time.time*23)*Fatigue*1.4f);
         }
         public bool Interact()
         {
@@ -85,7 +97,7 @@ namespace DeliveryService.Mok
         public bool Tap()
         {
             if(State!=Stage.Riding||Time.timeScale<=0||Time.unscaledTime<nextTap)return false;
-            nextTap=Time.unscaledTime+.07f;Grip=Mathf.Clamp01(Grip+tapRecovery);shake=.012f;return true;
+            LastTapTime=Time.time;nextTap=Time.unscaledTime+.07f;Grip=Mathf.Clamp01(Grip+tapRecovery);shake=.012f;return true;
         }
         IEnumerator Board()
         {
@@ -124,15 +136,15 @@ namespace DeliveryService.Mok
         }
         IEnumerator GatePass()
         {
-            State=Stage.Gate;gateOpened=true;
+            State=Stage.Gate;if(engine)engine.Pause();
             if(gateShot)film.transform.SetPositionAndRotation(gateShot.position,gateShot.rotation);
             if(hands)hands.gameObject.SetActive(false);
-            yield return new WaitForSeconds(.5f);yield return OpenGate();yield return new WaitForSeconds(.5f);
-            film.transform.SetPositionAndRotation(eye.position,eye.rotation);if(hands)hands.gameObject.SetActive(true);State=Stage.Riding;
+            yield return new WaitForSeconds(.5f);yield return OpenGate();gateOpened=true;yield return new WaitForSeconds(.5f);
+            film.transform.SetPositionAndRotation(eye.position,eye.rotation);if(hands)hands.gameObject.SetActive(true);State=Stage.Riding;if(engine)engine.UnPause();
         }
         void StartRide()
         {
-            age=Progress=0;Grip=1;gateOpened=gatePassed=warned=false;State=Stage.Riding;
+            age=Progress=0;Grip=1;LastTapTime=Time.time;nextTap=0;gateOpened=gatePassed=warned=false;State=Stage.Riding;
             if(!engine){engine=vehicle.gameObject.AddComponent<AudioSource>();engine.clip=SuppliedAudio.Current?.playerEngine;engine.loop=true;engine.spatialBlend=.3f;}
             if(engine.clip)engine.Play();Say(dialogue.departure);
         }
@@ -149,12 +161,14 @@ namespace DeliveryService.Mok
         {
             State=Stage.Relief;if(engine)engine.Stop();yield return Fade(1);
             playerActor.gameObject.SetActive(false);friendActor.gameObject.SetActive(false);if(hands)hands.gameObject.SetActive(false);
-            RestoreActors();PlacePlayer(playerExit);PlaceFriend(friendExit);
-            gateLeft.rotation=leftClosed;gateRight.rotation=rightClosed;
-            film.transform.position=playerExit.position+Vector3.up*1.5f;film.transform.LookAt(Friend.transform.position+Vector3.up*1.35f);
-            yield return Fade(0);if(engine&&engine.clip)engine.Play();
-            foreach(var line in dialogue.escaped){Say(line);yield return new WaitForSeconds(dialogue.lineSeconds);}
-            yield return Fade(1);if(engine)engine.Stop();Unlock();State=Stage.Complete;Say(dialogue.complete,12);yield return Fade(0);
+            // 차량에서 손을 놓은 직후 암전 상태로 기존 탈옥 후 시네마틱에 연결한다.
+            if(!string.IsNullOrEmpty(aftermathScene)&&Application.CanStreamedLevelBeLoaded(aftermathScene)){
+                Unlock();State=Stage.Complete;
+                yield return UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(aftermathScene);
+                yield break;
+            }
+            RestoreActors();PlacePlayer(playerExit);PlaceFriend(friendExit);Unlock();State=Stage.Complete;
+            Say(dialogue.complete,12);yield return Fade(0);
         }
         void PlacePlayer(Transform at)
         {
@@ -204,13 +218,8 @@ namespace DeliveryService.Mok
             var old=GUI.color;
             if(State==Stage.Riding)
             {
-                float s=Screen.height/900f;var panel=new Rect(40*s,Screen.height-150*s,300*s,96*s);
-                GUI.color=new Color(.06f,.09f,.12f,.92f);GUI.DrawTexture(panel,Texture2D.whiteTexture);
-                GUI.color=Color.white;var style=new GUIStyle(GUI.skin.label){font=MokUIFont.Font,fontSize=Mathf.RoundToInt(22*s),alignment=TextAnchor.MiddleCenter};
-                GUI.Label(new Rect(panel.x,panel.y+8*s,panel.width,32*s),"SPACE 연타 · 꽉 잡기",style);
-                GUI.color=new Color(.25f,.29f,.3f);GUI.DrawTexture(new Rect(panel.x+20*s,panel.y+51*s,260*s,12*s),Texture2D.whiteTexture);
-                GUI.color=Grip<.3f?new Color(1,.35f,.2f):new Color(1,.72f,.3f);GUI.DrawTexture(new Rect(panel.x+20*s,panel.y+51*s,260*s*Grip,12*s),Texture2D.whiteTexture);
-                GUI.color=Color.white;style.fontSize=Mathf.RoundToInt(15*s);GUI.Label(new Rect(panel.x,panel.y+68*s,panel.width,23*s),"탈출 진행 "+Mathf.RoundToInt(Progress*100)+"%",style);
+                PrisonGripDisplay.Draw(Grip);
+
             }
             if(fade>0){GUI.color=new Color(0,0,0,fade);GUI.DrawTexture(new Rect(0,0,Screen.width,Screen.height),Texture2D.whiteTexture);}GUI.color=old;
         }

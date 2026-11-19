@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+﻿#if UNITY_EDITOR
 using System;
 using System.IO;
 using System.Linq;
@@ -39,7 +39,7 @@ namespace DeliveryService.Mok.Editor
             var leaf=Box("CCTV실 보안문",new Vector3(-36,1.25f,-27.5f),new Vector3(.12f,2.5f,2.95f),dark);leaf.transform.SetParent(m.door,true);
             var handle=Box("보안문 손잡이",new Vector3(-35.88f,1.15f,-26.35f),new Vector3(.12f,.09f,.35f),trim);handle.transform.SetParent(m.door,true);
             Label("CCTV실 표지","CCTV 관제실\n허가자 외 출입 금지",new Vector3(-35.85f,2.95f,-27.5f),270);
-            m.entry=At("CCTV실 문 · 간수가 등을 돌릴 때 F",new Vector3(-35.1f,.5f,-27.5f));
+            m.entry=At("CCTV실 들어가기",new Vector3(-35.1f,.5f,-27.5f));
             m.checkpoint=At("보안실 재시도 위치",new Vector3(-30,0,-23),240);m.mingiWait=At("민기 CCTV실 대기",new Vector3(-31.8f,0,-23.2f));m.safePoint=At("민기와 보안실에서 나오기",new Vector3(-30,0,-16));
             var desk=Prop("Assets/Synty/PolygonHeist/Prefab/Props/SM_Prop_Desk_01.prefab",new Vector3(-40,.0f,-32));
             desk.localScale=new Vector3(1.7f,1,1);
@@ -71,8 +71,8 @@ namespace DeliveryService.Mok.Editor
             bind.ropes.SetActive(false);
             var presentation=Object.FindFirstObjectByType<PrisonSharedPresentation>();presentation.cctv=m;
             office.dialogue.complete="민기: 간수복은 확보했어. 갈아입고 아래층 CCTV실로 가자.";
-            office.evidence.dialogue.documents[1]="별도 인계 명단\n대상: 이현우 / 민기\n정기 호송 출발 이후 별도 이송\n목적지: 공란\n인계자: 박진웅 측";
-            office.evidence.dialogue.transfer=new[]{"나: 여기 우리 이름이 있어. 정기 호송이 나간 뒤에 따로 넘긴대.","민기: 인계자가 박진웅 측이야. 그 전에 빠져나가야 해."};
+            office.evidence.dialogue.documents[1]="별도 인계 명단\n대상: 민기와 그놈\n정기 호송 출발 이후 별도 이송\n목적지: 공란\n인계자: 박진웅 측";
+            office.evidence.dialogue.transfer=new[]{"나: 여기 우리를 넘긴다는 내용이 있어. 정기 호송이 나간 뒤에 따로 넘긴대.","민기: 인계자가 박진웅 측이야. 그 전에 빠져나가야 해."};
             office.evidence.dialogue.message=new[]{"민기: 경찰만 한패인 줄 알았는데… 여기까지 연결돼 있었어.","나: 정기 호송차량이 나갈 때 같이 빠져나갈 방법을 찾자.","민기: 이 증거로 염윤태한테 출발 시간과 감시 체계부터 알아내자."};
             EditorUtility.SetDirty(office.dialogue);EditorUtility.SetDirty(office.evidence.dialogue);AssetDatabase.SaveAssets();EditorSceneManager.MarkSceneDirty(scene);EditorSceneManager.SaveScene(scene);
             File.WriteAllText("Logs/Prison-cctv-setup.txt","PASS saved CCTV room, restraint, new dialogue and route. Original escape route suspended.");

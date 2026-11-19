@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 namespace DeliveryService.Mok
 {
     // 손과 열쇠를 가리지 않는 근접 조작용 계기판과 안내 카드.
@@ -9,9 +9,9 @@ namespace DeliveryService.Mok
         static void Line(Vector2 a,Vector2 b,float width,Color c){var matrix=GUI.matrix;GUIUtility.RotateAroundPivot(Mathf.Atan2(b.y-a.y,b.x-a.x)*Mathf.Rad2Deg,a);Box(new Rect(a.x,a.y-width*.5f,Vector2.Distance(a,b),width),c);GUI.matrix=matrix;}
         static GUIStyle Style(float size,TextAnchor align=TextAnchor.MiddleCenter)=>new GUIStyle(GUI.skin.label){font=MokUIFont.Font,fontSize=Mathf.RoundToInt(size*Screen.height/1080f),alignment=align,wordWrap=true};
         static void Panel(Rect r){Box(r,Brass);Box(new Rect(r.x+2,r.y+2,r.width-4,r.height-4),Ink);Box(new Rect(r.x+6,r.y+6,r.width-12,2),new Color(1,1,1,.12f));}
-        public static void DrawNoise(float noise,bool warning)
+        public static void DrawNoise(float noise,bool warning,float horizontal=.365f)
         {
-            var old=GUI.color;float s=Screen.height/1080f,w=100*s,x=Screen.width*.365f-w*.5f,y=Screen.height*.31f,h=225*s;
+            var old=GUI.color;float s=Screen.height/1080f,w=100*s,x=Screen.width*horizontal-w*.5f,y=Screen.height*.31f,h=225*s;
             if(warning)x+=Mathf.Sin(Time.time*35)*2*s;
             Color level=warning||noise>=.6f?new Color(1,.3f,.17f):noise>=.35f?new Color(1,.7f,.25f):new Color(.38f,.85f,.77f);
             Panel(new Rect(x,y,w,h+100*s));GUI.color=Cream;GUI.Label(new Rect(x,y+9*s,w,29*s),"소음",Style(22));

@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace DeliveryService.Mok
 {
@@ -9,7 +9,7 @@ namespace DeliveryService.Mok
         public string[] titles = { "간수장의 비밀 장부", "오늘 밤 특별 호송", "박진웅의 메시지" };
         [TextArea(3, 8)] public string[] documents = {
             "가족 면회 편의금 — 개인 계좌 입금\n의무실 약품 외부 판매 — 정산 완료\n치료 요청 — 미납자는 보류\n결재: 염윤태",
-            "특별 호송 명단\n대상: 이현우 / 민기\n출발: 오늘 밤\n목적지: 공란\n인계자: 박진웅 측 / 간수장 직접 승인",
+            "특별 호송 명단\n대상: 민기와 그놈\n출발: 오늘 밤\n목적지: 공란\n인계자: 박진웅 측 / 간수장 직접 승인",
             "발신: 박진웅\n약속한 돈은 보냈다.\n오늘 밤 두 놈 넘겨.\n인계 후에는 내가 처리하지."
         };
         [TextArea] public string[] ledger = {
@@ -17,7 +17,7 @@ namespace DeliveryService.Mok
             "민기: 죄수들 목숨으로 돈을 벌고 있었네. 이 장부, 챙겨."
         };
         [TextArea] public string[] transfer = {
-            "나: 민기, 여기 우리 이름이 있어. 오늘 밤 이송이래.",
+            "나: 민기, 여기 우리를 넘긴다는 내용이 있어. 오늘 밤 이송이래.",
             "민기: 어디로?",
             "나: 목적지가 비어 있어. 인계자가… 박진웅 측이야."
         };

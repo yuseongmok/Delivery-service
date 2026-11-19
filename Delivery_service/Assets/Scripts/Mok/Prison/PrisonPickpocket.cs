@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.AI;
 namespace DeliveryService.Mok {
@@ -74,7 +74,7 @@ namespace DeliveryService.Mok {
             if(!Playing||Time.timeScale<=0)return;
             float drop=State==Phase.Catch?Mathf.Clamp01(PhaseTime/catchSeconds)*.12f:0;
             ring.position=ring.parent.TransformPoint(ringRest)+Vector3.up*(Progress*.22f-drop);
-            float snag=State==Phase.Snag?SnagDirection*(1-SnagProgress):0;
+            float snag=(State==Phase.Snag||(State==Phase.Freeze&&resumePhase==Phase.Snag))?SnagDirection*(1-SnagProgress):0;
             ring.localRotation=ringRotation*Quaternion.Euler(0,0,snag*22+Mathf.Sin(Time.time*30)*Noise*9);
             var cam=mission.camera;var focus=ring.parent.TransformPoint(ringRest);
             var target=focus-mission.keyGuard.transform.forward*.8f+Vector3.up*.34f;

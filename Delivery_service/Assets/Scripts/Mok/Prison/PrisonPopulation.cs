@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -64,6 +64,7 @@ namespace DeliveryService.Mok
 
         public bool HiddenFromPlayer(Vector3 point)
         {
+            if(!PrisonMission.Current||!PrisonMission.Current.player)return false;
             var player = PrisonMission.Current.player;
             var camera = player.View;
             if (!camera || Vector3.Distance(player.transform.position, point) < 12f) return false;

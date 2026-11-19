@@ -1,0 +1,117 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a7c2a0e29541314419e6e915d8b7365d, type: 3}
+  m_Name: "\uD0C8\uC625 \uC774\uD6C4 \uC2DC\uB124\uB9C8\uD2F1 \uB300\uC0AC"
+  m_EditorClassIdentifier: Assembly-CSharp::DeliveryService.Mok.AftermathDialogue
+  lines:
+  - scene: "\uBA40\uC5B4\uC9C0\uB294 \uD638\uC1A1\uCC28\uB7C9"
+    subtitle: "\uBBFC\uAE30: \uBA48\uCD94\uC9C0 \uB9C8. \uC800 \uCC28\uAC00 \uBA40\uC5B4\uC9C8
+      \uB54C\uAE4C\uC9C0 \uC228\uC5B4 \uC788\uC5B4."
+    seconds: 5
+    voice: {fileID: 0}
+  - scene: "\uADF8\uB0A0 \uBC24"
+    subtitle: "\uBBFC\uAE30: \uC608\uC804\uC5D0 \uD63C\uC790 \uC4F0\uB358 \uCC3D\uACE0\uC57C.
+      \uC5EC\uAE34 \uC544\uBB34\uB3C4 \uBAB0\uB77C."
+    seconds: 4
+    voice: {fileID: 0}
+  - scene: "\uBE44\uBC00 \uBCF4\uAD00\uD568\uC5D0\uC11C \uB3C8\uAC00\uBC29 \uAEBC\uB0B4\uAE30"
+    subtitle: "\uBBFC\uAE30: \uC870\uC9C1\uC5D0\uB3C4 \uB9D0 \uC548 \uD588\uC5B4.
+      \uC7A1\uD788\uAE30 \uC804\uC5D0 \uAE08\uACE0\uC5D0\uC11C \uCC59\uAE34 \uB3C8\uC744
+      \uC5EC\uAE30 \uC228\uACA8\uB480\uC9C0."
+    seconds: 9.5
+    voice: {fileID: 0}
+  - scene: "\uC0C8 \uC0B6\uC744 \uC120\uD0DD\uD558\uB2E4"
+    subtitle: "\uD50C\uB808\uC774\uC5B4: \uC774\uAC78\uB85C \uB05D\uB0B4\uC790. \uC774\uB984\uB3C4,
+      \uC0AC\uB294 \uACF3\uB3C4\u2026 \uC804\uBD80 \uBC14\uAFB8\uB294 \uAC70\uC57C."
+    seconds: 5
+    voice: {fileID: 0}
+  - scene: "\uB3C8\uACFC \uC2E0\uBD84\uC99D\uC758 \uAD50\uD658"
+    subtitle: "\uAC70\uB798\uC778: \uB450 \uC0AC\uB78C \uBAAB\uC774\uC57C. \uC5EC\uAE30\uC11C\uB294
+      \uC0C8 \uC774\uB984\uC73C\uB85C \uC0B4\uC544."
+    seconds: 7
+    voice: {fileID: 0}
+  - scene: "\uBA70\uCE60 \uB4A4 \xB7 \uBBFC\uAE30\uAC00 \uAD6C\uD55C \uAC00\uAC8C"
+    subtitle: "\uBBFC\uAE30: \uBA70\uCE60 \uBC1C\uD488 \uC880 \uD314\uC558\uC9C0.
+      \uB0A8\uC740 \uB3C8\uC73C\uB85C \uB0B4\uAC00 \uAD6C\uD55C \uAC00\uAC8C\uC57C.
+      \uC5F4\uC1E0\uB3C4 \uBC1B\uC544 \uC654\uC5B4.\n\uC774\uC81C \uC5EC\uAE30\uC11C
+      \uC9C4\uC9DC \uD53C\uC790\uB9CC \uB9CC\uB4DC\uB294 \uAC70\uC57C."
+    seconds: 10
+    voice: {fileID: 0}
+  - scene: "\uBA87 \uC8FC \uB4A4"
+    subtitle: 
+    seconds: 4
+    voice: {fileID: 0}
+  - scene: "TV \uD0C8\uC625\uC218 \uB274\uC2A4"
+    subtitle: "\uB274\uC2A4: \uD0C8\uC625\uD55C \uB450 \uC218\uAC10\uC790\uB294 \uC218
+      \uC8FC\uC9F8 \uD589\uBC29\uC774 \uD655\uC778\uB418\uC9C0 \uC54A\uACE0 \uC788\uC2B5\uB2C8\uB2E4."
+    seconds: 4.2
+    voice: {fileID: 0}
+  - scene: "\uC218\uBC30 \uB274\uC2A4\uB97C \uBCF4\uBA70 \uAD73\uC5B4\uC9C0\uB294
+      \uC2DC\uC120"
+    subtitle: "\uB274\uC2A4: \uACBD\uCC30\uC740 \uC2E0\uBD84\uC744 \uBC14\uAFD4 \uB3C4\uD53C\uD588\uC744
+      \uAC00\uB2A5\uC131\uC744 \uC218\uC0AC\uD558\uACE0 \uC788\uC2B5\uB2C8\uB2E4."
+    seconds: 4.2
+    voice: {fileID: 0}
+  - scene: "\uC0C1\uC790\uB97C \uB2EB\uB294 \uBBFC\uAE30"
+    subtitle: "\uD50C\uB808\uC774\uC5B4: \u2026\uC544\uC9C1\uB3C4 \uC6B0\uB9AC\uB97C
+      \uCC3E\uACE0 \uC788\uB124."
+    seconds: 3.2
+    voice: {fileID: 0}
+  - scene: "\uC8FC\uBC29\uC5D0\uC11C \uBD80\uB974\uB294 \uBBFC\uAE30"
+    subtitle: "\uBBFC\uAE30: \u2026\uC57C, \uB4E3\uACE0 \uC788\uC5B4? \uD53C\uC790
+      \uB2E4 \uB410\uC5B4. \uC5BC\uB978 \uAC14\uB2E4 \uC640."
+    seconds: 4.5
+    voice: {fileID: 0}
+  - scene: "\uC790\uB9AC\uC5D0\uC11C \uC77C\uC5B4\uB098\uB2E4"
+    subtitle: "\uD50C\uB808\uC774\uC5B4: \u2026\uC5B4. \uC54C\uC558\uC5B4. \uAE08\uBC29
+      \uB2E4\uB140\uC62C\uAC8C."
+    seconds: 2.8
+    voice: {fileID: 0}
+  - scene: "\uCE74\uC6B4\uD130\uB85C \uB2E4\uAC00\uAC00\uB2E4"
+    subtitle: 
+    seconds: 3.5
+    voice: {fileID: 0}
+  - scene: "\uC0C1\uC790\uB97C \uBC00\uC5B4\uC8FC\uACE0 \uC591\uC190\uC73C\uB85C
+      \uBC1B\uAE30"
+    subtitle: 
+    seconds: 4
+    voice: {fileID: 0}
+  - scene: "\uBC30\uB2EC\uC744 \uB098\uC11C\uB294 \uB4B7\uBAA8\uC2B5"
+    subtitle: 
+    seconds: 8
+    voice: {fileID: 0}
+  escapeBridge:
+  - scene: "\uC232\uC18D \xB7 \uB2E4\uC74C \uD589\uC120\uC9C0"
+    subtitle: "\uD50C\uB808\uC774\uC5B4: \uC774\uC81C \uC5B4\uB514\uB85C \uAC00?
+      \uC774 \uC637\uC73C\uB85C\uB294 \uC624\uB798 \uBABB \uBC84\uD168."
+    seconds: 3.8
+    voice: {fileID: 0}
+  - scene: "\uBBFC\uAE30\uAC00 \uC228\uACA8\uB454 \uB3C8"
+    subtitle: "\uBBFC\uAE30: \uC57C\uB9C8\uC790\uD0A4\uD30C \uAE08\uACE0\uC5D0\uC11C
+      \uD138\uC5C8\uB358 \uB3C8\uBD80\uD130 \uB2E4\uC2DC \uCC3E\uC73C\uB7EC \uAC00\uC790."
+    seconds: 4.8
+    voice: {fileID: 0}
+  - scene: "\uB3C4\uB85C\uB97C \uD53C\uD574 \uC774\uB3D9"
+    subtitle: "\uBBFC\uAE30: \uADF8\uB9AC\uACE0 \uC0C8 \uCD9C\uBC1C \uD558\uB294
+      \uAC70\uC57C."
+    seconds: 6.2
+    voice: {fileID: 0}
+  nightCard: "\uADF8\uB0A0 \uBC24 \xB7 \uBBFC\uAE30\uC758 \uBE44\uBC00 \uCC3D\uACE0"
+  shopKeyCard: "\uBA70\uCE60 \uB4A4 \xB7 \uC0C8\uB85C \uAD6C\uD55C \uAC00\uAC8C"
+  timeCard: "\uBA87 \uC8FC \uB4A4 \xB7 \uB2E4\uB978 \uB3C4\uC2DC"
+  newsHeadline: "\uAD50\uB3C4\uC18C \uD0C8\uC625\uC218 2\uBA85\u2026 \uD589\uBC29\uC740
+    \uC5EC\uC804\uD788 \uC624\uB9AC\uBB34\uC911"
+  newsFollowupHeadline: "\uC2E0\uBD84 \uC704\uC7A5 \uAC00\uB2A5\uC131\u2026 \uC218\uC0AC
+    \uACC4\uC18D"
+  newsTicker: "\uACBD\uCC30, \uD0C8\uC625\uD55C \uC218\uAC10\uC790 \uB450 \uBA85
+    \uACF5\uAC1C \uC218\uBC30 \xB7 \uC2DC\uBBFC \uC81C\uBCF4 \uC694\uCCAD"
+  chapterTitle: "\uCC55\uD130 3\n\uC138\uD0C1"

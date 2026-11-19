@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System;
 using UnityEngine.InputSystem;
@@ -62,7 +62,7 @@ namespace DeliveryService.Mok
         {
             Busy = true; Lock(); reading = index;
             yield return Aim(evidencePoints[index].position, .4f);
-            PrisonAudio.Clink(evidencePoints[index].position, .06f);
+            PrisonDetailAudio.Play(index==2?PrisonDetailAudio.Cue.Message:PrisonDetailAudio.Cue.Paper,evidencePoints[index].position,.18f);
             yield return Lines(index == 0 ? dialogue.ledger : index == 1 ? dialogue.transfer : dialogue.message);
             reading = -1; Discovered++;
             yield return ReturnView();
@@ -94,7 +94,12 @@ namespace DeliveryService.Mok
             yield return FadeTo(0);
             if(office.cctv){
                 var plan=office.cctv.dialogue;
-                foreach(var line in plan.interrogation){Subtitle=plan.Format(line);yield return new WaitForSeconds(plan.lineSeconds);}
+                foreach(var line in plan.interrogation){
+                    var attention=guard.GetComponent<PrisonWardenAttention>();bool hesitation=line.Contains("옷 벗")||line.Contains("이익");
+                    if(attention)attention.Hesitating=hesitation;Subtitle=plan.Format(line);
+                    yield return new WaitForSeconds(plan.lineSeconds+(hesitation?1.2f:0));
+                    if(attention)attention.Hesitating=false;
+                }
                 foreach(var line in plan.restraint){Subtitle=plan.Format(line);yield return new WaitForSeconds(plan.lineSeconds);}
                 yield return FadeTo(1);office.cctv.restraint.Bind();
                 // 책상 모니터를 피해 의자와 얼굴이 함께 보이는 측면 구도.
@@ -187,12 +192,7 @@ namespace DeliveryService.Mok
         void OnGUI()
         {
             if(!Busy||Time.timeScale<=0)return;
-            if(reading>=0){
-                float s=Screen.height/900f;var box=new Rect(Screen.width*.57f,Screen.height*.23f,Screen.width*.37f,Screen.height*.43f);
-                var old=GUI.color;GUI.color=new Color(.06f,.09f,.12f,.96f);GUI.DrawTexture(box,Texture2D.whiteTexture);GUI.color=old;
-                var style=new GUIStyle(GUI.skin.label){font=MokUIFont.Font,fontSize=Mathf.RoundToInt(25*s),wordWrap=true,padding=new RectOffset(24,24,20,16)};
-                style.normal.textColor=new Color(1,.88f,.66f);GUI.Label(box,dialogue.titles[reading]+"\n\n"+dialogue.documents[reading],style);
-            }
+            if(reading>=0)PrisonEvidenceDisplay.Draw(reading,dialogue.titles[reading],dialogue.documents[reading]);
             if(fade>0){var old=GUI.color;GUI.color=new Color(0,0,0,fade);GUI.DrawTexture(new Rect(0,0,Screen.width,Screen.height),Texture2D.whiteTexture);GUI.color=old;}
         }
     }

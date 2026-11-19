@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 namespace DeliveryService.Mok {
 // 보관함을 연 뒤 내용물을 확보한다. 조사 순서는 자유이며 암구호는 다시 읽을 수 있다.
@@ -23,5 +23,5 @@ public sealed class PrisonOfficePoint:MonoBehaviour,IInteractable {
   if(!Opened){StartCoroutine(Open());return true;}
   StartCoroutine(mission.GetComponent<PrisonOfficePickup>().Take(this));return true;
  }
- IEnumerator Open(){moving=true;PrisonAudio.Clink(transform.position,.15f);var start=movingPart.localPosition;for(float t=0;t<.55f;t+=Time.deltaTime){movingPart.localPosition=start+slide*Mathf.SmoothStep(0,1,t/.55f);yield return null;}movingPart.localPosition=start+slide;Opened=true;moving=false;mission.Say(mission.dialogue.opened);}
+ IEnumerator Open(){moving=true;PrisonDetailAudio.Play(PrisonDetailAudio.Cue.Drawer,transform.position,.28f);var start=movingPart.localPosition;for(float t=0;t<.55f;t+=Time.deltaTime){movingPart.localPosition=start+slide*Mathf.SmoothStep(0,1,t/.55f);yield return null;}movingPart.localPosition=start+slide;Opened=true;moving=false;mission.Say(mission.dialogue.opened);}
 }}

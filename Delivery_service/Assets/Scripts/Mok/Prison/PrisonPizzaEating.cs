@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
@@ -41,7 +41,7 @@ public sealed class PrisonPizzaEating:MonoBehaviour {
   Vector3 target;
   if(elapsed<receiveSeconds)target=Vector3.Lerp(source,chest,Mathf.SmoothStep(0,1,elapsed/receiveSeconds));
   else if(elapsed<eatStart)target=Vector3.Lerp(chest,mouth,Mathf.SmoothStep(0,1,(elapsed-receiveSeconds)/raiseSeconds));
-  else if(elapsed<eatStart+chewSeconds){target=mouth-transform.forward*(.025f+Mathf.Sin(elapsed*5)*.015f);if(!bit){bit=true;bite?.Invoke();PrisonAudio.Clink(transform.position,.06f);}}
+  else if(elapsed<eatStart+chewSeconds){target=mouth-transform.forward*(.025f+Mathf.Sin(elapsed*5)*.015f);if(!bit){bit=true;bite?.Invoke();PrisonDetailAudio.Play(PrisonDetailAudio.Cue.Bite,transform.position,.3f);}}
   else target=Vector3.Lerp(mouth,spine.position+transform.forward*.25f-transform.right*.05f-Vector3.up*.18f,Mathf.SmoothStep(0,1,(elapsed-eatStart-chewSeconds)/lowerSeconds));
   Reach(target);hand.rotation=Quaternion.LookRotation(-transform.forward,Vector3.up)*Quaternion.Inverse(palmBasis);slice.SetPositionAndRotation(hand.position+Vector3.up*.02f,Quaternion.LookRotation(-transform.forward,Vector3.up));slice.localScale=Vector3.one*(bit?.8f:1);
   if(elapsed>=tiredStart)slice.gameObject.SetActive(false);

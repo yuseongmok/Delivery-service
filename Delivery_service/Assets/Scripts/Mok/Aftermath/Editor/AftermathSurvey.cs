@@ -1,0 +1,4 @@
+#if UNITY_EDITOR
+using System.IO;using System.Linq;using UnityEditor;using UnityEditor.SceneManagement;using UnityEngine;using Object=UnityEngine.Object;
+namespace DeliveryService.Mok.Editor{public static class AftermathSurvey{public static void Run(){EditorSceneManager.OpenScene("Assets/Scenes/PrisonAftermath.unity");var f=Object.FindFirstObjectByType<AftermathFilm>();var s="";foreach(var sh in f.shots){s+=sh.name+"\n";foreach(var m in sh.motions??new AftermathFilm.Motion[0])s+="  "+m.subject.name+" "+m.subject.position+" actor="+(m.actor?m.actor.name:"none")+"\n";}foreach(var t in f.shots[7].set.GetComponentsInChildren<Transform>(true))if(t.name.Contains("Box")||t.name.Contains("TV")||t.name.Contains("민기"))s+=t.name+" "+t.position+" parent="+t.parent.name+"\n";File.WriteAllText("Logs/Aftermath-survey.txt",s);EditorApplication.Exit(0);}}}
+#endif

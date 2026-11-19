@@ -442151,6 +442151,7 @@ GameObject:
   - component: {fileID: 691297264}
   - component: {fileID: 691297263}
   - component: {fileID: 691297265}
+  - component: {fileID: 691297266}
   m_Layer: 0
   m_Name: NavigationManager
   m_TagString: Untagged
@@ -442207,6 +442208,23 @@ MonoBehaviour:
   lineWidth: 0.08
   highlightMaterial: {fileID: 2100000, guid: 94fe6ec313cd40c4caef62002193dc0b, type: 2}
   hideDeliveryPointMesh: 1
+--- !u!114 &691297266
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 691297262}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f388ff95378b5c841bb6a20b60275698, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DeliveryService.Mok.Navigation.NavigationPlanner
+  manager: {fileID: 691297263}
+  overviewCamera: {fileID: 0}
+  font: {fileID: 0}
+  overviewTexture: {fileID: 0}
+  storyAppsPrefab: {fileID: 3821318695813917183, guid: 4c4ce7d2ddbf1464598fd831f19e1856, type: 3}
 --- !u!4 &691386188
 Transform:
   m_ObjectHideFlags: 0

@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.InputSystem;
 
 namespace DeliveryService.Mok
@@ -66,11 +66,10 @@ namespace DeliveryService.Mok
             GuardLooking=false; // 창고 문에서는 시선이 아닌 조작 소음만 판정한다.
             if(State==Phase.Choose)
             {
-                float scroll=mouse.scroll.ReadValue().y;if(Mathf.Abs(scroll)>0)keyLock.Select(scroll>0?1:-1);
                 if(mouse.leftButton.wasPressedThisFrame)
                 {
                     int hit=HitKey(pos);
-                    if(hit>=0){keyLock.Select(hit-keyLock.Selected);State=Phase.Inserting;Insertion=0;Seated=0;seatTime=0;}
+                    if(hit>=0)SelectKey(hit);
                 }
             }
             else if(State==Phase.Inserting)
@@ -106,17 +105,24 @@ namespace DeliveryService.Mok
                 if(Insertion<=0){State=Phase.Choose;Rotation=0;Seated=0;seatTime=0;}
             }
         }
-        int HitKey(Vector2 mouse)
+        public bool SelectKey(int index)
         {
-            int best=-1;float distance=Screen.height*.075f;
-            for(int i=0;i<keyLock.keyModels.Length;i++)
-            {
-                if(State!=Phase.Choose && i!=keyLock.Selected)continue;
-                var key=keyLock.keyModels[i].transform;
-                Vector3 p=mission.camera.WorldToScreenPoint(key.position-key.forward*.052f);
-                float d=Vector2.Distance(mouse,new Vector2(p.x,p.y));if(p.z>0&&d<distance){best=i;distance=d;}
-            }
-            return best;
+            if(!Playing||State!=Phase.Choose||Time.timeScale<=0||index<0||index>=keyLock.keyModels.Length)return false;
+            keyLock.Select(index-keyLock.Selected);State=Phase.Inserting;Insertion=0;Seated=0;seatTime=0;return true;
+        }
+        public Rect KeyChoiceRect(int index)
+        {
+            float width=Mathf.Min(Screen.width*.145f,Screen.height*.19f),height=Screen.height*.17f;
+            float spacing=Mathf.Min(Screen.width*.19f,Screen.height*.25f);
+            float center=Screen.width*.56f+(index-(keyLock.keyModels.Length-1)*.5f)*spacing;
+            return new Rect(center-width*.5f,Screen.height*.62f,width,height);
+        }
+        public int HitKey(Vector2 mouse)
+        {
+            if(State==Phase.Choose){Vector2 gui=new Vector2(mouse.x,Screen.height-mouse.y);for(int i=0;i<keyLock.keyModels.Length;i++)if(KeyChoiceRect(i).Contains(gui))return i;return -1;}
+            var key=keyLock.keyModels[keyLock.Selected].transform;
+            var at=mission.camera.WorldToScreenPoint(key.position-key.forward*.052f);
+            return at.z>0&&Vector2.Distance(mouse,new Vector2(at.x,at.y))<Screen.height*.10f?keyLock.Selected:-1;
         }
         void LateUpdate()
         {
@@ -131,8 +137,9 @@ namespace DeliveryService.Mok
             for(int i=0;i<keyLock.keyModels.Length;i++)
             {
                 var key=keyLock.keyModels[i].transform;key.gameObject.SetActive(true);
-                Vector3 fan=socket.position-socket.forward*.22f-socket.right*.16f+socket.right*(i*.043f)-Vector3.up*.13f;
-                Quaternion rest=basis*Quaternion.Euler(0,(i-1.5f)*12,0);
+                Rect choice=KeyChoiceRect(i);
+                Vector3 fan=cam.ScreenToWorldPoint(new Vector3(choice.center.x,Screen.height-choice.center.y,.60f));
+                Quaternion rest=cam.transform.rotation*Quaternion.Euler(-65,0,0);
                 if(i==keyLock.Selected)
                 {
                     key.position=Vector3.Lerp(fan,socket.position-socket.forward*.062f,Mathf.SmoothStep(0,1,Insertion));
@@ -141,6 +148,7 @@ namespace DeliveryService.Mok
                 }
                 else {key.position=fan;key.rotation=rest;}
             }
+            ring.gameObject.SetActive(false);
             ring.position=socket.position-socket.forward*.272f-socket.right*.095f-Vector3.up*.13f;ring.rotation=basis;
             hand.position=selectedGrip-socket.forward*.02f;hand.rotation=basis*Quaternion.AngleAxis(-90*Rotation,Vector3.forward);
             Vector3 start=cam.transform.position+cam.transform.right*.22f-cam.transform.up*.28f+cam.transform.forward*.30f;
@@ -185,16 +193,25 @@ namespace DeliveryService.Mok
             string line=Time.time<messageUntil?message:State==Phase.Choose?(MatchedKey?mission.dialogue.lockRemembered:mission.dialogue.lockPickHint):State==Phase.Turn?(AtSeat?mission.dialogue.lockHold:Seated>=2?mission.dialogue.lockFinalTurn:mission.dialogue.lockFeel):State==Phase.Inserting?mission.dialogue.lockPush:mission.dialogue.lockWithdraw;
             if(noiseWarning>0)line="소리가 났다! 손을 멈추거나 F로 물러나세요";
             string action=noiseWarning>0?"소리가 났다 · 멈춰!":State==Phase.Choose?"창고 열쇠 고르기":State==Phase.Inserting?"천천히 밀어 꽂기":State==Phase.Removing?"열쇠 빼는 중":AtSeat?"딸깍! 잠깐 멈추기":Seated>=2?"오른쪽으로 끝까지 돌리기":"맞물리는 지점 찾기";
-            string detail=Time.time<messageUntil?message:State==Phase.Choose?"휠 · 선택    좌클릭 · 잡기    F · 물러나기":State==Phase.Inserting?"좌클릭 유지 + 위로 드래그    우클릭 · 빼기":State==Phase.Turn?"좌클릭 유지 + 좌우 드래그    F · 물러나기":"F · 물러나기";
+            string detail=Time.time<messageUntil?message:State==Phase.Choose?"열쇠를 직접 클릭 → 좌클릭 유지 + 위로 밀기    F · 물러나기":State==Phase.Inserting?"좌클릭 유지 + 위로 드래그    우클릭 · 빼기":State==Phase.Turn?"좌클릭 유지 + 좌우 드래그    F · 물러나기":"F · 물러나기";
             PrisonTheftDisplay.Instruction(action,detail,noiseWarning>0);
             var old=GUI.color;GUI.color=AtSeat?new Color(.45f,1,.7f):Color.white;
-            GUI.Label(new Rect(Screen.width*.35f,Screen.height*.73f,Screen.width*.3f,45),State==Phase.Turn?$"맞물림 {Seated} / 2":State==Phase.Choose?$"열쇠 {keyLock.Selected+1} / {keyLock.keyModels.Length}":"",style);GUI.color=old;
+            GUI.Label(new Rect(Screen.width*.35f,Screen.height*.73f,Screen.width*.3f,45),State==Phase.Turn?$"맞물림 {Seated} / 2":"",style);GUI.color=old;
             if(State==Phase.Inserting || (State==Phase.Turn&&!AtSeat)){
                 Vector2 center=new Vector2(Screen.width*.73f,Screen.height*.64f);
                 Vector2 direction=State==Phase.Inserting?Vector2.down:Seated<2&&Rotation>SeatAngle?Vector2.left:Vector2.right;
                 DrawArrow(center,direction,Screen.height*.025f);
             }
-            PrisonTheftDisplay.DrawNoise(Noise,noiseWarning>0);
+            if(State==Phase.Choose){
+                var mouse=Mouse.current;int hover=mouse==null?-1:HitKey(mouse.position.ReadValue());
+                for(int i=0;i<keyLock.keyModels.Length;i++){
+                    var rect=KeyChoiceRect(i);GUI.color=hover==i?new Color(1,.8f,.4f):new Color(.6f,.68f,.7f);
+                    GUI.DrawTexture(new Rect(rect.x,rect.yMax-4,rect.width,3),Texture2D.whiteTexture);
+                    GUI.Label(new Rect(rect.x,rect.yMax-35,rect.width,28),"열쇠 "+(i+1)+(hover==i?" · 선택":""),style);
+                }
+                GUI.color=old;
+            }
+            PrisonTheftDisplay.DrawNoise(Noise,noiseWarning>0,.14f);
         }
         static void DrawArrow(Vector2 center,Vector2 direction,float size){
             var old=GUI.color;var matrix=GUI.matrix;GUI.color=new Color(1,.8f,.4f);

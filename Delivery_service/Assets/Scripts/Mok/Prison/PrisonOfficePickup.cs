@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 
 namespace DeliveryService.Mok
@@ -40,7 +40,7 @@ namespace DeliveryService.Mok
                 yield return null;
             }
             point.contents.SetActive(false);
-            PrisonAudio.Clink(player.transform.position, .08f);
+            PrisonDetailAudio.Play(PrisonDetailAudio.Cue.Paper,player.transform.position,.14f);
             mission.Collect(point.kind);
             for (float t = 0; t < .25f; t += Time.deltaTime)
             { view.rotation = Quaternion.Slerp(focus, originalView, Mathf.SmoothStep(0, 1, t / .25f)); yield return null; }

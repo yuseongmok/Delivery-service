@@ -1,4 +1,4 @@
-using System.Linq;
+﻿using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -40,7 +40,7 @@ namespace DeliveryService.Mok.Navigation
             bikes = FindObjectsByType<MotorcycleController>(FindObjectsSortMode.None);
             if (manager == null) manager = FindFirstObjectByType<NavigationManager>();
             if (overviewCamera != null) overviewCamera.enabled = false;
-            var display = FindObjectsByType<RawImage>(FindObjectsSortMode.None).FirstOrDefault(r => r.name == "NavigationFinalDisplay");
+            var display = FindObjectsByType<RawImage>(FindObjectsInactive.Include, FindObjectsSortMode.None).FirstOrDefault(r => r.name == "NavigationFinalDisplay");
             if (display == null) { enabled = false; return; }
             Build(display.rectTransform);
             Show(Screen.Map);

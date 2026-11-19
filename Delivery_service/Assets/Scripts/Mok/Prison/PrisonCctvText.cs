@@ -1,14 +1,18 @@
-using UnityEngine;
+﻿using UnityEngine;
 namespace DeliveryService.Mok
 {
     [CreateAssetMenu(menuName="Delivery Service/감옥 CCTV 잠입 대사")]
     public sealed class PrisonCctvText:ScriptableObject
     {
+        [TextArea] public string[] disguiseGreeting={"간수: 음? 못 보던 얼굴인데, 새로 온 신참인가?","민기: 예. 관제실 점검하러 왔습니다.","간수: 그래, 안쪽이야. 끝나면 문 잘 닫고.","민기: …통했어. 자연스럽게 들어가자."};
         public string departureTime="19:30";
         [TextArea] public string[] interrogation={
             "민기: 비리 장부와 박진웅의 메시지는 우리가 가지고 있어. 지금부터 묻는 말에 대답해.",
             "염윤태: …원하는 게 뭐야?",
             "나: 간수복은 어디 있지? 밖으로 나가는 호송차량은 언제 출발해?",
+            "염윤태: 그걸 말하면 나도 옷 벗어야 해!!",
+            "민기: 그건 이 장부가 공개돼도 똑같겠지.",
+            "염윤태: 이익… 알겠다.",
             "염윤태: 옆 보관함에 예비 간수복이 있다. 잠금은 풀어주마. 정기 호송은 저녁 {departure} 출발이야.",
             "민기: 그 차가 박진웅한테 가는 건가?",
             "염윤태: 아니! 그건 정기 이송 차량이야. 너희 둘은 그 차가 나간 뒤 별도로 넘기기로 했어.",
@@ -22,7 +26,7 @@ namespace DeliveryService.Mok
             "염윤태: 잠깐, 이봐…!"
         };
         [TextArea] public string secured="민기: 단단히 묶였어. 잠든 틈에 움직이자.";
-        [TextArea] public string changed="민기: 간수복은 입었어. 하지만 CCTV실은 출입 금지야. 담당 간수가 등을 돌릴 때 들어가.";
+        [TextArea] public string changed="민기: 간수복은 입었어. 자연스럽게 CCTV실로 들어가자.";
         [TextArea] public string opened="민기: 내가 뒤따라갈게. 안쪽 제어반에서 녹화와 전송을 모두 끊어.";
         [TextArea] public string caught="간수: 거기! 허가 없이 CCTV실에 들어온 게 누구야!";
         [TextArea] public string retry="보안실 앞부터 다시 시도합니다. 간수의 시선과 벽 뒤 사각지대를 이용하세요.";

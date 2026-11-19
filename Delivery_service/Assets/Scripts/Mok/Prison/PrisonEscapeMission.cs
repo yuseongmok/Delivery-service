@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 namespace DeliveryService.Mok
@@ -76,7 +76,7 @@ namespace DeliveryService.Mok
             yield return Black(0);
             Lock(false); State = Stage.Vehicle;
         }
-        public void ApplyDisguise(){Dress(Player.transform);Dress(Friend.transform);Disguised=true;Friend.Following=true;}
+        public void ApplyDisguise(){Dress(Player.transform);Dress(Friend.transform);Disguised=true;Friend.ResumeFollowing();foreach(var guard in previous.previous.diners)if(guard&&guard.GetComponent<PrisonPizzaEating>()&&guard.GetComponent<PrisonPizzaEating>().Finished)guard.gameObject.SetActive(false);}
         void Dress(Transform actor)
         {
             foreach (var r in actor.GetComponentsInChildren<Renderer>(true))

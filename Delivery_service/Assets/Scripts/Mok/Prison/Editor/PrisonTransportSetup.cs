@@ -67,7 +67,7 @@ namespace DeliveryService.Mok.Editor
                 foreach(var rr in copy.GetComponentsInChildren<Renderer>(true)){var materials=rr.sharedMaterials;for(int i=0;i<materials.Length;i++)if(materials[i]&&(materials[i].name.Contains("주황")||materials[i].name.Contains("죄수복")))materials[i]=old.uniform;rr.sharedMaterials=materials;}
                 copy.transform.SetPositionAndRotation(anchor.position,anchor.rotation);return pose;
             }
-            m.playerActor=Actor(intro.mugshotActor,"이현우 · 차량 하부 대역",m.playerHang);
+            m.playerActor=Actor(intro.mugshotActor,"플레이어 · 차량 하부 대역",m.playerHang);
             m.friendActor=Actor(intro.mingi.transform,"민기 · 차량 하부 대역",m.friendHang);
             var mat=new Material(Shader.Find("Universal Render Pipeline/Lit")){color=new Color(.15f,.18f,.2f)};AssetDatabase.CreateAsset(mat,"Assets/DeliveryPrisonChapter/Escape/차량 하부 지지대.mat");
             foreach(float z in new[]{-.25f,.9f}){var bar=GameObject.CreatePrimitive(PrimitiveType.Cylinder);bar.name="차량 하부 가로 지지대";bar.transform.SetParent(m.vehicle,false);bar.transform.localPosition=new Vector3(0,.57f,z);bar.transform.localRotation=Quaternion.Euler(0,0,90);bar.transform.localScale=new Vector3(.055f,.83f,.055f);bar.GetComponent<Renderer>().sharedMaterial=mat;Object.DestroyImmediate(bar.GetComponent<Collider>());}

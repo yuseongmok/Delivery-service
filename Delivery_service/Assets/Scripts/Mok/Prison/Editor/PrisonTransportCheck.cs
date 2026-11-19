@@ -10,7 +10,7 @@ namespace DeliveryService.Mok.Editor
     [InitializeOnLoad] public static class PrisonTransportCheck
     {
         const string Log="Logs/Prison-transport-check.txt";
-        static bool running,visual;static int step;static float wait,nextTap,savedGrip;static double deadline,pauseEnd;static Vector3 pausedVehicle;
+        static bool running,visual,sawGate,capturedOpen;static int step;static float wait,nextTap,savedGrip;static double deadline,pauseEnd;static Vector3 pausedVehicle;
         static PrisonTransportCheck(){EditorApplication.update+=Tick;EditorApplication.playModeStateChanged+=s=>{if(s==PlayModeStateChange.EnteredPlayMode&&SessionState.GetBool("TransportCheck",false)){SessionState.SetBool("TransportCheck",false);running=true;visual=SessionState.GetBool("TransportVisual",false);step=0;deadline=EditorApplication.timeSinceStartup+240;}};}
         static void Check(bool b,string text){File.AppendAllText(Log,(b?"PASS ":"FAIL ")+text+"\n");if(!b)throw new Exception(text);}
         static void Tick()
@@ -20,8 +20,11 @@ namespace DeliveryService.Mok.Editor
             try
             {
                 if(EditorApplication.timeSinceStartup>deadline)throw new Exception("Timeout step "+step);
-                var m=Object.FindFirstObjectByType<PrisonTransportEscape>();if(!m)return;
-                if(step==0){step=1;wait=Time.time+2;return;}
+                if(step==5&&UnityEngine.SceneManagement.SceneManager.GetActiveScene().name=="PrisonAftermath"){
+                        Check(sawGate,"gate opens before van passes");File.AppendAllText(Log,"PASS immediate aftermath cinematic scene transition\nFINISHED\n");running=false;EditorApplication.ExitPlaymode();return;
+                    }
+                    var m=Object.FindFirstObjectByType<PrisonTransportEscape>();if(!m)return;
+                if(step==0){sawGate=false;capturedOpen=false;step=1;wait=Time.time+2;return;}
                 if(step==31)
                 {
                     if(EditorApplication.timeSinceStartup<pauseEnd)return;
@@ -34,11 +37,11 @@ namespace DeliveryService.Mok.Editor
                     var cc=m.Player.GetComponent<CharacterController>();cc.enabled=false;m.Player.transform.position=m.previous.vehiclePoint.position+Vector3.up*1.1f;cc.enabled=true;m.Friend.agent.Warp(m.previous.vehiclePoint.position+Vector3.back*1.5f);
                     m.dialogue=Object.Instantiate(m.dialogue);m.dialogue.lineSeconds=.15f;step=2;wait=Time.time+.4f;return;
                 }
-                if(step==2){Check(m.State==PrisonTransportEscape.Stage.Ready&&m.Interact(),"night arrival -> interact -> crawl under van");step=3;wait=Time.time+2.5f;return;}
+                if(step==2){Cursor.lockState=CursorLockMode.Locked;Check(m.State==PrisonTransportEscape.Stage.Ready&&m.Interact(),"night arrival -> interact -> crawl under van");step=3;wait=Time.time+2.5f;return;}
                 if(step==3)
                 {
                     if(m.State!=PrisonTransportEscape.Stage.Riding)return;
-                    PrisonChickenCheck.Capture(m.film,"Logs/Prison-transport-underbody.png");
+                    PrisonChickenCheck.Capture(m.film,"Logs/Prison-transport-underbody.png");ScreenCapture.CaptureScreenshot("Logs/Prison-grip-ui.png");
                     Check(!m.Player.CanAct&&m.film.enabled&&!m.Player.View.enabled,"riding camera and normal controls locked");
                     Check(m.playerActor.Hanging&&m.friendActor.Hanging,"both actors attached and gripping");
                     var hand=m.playerActor.animator.GetBoneTransform(HumanBodyBones.RightHand);File.AppendAllText(Log,"Hand distance "+Vector3.Distance(hand.position,m.playerActor.rightGrip.position)+"\n");
@@ -55,8 +58,13 @@ namespace DeliveryService.Mok.Editor
                 }
                 if(step==5)
                 {
-                    if(m.State==PrisonTransportEscape.Stage.Riding&&Time.time>=nextTap){Check(m.Tap(),"tap accepted");nextTap=Time.time+.25f;}
+                    if(m.State==PrisonTransportEscape.Stage.Gate){if(!sawGate){File.AppendAllText(Log,"GATE vehicle="+m.vehicle.position+" left="+m.gateLeft.position+" right="+m.gateRight.position+"\n");PrisonChickenCheck.Capture(m.film,"Logs/Gate-closed.png");}sawGate=true;var audio=(AudioSource)typeof(PrisonTransportEscape).GetField("engine",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).GetValue(m);Check(audio&&!audio.isPlaying,"vehicle movement audio paused at gate");}
+                    if(sawGate&&m.State==PrisonTransportEscape.Stage.Riding){if(!capturedOpen){capturedOpen=true;var pos=m.film.transform.position;var rot=m.film.transform.rotation;m.film.transform.SetPositionAndRotation(m.gateShot.position,m.gateShot.rotation);PrisonChickenCheck.Capture(m.film,"Logs/Gate-open.png");m.film.transform.SetPositionAndRotation(pos,rot);foreach(var leaf in new[]{m.gateLeft,m.gateRight})foreach(var r in leaf.GetComponentsInChildren<Renderer>())Check(!r.isPartOfStaticBatch,"visible moving gate is not statically batched");}var audio=(AudioSource)typeof(PrisonTransportEscape).GetField("engine",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).GetValue(m);Check(audio&&audio.isPlaying,"movement audio resumes after gate");}
+                    if(m.GateOpened&&m.State==PrisonTransportEscape.Stage.Riding)Check(Quaternion.Angle(m.gateLeft.rotation,Quaternion.identity)>80,"gate leaf stays open while passing");
+                    if(m.Progress>.9f)Check(m.CurrentDrain>m.drainPerSecond*3,"late ride requires faster tapping");
+                    if(m.State==PrisonTransportEscape.Stage.Riding&&Time.time>=nextTap){Check(m.Tap(),"tap accepted");nextTap=Time.time+.13f;}
                     if(m.State!=PrisonTransportEscape.Stage.Complete)return;
+                    if(Application.CanStreamedLevelBeLoaded(m.aftermathScene))return;
                     Check(m.Attempts==1&&m.Progress==1,"repeated taps complete escape without extra failure");
                     Check(m.Player.CanAct&&m.Player.View.enabled&&!m.film.enabled,"success restores first-person controls");
                     Check(!m.playerActor.gameObject.activeSelf&&!m.friendActor.gameObject.activeSelf,"cinematic doubles hidden");
