@@ -8,7 +8,7 @@ public sealed class DeveloperCheats : MonoBehaviour {
  public static DeveloperCheats Current{get;private set;}
  public static bool Invincible{get;private set;}
  public bool IsOpen{get;private set;}
- float previousScale;CursorLockMode previousLock;bool previousCursor;int selection;bool confirmSkip;string confirmationTarget,message="";BankPrologue bank;
+ float previousScale;CursorLockMode previousLock;bool previousCursor;int selection;bool confirmSkip,startingChapterThree;string confirmationTarget,message="";BankPrologue bank;
  [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]static void Reset(){Current=null;Invincible=false;}
  [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]static void Boot(){if(!Current)new GameObject("Presentation developer cheats").AddComponent<DeveloperCheats>();}
  void Awake(){if(Current&&Current!=this){Destroy(gameObject);return;}Current=this;DontDestroyOnLoad(gameObject);SceneManager.sceneLoaded+=Loaded;bank=FindFirstObjectByType<BankPrologue>();}
@@ -57,12 +57,26 @@ public sealed class DeveloperCheats : MonoBehaviour {
   if(!Application.CanStreamedLevelBeLoaded(PrisonPreviewTransition.SceneName)){message="빌드 씬 목록에 PrisonChapter가 필요합니다.";return false;}
   Close();Time.timeScale=1;SetInvincible(false);return PrisonFinaleJump.Begin();
  }
+ public bool StartChapterThree(){
+  if(startingChapterThree||PrisonFinaleJump.Running||PrisonPreviewTransition.IsLoading||FindFirstObjectByType<DeliveryService.Mok.NewCity.HarborTunnelFade>()){message="현재 씬 이동 중입니다. 이동이 끝난 뒤 사용하세요.";return false;}
+  if(!Application.CanStreamedLevelBeLoaded("NewHarborCity")){message="빌드 씬 목록에 NewHarborCity가 필요합니다.";return false;}
+  Close();Time.timeScale=1;SetInvincible(false);GameModeSession.Select(false);
+  DeliveryService.Yun.ChapterThreeArmsMission.PrepareChapterRestart();
+  startingChapterThree=true;StartCoroutine(LoadChapterThree());return true;
+ }
+ System.Collections.IEnumerator LoadChapterThree(){
+  try{
+   yield return SceneManager.LoadSceneAsync("NewHarborCity",LoadSceneMode.Single);
+   yield return null;
+   Time.timeScale=1;Cursor.lockState=CursorLockMode.Locked;Cursor.visible=false;message="챕터 3 · 새 매장에서 처음부터 시작";
+  }finally{startingChapterThree=false;}
+ }
  void Update(){
-  if(PrisonFinaleJump.Running)return;
+  if(PrisonFinaleJump.Running||startingChapterThree)return;
   bool modifier=(PrologueKeyboard.Held(Key.LeftCtrl)||PrologueKeyboard.Held(Key.RightCtrl))&&(PrologueKeyboard.Held(Key.LeftShift)||PrologueKeyboard.Held(Key.RightShift));
   if(modifier&&PrologueKeyboard.Pressed(Key.F12)){if(IsOpen)Close();else Open();return;}
   if(!IsOpen)return;
-  if(PrologueKeyboard.Pressed(Key.UpArrow))selection=(selection+7)%8;if(PrologueKeyboard.Pressed(Key.DownArrow))selection=(selection+1)%8;
+  if(PrologueKeyboard.Pressed(Key.UpArrow))selection=(selection+8)%9;if(PrologueKeyboard.Pressed(Key.DownArrow))selection=(selection+1)%9;
   if(PrologueKeyboard.Pressed(Key.Enter)||PrologueKeyboard.Pressed(Key.NumpadEnter))Activate(selection);
  }
  void Activate(int index){
@@ -74,6 +88,7 @@ public sealed class DeveloperCheats : MonoBehaviour {
   else if(index==4)StartFinalDelivery();
   else if(index==5)StartPrisonChapter();
   else if(index==6)StartPrisonFinale();
+  else if(index==7)StartChapterThree();
   else Close();
  }
  void OnGUI(){if(!IsOpen)return;float scale=Mathf.Clamp(Screen.height/900f,.6f,2f);var matrix=GUI.matrix;GUI.matrix=Matrix4x4.TRS(Vector3.zero,Quaternion.identity,Vector3.one*scale);float width=Screen.width/scale,height=Screen.height/scale;
@@ -81,7 +96,7 @@ public sealed class DeveloperCheats : MonoBehaviour {
   GUI.Box(new Rect((width-620)/2,(height-720)/2,620,720),"");GUILayout.BeginArea(new Rect((width-570)/2,(height-680)/2,570,680));
   GUILayout.Label("발표용 치트 · Ctrl + Shift + F12",label);GUILayout.Space(10);GUILayout.Label("스킵 대상: "+SkipTarget,label);
   GUILayout.Label("무적: "+(Invincible?"ON":"OFF")+" · 공격 피해와 피격 레그돌 방지",label);GUILayout.Space(14);
-  string[] buttons={"+ 100,000원","+ 1,000,000원",Invincible?"무적 끄기":"무적 켜기",confirmSkip?"정말 완료 처리하기":"미션 스킵 (완료 처리)","마지막 배달 미션 바로 시작","감옥 챕터 처음부터 시작","감옥 탈옥 피날레 바로 시작","닫기"};
+  string[] buttons={"+ 100,000원","+ 1,000,000원",Invincible?"무적 끄기":"무적 켜기",confirmSkip?"정말 완료 처리하기":"미션 스킵 (완료 처리)","마지막 배달 미션 바로 시작","감옥 챕터 처음부터 시작","감옥 탈옥 피날레 바로 시작","챕터 3 처음부터 시작","닫기"};
   for(int i=0;i<buttons.Length;i++)if(GUILayout.Button((selection==i?"▶ ":"")+buttons[i],button,GUILayout.Height(48)))Activate(i);
   GUILayout.Space(10);GUILayout.Label(message,label);GUILayout.Label("↑↓ 선택 · Enter 실행 · 마우스 클릭 가능",label);GUILayout.EndArea();GUI.skin.font=oldFont;GUI.matrix=matrix;
  }
