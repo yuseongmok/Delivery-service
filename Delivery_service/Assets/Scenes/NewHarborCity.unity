@@ -139816,6 +139816,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4cb94e9c2bb7e8946a490b2d0280eda8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DeliveryService.Yun.ChapterThreeArmsMission
+  fragmentTexts:
+  - 318-
+  - B
+  - DS-
+  shade: {fileID: 0}
+  inspectionPanel: {fileID: 0}
+  previewStage: {fileID: 0}
+  previewPivot: {fileID: 0}
+  previewCode: {fileID: 0}
+  inspectionHint: {fileID: 0}
+  assemblyStatus: {fileID: 0}
+  fragmentButtons: []
+  clearAssemblyButton: {fileID: 0}
+  previewCamera: {fileID: 0}
+  inspectionRotateSpeed: 100
   introduction: {fileID: 1410634774}
   handoffOnly: 1
   enableStandaloneTest: 0

@@ -19,6 +19,24 @@ namespace DeliveryService.Yun
         static int credit;
         static bool granted;
         static bool restartingChapter;
+        static int searchedMask, fragmentMask, carriedIndex = -1;
+        static bool assembled;
+        public int FragmentCount => ((fragmentMask & 1) != 0 ? 1 : 0) + ((fragmentMask & 2) != 0 ? 1 : 0) + ((fragmentMask & 4) != 0 ? 1 : 0);
+        public bool InvoiceAssembled => assembled;
+        readonly List<int> assemblyOrder = new List<int>();
+        public string[] fragmentTexts = { "318-", "B", "DS-" };
+        public GameObject shade, inspectionPanel, previewStage;
+        public Transform previewPivot;
+        public TextMesh previewCode;
+        public Text inspectionHint, assemblyStatus;
+        public Button[] fragmentButtons;
+        public Button clearAssemblyButton;
+        public Camera previewCamera;
+        [Min(10)] public float inspectionRotateSpeed = 100;
+        ChapterThreeArmsPoint shaking;
+        Vector3 shakeRest;
+        Quaternion shakeRotation;
+        Material previewFontInstance;
         public Stage State => progress;
         public int MissionCredit => credit;
         public bool Available => !GameModeSession.IsChallenge && (unlocked || enableStandaloneTest);
@@ -76,6 +94,7 @@ namespace DeliveryService.Yun
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void ResetSession()
         {
+            ClearPuzzle();
             restartingChapter = false;
             unlocked = false; progress = Stage.Meet; credit = 0; granted = false;
             SceneManager.sceneLoaded -= SceneLoaded;
@@ -85,17 +104,21 @@ namespace DeliveryService.Yun
         {
             if (restartingChapter && scene.name == "NewHarborCity")
             {
+                ClearPuzzle();
                 unlocked = false; progress = Stage.Meet; credit = 0; granted = false;
                 restartingChapter = false;
             }
             if (scene.name != "Lobby" && scene.name != "BankPrologue") return;
+            ClearPuzzle();
             unlocked = false; progress = Stage.Meet; credit = 0; granted = false;
         }
         public static void PrepareChapterRestart()
         {
+            ClearPuzzle();
             restartingChapter = true;
             unlocked = false; progress = Stage.Meet; credit = 0; granted = false;
         }
+        static void ClearPuzzle() { searchedMask = fragmentMask = 0; carriedIndex = -1; assembled = false; }
         void ObserveIntroduction()
         {
             if (restartingChapter) return;
@@ -108,14 +131,18 @@ namespace DeliveryService.Yun
             if (handoffOnly) return;
             legacyEnabled = legacyMerchant && legacyMerchant.enabled;
             ui.SetActive(false); props.SetActive(false);
-            nextButton.onClick.AddListener(Next);
-            skipButton.onClick.AddListener(Skip);
+            if (nextButton) nextButton.onClick.AddListener(Next);
+            if (skipButton) skipButton.onClick.AddListener(Skip);
             closeButton.onClick.AddListener(Close);
             pistolButton.onClick.AddListener(ChoosePistol);
             gatlingButton.onClick.AddListener(PreviewGatling);
             smgButton.onClick.AddListener(PreviewSmg);
             takeButton.onClick.AddListener(TakeInspectedBox);
             buyButton.onClick.AddListener(BuyPistol);
+            if (fragmentButtons != null) for (int i = 0; i < fragmentButtons.Length; i++) { int piece = i; fragmentButtons[i].onClick.AddListener(() => PlaceFragment(piece)); }
+            if (clearAssemblyButton) clearAssemblyButton.onClick.AddListener(ClearAssembly);
+            if (previewStage) previewStage.SetActive(false);
+            if (previewCode) { previewFontInstance = previewCode.GetComponent<Renderer>().material; Font.textureRebuilt += RefreshPreviewFont; RefreshPreviewFont(previewCode.font); }
         }
         void Start()
         {
@@ -150,29 +177,82 @@ namespace DeliveryService.Yun
                 case Stage.Carry: StartCoroutine(Handover()); break;
                 case Stage.Purchase: ShowPurchase(); break;
                 case Stage.Complete: Talk(new[] { "무기상: 거래는 끝났어. 물건 잘 챙겨." }, Close); break;
-                default: Talk(new[] { "무기상: 카운터의 전표와 상자 끝번호를 확인해." }, Close); break;
+                default: Talk(new[] { assembled ? "무기상: 전표와 상자 표식을 끝까지 대조해 봐." : "무기상: 옆에 있는 상자들을 흔들어 봐. 찢어진 전표 조각부터 찾아야 해." }, Close); break;
             }
         }
-        bool CanInteract() => Available && !ModalOpen && Time.timeScale > 0 && player && player.CanAct;
+        bool CanInteract() => Available && !ModalOpen && !shaking && !handingOver && Time.timeScale > 0 && player && player.CanAct;
         public void Inspect(ChapterThreeArmsPoint point, ToppingInventory inventory)
         {
             if (inventory) player = inventory.GetComponent<PlayerCombat>();
             if (!CanInteract() || !point || point.mission != this || progress < Stage.ReadSlip || progress > Stage.Compare) return;
             if (point == slip)
             {
-                if (progress == Stage.ReadSlip) progress = Stage.Compare;
-                detailTitle.text = "입고 전표";
-                detailBody.text = "인계할 상자\n\n" + slipCode + "\n\n상자의 표식과 끝번호까지 대조하세요.";
-                Show(ScreenKind.Slip); return;
+                if (!assembled && FragmentCount < 3) { Talk(new[] { $"플레이어: 전표가 찢어져 있어. 상자에서 조각을 더 찾아야겠어. ({FragmentCount}/3)" }, Close); return; }
+                ShowAssembly(); return;
             }
-            if (progress == Stage.ReadSlip)
+            if (!assembled)
             {
-                Talk(new[] { "플레이어: 먼저 카운터의 전표부터 확인하자." }, Close); return;
+                StartCoroutine(SearchBox(point)); return;
             }
             inspected = point;
-            detailTitle.text = "상자 표식";
-            detailBody.text = point.code + "\n\n전표에 적힌 상자가 맞나요?";
+            previewCode.text = point.code;
+            previewPivot.localRotation = Quaternion.Euler(18, 25, 0);
+            inspectionHint.text = "전표: " + slipCode + "\n방향키 / WASD로 상자 회전 · 상자 화면 좌클릭으로 선택 · ESC 닫기";
             Show(ScreenKind.Box);
+        }
+        IEnumerator SearchBox(ChapterThreeArmsPoint point)
+        {
+            int index = Array.IndexOf(boxes, point);
+            if (index < 0) yield break;
+            if ((searchedMask & (1 << index)) != 0) { Talk(new[] { "플레이어: 이 상자는 이미 확인했어." }, Close); yield break; }
+            shaking = point; shakeRest = point.transform.position; shakeRotation = point.transform.rotation; Lock();
+            float t = 0;
+            while (t < .9f)
+            {
+                t += Time.deltaTime;
+                point.transform.position = shakeRest + Vector3.up * Mathf.Sin(Mathf.Clamp01(t / .9f) * Mathf.PI) * .28f + point.transform.right * Mathf.Sin(t * 38) * .035f;
+                point.transform.rotation = shakeRotation * Quaternion.Euler(0, 0, Mathf.Sin(t * 38) * 7);
+                yield return null;
+            }
+            RestoreShake(); searchedMask |= 1 << index;
+            bool found = point.fragment >= 0 && point.fragment < 3 && (fragmentMask & (1 << point.fragment)) == 0;
+            if (found) fragmentMask |= 1 << point.fragment;
+            Talk(new[] { found ? $"플레이어: 전표 조각이다. ({FragmentCount}/3)" : "플레이어: 여기에는 없어." }, () => { if (FragmentCount == 3) ShowAssembly(); else Close(); });
+        }
+        void RestoreShake() { if (shaking) shaking.transform.SetPositionAndRotation(shakeRest, shakeRotation); shaking = null; }
+        void ShowAssembly()
+        {
+            assemblyOrder.Clear(); detailTitle.text = assembled ? "복원한 입고 전표" : "찢어진 전표 맞추기";
+            detailBody.text = assembled ? slipCode : "조각의 글자와 연결 순서를 보고 왼쪽부터 이어 붙이세요.";
+            Show(ScreenKind.Slip); RefreshAssembly();
+        }
+        void RefreshAssembly()
+        {
+            string result = ""; foreach (int i in assemblyOrder) result += fragmentTexts[i];
+            assemblyStatus.text = assembled ? "복원 완료 · 상자를 돌려 표식을 비교하세요." : "이어 붙인 전표: " + (result.Length == 0 ? "_  _  _" : result);
+            for (int i = 0; i < fragmentButtons.Length; i++) { fragmentButtons[i].gameObject.SetActive(!assembled); fragmentButtons[i].interactable = !assemblyOrder.Contains(i); }
+            clearAssemblyButton.gameObject.SetActive(!assembled);
+        }
+        public void ClearAssembly() { if (screen != ScreenKind.Slip || assembled || Time.timeScale <= 0) return; assemblyOrder.Clear(); RefreshAssembly(); }
+        public void PlaceFragment(int index)
+        {
+            if (screen != ScreenKind.Slip || assembled || FragmentCount != 3 || index < 0 || index >= 3 || assemblyOrder.Contains(index) || Time.timeScale <= 0) return;
+            assemblyOrder.Add(index); RefreshAssembly();
+            if (assemblyOrder.Count != 3) return;
+            string combined = ""; foreach (int i in assemblyOrder) combined += fragmentTexts[i];
+            if (combined != slipCode) { assemblyStatus.text = "이어지는 표식이 맞지 않습니다. 다시 놓기를 눌러 재조립하세요."; return; }
+            assembled = true; progress = Stage.Compare; detailBody.text = slipCode; detailTitle.text = "복원한 입고 전표"; RefreshAssembly();
+        }
+        public void RotateInspection(Vector2 direction)
+        {
+            if (screen != ScreenKind.Box || Time.timeScale <= 0) return;
+            previewPivot.Rotate(Vector3.up, -direction.x * inspectionRotateSpeed * Time.deltaTime, Space.World);
+            previewPivot.Rotate(Vector3.right, direction.y * inspectionRotateSpeed * Time.deltaTime, Space.World);
+        }
+        void RefreshPreviewFont(Font changed)
+        {
+            if (previewCode && previewFontInstance && changed == previewCode.font)
+                previewFontInstance.mainTexture = changed.material.mainTexture;
         }
         public void ChoosePistol()
         {
@@ -184,7 +264,8 @@ namespace DeliveryService.Yun
         public void TakeInspectedBox()
         {
             if (screen != ScreenKind.Box || progress != Stage.Compare || !inspected || Time.timeScale <= 0) return;
-            if (inspected.code != slipCode) { Talk(wrongBox, Close); return; }
+            if (!assembled || Time.unscaledTime < inputAfter) return;
+            carriedIndex = Array.IndexOf(boxes, inspected);
             progress = Stage.Carry;
             AttachCorrectBox();
             Close();
@@ -192,9 +273,10 @@ namespace DeliveryService.Yun
         void AttachCorrectBox()
         {
             if (!player) return;
-            foreach (var box in boxes)
-                if (box && box.code == slipCode)
+            for (int i = 0; i < boxes.Length; i++)
+                if (i == carriedIndex && boxes[i])
                 {
+                    var box = boxes[i];
                     carried = box; boxRestPosition = box.transform.position; boxRestRotation = box.transform.rotation;
                     foreach (var c in box.GetComponentsInChildren<Collider>()) c.enabled = false;
                     break;
@@ -214,7 +296,13 @@ namespace DeliveryService.Yun
                 carried.transform.SetPositionAndRotation(Vector3.Lerp(from, handoverRest.position, t) + Vector3.up * Mathf.Sin(t * Mathf.PI) * .1f, Quaternion.Slerp(rotation, handoverRest.rotation, t));
                 yield return null;
             }
-            RestoreCarried();
+            bool correct = carried.code == slipCode;
+            RestoreCarried(); carriedIndex = -1;
+            if (!correct)
+            {
+                progress = Stage.Compare; handingOver = false;
+                Talk(wrongBox, Close); yield break;
+            }
             credit = Mathf.Max(0, pistolPrice); progress = Stage.Purchase;
             handingOver = false;
             RefreshAvailability(); Talk(accepted, ShowPurchase);
@@ -254,9 +342,12 @@ namespace DeliveryService.Yun
         {
             Lock(); screen = kind; openedFrame = Time.frameCount; inputAfter = Time.unscaledTime + .2f;
             ui.SetActive(true);
+            if (shade) shade.SetActive(kind != ScreenKind.Dialogue);
             dialoguePanel.SetActive(kind == ScreenKind.Dialogue);
             candidatesPanel.SetActive(kind == ScreenKind.Candidates);
-            detailPanel.SetActive(kind == ScreenKind.Slip || kind == ScreenKind.Box);
+            detailPanel.SetActive(kind == ScreenKind.Slip);
+            if (inspectionPanel) inspectionPanel.SetActive(kind == ScreenKind.Box);
+            if (previewStage) previewStage.SetActive(kind == ScreenKind.Box);
             purchasePanel.SetActive(kind == ScreenKind.Purchase);
             takeButton.gameObject.SetActive(kind == ScreenKind.Box);
             closeButton.gameObject.SetActive(kind != ScreenKind.Dialogue);
@@ -264,7 +355,8 @@ namespace DeliveryService.Yun
         }
         public void Close()
         {
-            if (handingOver) return;
+            if (handingOver || shaking) return;
+            if (previewStage) previewStage.SetActive(false);
             ui.SetActive(false); screen = ScreenKind.None; afterDialogue = null;
             if (releasing != null) StopCoroutine(releasing);
             releasing = StartCoroutine(ReleaseAfterInput());
@@ -305,13 +397,13 @@ namespace DeliveryService.Yun
             if (!Available) return;
             if (progress == Stage.Carry && !carried && player) AttachCorrectBox();
             objective.text = progress == Stage.Meet || progress == Stage.Choose ? "대비 · 무기상과 이야기하기" :
-                progress == Stage.ReadSlip ? "바뀐 전표 · 카운터의 입고 전표 확인" :
+                progress == Stage.ReadSlip ? (FragmentCount == 3 ? "바뀐 전표 · 카운터에서 전표 조각 이어 붙이기" : $"바뀐 전표 · 상자에서 전표 조각 찾기 ({FragmentCount}/3)") :
                 progress == Stage.Compare ? "바뀐 전표 · 전표와 상자 끝번호 대조" :
                 progress == Stage.Carry ? "바뀐 전표 · 상자를 무기상에게 인계" :
                 progress == Stage.Purchase ? "바뀐 전표 · 의뢰 대금으로 권총 구매" : "바뀐 전표 완료 · 권총 확보";
             prompt.text = "";
             if (player && (player.IsDown || PoliceControl.IsArrestInProgress) && (locked || handingOver))
-            { StopAllCoroutines(); handingOver = false; ui.SetActive(false); screen = ScreenKind.None; Unlock(); return; }
+            { StopAllCoroutines(); RestoreShake(); handingOver = false; if (previewStage) previewStage.SetActive(false); ui.SetActive(false); screen = ScreenKind.None; Unlock(); return; }
             if (Time.timeScale <= 0) return;
             if (ModalOpen)
             {
@@ -320,16 +412,22 @@ namespace DeliveryService.Yun
                 if (screen == ScreenKind.Dialogue)
                 { if (PrologueKeyboard.Pressed(Key.Space)) Skip(); else if (PrologueKeyboard.Pressed(Key.F)) Next(); }
                 else if (PrologueKeyboard.Pressed(Key.Escape)) Close();
+                else if (screen == ScreenKind.Box)
+                {
+                    var keyboard = Keyboard.current;
+                    if (keyboard != null) RotateInspection(new Vector2((keyboard.rightArrowKey.isPressed || keyboard.dKey.isPressed ? 1 : 0) - (keyboard.leftArrowKey.isPressed || keyboard.aKey.isPressed ? 1 : 0), (keyboard.upArrowKey.isPressed || keyboard.wKey.isPressed ? 1 : 0) - (keyboard.downArrowKey.isPressed || keyboard.sKey.isPressed ? 1 : 0)));
+                }
             }
             else if (!handingOver && player && player.CanAct && player.View && Physics.Raycast(player.View.transform.position, player.View.transform.forward, out var hit, 3f))
             {
                 var point = hit.collider.GetComponentInParent<ChapterThreeArmsPoint>();
-                if (point && point.mission == this) prompt.text = point == slip ? "[F] 입고 전표 확인" : "[F] 상자 표식 확인";
+                if (point && point.mission == this) prompt.text = point == slip ? "[F] 전표 작업대" : assembled ? "[F] 상자 돌려 보기" : "[F] 상자를 들어 흔들기";
                 else if (hit.collider.GetComponentInParent<ChapterThreeArmsMission>() == this) prompt.text = "[F] 무기상과 이야기하기";
             }
         }
         void LateUpdate()
         {
+            if (screen == ScreenKind.Box && previewCode) RefreshPreviewFont(previewCode.font);
             if (!handoffOnly)
             {
                 // Suppress only the obsolete "next story" card, preserving the vehicle gauges.
@@ -355,6 +453,7 @@ namespace DeliveryService.Yun
         void OnDisable()
         {
             ObserveIntroduction(); StopAllCoroutines(); handingOver = false; releasing = null;
+            RestoreShake(); if (previewStage) previewStage.SetActive(false);
             if (ui) ui.SetActive(false);
             if (objective) objective.gameObject.SetActive(false);
             if (objectivePanel) objectivePanel.SetActive(false);
@@ -363,6 +462,6 @@ namespace DeliveryService.Yun
             if (legacyMerchant) legacyMerchant.enabled = legacyEnabled;
             if (oldOrderVisibility) oldOrderVisibility.alpha = 1;
         }
-        void OnDestroy() { if (oldOrderVisibility) Destroy(oldOrderVisibility); }
+        void OnDestroy() { Font.textureRebuilt -= RefreshPreviewFont; if (previewFontInstance) Destroy(previewFontInstance); if (oldOrderVisibility) Destroy(oldOrderVisibility); }
     }
 }

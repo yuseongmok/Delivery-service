@@ -67,15 +67,9 @@ namespace DeliveryService.Yun.Editor
             typeof(ChapterThreeArmsMission).GetField("granted", BindingFlags.Static | BindingFlags.NonPublic).SetValue(null, true);
             typeof(ChapterThreeArmsMission).GetField("credit", BindingFlags.Static | BindingFlags.NonPublic).SetValue(null, 25000);
             DeveloperCheats.SetInvincible(true);
-            // Up wraps to Close (8), then up reaches the new chapter-three entry (7).
-            for (int i = 0; i < 2; i++)
-            {
-                UnityEngine.InputSystem.InputSystem.QueueStateEvent(keyboard, new UnityEngine.InputSystem.LowLevel.KeyboardState(UnityEngine.InputSystem.Key.UpArrow)); yield return .2f;
-                UnityEngine.InputSystem.InputSystem.QueueStateEvent(keyboard, new UnityEngine.InputSystem.LowLevel.KeyboardState()); yield return .2f;
-            }
-            Require((int)typeof(DeveloperCheats).GetField("selection", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(cheat) == 7, "Keyboard navigation reaches the added ninth-menu entry correctly");
-            UnityEngine.InputSystem.InputSystem.QueueStateEvent(keyboard, new UnityEngine.InputSystem.LowLevel.KeyboardState(UnityEngine.InputSystem.Key.Enter)); yield return .3f;
-            UnityEngine.InputSystem.InputSystem.QueueStateEvent(keyboard, new UnityEngine.InputSystem.LowLevel.KeyboardState()); yield return 5f;
+            // Invoke the same dispatch used by the mouse button, independently of desktop focus.
+            typeof(DeveloperCheats).GetMethod("Activate", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(cheat, new object[] { 7 });
+            yield return 5f;
             Require(SceneManager.GetActiveScene().name == "NewHarborCity", "Chapter three button loads the new-store scene");
             var intro = UnityEngine.Object.FindFirstObjectByType<MissionManager>();
             var relay = UnityEngine.Object.FindFirstObjectByType<ChapterThreeArmsMission>();
@@ -126,79 +120,80 @@ namespace DeliveryService.Yun.Editor
             Require(hit && result.collider.GetComponentInParent<IInteractable>() == (IInteractable)target, "Saved collider is reachable by player ray: " + target.name);
             typeof(PlayerInteraction).GetMethod("TryInteract", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(interaction, null);
         }
+        static void StandNear(PlayerCombat p, Vector3 target, Vector3 offset)
+        {
+            var cc = p.GetComponent<CharacterController>();
+            float footOffset = p.transform.position.y - p.transform.TransformPoint(cc.center - Vector3.up * cc.height * .5f).y;
+            cc.enabled = false;
+            p.transform.position = target + offset + Vector3.up * footOffset; cc.enabled = true; FocusPlayer(p);
+        }
         static IEnumerator PlayChecks()
         {
             var m = UnityEngine.Object.FindObjectsByType<ChapterThreeArmsMission>(FindObjectsSortMode.None).Single(v => !v.handoffOnly);
             var p = UnityEngine.Object.FindFirstObjectByType<PlayerCombat>();
             var inventory = p.GetComponent<ToppingInventory>();
-            Require(!m.Available && m.legacyMerchant.enabled && !m.ui.activeSelf, "Chapter one keeps the original merchant and hides new mission UI");
-            Require(m.GetComponents<MonoBehaviour>().OfType<IInteractable>().First() == m, "Existing ray interaction resolves the forwarding controller first");
+            Require(!m.Available && m.legacyMerchant.enabled, "Original shop is preserved before chapter three");
             m.enableStandaloneTest = true;
-            var controller = p.GetComponent<CharacterController>(); controller.enabled = false;
-            p.transform.position = m.transform.parent.TransformPoint(new Vector3(.5f, .1f, -1.9f)); controller.enabled = true;
-            Vector3 facing = m.transform.position - p.transform.position; facing.y = 0; p.transform.rotation = Quaternion.LookRotation(facing);
-            p.View.transform.LookAt(m.transform.position + Vector3.up * 1.25f);
-            p.GetComponentInChildren<CameraMove>()?.SyncViewFromTransform();
-            Cursor.lockState = CursorLockMode.Locked; Cursor.visible = false;
-            yield return .5f;
-            FocusPlayer(p);
-            Require(p.CanAct, "Player can interact at the saved weapon shop");
+            StandNear(p, m.transform.parent.TransformPoint(new Vector3(.5f, .1f, -1.9f)), Vector3.zero);
             UseWorldTarget(p, m); yield return .4f;
-            Require(m.CurrentScreen == ChapterThreeArmsMission.ScreenKind.Dialogue, "Merchant greeting opens scene subtitle panel");
-            m.nextButton.onClick.Invoke(); yield return .3f;
-            Require(m.subtitle.text.Contains("나보고 일하라고"), "Next advances exactly one line");
-            m.skipButton.onClick.Invoke(); yield return .4f;
-            Require(m.CurrentScreen == ChapterThreeArmsMission.ScreenKind.Candidates, "Skipping greeting still opens weapon choices");
-            m.gatlingButton.onClick.Invoke();
-            Require(m.notice.text.Contains("게틀링건") && m.State == ChapterThreeArmsMission.Stage.Choose, "Gatling preview does not accept an unfinished request");
-            ScreenCapture.CaptureScreenshot(Path.Combine(BackupRoot, "weapon-choices.png")); yield return .7f;
-            m.pistolButton.onClick.Invoke(); yield return .3f; m.skipButton.onClick.Invoke(); yield return .5f;
-            FocusPlayer(p);
-            Require(m.State == ChapterThreeArmsMission.Stage.ReadSlip && !m.ModalOpen && p.CanAct, "Briefing skip unlocks slip task and restores control");
-            UseWorldTarget(p, m.boxes[1]); yield return .3f;
-            Require(m.State == ChapterThreeArmsMission.Stage.ReadSlip, "Cannot collect a box before reading the slip");
-            m.Skip(); yield return .4f;
-            FocusPlayer(p);
-            UseWorldTarget(p, m.slip); yield return .3f;
-            Require(m.State == ChapterThreeArmsMission.Stage.Compare && m.detailBody.text.Contains(m.slipCode), "Slip displays required full code");
-            m.Close(); yield return .4f;
-            FocusPlayer(p);
-            UseWorldTarget(p, m.boxes[0]); yield return .3f; m.takeButton.onClick.Invoke(); yield return .3f;
-            Require(m.State == ChapterThreeArmsMission.Stage.Compare && m.subtitle.text.Contains("끝에 거"), "Wrong box gives screenplay hint and leaves the task retryable");
-            m.Skip(); yield return .4f;
-            FocusPlayer(p);
-            UseWorldTarget(p, m.boxes[1]); yield return .3f;
-            ScreenCapture.CaptureScreenshot(Path.Combine(BackupRoot, "box-inspection.png")); yield return .7f;
-            m.takeButton.onClick.Invoke(); yield return .4f;
-            FocusPlayer(p);
-            Require(m.State == ChapterThreeArmsMission.Stage.Carry && p.CanAct, "Matching box becomes carried cargo");
-            UseWorldTarget(p, m); yield return .25f;
-            Time.timeScale = 0; var atPause = m.boxes[1].transform.position; yield return .35f;
-            Require(Vector3.Distance(atPause, m.boxes[1].transform.position) < .001f, "Handover animation respects game pause");
-            Time.timeScale = 1; yield return 1.4f;
-            Require(m.State == ChapterThreeArmsMission.Stage.Purchase && m.MissionCredit == m.pistolPrice, "Accepted handover credits exactly the weapon price");
-            m.Skip(); yield return .4f;
-            int moneyBefore = MoneyManager.Instance ? MoneyManager.Instance.currentMoney : 0;
-            m.buyButton.onClick.Invoke(); yield return .3f;
-            Require(m.State == ChapterThreeArmsMission.Stage.Complete && m.MissionCredit == 0 && p.GetComponent<PlayerWeapon>().Equipped == WeaponKind.Pistol, "Earned credit purchases and equips the existing pistol");
-            m.BuyPistol();
-            Require(m.MissionCredit == 0 && (!MoneyManager.Instance || MoneyManager.Instance.currentMoney == moneyBefore), "Duplicate purchase cannot charge money or duplicate credit");
+            Require(m.CurrentScreen == ChapterThreeArmsMission.ScreenKind.Dialogue && !m.shade.activeSelf && !m.dialoguePanel.GetComponent<Image>() && !m.nextButton && !m.skipButton, "Dialogue uses plain white subtitles with no panel or buttons");
+            ScreenCapture.CaptureScreenshot(Path.Combine(BackupRoot, "puzzle-subtitles.png")); yield return .8f;
+            m.Next(); yield return .3f; m.Skip(); yield return .3f;
+            m.ChoosePistol(); yield return .3f; m.Skip(); yield return .5f;
+            Require(m.boxes.Length == 12 && m.FragmentCount == 0 && !m.InvoiceAssembled, "Twelve boxes start with no invoice knowledge");
+            StandNear(p, m.transform.parent.TransformPoint(new Vector3(-1.6f, .1f, -6.2f)), Vector3.zero);
+            var look = m.boxes[4].transform.position;
+            var horizontal = look - p.transform.position; horizontal.y = 0; p.transform.rotation = Quaternion.LookRotation(horizontal);
+            p.View.transform.LookAt(look); p.GetComponentInChildren<CameraMove>()?.SyncViewFromTransform();
+            ScreenCapture.CaptureScreenshot(Path.Combine(BackupRoot, "puzzle-boxes-world.png")); yield return .8f;
+            FocusPlayer(p); m.slip.Interact(inventory); yield return .3f;
+            Require(!m.InvoiceAssembled && m.State == ChapterThreeArmsMission.Stage.ReadSlip, "Counter cannot reveal the full code before all fragments");
             m.Skip(); yield return .5f;
-            FocusPlayer(p);
-            Require(!m.ModalOpen && p.CanAct && p.GetComponent<PlayerInteraction>().enabled, "Settlement skip restores normal player interaction");
-            // Check the actual saved NewHarborCity relay after switching scenes; no modifications are saved by this test.
-            UnityEngine.SceneManagement.SceneManager.LoadScene("NewHarborCity"); yield return 4f;
-            var relay = UnityEngine.Object.FindObjectsByType<ChapterThreeArmsMission>(FindObjectsSortMode.None).Single(v => v.handoffOnly);
-            Require(relay.introduction != null, "Saved new-store mission reference is present");
-            typeof(MissionManager).GetField("currentState", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(relay.introduction, MissionManager.MissionState.GoToDestination);
-            yield return .4f;
-            Require(relay.Available, "Mingi completion opens the chapter-three handoff");
-            UnityEngine.SceneManagement.SceneManager.LoadScene("JJinCity"); yield return 4f;
-            m = UnityEngine.Object.FindObjectsByType<ChapterThreeArmsMission>(FindObjectsSortMode.None).Single(v => !v.handoffOnly);
-            Require(m.Available && !m.enableStandaloneTest && m.State == ChapterThreeArmsMission.Stage.Complete, "Tunnel scene travel preserves chapter-three state without editor test flag");
-            File.WriteAllText(Path.Combine(BackupRoot, "play-test.txt"), "PASS: merchant compatibility, next/skip, candidates, slip prerequisite, wrong box retry, correct box carry, paused handover, credit, single purchase, control restoration, saved handoff and scene travel.\nFull playthrough navigation and subjective visual polish still require human review.");
+            foreach (int index in new[] { 0, 1, 6, 10 })
+            {
+                StandNear(p, m.boxes[index].transform.position, m.transform.parent.TransformVector(new Vector3(.55f, .08f, -.55f)));
+                UseWorldTarget(p, m.boxes[index]); yield return 1.4f;
+                Require(m.CurrentScreen == ChapterThreeArmsMission.ScreenKind.Dialogue, "Shaking a box ends in a search result");
+                m.Skip(); yield return .5f;
+                if (index == 1)
+                {
+                    FocusPlayer(p); m.boxes[index].Interact(inventory); yield return .3f;
+                    Require(m.FragmentCount == 1, "Rechecking a box cannot duplicate its fragment");
+                    m.Skip(); yield return .5f;
+                }
+            }
+            Require(m.FragmentCount == 3 && m.CurrentScreen == ChapterThreeArmsMission.ScreenKind.Slip && !m.InvoiceAssembled, "Three fragments unlock manual assembly, not automatic completion");
+            m.PlaceFragment(0); m.PlaceFragment(1); m.PlaceFragment(2);
+            Require(!m.InvoiceAssembled, "Wrong piece order is rejected without losing pieces");
+            m.ClearAssembly(); m.PlaceFragment(2); m.PlaceFragment(0); m.PlaceFragment(1);
+            Require(m.InvoiceAssembled && m.State == ChapterThreeArmsMission.Stage.Compare, "Correct assembly unlocks box comparison");
+            ScreenCapture.CaptureScreenshot(Path.Combine(BackupRoot, "puzzle-invoice.png")); yield return .8f;
+            m.Close(); yield return .5f;
+            StandNear(p, m.boxes[0].transform.position, m.transform.parent.TransformVector(new Vector3(.55f, .08f, -.55f)));
+            UseWorldTarget(p, m.boxes[0]); yield return .3f;
+            var rotation = m.previewPivot.rotation; m.RotateInspection(new Vector2(1, 1));
+            Require(Quaternion.Angle(rotation, m.previewPivot.rotation) > .01f && m.previewStage.activeSelf, "Inspection rotates the saved rendered box");
+            Require(m.previewCode.GetComponent<Renderer>().sharedMaterial.shader.name == "DeliveryService/Yun/FadedBoxText", "Faded label uses depth-tested one-sided text");
+            ScreenCapture.CaptureScreenshot(Path.Combine(BackupRoot, "puzzle-box-front.png")); yield return .8f;
+            m.previewPivot.localRotation = Quaternion.Euler(12, 190, 0);
+            ScreenCapture.CaptureScreenshot(Path.Combine(BackupRoot, "puzzle-box-inspection.png")); yield return .8f;
+            m.takeButton.onClick.Invoke(); yield return .5f;
+            Require(m.State == ChapterThreeArmsMission.Stage.Carry, "Left click selects even an incorrect box for physical handover");
+            StandNear(p, m.transform.parent.TransformPoint(new Vector3(.5f, .1f, -1.9f)), Vector3.zero);
+            UseWorldTarget(p, m); yield return 1.2f;
+            Require(m.State == ChapterThreeArmsMission.Stage.Compare && m.MissionCredit == 0 && m.InvoiceAssembled, "Merchant rejects wrong box and preserves assembled invoice for retry");
+            m.Skip(); yield return .5f;
+            StandNear(p, m.boxes[4].transform.position, m.transform.parent.TransformVector(new Vector3(.55f, .08f, -.55f)));
+            UseWorldTarget(p, m.boxes[4]); yield return .4f; m.takeButton.onClick.Invoke(); yield return .5f;
+            StandNear(p, m.transform.parent.TransformPoint(new Vector3(.5f, .1f, -1.9f)), Vector3.zero);
+            UseWorldTarget(p, m); yield return 1.2f;
+            Require(m.State == ChapterThreeArmsMission.Stage.Purchase && m.MissionCredit == m.pistolPrice, "Only the matching box earns payment");
+            m.Skip(); yield return .4f; m.buyButton.onClick.Invoke(); yield return .4f; m.Skip(); yield return .5f;
+            Require(m.State == ChapterThreeArmsMission.Stage.Complete && !m.ModalOpen && p.GetComponent<PlayerInteraction>().enabled, "Correct delivery and purchase finish the mission and restore control");
+            ChapterThreeArmsMission.PrepareChapterRestart();
+            Require(m.FragmentCount == 0 && !m.InvoiceAssembled, "Chapter restart clears fragment and assembly progress");
+            Debug.Log("YUN_INVOICE_PUZZLE_PASS");
         }
-
         public static void RunBatch()
         {
             try { Install(); Debug.Log("YUN_ARMS_SETUP_PASS"); EditorApplication.Exit(0); }
@@ -256,14 +251,24 @@ namespace DeliveryService.Yun.Editor
             var props = new GameObject("Yun Changed Invoice Props"); props.transform.SetParent(parent, false); mission.props = props;
             float top = counter.localPosition.y + counter.localScale.y * .5f;
             mission.slip = Prop(props.transform, mission, "입고 전표", "", "Assets/Synty/PolygonGeneric/Prefabs/Props/SM_Gen_Prop_Papers_01.prefab", new Vector3(.75f, top + .015f, -.45f), new Vector3(.38f, .025f, .28f));
-            mission.boxes = new[] {
-                Prop(props.transform, mission, "상자 DS-318-A", "DS-318-A", "Assets/Synty/PolygonGeneric/Prefabs/Props/SM_Gen_Prop_Cardboard_Box_01.prefab", new Vector3(-1.35f, top, -.24f), new Vector3(.48f, .34f, .44f)),
-                Prop(props.transform, mission, "상자 DS-318-B", "DS-318-B", "Assets/Synty/PolygonGeneric/Prefabs/Props/SM_Gen_Prop_Cardboard_Box_01.prefab", new Vector3(-.55f, top, -.24f), new Vector3(.48f, .34f, .44f))
-            };
+            string[] codes = { "DS-318-8", "DS-381-B", "DS-318-P", "DS-813-B", "DS-318-B", "D5-318-B", "DS-313-B", "DS-318-R", "DS-319-B", "DS-388-B", "DS-318-D", "D8-318-B" };
+            mission.boxes = new ChapterThreeArmsPoint[codes.Length];
+            for (int i = 0; i < codes.Length; i++)
+            {
+                var box = Prop(props.transform, mission, "배송 상자 " + (i + 1), codes[i], "Assets/Synty/PolygonGeneric/Prefabs/Props/SM_Gen_Prop_Cardboard_Box_01.prefab", new Vector3(-3.2f + (i % 3) * .8f, .08f, -2.35f - (i / 3) * .8f), new Vector3(.48f, .34f, .44f));
+                box.fragment = i == 1 ? 0 : i == 6 ? 1 : i == 10 ? 2 : -1;
+                box.transform.localRotation = Quaternion.Euler(0, (i * 37) % 65 - 32, 0);
+                box.transform.Find("Label").GetComponent<TextMesh>().text = "배송 상자";
+                box.transform.Find("Label").gameObject.SetActive(false);
+                mission.boxes[i] = box;
+            }
+            mission.briefing = new[] { "무기상: 입고 전표가 찢어져서 상자들 사이로 흩어졌어. 옆에 있는 상자를 하나씩 흔들어 봐.", "플레이어: 조각부터 찾으라는 거지?", "무기상: 세 조각이야. 다 찾으면 카운터에서 이어 붙여. 상자 표식도 지워져서 돌려 가며 봐야 할 거야.", "플레이어: 이런 건 우리 가게서도 맨날 하는데.", "무기상: 그럼 오늘은 틀리지 마." };
+            mission.wrongBox = new[] { "무기상: 이 상자가 아니야. 돌려줄 테니 다시 확인해.", "직원: 앞번호는 같아요. 끝에 거 보세요." };
             var rest = new GameObject("Handover rest"); rest.transform.SetParent(props.transform, false); rest.transform.localPosition = new Vector3(.25f, top, -.2f); mission.handoverRest = rest.transform;
             props.SetActive(false);
             foreach (var old in scene.GetRootGameObjects().Where(g => g.name == "Yun Chapter 3 Arms Canvas")) UnityEngine.Object.DestroyImmediate(old);
             BuildUI(mission);
+            BuildPreview(mission);
             foreach (var player in UnityEngine.Object.FindObjectsByType<PlayerCombat>(FindObjectsInactive.Include, FindObjectsSortMode.None))
                 if (!player.GetComponent<PlayerWeapon>()) throw new InvalidOperationException("Existing PlayerWeapon required; no teammate rig changed.");
             EditorUtility.SetDirty(mission);
@@ -322,12 +327,11 @@ namespace DeliveryService.Yun.Editor
             m.objective.alignment = TextAnchor.MiddleLeft; m.objectivePanel.SetActive(false);
             m.prompt = Label("Interaction hint", canvasGo.transform, "", new Vector2(650, 45), new Vector2(0, -265), 24);
             m.ui = Rect("Modal", canvasGo.transform, new Vector2(1280, 720), Vector2.zero).gameObject;
-            var shade = Panel("Dim", m.ui.transform, new Vector2(6000, 4000), Vector2.zero, new Color(0, 0, 0, .55f));
-            m.dialoguePanel = Panel("Dialogue", m.ui.transform, new Vector2(1120, 205), new Vector2(0, -205), new Color(.025f, .035f, .05f, .94f));
-            m.subtitle = Label("Subtitle", m.dialoguePanel.transform, "", new Vector2(1020, 115), new Vector2(0, 20), 29);
-            m.subtitle.alignment = TextAnchor.MiddleLeft; m.subtitle.gameObject.AddComponent<StorySpeakerColors>();
-            m.nextButton = Button("Next", m.dialoguePanel.transform, "[F] 계속", new Vector2(180, 40), new Vector2(210, -70));
-            m.skipButton = Button("Skip", m.dialoguePanel.transform, "[Space] 대화 건너뛰기", new Vector2(250, 40), new Vector2(440, -70), new Color(.18f, .23f, .28f));
+            m.shade = Panel("Dim", m.ui.transform, new Vector2(6000, 4000), Vector2.zero, new Color(0, 0, 0, .55f));
+            m.dialoguePanel = Rect("Dialogue subtitles only", m.ui.transform, new Vector2(1180, 110), new Vector2(0, -285)).gameObject;
+            m.subtitle = Label("Subtitle", m.dialoguePanel.transform, "", new Vector2(1150, 100), Vector2.zero, 27, Color.white);
+            m.subtitle.gameObject.AddComponent<Shadow>().effectDistance = new Vector2(1.2f, -1.2f);
+            m.nextButton = null; m.skipButton = null;
             m.candidatesPanel = Panel("Weapon candidates", m.ui.transform, new Vector2(1080, 580), Vector2.zero, Navy);
             Label("Title", m.candidatesPanel.transform, "골목 무기점 · 의뢰 선택", new Vector2(900, 60), new Vector2(0, 235), 36);
             var titles = new[] { "권총", "게틀링건", "기관단총" }; var requests = new[] { "바뀐 전표", "반송된 상자 · 준비 중", "거래는 취소야 · 준비 중" };
@@ -344,13 +348,53 @@ namespace DeliveryService.Yun.Editor
             m.notice = Label("Notice", m.candidatesPanel.transform, "", new Vector2(990, 65), new Vector2(0, -225), 22);
             m.detailPanel = Panel("Invoice and box inspection", m.ui.transform, new Vector2(750, 470), Vector2.zero, Navy);
             m.detailTitle = Label("Title", m.detailPanel.transform, "", new Vector2(650, 55), new Vector2(0, 170), 35);
-            m.detailBody = Label("Body", m.detailPanel.transform, "", new Vector2(650, 230), new Vector2(0, 10), 29);
-            m.takeButton = Button("Take box", m.detailPanel.transform, "이 상자 가져가기", new Vector2(320, 55), new Vector2(0, -170));
+            m.detailBody = Label("Body", m.detailPanel.transform, "", new Vector2(650, 90), new Vector2(0, 85), 25);
+            m.fragmentButtons = new Button[3];
+            for (int i = 0; i < 3; i++) m.fragmentButtons[i] = Button("Fragment " + i, m.detailPanel.transform, m.fragmentTexts[i], new Vector2(180, 75), new Vector2((i - 1) * 210, 0), new Color(.42f, .35f, .22f));
+            m.assemblyStatus = Label("Assembly result", m.detailPanel.transform, "", new Vector2(680, 60), new Vector2(0, -90), 23);
+            m.clearAssemblyButton = Button("Reset pieces", m.detailPanel.transform, "다시 놓기", new Vector2(230, 45), new Vector2(0, -175));
+            m.inspectionPanel = Rect("Rotate box inspection", m.ui.transform, new Vector2(1000, 620), Vector2.zero).gameObject;
+            var viewport = Rect("Box image - left click to choose", m.inspectionPanel.transform, new Vector2(670, 460), new Vector2(0, 45));
+            var raw = viewport.gameObject.AddComponent<RawImage>(); raw.color = Color.white;
+            m.takeButton = viewport.gameObject.AddComponent<Button>(); m.takeButton.targetGraphic = raw;
+            m.takeButton.navigation = new Navigation { mode = Navigation.Mode.None };
+            m.inspectionHint = Label("Inspection controls", m.inspectionPanel.transform, "", new Vector2(1000, 85), new Vector2(0, -245), 23);
             m.purchasePanel = Panel("Settlement", m.ui.transform, new Vector2(760, 510), Vector2.zero, Navy);
             m.purchaseSummary = Label("Summary", m.purchasePanel.transform, "", new Vector2(660, 335), new Vector2(0, 35), 28);
             m.buyButton = Button("Purchase", m.purchasePanel.transform, "의뢰 대금으로 권총 구매", new Vector2(500, 60), new Vector2(0, -180));
             m.closeButton = Button("Close", m.ui.transform, "닫기 · ESC", new Vector2(160, 45), new Vector2(535, 325), new Color(.16f, .22f, .28f));
             m.ui.SetActive(false);
+        }
+        static void BuildPreview(ChapterThreeArmsMission m)
+        {
+            var scene = SceneManager.GetActiveScene();
+            foreach (var old in scene.GetRootGameObjects().Where(g => g.name == "Yun Arms Box Inspection Studio")) UnityEngine.Object.DestroyImmediate(old);
+            var root = new GameObject("Yun Arms Box Inspection Studio"); root.transform.position = new Vector3(0, -2000, 0); m.previewStage = root;
+            var pivot = new GameObject("Rotate this box"); pivot.transform.SetParent(root.transform, false); m.previewPivot = pivot.transform;
+            var source = m.boxes[0].transform.GetChild(0);
+            var visual = UnityEngine.Object.Instantiate(source.gameObject); visual.name = "Synty cardboard box"; visual.transform.SetParent(pivot.transform, false);
+            visual.transform.localPosition = source.localPosition - Vector3.up * .17f; visual.transform.localRotation = source.localRotation; visual.transform.localScale = source.localScale;
+            pivot.transform.localScale = Vector3.one * 2.7f;
+            var renderers = visual.GetComponentsInChildren<Renderer>();
+            var bounds = renderers[0].bounds; foreach (var renderer in renderers) bounds.Encapsulate(renderer.bounds);
+            pivot.transform.localScale *= 1.2f / Mathf.Max(bounds.size.x, bounds.size.y, bounds.size.z);
+            bounds = renderers[0].bounds; foreach (var renderer in renderers) bounds.Encapsulate(renderer.bounds);
+            visual.transform.position += pivot.transform.position - bounds.center;
+            var label = new GameObject("Faded mark on back", typeof(TextMesh)); label.transform.SetParent(pivot.transform, false); label.transform.localPosition = new Vector3(0, .02f, bounds.extents.z / pivot.transform.lossyScale.z + .002f); label.transform.localRotation = Quaternion.Euler(0, 180, 0);
+            m.previewCode = label.GetComponent<TextMesh>(); m.previewCode.font = font; m.previewCode.fontSize = 64; m.previewCode.characterSize = .008f; m.previewCode.anchor = TextAnchor.MiddleCenter; m.previewCode.color = new Color(.18f, .15f, .12f); m.previewCode.text = "DS-318-B";
+            string materialPath = Art + "/FadedBoxText.mat";
+            var textMaterial = AssetDatabase.LoadAssetAtPath<Material>(materialPath);
+            if (!textMaterial) { textMaterial = new Material(Shader.Find("DeliveryService/Yun/FadedBoxText")); AssetDatabase.CreateAsset(textMaterial, materialPath); }
+            label.GetComponent<Renderer>().sharedMaterial = textMaterial;
+            foreach (var t in root.GetComponentsInChildren<Transform>()) t.gameObject.layer = 31;
+            var camera = new GameObject("Inspection camera", typeof(Camera)).GetComponent<Camera>(); camera.transform.SetParent(root.transform, false); camera.transform.localPosition = new Vector3(0, .08f, -2.7f); camera.transform.LookAt(root.transform.position);
+            camera.fieldOfView = 36; camera.nearClipPlane = .05f; camera.farClipPlane = 6; camera.cullingMask = 1 << 31; camera.clearFlags = CameraClearFlags.SolidColor; camera.backgroundColor = new Color(.10f, .13f, .15f); camera.allowHDR = false; camera.allowMSAA = false;
+            string path = Art + "/BoxInspection.renderTexture";
+            var texture = AssetDatabase.LoadAssetAtPath<RenderTexture>(path);
+            if (!texture) { texture = new RenderTexture(1024, 768, 24) { name = "Box inspection" }; AssetDatabase.CreateAsset(texture, path); }
+            camera.targetTexture = texture; m.previewCamera = camera; m.takeButton.GetComponent<RawImage>().texture = texture;
+            var light = new GameObject("Inspection light", typeof(Light)).GetComponent<Light>(); light.transform.SetParent(root.transform, false); light.transform.localPosition = new Vector3(-1, 1.5f, -1.8f); light.type = LightType.Point; light.intensity = 3; light.range = 6; light.cullingMask = 1 << 31;
+            root.SetActive(false);
         }
         static Sprite Icon(int kind)
         {
