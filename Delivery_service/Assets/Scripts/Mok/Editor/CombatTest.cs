@@ -30,11 +30,11 @@ Check(p.TryKick()&&!p.TryKick(),"Left-click action starts kick and rejects repea
 until=Time.time+1;bool kickCaptured=false;while(Time.time<until&&p.IsKicking){if(!kickCaptured&&p.kickVisual.localPosition.z>.34f){CapturePlayer(p);kickCaptured=true;}yield return null;}
 Check(kickCaptured,"Visible player leg extends during kick",log);
 Check(citizen.Health==70&&citizen.Npc.IsKnockedDown,"Kick deals 30 and enables temporary ragdoll",log);Capture(citizen,"ragdoll");
-Check(!citizen.ReceiveKick(p,Vector3.back,30),"Downed NPC cannot take duplicate kick hits",log);
+Check(citizen.ReceiveKick(p,Vector3.back,1)&&citizen.Health==69,"Downed NPC takes follow-up damage",log);
 until=Time.time+7;while(Time.time<until&&citizen.Npc.IsKnockedDown)yield return null;
 Check(!citizen.Npc.IsKnockedDown&&citizen.IsAggressive&&citizen.GetComponent<NavMeshAgent>().enabled,"Citizen stands up and resumes chase",log);
 for(int i=0;i<2;i++){Check(citizen.ReceiveKick(p,Vector3.back,30),"Next kick accepted after recovery",log);until=Time.time+7;while(Time.time<until&&citizen.Npc.IsKnockedDown)yield return null;}
-Check(citizen.Health==10,"Three kicks leave 10 health",log);int deaths=0;citizen.Npc.OnNPCDeath+=_=>deaths++;
+Check(citizen.Health==9,"Three kicks and follow-up leave 9 health",log);int deaths=0;citizen.Npc.OnNPCDeath+=_=>deaths++;
 Check(citizen.ReceiveKick(p,Vector3.back,30)&&citizen.Health==0&&citizen.Npc.IsDead,"Fourth kick uses existing death ragdoll",log);Check(deaths==1,"Death event fires once for existing population manager",log);
 until=Time.time+5.5f;while(Time.time<until)yield return null;Check(citizen==null,"Dead citizen removed after existing five-second delay",log);
 // 실제 조작과 같은 레이·구체 검사로 벽 차단을 확인한다.

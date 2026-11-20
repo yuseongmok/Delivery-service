@@ -46,8 +46,9 @@ namespace DeliveryService.Mok
         };
         [Header("최형욱 첫 등장")]
         [TextArea] public string[] informantEntrance={
-            "죄수: 영감님, 말씀해 주신 대로 했더니 작업반이 바뀌었습니다. 감사합니다!",
-            "최형욱: 알았으니까 좀 비켜 봐. 이 문제 풀던 중이잖아."
+            "죄수: 영감님 덕분에 작업반 옮겼습니다. 정말 감사합니다.",
+            "최형욱: 됐어. 이제 조용히 지내.",
+            "죄수: 예. 필요한 거 있으시면 말씀하십시오."
         };
         [Header("치킨을 구하러 가는 이유")]
         [TextArea] public string[] kitchenPlan={
@@ -57,7 +58,7 @@ namespace DeliveryService.Mok
         };
         [Header("최형욱과 정보거래")]
         [TextArea] public string[] meeting = {
-            "최형욱: 뭐야… 공무원 준비해야 하니까 저리 꺼져.",
+            "최형욱: 이번엔 또 뭐야? 공무원 준비해야 하니까 꺼져",
             "민기: 이봐. 네가 이곳의 영감님이라고 들었어. 정보를 좀 사고 싶은데, 어때?",
             "최형욱: 거래는 나한테 없는 걸 가져와야 성립하는 거야. 내가 없는 게 있어 보이나?",
             "나: 뭐든 좋으니 원하는 게 있다면 말해 줘.",

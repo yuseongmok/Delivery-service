@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.AI;
@@ -59,20 +59,23 @@ public sealed class CitizenCombat : MonoBehaviour {
         var prisonGuard=GetComponent<PrisonGuard>();if(prisonGuard){prisonGuard.Attacked(player);return true;}
         if(ParkEscapeSequence.Protects(this)){return ReceiveProtectedHit(direction);}
         if(!GetComponent<StunStars>())gameObject.AddComponent<StunStars>();
-        if(Health<=0||npc.IsDead||npc.IsKnockedDown)return false;
-        var patrol=GetComponent<VenuePatrolGuard>();if(patrol&&patrol.HandleStealthStrike(player,direction))return true;
-        Health=Mathf.Max(0,Health-damage);punching=false;Provoke(player);
+        if(player==null||damage<=0||Health<=0||npc.IsDead)return false;
+        bool alreadyDown=npc.IsKnockedDown;
+        var patrol=GetComponent<VenuePatrolGuard>();if(!alreadyDown&&patrol&&patrol.HandleStealthStrike(player,direction))return true;
+        Health=Mathf.Max(0,Health-damage);CombatHitMarker.Confirm(player,Health==0);punching=false;Provoke(player);
         CitizenDominoContact.Arm(this,player,Time.time+1.2f);
         if(Health==0){target=null;npc.Die(direction,22f);if(!missionEnemy&&GetComponent<SlumRobberCombat>()==null)CitizenCrime.ReportPlayerKill(npc);return true;}
+        if(alreadyDown){DownedHitFeedback.Apply(npc,direction);return true;}
         npc.KnockDown(direction,7f);StartCoroutine(GetUp());return true;
     }
     public bool ReceiveBullet(PlayerCombat player,Vector3 direction,int damage){
         var prisonGuard=GetComponent<PrisonGuard>();if(prisonGuard){prisonGuard.Attacked(player);return true;}
         if(ParkEscapeSequence.Protects(this)){return ReceiveProtectedHit(direction);}
-        if(Health<=0||npc.IsDead||npc.IsKnockedDown)return false;
+        if(player==null||damage<=0||Health<=0||npc.IsDead)return false;
         if(!GetComponent<StunStars>())gameObject.AddComponent<StunStars>();
-        Health=Mathf.Max(0,Health-damage);punching=false;Provoke(player);
+        Health=Mathf.Max(0,Health-damage);CombatHitMarker.Confirm(player,Health==0);punching=false;Provoke(player);
         if(Health==0){target=null;npc.Die(direction,7f);if(!missionEnemy&&GetComponent<SlumRobberCombat>()==null)CitizenCrime.ReportPlayerKill(npc);return true;}
+        if(npc.IsKnockedDown){DownedHitFeedback.Apply(npc,direction);return true;}
         npc.KnockDown(direction,4);StartCoroutine(GetUp());return true;
     }
     float protectedRecoveryUntil;

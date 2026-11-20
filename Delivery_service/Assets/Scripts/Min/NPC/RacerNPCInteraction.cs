@@ -48,6 +48,10 @@ public class RacerNPCInteraction : MonoBehaviour
     }
 
     public bool IsDialogueActive => isDialogueActive;
+    public bool MissionDialogue => isMissionDialogueActive;
+    public GameObject DialoguePanel => dialoguePanel;
+    public string CurrentLine => isMissionDialogueActive && missionDialogueLines != null && missionDialogueIndex < missionDialogueLines.Length
+        ? missionDialogueLines[missionDialogueIndex] : npcName + ": " + dialogueMessage;
 
     private bool IsMissionRacerStep =>
         DeliveryService.Mok.MechanicMission.Current != null &&
@@ -74,6 +78,10 @@ public class RacerNPCInteraction : MonoBehaviour
         }
 
         FindSceneDialogueUI();
+        HoldPosition();
+        if (!GetComponent<DeliveryService.Mok.RaceDialogueOverlay>()) gameObject.AddComponent<DeliveryService.Mok.RaceDialogueOverlay>();
+        if (!GetComponent<DeliveryService.Mok.RacerConversationPresentation>())
+            gameObject.AddComponent<DeliveryService.Mok.RacerConversationPresentation>();
     }
 
     private void OnDisable()
@@ -132,6 +140,16 @@ public class RacerNPCInteraction : MonoBehaviour
         }
     }
 
+    private void BindPlayer()
+    {
+        var player = FindFirstObjectByType<DeliveryService.Mok.PlayerCombat>();
+        if (!player) return;
+        playerCombat = player;
+        playerTransform = player.transform;
+        playerMove = player.GetComponent<PlayerMove>();
+        if (player.View) cameraMove = player.View.GetComponent<CameraMove>();
+    }
+
     private bool IsInteractKeyPressed()
     {
         bool newInputF = DeliveryService.Mok.PrologueKeyboard.Pressed(UnityEngine.InputSystem.Key.F);
@@ -139,8 +157,27 @@ public class RacerNPCInteraction : MonoBehaviour
         return newInputF || legacyInteract;
     }
 
+    private void HoldPosition()
+    {
+        if (npcControl == null || npcControl.IsDead || npcControl.IsKnockedDown) return;
+        npcControl.ExternalControl = true;
+        if (agent != null && agent.enabled && agent.isOnNavMesh)
+        {
+            agent.isStopped = true;
+            agent.ResetPath();
+            agent.velocity = Vector3.zero;
+            agent.updatePosition = false;
+            agent.nextPosition = transform.position;
+        }
+        if (anim != null) { anim.applyRootMotion = false; anim.SetBool("IsWalking", false); }
+    }
+
+    private void LateUpdate() { HoldPosition(); }
+
     private void Update()
     {
+        if (!playerTransform || !cameraMove) BindPlayer();
+        HoldPosition();
         // 레이스 진행 중이거나 결과 대화창 대기 중일 때는 상호작용 차단
         if (RaceManager.Instance != null && RaceManager.Instance.IsRaceActive)
         {
@@ -232,6 +269,7 @@ public class RacerNPCInteraction : MonoBehaviour
     // 정비사 미션용 레이서 대화창 열기 (항상 0번 인덱스 = 첫 번째 대사부터 시작)
     public void StartMissionDialogue(string[] lines)
     {
+        BindPlayer();
         if (isMissionDialogueActive) return;
 
         if (lines == null || lines.Length == 0)
@@ -383,6 +421,7 @@ public class RacerNPCInteraction : MonoBehaviour
 
     public void StartDialogue()
     {
+        BindPlayer();
         if (RaceManager.Instance != null && RaceManager.Instance.IsRaceActive) return;
         if (Time.unscaledTime < globalInteractCooldownUntil) return;
 
@@ -468,12 +507,12 @@ public class RacerNPCInteraction : MonoBehaviour
 
         if (npcControl != null)
         {
-            npcControl.ExternalControl = false;
+            npcControl.ExternalControl = true;
         }
 
         if (agent != null && agent.enabled && agent.isOnNavMesh)
         {
-            agent.isStopped = false;
+            agent.isStopped = true;
         }
 
         if (dialoguePanel != null) dialoguePanel.SetActive(false);

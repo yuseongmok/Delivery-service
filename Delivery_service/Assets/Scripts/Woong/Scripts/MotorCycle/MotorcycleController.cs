@@ -455,9 +455,6 @@ public class MotorcycleController : MonoBehaviour
         {
             sphereRB.isKinematic = true;
 
-            sphereRB.linearVelocity = Vector3.zero;
-            sphereRB.angularVelocity = Vector3.zero;
-
             Vector3 safePosition = spawnTransform.position + Vector3.up * 1.5f;
             Vector3 targetSpherePos = safePosition - (spawnTransform.rotation * localOffset);
 
@@ -466,6 +463,8 @@ public class MotorcycleController : MonoBehaviour
 
             Physics.SyncTransforms();
             sphereRB.isKinematic = false;
+            sphereRB.linearVelocity = Vector3.zero;
+            sphereRB.angularVelocity = Vector3.zero;
         }
 
         transform.position = spawnTransform.position;

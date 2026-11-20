@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -47,7 +47,7 @@ namespace DeliveryService.Mok
         }
         private bool InCutscene()
         {
-            if(PrisonFeaturePolicy.Cooking)return true;
+            if(PrisonFeaturePolicy.Cooking||RaceStartPresentation.Active||(RacerConversationPresentation.Active || RaceDialogueOverlay.Active))return true;
             if(prologue&&prologue.IsCinematic)return true;
             var finale=VenueFinale.Current;
             if(finale&&(finale.Cinematic||finale.State==VenueFinale.Phase.Conversation||finale.State==VenueFinale.Phase.Scheduling))return true;

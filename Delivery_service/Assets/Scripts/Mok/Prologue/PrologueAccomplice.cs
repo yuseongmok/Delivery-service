@@ -11,17 +11,27 @@ public sealed class PrologueAccomplice : MonoBehaviour {
     public ProloguePartnerPerformance performance;
     public bool Boarded { get; private set; }
     public float CollectionProgress { get; private set; }
-    public bool ReadyToBoard => !Boarded && Vector3.Distance(transform.position,boardingPoint.position)<2;
+    public bool ReadyToBoard => !Boarded && Vector3.Distance(transform.position,boardingPoint.position)<.55f;
     NavMeshAgent agent;
     float work, nextPath;
     Vector3 handTarget;
     bool working;
+    NavMeshObstacle parkedCar;
     void Awake(){
         StoryActorFootsteps.Attach(transform,animator,director);
         agent=GetComponent<NavMeshAgent>();
         animator.applyRootMotion=false;
         animator.cullingMode=AnimatorCullingMode.AlwaysAnimate;
         animator.SetFloat("RunRate",1.25f);
+        // 주차한 차의 차체를 길찾기에서 제외해 조수석까지 실제로 돌아간다.
+        var car = director.getawayCar;
+        var hull = car.GetComponent<BoxCollider>();
+        if(hull){
+            parkedCar=car.GetComponent<NavMeshObstacle>();
+            if(!parkedCar)parkedCar=car.gameObject.AddComponent<NavMeshObstacle>();
+            parkedCar.shape=NavMeshObstacleShape.Box;parkedCar.center=hull.center;
+            parkedCar.size=hull.size;parkedCar.carving=true;parkedCar.carveOnlyStationary=false;
+        }
     }
     void Update(){
         if(!director||director.Paused||Boarded||(performance&&performance.Busy))return;
@@ -50,7 +60,7 @@ public sealed class PrologueAccomplice : MonoBehaviour {
             // 목적지로 선행하지 않고 플레이어의 현재 위치까지 실제 통로를 따라간다.
             bool atCar=Vector3.Distance(director.player.transform.position,director.exitPoint.position)<4;
             Vector3 goal=atCar?boardingPoint.position:director.player.transform.position;
-            float keepDistance=atCar?.5f:2.3f;
+            float keepDistance=atCar?.25f:2.3f;
             if(agent.enabled&&agent.isOnNavMesh){
                 if(Vector3.Distance(transform.position,goal)<=keepDistance){agent.isStopped=true;Face(director.player.transform.position);}
                 else if(NavMesh.SamplePosition(goal,out var hit,2,NavMesh.AllAreas))Move(hit.position);
@@ -61,7 +71,7 @@ public sealed class PrologueAccomplice : MonoBehaviour {
     }
     void Move(Vector3 goal){
         if(!agent.enabled||!agent.isOnNavMesh)return;
-        agent.isStopped=false;
+        agent.isStopped=false;agent.stoppingDistance=.15f;
         agent.speed=director.Current==BankPrologue.Phase.Escape?6:3;
         if(Time.time>=nextPath){agent.SetDestination(goal);nextPath=Time.time+.2f;}
     }
@@ -81,6 +91,7 @@ public sealed class PrologueAccomplice : MonoBehaviour {
     }
     public void Board(){
         Boarded=true;agent.enabled=false;
+        if(parkedCar)parkedCar.enabled=false;
         transform.SetParent(director.getawayCar,true);
         transform.localPosition=new Vector3(.45f,-.4f,-.1f);
         transform.localRotation=Quaternion.identity;

@@ -80,7 +80,8 @@ namespace DeliveryService.Mok
                 var police = h.collider.GetComponentInParent<PoliceCombat>();
                 var robber = h.collider.GetComponentInParent<RobberAI>();
                 var npc = h.collider.GetComponentInParent<CitizenCombat>();
-                bool landed = police != null ? police.ReceiveHit(this, view.transform.forward, kickDamage) : robber != null ? robber.ReceiveKick(view.transform.forward) : npc != null && npc.ReceiveKick(this, view.transform.forward, kickDamage);
+                if (robber != null && npc != null) robber.DropLoot();
+                bool landed = police != null ? police.ReceiveHit(this, view.transform.forward, kickDamage) : npc != null ? npc.ReceiveKick(this, view.transform.forward, kickDamage) : robber != null && robber.ReceiveKick(view.transform.forward);
                 if (landed) KickImpactFeedback.Play(this);
                 return landed;
             }

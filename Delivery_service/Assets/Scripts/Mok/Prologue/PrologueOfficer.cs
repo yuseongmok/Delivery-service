@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.AI;
 namespace DeliveryService.Mok {
 // 씬에 저장한 경찰 외형과 기존 달리기 애니메이션을 재사용한다.
@@ -19,6 +19,8 @@ public sealed class PrologueOfficer : MonoBehaviour {
     CapsuleCollider body;
     float nextShot, flashUntil, nextPath;
     float gunKick;
+    [Min(.5f)] public float recoveryAimSeconds = 1.8f;
+    bool wasDown;
     bool aiming;
     public AudioClip entranceFootstep;
     public AudioClip entranceVoice;
@@ -57,7 +59,8 @@ public sealed class PrologueOfficer : MonoBehaviour {
     void Update() {
         if(!gunFeedback&&muzzle)muzzle.enabled = Time.time < flashUntil;
         gunKick=Mathf.MoveTowards(gunKick,0,Time.deltaTime*35);
-        if (Dead || (ragdoll && ragdoll.IsDown)){aiming=false;if(brain)brain.Suspend();return;}
+        if (Dead || (ragdoll && ragdoll.IsDown)){wasDown=true;aiming=false;if(brain)brain.Suspend();return;}
+        if(wasDown){wasDown=false;nextShot=Time.time+recoveryAimSeconds;}
         if(roadGuard){RushCar();return;}
         if (Active && director != null && director.Current == BankPrologue.Phase.Opening && agent.enabled){
             animator.SetFloat("MoveSpeed", agent.velocity.magnitude);
@@ -141,7 +144,7 @@ public sealed class PrologueOfficer : MonoBehaviour {
         return ReceiveHit(amount,transform.position+Vector3.up*1.2f,(transform.position-director.player.transform.position).normalized);
     }
     public bool ReceiveHit(int amount,Vector3 point,Vector3 direction) {
-        if (!Active || Dead || (ragdoll&&ragdoll.IsDown) || director == null || !director.CanPlay || amount <= 0) return false;
+        if (!Active || Dead || director == null || !director.CanPlay || amount <= 0) return false;
         Health = Mathf.Max(0, Health - amount);
         if (Health == 0) { Dead = true; Stop(); StartCoroutine(LeaveAfterKnockout()); }
         if(ragdoll){

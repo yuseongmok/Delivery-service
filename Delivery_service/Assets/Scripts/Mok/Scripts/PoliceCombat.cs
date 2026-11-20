@@ -1,4 +1,4 @@
-﻿using System.Collections;using System.Linq;using UnityEngine;using UnityEngine.AI;
+using System.Collections;using System.Linq;using UnityEngine;using UnityEngine.AI;
 namespace DeliveryService.Mok {
 // 시민의 관절 물리를 재사용하되 경찰 추격과 체포는 기존 컨트롤러가 맡는다.
 public sealed class PoliceCombat:MonoBehaviour {
@@ -9,10 +9,10 @@ public sealed class PoliceCombat:MonoBehaviour {
  void Awake(){police=GetComponent<PoliceControl>();agent=GetComponent<NavMeshAgent>();animator=GetComponent<Animator>();}
  void EnsureRagdoll(){if(npc!=null)return;npc=GetComponent<NPCControl>()??gameObject.AddComponent<NPCControl>();npc.ExternalControl=true;npc.enabled=false;foreach(var body in GetComponentsInChildren<Rigidbody>())if(body.gameObject!=gameObject)body.useGravity=true;if(animator!=null&&animator.isHuman)npc.SetCombatRagdollCenter(animator.GetBoneTransform(HumanBodyBones.Hips));}
  public bool ReceiveHit(PlayerCombat attacker,Vector3 direction,int damage){
-  if(attacker==null||damage<=0||IsDead||IsDown||PoliceControl.IsArrestInProgress)return false;
+  if(attacker==null||damage<=0||IsDead||PoliceControl.IsArrestInProgress)return false;
   target=attacker;
-  Health=Mathf.Max(0,Health-damage);EnsureRagdoll();aiming=false;
-  if(IsDead){FindFirstObjectByType<PoliceManager>()?.ReportDeath(police,Armed,attacker.transform);npc.Die(direction,8);return true;}npc.KnockDown(direction,5);StartCoroutine(Recover());return true;
+  Health=Mathf.Max(0,Health-damage);CombatHitMarker.Confirm(attacker,IsDead);EnsureRagdoll();aiming=false;
+  if(IsDead){FindFirstObjectByType<PoliceManager>()?.ReportDeath(police,Armed,attacker.transform);npc.Die(direction,8);return true;}if(npc.IsKnockedDown){DownedHitFeedback.Apply(npc,direction);return true;}npc.KnockDown(direction,5);StartCoroutine(Recover());return true;
  }
  IEnumerator Recover(){yield return new WaitForSeconds(3);while(!IsDead&&!npc.RecoverFromKnockDown())yield return new WaitForSeconds(.5f);nextShot=Time.time+1.5f;}
  // 기존 지원 요청은 비무장 체포 병력으로 처리한다.

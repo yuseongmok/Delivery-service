@@ -57,6 +57,19 @@ public class RaceManager : MonoBehaviour
     private readonly List<GameObject> hiddenResultButtons = new List<GameObject>();
 
     public bool IsRaceActive => isRaceActive;
+    public bool DrivingStarted { get; private set; }
+    public bool ShowingResult => isWaitingForResultConfirm;
+    public GameObject ResultPanel => dialoguePanelInstance;
+    public string ResultLine => currentResultLines != null && currentResultLineIndex < currentResultLines.Length ? currentResultLines[currentResultLineIndex] : "";
+    public bool PlayerFinished => playerFinished;
+    public bool OpponentFinished => npcFinished;
+    public bool PlayerWon => isPlayerWinner;
+    public int PassedCheckpoints => playerFinished ? checkpoints.Length : currentCheckpointIndex;
+    public GameObject[] PlayerCourse => checkpoints;
+    public GameObject[] OpponentCourse => racerCheckpoints != null && racerCheckpoints.Length > 0 ? racerCheckpoints : checkpoints;
+    public Transform PlayerStart => bikePos;
+    public Transform OpponentStart => racerPos;
+    public GameObject OpponentCar => activeCarInstance;
 
     private Coroutine countdownCoroutine;
 
@@ -109,6 +122,17 @@ public class RaceManager : MonoBehaviour
         if (isRaceActive) return;
 
         isRaceActive = true;
+        DrivingStarted = false;
+        if (GetComponent<DeliveryService.Mok.RaceDrivingHUD>() == null) gameObject.AddComponent<DeliveryService.Mok.RaceDrivingHUD>();
+        SetControlsLocked(true);
+        StartCoroutine(PrepareRace(racerNpcTransform));
+    }
+
+    private IEnumerator PrepareRace(Transform racerNpcTransform)
+    {
+        var intro = GetComponent<DeliveryService.Mok.RaceStartPresentation>();
+        if (intro == null) intro = gameObject.AddComponent<DeliveryService.Mok.RaceStartPresentation>();
+        yield return intro.Cover();
 
         playerFinished = false;
         npcFinished = false;
@@ -162,6 +186,7 @@ public class RaceManager : MonoBehaviour
 
         // 6. 카운트다운 진행
         if (countdownCoroutine != null) StopCoroutine(countdownCoroutine);
+        yield return intro.RevealOpponent(activeCarInstance != null ? activeCarInstance.transform : null);
         countdownCoroutine = StartCoroutine(RaceCountdownSequence());
     }
 
@@ -215,6 +240,7 @@ public class RaceManager : MonoBehaviour
         }
 
         InitializeCheckpoints();
+        DrivingStarted = true;
 
         yield return new WaitForSeconds(1.5f);
         if (greenLight != null) greenLight.SetActive(false);
@@ -531,6 +557,7 @@ public class RaceManager : MonoBehaviour
         if (!isRaceActive) return;
 
         isRaceActive = false;
+        DrivingStarted = false;
         isWaitingForResultConfirm = false;
 
         if (countdownCoroutine != null)

@@ -13,7 +13,10 @@ public sealed class WaterRescue:MonoBehaviour {
   bool wetPlayer=Submerged(PlayerPoint())||(wetBike&&bike.isDriven);
   if(wetPlayer||wetBike)Begin(wetPlayer,wetBike);
  }
- public bool Begin(bool rescuePlayer,bool towBike){if(Busy||Time.time<graceUntil||(!rescuePlayer&&!towBike)||hospital==null||(towBike&&(bike==null||towPoint==null)))return false;Busy=true;bikeQueued=towBike;StartCoroutine(Recover(rescuePlayer));return true;}
+ public bool Begin(bool rescuePlayer,bool towBike){
+  var race=RaceManager.Instance;
+  if(race&&race.IsRaceActive&&bike&&bike.isDriven){var recovery=race.GetComponent<RaceRecovery>();if(recovery&&recovery.Recover())return true;}
+  if(Busy||Time.time<graceUntil||(!rescuePlayer&&!towBike)||hospital==null||(towBike&&(bike==null||towPoint==null)))return false;Busy=true;bikeQueued=towBike;StartCoroutine(Recover(rescuePlayer));return true;}
  IEnumerator Recover(bool rescuePlayer){
   bool alreadyHospital=player.IsDown&&player.HitsTaken>=3;
   if(bikeQueued&&bike.isDriven)bike.ExitBike();

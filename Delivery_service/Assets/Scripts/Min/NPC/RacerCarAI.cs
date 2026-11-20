@@ -12,6 +12,7 @@ public class RacerCarAI : MonoBehaviour
     private int currentTargetIndex = 0;
     private bool isRacing = false;
     private NavMeshAgent agent;
+    public int PassedCheckpoints => currentTargetIndex;
 
     private void Awake()
     {
