@@ -300,6 +300,7 @@ namespace DeliveryService.Yun.Editor
             foreach (var old in scene.GetRootGameObjects().Where(g => g.name == "Yun Chapter 3 Arms Canvas")) UnityEngine.Object.DestroyImmediate(old);
             BuildUI(mission);
             BuildPreview(mission);
+            BuildGatlingDestination(mission);
             foreach (var player in UnityEngine.Object.FindObjectsByType<PlayerCombat>(FindObjectsInactive.Include, FindObjectsSortMode.None))
                 if (!player.GetComponent<PlayerWeapon>()) throw new InvalidOperationException("Existing PlayerWeapon required; no teammate rig changed.");
             EditorUtility.SetDirty(mission);
@@ -363,7 +364,7 @@ namespace DeliveryService.Yun.Editor
             m.nextButton = null; m.skipButton = null;
             m.candidatesPanel = Panel("Weapon candidates", m.ui.transform, new Vector2(1080, 580), Vector2.zero, Navy);
             Label("Title", m.candidatesPanel.transform, "골목 무기점 · 의뢰 선택", new Vector2(900, 60), new Vector2(0, 235), 36);
-            var titles = new[] { "권총", "게틀링건", "기관단총" }; var requests = new[] { "바뀐 전표", "반송된 상자 · 준비 중", "거래는 취소야 · 준비 중" };
+            var titles = new[] { "권총", "게틀링건", "기관단총" }; var requests = new[] { "바뀐 전표", "반송된 상자", "거래는 취소야 · 준비 중" };
             var buttons = new Button[3];
             for (int i = 0; i < 3; i++)
             {
@@ -371,7 +372,7 @@ namespace DeliveryService.Yun.Editor
                 var icon = Rect("Placeholder image", card.transform, new Vector2(240, 115), new Vector2(0, 85)).gameObject.AddComponent<Image>(); icon.sprite = Icon(i); icon.preserveAspect = true; icon.raycastTarget = false;
                 Label("Name", card.transform, titles[i], new Vector2(280, 45), new Vector2(0, 0), 32);
                 Label("Request", card.transform, requests[i], new Vector2(290, 45), new Vector2(0, -48), 22);
-                buttons[i] = Button("Select", card.transform, i == 0 ? "의뢰 시작" : "준비 중 · 확인", new Vector2(260, 52), new Vector2(0, -115), i == 0 ? Teal : new Color(.23f, .29f, .34f));
+                buttons[i] = Button("Select", card.transform, i < 2 ? "의뢰 시작" : "준비 중 · 확인", new Vector2(260, 52), new Vector2(0, -115), i < 2 ? Teal : new Color(.23f, .29f, .34f));
             }
             m.pistolButton = buttons[0]; m.gatlingButton = buttons[1]; m.smgButton = buttons[2];
             m.notice = Label("Notice", m.candidatesPanel.transform, "", new Vector2(990, 65), new Vector2(0, -225), 22);
@@ -393,6 +394,31 @@ namespace DeliveryService.Yun.Editor
             m.buyButton = Button("Purchase", m.purchasePanel.transform, "의뢰 대금으로 권총 구매", new Vector2(500, 60), new Vector2(0, -180));
             m.closeButton = Button("Close", m.ui.transform, "닫기 · ESC", new Vector2(160, 45), new Vector2(535, 325), new Color(.16f, .22f, .28f));
             m.ui.SetActive(false);
+        }
+        static void BuildGatlingDestination(ChapterThreeArmsMission m)
+        {
+            var scene = m.gameObject.scene;
+            var transforms = scene.GetRootGameObjects().SelectMany(g => g.GetComponentsInChildren<Transform>(true)).ToArray();
+            var parking = transforms.FirstOrDefault(t => t.name == "Motorcycle parking");
+            var entrance = transforms.FirstOrDefault(t => t.name == "West entrance 01");
+            if (!parking || !entrance) throw new InvalidOperationException("Existing Seoan parking/delivery entrance missing; do not invent a world position.");
+            var old = scene.GetRootGameObjects().FirstOrDefault(g => g.name == "Yun Gatling Delivery Destination");
+            if (old) UnityEngine.Object.DestroyImmediate(old);
+            var root = new GameObject("Yun Gatling Delivery Destination");
+            DeliveryService.Mok.Navigation.NavigationPlace Place(string name, Transform anchor, string id)
+            {
+                var go = new GameObject(name); go.transform.SetParent(root.transform, false); go.transform.position = anchor.position;
+                var place = go.AddComponent<DeliveryService.Mok.Navigation.NavigationPlace>();
+                place.placeId = id; place.displayName = name; place.mapAnchor = place.entrance = go.transform;
+                place.kind = DeliveryService.Mok.Navigation.NavigationPlaceKind.Other;
+                return place;
+            }
+            m.gatlingParking = Place("서안골목 입구 주차장", parking, "yun-gatling-parking");
+            m.gatlingDestination = Place("반송 배송지 · 서안골목 01", entrance, "yun-gatling-delivery");
+            m.destinationMarker = Label("Gatling destination marker", m.objectivePanel.transform.parent, "", new Vector2(420, 40), Vector2.zero, 24, new Color(1, .65f, .25f));
+            m.destinationMarker.font = AssetDatabase.LoadAssetAtPath<Font>("Assets/Fonts/NanumGothic-Regular.ttf");
+            m.destinationMarker.raycastTarget = false;
+            m.destinationMarker.gameObject.SetActive(false);
         }
         static void BuildStorySubtitle(ChapterThreeArmsMission m)
         {
