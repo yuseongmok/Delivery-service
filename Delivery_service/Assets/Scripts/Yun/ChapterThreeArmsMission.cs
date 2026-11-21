@@ -130,7 +130,7 @@ namespace DeliveryService.Yun
         {
             if (handoffOnly) return;
             legacyEnabled = legacyMerchant && legacyMerchant.enabled;
-            ui.SetActive(false); props.SetActive(false);
+            ui.SetActive(false); if (dialoguePanel) dialoguePanel.SetActive(false); props.SetActive(false);
             if (nextButton) nextButton.onClick.AddListener(Next);
             if (skipButton) skipButton.onClick.AddListener(Skip);
             closeButton.onClick.AddListener(Close);
@@ -196,6 +196,8 @@ namespace DeliveryService.Yun
             }
             inspected = point;
             previewCode.text = point.code;
+            previewCode.transform.localPosition = point.markPosition;
+            previewCode.transform.localRotation = Quaternion.Euler(point.markEuler);
             previewPivot.localRotation = Quaternion.Euler(18, 25, 0);
             inspectionHint.text = "전표: " + slipCode + "\n방향키 / WASD로 상자 회전 · 상자 화면 좌클릭으로 선택 · ESC 닫기";
             Show(ScreenKind.Box);
@@ -326,12 +328,18 @@ namespace DeliveryService.Yun
         {
             lines = dialogue; line = 0; afterDialogue = completed;
             Show(ScreenKind.Dialogue);
+            bool merchantConversation = dialogue != null && Array.Exists(dialogue, text => text != null && (text.StartsWith("무기상:") || text.StartsWith("직원:")));
+            foreach (var barName in new[] { "Top letterbox", "Bottom letterbox" })
+            {
+                var bar = dialoguePanel.transform.Find(barName);
+                if (bar) bar.gameObject.SetActive(merchantConversation);
+            }
             if (lines == null || lines.Length == 0) FinishDialogue(); else subtitle.text = lines[0];
         }
         public void Next()
         {
             if (screen != ScreenKind.Dialogue || Time.timeScale <= 0 || Time.unscaledTime < inputAfter) return;
-            if (++line >= lines.Length) FinishDialogue(); else { subtitle.text = lines[line]; inputAfter = Time.unscaledTime + .12f; }
+            if (++line >= lines.Length) FinishDialogue(); else { subtitle.text = lines[line]; inputAfter = Time.unscaledTime + .2f; }
         }
         public void Skip()
         {
@@ -357,7 +365,7 @@ namespace DeliveryService.Yun
         {
             if (handingOver || shaking) return;
             if (previewStage) previewStage.SetActive(false);
-            ui.SetActive(false); screen = ScreenKind.None; afterDialogue = null;
+            ui.SetActive(false); if (dialoguePanel) dialoguePanel.SetActive(false); screen = ScreenKind.None; afterDialogue = null;
             if (releasing != null) StopCoroutine(releasing);
             releasing = StartCoroutine(ReleaseAfterInput());
         }
@@ -403,7 +411,7 @@ namespace DeliveryService.Yun
                 progress == Stage.Purchase ? "바뀐 전표 · 의뢰 대금으로 권총 구매" : "바뀐 전표 완료 · 권총 확보";
             prompt.text = "";
             if (player && (player.IsDown || PoliceControl.IsArrestInProgress) && (locked || handingOver))
-            { StopAllCoroutines(); RestoreShake(); handingOver = false; if (previewStage) previewStage.SetActive(false); ui.SetActive(false); screen = ScreenKind.None; Unlock(); return; }
+            { StopAllCoroutines(); RestoreShake(); handingOver = false; if (previewStage) previewStage.SetActive(false); ui.SetActive(false); if (dialoguePanel) dialoguePanel.SetActive(false); screen = ScreenKind.None; Unlock(); return; }
             if (Time.timeScale <= 0) return;
             if (ModalOpen)
             {
@@ -454,7 +462,7 @@ namespace DeliveryService.Yun
         {
             ObserveIntroduction(); StopAllCoroutines(); handingOver = false; releasing = null;
             RestoreShake(); if (previewStage) previewStage.SetActive(false);
-            if (ui) ui.SetActive(false);
+            if (ui) ui.SetActive(false); if (dialoguePanel) dialoguePanel.SetActive(false);
             if (objective) objective.gameObject.SetActive(false);
             if (objectivePanel) objectivePanel.SetActive(false);
             if (prompt) prompt.text = "";

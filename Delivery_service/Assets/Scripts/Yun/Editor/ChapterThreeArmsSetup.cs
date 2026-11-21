@@ -137,8 +137,19 @@ namespace DeliveryService.Yun.Editor
             StandNear(p, m.transform.parent.TransformPoint(new Vector3(.5f, .1f, -1.9f)), Vector3.zero);
             UseWorldTarget(p, m); yield return .4f;
             Require(m.CurrentScreen == ChapterThreeArmsMission.ScreenKind.Dialogue && !m.shade.activeSelf && !m.dialoguePanel.GetComponent<Image>() && !m.nextButton && !m.skipButton, "Dialogue uses plain white subtitles with no panel or buttons");
+            Require(m.subtitle.font.name.Contains("NanumGothic") && m.subtitle.fontSize == 34 && Mathf.Approximately(m.subtitle.lineSpacing, 1.15f), "Subtitle uses saved story typography");
+            Require(m.subtitle.rectTransform.anchorMin == new Vector2(.1f, .09f) && m.subtitle.rectTransform.anchorMax == new Vector2(.9f, .19f) && m.dialoguePanel.GetComponent<CanvasScaler>().referenceResolution == new Vector2(1920, 1080), "Subtitle uses saved story layout and resolution");
+            Require(m.dialoguePanel.GetComponentsInChildren<Image>().Count(v => v.color == Color.black && !v.raycastTarget) == 2, "Dialogue displays two non-interactive letterbox bars");
+            Require(m.boxes.Select(v => v.markEuler).Distinct().Count() == 6 && m.boxes.Select(v => v.markPosition).Distinct().Count() == 12, "Twelve saved markings vary across all six box faces");
             ScreenCapture.CaptureScreenshot(Path.Combine(BackupRoot, "puzzle-subtitles.png")); yield return .8f;
-            m.Next(); yield return .3f; m.Skip(); yield return .3f;
+            var keyboard = UnityEngine.InputSystem.Keyboard.current;
+            var firstLine = m.subtitle.text;
+            UnityEngine.InputSystem.InputSystem.QueueStateEvent(keyboard, new UnityEngine.InputSystem.LowLevel.KeyboardState(UnityEngine.InputSystem.Key.F)); yield return .3f;
+            UnityEngine.InputSystem.InputSystem.QueueStateEvent(keyboard, new UnityEngine.InputSystem.LowLevel.KeyboardState()); yield return .3f;
+            Require(m.subtitle.text != firstLine, "F advances dialogue");
+            UnityEngine.InputSystem.InputSystem.QueueStateEvent(keyboard, new UnityEngine.InputSystem.LowLevel.KeyboardState(UnityEngine.InputSystem.Key.Space)); yield return .3f;
+            UnityEngine.InputSystem.InputSystem.QueueStateEvent(keyboard, new UnityEngine.InputSystem.LowLevel.KeyboardState()); yield return .3f;
+            Require(m.CurrentScreen == ChapterThreeArmsMission.ScreenKind.Candidates && !m.dialoguePanel.activeSelf, "Space skips dialogue and retains its required mission transition");
             m.ChoosePistol(); yield return .3f; m.Skip(); yield return .5f;
             Require(m.boxes.Length == 12 && m.FragmentCount == 0 && !m.InvoiceAssembled, "Twelve boxes start with no invoice knowledge");
             StandNear(p, m.transform.parent.TransformPoint(new Vector3(-1.6f, .1f, -6.2f)), Vector3.zero);
@@ -171,6 +182,7 @@ namespace DeliveryService.Yun.Editor
             m.Close(); yield return .5f;
             StandNear(p, m.boxes[0].transform.position, m.transform.parent.TransformVector(new Vector3(.55f, .08f, -.55f)));
             UseWorldTarget(p, m.boxes[0]); yield return .3f;
+            Require(m.previewCode.transform.localPosition == m.boxes[0].markPosition, "Inspection uses the selected box's saved marking position");
             var rotation = m.previewPivot.rotation; m.RotateInspection(new Vector2(1, 1));
             Require(Quaternion.Angle(rotation, m.previewPivot.rotation) > .01f && m.previewStage.activeSelf, "Inspection rotates the saved rendered box");
             Require(m.previewCode.GetComponent<Renderer>().sharedMaterial.shader.name == "DeliveryService/Yun/FadedBoxText", "Faded label uses depth-tested one-sided text");
@@ -230,6 +242,25 @@ namespace DeliveryService.Yun.Editor
         {
             var scene = EditorSceneManager.OpenScene("Assets/Scenes/NewHarborCity.unity");
             var intro = UnityEngine.Object.FindObjectsByType<MissionManager>(FindObjectsInactive.Include, FindObjectsSortMode.None).Single();
+            var previous = intro.deliveryCutscene.lines;
+            var brokerCamera = previous.First(v => v.cameraPoint && v.text.StartsWith("실장:")).cameraPoint;
+            var playerCamera = previous.First(v => v.cameraPoint && !v.text.StartsWith("실장:")).cameraPoint;
+            string[] brokerDialogue = {
+                "플레이어: 실장?? 살아있던거냐",
+                "실장: 어 조직에서 겨우 도망쳐서 아직도 도피 생활중이야 그러던중 너네가 탈옥했다는 뉴스를 보고 놀랐잖아",
+                "플레이어: 좀 많은 일이 있었지 그래도 지금은 범죄생활 청산하고 민기랑 새 신원으로 큰 매장을 운영중이야",
+                "실장: 알고있어 너네가 어디로간지 찾느라 엄청 힘들었어",
+                "플레이어: 왜? 우린 범죄 관련해선 손 땠어 더이상 안해",
+                "실장: 그런게 아니야 지금 너네가 위험하단걸 경고하러 왔어",
+                "실장: 야마자키파와 박진웅이 엮어져있는 돈을 썼잖아",
+                "실장: 지금 야마자키파와 박진웅 두 조직이 너네를 찾겠다고 혈안이 되어있어",
+                "실장: 새로운 신분에 지역도 이동했으니 시간이 걸리겠지만 언젠가 들킬거야!",
+                "플레이어: ...우린 평범하게 살 수 없는건가",
+                "실장: 최소한 대비라도 해놔 내가 잘 알고있는 무기상이 있어 연결해줄게",
+                "플레이어: ...알겠어 고마워"
+            };
+            intro.deliveryCutscene.lines = brokerDialogue.Select(text => new MissionManager.CutsceneLine { text = text, cameraPoint = text.StartsWith("실장:") ? brokerCamera : playerCamera }).ToArray();
+            EditorUtility.SetDirty(intro);
             var go = scene.GetRootGameObjects().FirstOrDefault(g => g.name == "Yun Chapter 3 Arms Handoff") ?? new GameObject("Yun Chapter 3 Arms Handoff");
             var relay = go.GetComponent<ChapterThreeArmsMission>() ?? go.AddComponent<ChapterThreeArmsMission>();
             relay.handoffOnly = true; relay.introduction = intro; relay.enableStandaloneTest = false;
@@ -328,9 +359,7 @@ namespace DeliveryService.Yun.Editor
             m.prompt = Label("Interaction hint", canvasGo.transform, "", new Vector2(650, 45), new Vector2(0, -265), 24);
             m.ui = Rect("Modal", canvasGo.transform, new Vector2(1280, 720), Vector2.zero).gameObject;
             m.shade = Panel("Dim", m.ui.transform, new Vector2(6000, 4000), Vector2.zero, new Color(0, 0, 0, .55f));
-            m.dialoguePanel = Rect("Dialogue subtitles only", m.ui.transform, new Vector2(1180, 110), new Vector2(0, -285)).gameObject;
-            m.subtitle = Label("Subtitle", m.dialoguePanel.transform, "", new Vector2(1150, 100), Vector2.zero, 27, Color.white);
-            m.subtitle.gameObject.AddComponent<Shadow>().effectDistance = new Vector2(1.2f, -1.2f);
+            BuildStorySubtitle(m);
             m.nextButton = null; m.skipButton = null;
             m.candidatesPanel = Panel("Weapon candidates", m.ui.transform, new Vector2(1080, 580), Vector2.zero, Navy);
             Label("Title", m.candidatesPanel.transform, "골목 무기점 · 의뢰 선택", new Vector2(900, 60), new Vector2(0, 235), 36);
@@ -365,6 +394,42 @@ namespace DeliveryService.Yun.Editor
             m.closeButton = Button("Close", m.ui.transform, "닫기 · ESC", new Vector2(160, 45), new Vector2(535, 325), new Color(.16f, .22f, .28f));
             m.ui.SetActive(false);
         }
+        static void BuildStorySubtitle(ChapterThreeArmsMission m)
+        {
+            // Copy the actual saved story subtitle, including its resolution and anchors.
+            // This runs only in the editor; no dialogue UI is generated during Play.
+            var destination = m.gameObject.scene;
+            var old = destination.GetRootGameObjects().FirstOrDefault(g => g.name == "Yun Chapter 3 Dialogue Canvas");
+            if (old) UnityEngine.Object.DestroyImmediate(old);
+            var sourceScene = EditorSceneManager.OpenScene("Assets/Scenes/NewHarborCity.unity", OpenSceneMode.Additive);
+            try
+            {
+                var source = sourceScene.GetRootGameObjects().SelectMany(g => g.GetComponentsInChildren<MissionManager>(true)).Single().deliveryCutscene.dialogueText;
+                var sourceCanvas = source.GetComponentInParent<Canvas>(true);
+                var go = new GameObject("Yun Chapter 3 Dialogue Canvas", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler));
+                SceneManager.MoveGameObjectToScene(go, destination);
+                EditorUtility.CopySerialized(sourceCanvas, go.GetComponent<Canvas>());
+                EditorUtility.CopySerialized(sourceCanvas.GetComponent<CanvasScaler>(), go.GetComponent<CanvasScaler>());
+                go.GetComponent<Canvas>().sortingOrder = 161;
+                foreach (bool top in new[] { true, false })
+                {
+                    var bar = new GameObject(top ? "Top letterbox" : "Bottom letterbox", typeof(RectTransform), typeof(Image));
+                    bar.transform.SetParent(go.transform, false);
+                    var rect = (RectTransform)bar.transform;
+                    rect.anchorMin = new Vector2(0, top ? .92f : 0);
+                    rect.anchorMax = new Vector2(1, top ? 1 : .08f);
+                    rect.offsetMin = rect.offsetMax = Vector2.zero;
+                    var image = bar.GetComponent<Image>(); image.color = Color.black; image.raycastTarget = false;
+                }
+                m.subtitle = UnityEngine.Object.Instantiate(source, go.transform, false);
+                m.subtitle.name = "Subtitle";
+                m.subtitle.text = "";
+                m.subtitle.gameObject.SetActive(true);
+                m.dialoguePanel = go;
+                go.SetActive(false);
+            }
+            finally { EditorSceneManager.CloseScene(sourceScene, true); }
+        }
         static void BuildPreview(ChapterThreeArmsMission m)
         {
             var scene = SceneManager.GetActiveScene();
@@ -382,6 +447,23 @@ namespace DeliveryService.Yun.Editor
             visual.transform.position += pivot.transform.position - bounds.center;
             var label = new GameObject("Faded mark on back", typeof(TextMesh)); label.transform.SetParent(pivot.transform, false); label.transform.localPosition = new Vector3(0, .02f, bounds.extents.z / pivot.transform.lossyScale.z + .002f); label.transform.localRotation = Quaternion.Euler(0, 180, 0);
             m.previewCode = label.GetComponent<TextMesh>(); m.previewCode.font = font; m.previewCode.fontSize = 64; m.previewCode.characterSize = .008f; m.previewCode.anchor = TextAnchor.MiddleCenter; m.previewCode.color = new Color(.18f, .15f, .12f); m.previewCode.text = "DS-318-B";
+            // Stable, saved placements: each box has one marking on a different face/offset.
+            var extent = bounds.extents / pivot.transform.lossyScale.x;
+            var rotations = new[] { new Vector3(0, 180, 0), new Vector3(0, 90, 0), new Vector3(90, 0, 0), Vector3.zero, new Vector3(0, -90, 0), new Vector3(-90, 0, 0) };
+            for (int i = 0; i < m.boxes.Length; i++)
+            {
+                var rotation = Quaternion.Euler(rotations[i % rotations.Length]);
+                var normal = rotation * Vector3.back;
+                float distance = Mathf.Abs(normal.x) * extent.x + Mathf.Abs(normal.y) * extent.y + Mathf.Abs(normal.z) * extent.z;
+                var offset = new Vector3(i < 6 ? -.018f : .018f, i % 2 == 0 ? .025f : -.025f, 0);
+                m.boxes[i].markPosition = normal * (distance + .002f) + rotation * offset;
+                m.boxes[i].markEuler = rotations[i % rotations.Length];
+                EditorUtility.SetDirty(m.boxes[i]);
+            }
+            m.previewCode.characterSize = .006f;
+            label.name = "Faded box mark";
+            label.transform.localPosition = m.boxes[0].markPosition;
+            label.transform.localRotation = Quaternion.Euler(m.boxes[0].markEuler);
             string materialPath = Art + "/FadedBoxText.mat";
             var textMaterial = AssetDatabase.LoadAssetAtPath<Material>(materialPath);
             if (!textMaterial) { textMaterial = new Material(Shader.Find("DeliveryService/Yun/FadedBoxText")); AssetDatabase.CreateAsset(textMaterial, materialPath); }

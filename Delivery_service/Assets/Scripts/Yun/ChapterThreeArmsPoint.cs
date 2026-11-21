@@ -8,6 +8,8 @@ namespace DeliveryService.Yun
         public ChapterThreeArmsMission mission;
         public string code;
         public int fragment = -1;
+        public Vector3 markPosition;
+        public Vector3 markEuler;
         public void Interact(ToppingInventory inventory) { if (mission) mission.Inspect(this, inventory); }
     }
 }
