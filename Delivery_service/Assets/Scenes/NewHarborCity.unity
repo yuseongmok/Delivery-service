@@ -139828,6 +139828,18 @@ MonoBehaviour:
   gatlingParking: {fileID: 0}
   gatlingDestination: {fileID: 0}
   destinationMarker: {fileID: 0}
+  gatlingMerchant: {fileID: 0}
+  gatlingCargoRoot: {fileID: 0}
+  gatlingBlockers: []
+  gatlingCargo: {fileID: 0}
+  blockerStart: []
+  blockerEnd: []
+  cargoBriefing:
+  - "\uD50C\uB808\uC774\uC5B4: \uBC18\uC1A1 \uC0C1\uC790\uB294 \uC548\uCABD\uC5D0
+    \uC788\uB124. \uC55E\uC5D0 \uC313\uC778 \uC9D0\uBD80\uD130 \uC62E\uACA8\uC57C\uACA0\uC5B4."
+  - "\uD50C\uB808\uC774\uC5B4: \uD1B5\uB85C \uCABD \uC791\uC740 \uC0C1\uC790\uB97C
+    \uBE7C\uACE0, \uC606\uC758 \uC801\uC7AC\uBB3C\uC744 \uBC00\uBA74 \uAEBC\uB0BC
+    \uC218 \uC788\uACA0\uC5B4."
   parkingArrivalRadius: 7
   deliveryArrivalRadius: 3
   gatlingBriefing:

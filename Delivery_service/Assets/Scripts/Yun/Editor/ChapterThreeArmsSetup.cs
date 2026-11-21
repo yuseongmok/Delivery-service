@@ -32,13 +32,14 @@ namespace DeliveryService.Yun.Editor
             {
                 if (!SessionState.GetBool("Yun.Arms.Check", false)) return;
                 if (state == PlayModeStateChange.EnteredPlayMode)
-                { checks = SessionState.GetBool("Yun.Arms.CheatCheck", false) ? CheatChecks() : PlayChecks(); startedCheck = EditorApplication.timeSinceStartup; nextCheck = startedCheck + 4; EditorApplication.update += TickChecks; }
+                { checks = SessionState.GetBool("Yun.Arms.GatlingCheck", false) ? GatlingChecks() : SessionState.GetBool("Yun.Arms.CheatCheck", false) ? CheatChecks() : PlayChecks(); startedCheck = EditorApplication.timeSinceStartup; nextCheck = startedCheck + 4; EditorApplication.update += TickChecks; }
                 if (state == PlayModeStateChange.EnteredEditMode)
                 { SessionState.SetBool("Yun.Arms.Check", false); EditorApplication.Exit(SessionState.GetInt("Yun.Arms.Result", 1)); }
             };
         }
         public static void RunPlayBatch()
         {
+            SessionState.SetBool("Yun.Arms.GatlingCheck", false);
             SessionState.SetBool("Yun.Arms.CheatCheck", false);
             EditorSceneManager.OpenScene("Assets/Scenes/JJinCity.unity");
             SessionState.SetBool("Yun.Arms.Check", true); SessionState.SetInt("Yun.Arms.Result", 1);
@@ -46,10 +47,75 @@ namespace DeliveryService.Yun.Editor
         }
         public static void RunCheatBatch()
         {
+            SessionState.SetBool("Yun.Arms.GatlingCheck", false);
             EditorSceneManager.OpenScene("Assets/Scenes/JJinCity.unity");
             SessionState.SetBool("Yun.Arms.CheatCheck", true);
             SessionState.SetBool("Yun.Arms.Check", true); SessionState.SetInt("Yun.Arms.Result", 1);
             EditorApplication.EnterPlaymode();
+        }
+        public static void RunGatlingBatch()
+        {
+            EditorSceneManager.OpenScene("Assets/Scenes/JJinCity.unity");
+            SessionState.SetBool("Yun.Arms.GatlingCheck", true);
+            SessionState.SetBool("Yun.Arms.Check", true); SessionState.SetInt("Yun.Arms.Result", 1);
+            EditorApplication.EnterPlaymode();
+        }
+        static IEnumerator GatlingChecks()
+        {
+            var m = UnityEngine.Object.FindObjectsByType<ChapterThreeArmsMission>(FindObjectsSortMode.None).Single(v => !v.handoffOnly);
+            var p = UnityEngine.Object.FindFirstObjectByType<PlayerCombat>();
+            m.enableStandaloneTest = true;
+            StandNear(p, m.transform.parent.TransformPoint(new Vector3(.5f, .1f, -1.9f)), Vector3.zero);
+            UseWorldTarget(p, m); yield return .4f; m.Skip(); yield return .4f;
+            m.gatlingButton.onClick.Invoke(); yield return .4f;
+            Require(m.CurrentScreen == ChapterThreeArmsMission.ScreenKind.Dialogue && m.dialoguePanel.transform.Find("Top letterbox").gameObject.activeSelf, "Gatling briefing uses the merchant's letterboxed dialogue");
+            m.Skip(); yield return .6f;
+            Require(m.State == ChapterThreeArmsMission.Stage.GatlingTravel && !m.props.activeSelf && !m.ModalOpen, "Gatling acceptance starts travel without starting the pistol puzzle");
+            var navigation = UnityEngine.Object.FindFirstObjectByType<NavigationManager>();
+            Require(navigation && navigation.SelectedPlace == m.gatlingParking && m.destinationMarker.gameObject.activeSelf, "Parking navigation and distance marker are connected");
+            Require(m.gatlingParking.transform.position.x < -150 && m.gatlingDestination.transform.position.x < -195, "Destination references the existing Seoan district");
+            Time.timeScale = 0;
+            StandNear(p, m.gatlingParking.transform.position, Vector3.zero); yield return .4f;
+            Require(m.State == ChapterThreeArmsMission.Stage.GatlingTravel, "Paused arrival cannot advance the mission");
+            Time.timeScale = 1; yield return .5f;
+            Require(m.State == ChapterThreeArmsMission.Stage.GatlingDelivery && navigation.SelectedPlace == m.gatlingDestination, "Parking arrival changes guidance to the pedestrian delivery address");
+            ScreenCapture.CaptureScreenshot(Path.Combine(BackupRoot, "gatling-parking.png")); yield return .8f;
+            var rewardBefore = m.MissionCredit;
+            StandNear(p, m.gatlingDestination.transform.position, Vector3.zero); yield return .6f;
+            Require(m.State == ChapterThreeArmsMission.Stage.GatlingArrived && m.ModalOpen, "Arrival introduces the cargo puzzle");
+            m.Skip(); yield return .5f;
+            Require(m.MissionCredit == rewardBefore && !m.GatlingOwned, "Arrival does not grant the weapon reward");
+            var inventory = p.GetComponent<ToppingInventory>();
+            m.Inspect(m.gatlingCargo, inventory); yield return .3f;
+            Require(m.State == ChapterThreeArmsMission.Stage.GatlingArrived, "Cargo cannot be taken before clearing the pile");
+            Require(m.dialoguePanel.transform.Find("Top letterbox").gameObject.activeInHierarchy && m.dialoguePanel.transform.Find("Bottom letterbox").gameObject.activeInHierarchy && m.dialoguePanel.transform.Find("Dialogue controls").gameObject.activeInHierarchy, "Blocked pickup monologue includes both bars and next/skip controls");
+            ScreenCapture.CaptureScreenshot(Path.Combine(BackupRoot, "gatling-blocked-pickup.png")); yield return .5f;
+            var keyboard = UnityEngine.InputSystem.Keyboard.current;
+            UnityEngine.InputSystem.InputSystem.QueueStateEvent(keyboard, new UnityEngine.InputSystem.LowLevel.KeyboardState(UnityEngine.InputSystem.Key.F)); yield return .3f;
+            UnityEngine.InputSystem.InputSystem.QueueStateEvent(keyboard, new UnityEngine.InputSystem.LowLevel.KeyboardState()); yield return .5f;
+            Require(!m.ModalOpen && p.GetComponent<PlayerInteraction>().enabled && m.destinationMarker.text.StartsWith("적재물 1"), $"F closes blocked pickup and directs the player to the actual first obstacle (screen={m.CurrentScreen}, interaction={p.GetComponent<PlayerInteraction>().enabled}, marker={m.destinationMarker.text})");
+            m.Inspect(m.gatlingBlockers[2], inventory); yield return .3f;
+            Require(m.ClearedBlockers == 0, "Blocked move is rejected");
+            m.Skip(); yield return .5f;
+            for (int i = 0; i < m.gatlingBlockers.Length; i++)
+            {
+                StandNear(p, m.gatlingBlockers[i].transform.position, new Vector3(0, .1f, 1.3f));
+                UseWorldTarget(p, m.gatlingBlockers[i]); yield return 1.1f;
+                Require(m.ClearedBlockers == i + 1, "A reachable cargo obstacle moves into its saved clearance position");
+                Require(m.destinationMarker.text.StartsWith(i == 2 ? "반송 상자 회수" : "적재물 " + (i + 2)), "Marker advances to the next actionable cargo object");
+            }
+            ScreenCapture.CaptureScreenshot(Path.Combine(BackupRoot, "gatling-arrived.png")); yield return .8f;
+            StandNear(p, m.gatlingCargo.transform.position, new Vector3(0, .1f, 1.3f));
+            UseWorldTarget(p, m.gatlingCargo); yield return .5f;
+            Require(m.State == ChapterThreeArmsMission.Stage.GatlingReturn && navigation.SelectedPlace == m.gatlingMerchant, "Recovered cargo enables return guidance");
+            StandNear(p, m.transform.parent.TransformPoint(new Vector3(.5f, .1f, -1.9f)), Vector3.zero);
+            UseWorldTarget(p, m); yield return 1.2f; m.Skip(); yield return .5f;
+            Require(m.GatlingOwned && !m.gatlingCargoRoot.activeSelf && !m.ModalOpen, "Handover completes the draft and records the gatling reward");
+            m.ChoosePistol(); m.ChooseGatling(); yield return .2f;
+            Require(m.State == ChapterThreeArmsMission.Stage.GatlingComplete, "Completed reward cannot be claimed by stale selection callbacks");
+            ChapterThreeArmsMission.PrepareChapterRestart(); yield return .3f;
+            Require(m.State == ChapterThreeArmsMission.Stage.Meet, "Chapter restart resets gatling travel");
+            Debug.Log("YUN_GATLING_MISSION_PASS");
         }
         static IEnumerator CheatChecks()
         {
@@ -415,9 +481,25 @@ namespace DeliveryService.Yun.Editor
             }
             m.gatlingParking = Place("서안골목 입구 주차장", parking, "yun-gatling-parking");
             m.gatlingDestination = Place("반송 배송지 · 서안골목 01", entrance, "yun-gatling-delivery");
-            m.destinationMarker = Label("Gatling destination marker", m.objectivePanel.transform.parent, "", new Vector2(420, 40), Vector2.zero, 24, new Color(1, .65f, .25f));
+            m.gatlingMerchant = Place("무기상", m.transform, "yun-gatling-return");
+            var cargo = new GameObject("Return cargo puzzle"); cargo.transform.SetParent(root.transform, false); cargo.transform.position = entrance.position + Vector3.forward * 4;
+            m.gatlingCargoRoot = cargo;
+            m.gatlingBlockers = new ChapterThreeArmsPoint[3]; m.blockerStart = new Vector3[3]; m.blockerEnd = new Vector3[3];
+            for (int i = 0; i < 3; i++)
+            {
+                var start = new Vector3(0, 0, 1 - i);
+                m.gatlingBlockers[i] = Prop(cargo.transform, m, "옮길 적재물 " + (i + 1), "", "Assets/Synty/PolygonGeneric/Prefabs/Props/SM_Gen_Prop_Cardboard_Box_01.prefab", start, new Vector3(.7f + i * .15f, .5f + i * .1f, .65f));
+                m.gatlingBlockers[i].transform.Find("Label").GetComponent<TextMesh>().text = "옮길 짐 " + (i + 1);
+                m.blockerStart[i] = start; m.blockerEnd[i] = start + Vector3.right * (i % 2 == 0 ? 1.7f : -1.7f);
+            }
+            m.gatlingCargo = Prop(cargo.transform, m, "반송 상자", "RETURN", "Assets/Synty/PolygonGeneric/Prefabs/Props/SM_Gen_Prop_Cardboard_Box_01.prefab", new Vector3(0, 0, -2), new Vector3(.5f, .35f, .4f));
+            m.gatlingCargo.transform.Find("Label").GetComponent<TextMesh>().text = "반송";
+            cargo.SetActive(false);
+            m.destinationMarker = Label("Gatling destination marker", m.objectivePanel.transform.parent, "", new Vector2(420, 40), Vector2.zero, 18, new Color(1, .97f, .9f));
             m.destinationMarker.font = AssetDatabase.LoadAssetAtPath<Font>("Assets/Fonts/NanumGothic-Regular.ttf");
             m.destinationMarker.raycastTarget = false;
+            var diamondRect = Rect("Target diamond", m.destinationMarker.transform, new Vector2(22, 22), new Vector2(0, 36));
+            var diamond = diamondRect.gameObject.AddComponent<StoryTargetDiamond>(); diamond.color = new Color(1, .43f, .05f); diamond.raycastTarget = false;
             m.destinationMarker.gameObject.SetActive(false);
         }
         static void BuildStorySubtitle(ChapterThreeArmsMission m)
@@ -451,6 +533,11 @@ namespace DeliveryService.Yun.Editor
                 m.subtitle.name = "Subtitle";
                 m.subtitle.text = "";
                 m.subtitle.gameObject.SetActive(true);
+                var controls = Label("Dialogue controls", go.transform, "F [다음 대사] / Space [건너뛰기]", new Vector2(620, 50), Vector2.zero, 24, new Color(.86f, .77f, .53f));
+                controls.font = source.font; controls.alignment = TextAnchor.MiddleRight; controls.raycastTarget = false;
+                controls.rectTransform.anchorMin = controls.rectTransform.anchorMax = new Vector2(1, 0);
+                controls.rectTransform.pivot = new Vector2(1, 0);
+                controls.rectTransform.anchoredPosition = new Vector2(-32, 20);
                 m.dialoguePanel = go;
                 go.SetActive(false);
             }

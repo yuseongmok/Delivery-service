@@ -7,13 +7,14 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using UnityEngine.AI;
 
 namespace DeliveryService.Yun
 {
     // Saved UI and props live in the scene. Only chapter progress survives scene travel.
     public sealed class ChapterThreeArmsMission : MonoBehaviour, IInteractable
     {
-        public enum Stage { Meet, Choose, ReadSlip, Compare, Carry, Purchase, Complete, GatlingTravel, GatlingDelivery, GatlingArrived }
+        public enum Stage { Meet, Choose, ReadSlip, Compare, Carry, Purchase, Complete, GatlingTravel, GatlingDelivery, GatlingArrived, GatlingReturn, GatlingComplete, GatlingChase, GatlingCargoReady, GatlingRetry }
         public enum ScreenKind { None, Dialogue, Candidates, Slip, Box, Purchase }
         static bool unlocked;
         static Stage progress;
@@ -32,6 +33,32 @@ namespace DeliveryService.Yun
         [Header("Gatling request: destination only")]
         public NavigationPlace gatlingParking, gatlingDestination;
         public Text destinationMarker;
+        public NavigationPlace gatlingMerchant;
+        public GameObject gatlingCargoRoot;
+        public ChapterThreeArmsPoint[] gatlingBlockers;
+        public ChapterThreeArmsPoint gatlingCargo;
+        public Vector3[] blockerStart, blockerEnd;
+        static int clearedBlockers;
+        bool movingBlocker;
+        public int ClearedBlockers => clearedBlockers;
+        public bool GatlingOwned => progress == Stage.GatlingComplete;
+        [Header("Saved Seoan thief chase")]
+        public ChapterThreeArmsPoint thief;
+        public NavMeshAgent thiefAgent;
+        public AftermathActor thiefActor;
+        public Transform thiefCarry, chaseRestart;
+        public Transform[] chaseRoute;
+        public Camera chaseCamera;
+        [Min(1)] public float thiefSpeed = 5.2f, catchDistance = 2.7f, escapeDistance = 38f, escapeGrace = 4f;
+        [TextArea(2, 5)] public string[] chaseIntro = { "플레이어: 잠깐! 그거 가져가면 안 되는데!", "도둑: 벌써 주인이 왔다고?" };
+        [TextArea(2, 5)] public string[] chaseCaught = { "도둑: 알았어! 놓고 가면 되잖아!", "플레이어: 반송 상자부터 챙기자." };
+        [TextArea(2, 5)] public string[] chaseLost = { "플레이어: 놓쳤어. 골목 입구에서 다시 따라붙자." };
+        int chaseWaypoint;
+        float farTime, stuckTime;
+        bool fleeing;
+        public int ChaseWaypoint => chaseWaypoint;
+        bool ChasePhase => progress == Stage.GatlingArrived || progress == Stage.GatlingChase || progress == Stage.GatlingCargoReady || progress == Stage.GatlingRetry;
+        [TextArea(2, 5)] public string[] cargoBriefing = { "플레이어: 반송 상자는 안쪽에 있네. 앞에 쌓인 짐부터 옮겨야겠어.", "플레이어: 통로 쪽 작은 상자를 빼고, 옆의 적재물을 밀면 꺼낼 수 있겠어." };
         [Min(1)] public float parkingArrivalRadius = 7f, deliveryArrivalRadius = 3f;
         [TextArea(2, 5)] public string[] gatlingBriefing = {
             "무기상: 반송 하나야. 서안골목 주소 찍어 놨어.",
@@ -130,7 +157,7 @@ namespace DeliveryService.Yun
             restartingChapter = true;
             unlocked = false; progress = Stage.Meet; credit = 0; granted = false;
         }
-        static void ClearPuzzle() { searchedMask = fragmentMask = 0; carriedIndex = -1; assembled = false; }
+        static void ClearPuzzle() { searchedMask = fragmentMask = clearedBlockers = 0; carriedIndex = -1; assembled = false; }
         void ObserveIntroduction()
         {
             if (restartingChapter) return;
@@ -171,6 +198,10 @@ namespace DeliveryService.Yun
         }
         void RefreshAvailability()
         {
+            if (gatlingCargoRoot) gatlingCargoRoot.SetActive(Available && (progress == Stage.GatlingDelivery || progress == Stage.GatlingReturn || ChasePhase));
+            if (!movingBlocker && gatlingBlockers != null)
+                for (int i = 0; i < gatlingBlockers.Length; i++) if (gatlingBlockers[i]) gatlingBlockers[i].transform.localPosition = i < clearedBlockers ? blockerEnd[i] : blockerStart[i];
+            if (progress == Stage.GatlingReturn && !carried && player && gatlingCargo) AttachGatlingCargo();
             if (legacyMerchant) legacyMerchant.enabled = Available ? false : legacyEnabled;
             props.SetActive(Available && progress >= Stage.ReadSlip && progress <= Stage.Carry);
             if (objectivePanel) objectivePanel.SetActive(Available && !ModalOpen);
@@ -191,14 +222,26 @@ namespace DeliveryService.Yun
                 case Stage.Complete: Talk(new[] { "무기상: 거래는 끝났어. 물건 잘 챙겨." }, Close); break;
                 case Stage.GatlingTravel:
                 case Stage.GatlingDelivery: Talk(new[] { "무기상: 서안골목에 잘못 간 상자야. 찍어 준 주소로 가 봐." }, Close); break;
-                case Stage.GatlingArrived: Talk(new[] { "무기상: 주소는 확인했지?" }, Close); break;
+                case Stage.GatlingArrived:
+                case Stage.GatlingChase:
+                case Stage.GatlingCargoReady:
+                case Stage.GatlingRetry: Talk(new[] { "무기상: 서안골목에서 반송 상자를 회수해 와." }, Close); break;
+                case Stage.GatlingReturn: StartCoroutine(ReturnGatlingCargo()); break;
+                case Stage.GatlingComplete: Talk(new[] { "무기상: 반송은 처리했어. 게틀링건은 네 몫이야." }, Close); break;
                 default: Talk(new[] { assembled ? "무기상: 전표와 상자 표식을 끝까지 대조해 봐." : "무기상: 옆에 있는 상자들을 흔들어 봐. 찢어진 전표 조각부터 찾아야 해." }, Close); break;
             }
         }
-        bool CanInteract() => Available && !ModalOpen && !shaking && !handingOver && Time.timeScale > 0 && player && player.CanAct;
+        bool CanInteract() => Available && !ModalOpen && !shaking && !handingOver && !movingBlocker && Time.timeScale > 0 && player && player.CanAct;
         public void Inspect(ChapterThreeArmsPoint point, ToppingInventory inventory)
         {
             if (inventory) player = inventory.GetComponent<PlayerCombat>();
+            if (CanInteract() && point && point.mission == this)
+            {
+                if (progress == Stage.GatlingDelivery && (point == gatlingCargo || point == thief)) { BeginChaseIntro(); return; }
+                if (progress == Stage.GatlingChase && point == thief) { TryCatchThief(); return; }
+                if (progress == Stage.GatlingCargoReady && point == gatlingCargo)
+                { progress = Stage.GatlingReturn; AttachGatlingCargo(); return; }
+            }
             if (!CanInteract() || !point || point.mission != this || progress < Stage.ReadSlip || progress > Stage.Compare) return;
             if (point == slip)
             {
@@ -284,32 +327,67 @@ namespace DeliveryService.Yun
         }
         void UpdateGatlingTravel()
         {
-            bool travelling = Available && (progress == Stage.GatlingTravel || progress == Stage.GatlingDelivery);
+            bool travelling = Available && (progress == Stage.GatlingTravel || progress == Stage.GatlingDelivery || progress == Stage.GatlingReturn || ChasePhase);
             if (destinationMarker) destinationMarker.gameObject.SetActive(travelling && !ModalOpen);
             if (!travelling)
             {
                 routedStage = (Stage)(-1);
-                if (missionNavigation && (missionNavigation.SelectedPlace == gatlingParking || missionNavigation.SelectedPlace == gatlingDestination)) missionNavigation.StopGuidance();
+                if (missionNavigation && (missionNavigation.SelectedPlace == gatlingParking || missionNavigation.SelectedPlace == gatlingDestination || missionNavigation.SelectedPlace == gatlingMerchant)) missionNavigation.StopGuidance();
             }
             if (!travelling || !player || !gatlingParking || !gatlingDestination) return;
-            var target = progress == Stage.GatlingTravel ? gatlingParking : gatlingDestination;
+            var target = progress == Stage.GatlingReturn ? gatlingMerchant : progress == Stage.GatlingTravel ? gatlingParking : gatlingDestination;
+            if (!target) return;
             if (!missionNavigation) missionNavigation = FindFirstObjectByType<NavigationManager>();
-            if (routedStage != progress && missionNavigation) { missionNavigation.SelectPlace(target); routedStage = progress; }
+            if (routedStage != progress && missionNavigation)
+            {
+                if (ChasePhase) missionNavigation.StopGuidance();
+                else missionNavigation.SelectPlace(target);
+                routedStage = progress;
+            }
             var observer = player.RiddenBike ? player.RiddenBike.transform.position : player.transform.position;
-            if (destinationMarker && player.View) StoryTargetDiamond.Place(destinationMarker, player.View, target.Destination.position + Vector3.up, observer, target.displayName);
+            var markerPosition = target.Destination.position + Vector3.up;
+            string markerTitle = target.displayName;
+            if (ChasePhase)
+            {
+                bool ready = progress == Stage.GatlingCargoReady;
+                markerPosition = ready ? gatlingCargo.transform.position + Vector3.up * .7f : thief.transform.position + Vector3.up * 2.1f;
+                markerTitle = ready ? "반송 상자 회수" : "도둑 추격 · 가까이서 F";
+            }
+            if (destinationMarker && player.View) StoryTargetDiamond.Place(destinationMarker, player.View, markerPosition, observer, markerTitle);
             if (Time.timeScale <= 0 || ModalOpen || locked || player.IsDown || PoliceControl.IsArrestInProgress) return;
+            if (progress == Stage.GatlingReturn || ChasePhase) return;
             var delta = observer - target.Destination.position;
             float height = Mathf.Abs(delta.y); delta.y = 0;
             if (height > 3 || delta.magnitude > (progress == Stage.GatlingTravel ? parkingArrivalRadius : deliveryArrivalRadius)) return;
             if (progress == Stage.GatlingTravel) progress = Stage.GatlingDelivery;
             else if (!player.RiddenBike)
             {
-                progress = Stage.GatlingArrived;
+                BeginChaseIntro();
                 if (missionNavigation && missionNavigation.SelectedPlace == gatlingDestination) missionNavigation.StopGuidance();
                 if (destinationMarker) destinationMarker.gameObject.SetActive(false);
             }
         }
-        public void PreviewSmg() { if (screen == ScreenKind.Candidates) notice.text = "기관단총 · 거래는 취소야\n이 의뢰는 준비 중입니다. 지금은 권총 의뢰를 진행할 수 있습니다."; }
+        void AttachGatlingCargo()
+        {
+            if (!gatlingCargo || carried) return;
+            carried = gatlingCargo; boxRestPosition = carried.transform.position; boxRestRotation = carried.transform.rotation;
+            foreach (var collider in carried.GetComponentsInChildren<Collider>()) collider.enabled = false;
+        }
+        IEnumerator ReturnGatlingCargo()
+        {
+            if (!carried) AttachGatlingCargo();
+            if (!carried) yield break;
+            handingOver = true; Lock();
+            var from = carried.transform.position;
+            for (float t = 0; t < .8f; t += Time.deltaTime)
+            {
+                carried.transform.position = Vector3.Lerp(from, handoverRest.position, Mathf.SmoothStep(0, 1, t / .8f));
+                yield return null;
+            }
+            RestoreCarried(); progress = Stage.GatlingComplete; handingOver = false;
+            Talk(new[] { "무기상: 맞아. 잘못 배달됐던 물건이야.", "무기상: 일한 값이랑 게틀링건 값은 이걸로 정산하자.", "플레이어: 됐어. 가게 장부에 쓸 일도 아니고." }, Close);
+        }
+        public void PreviewSmg() { if (screen == ScreenKind.Candidates) notice.text = "기관단총 · 거래는 취소야\n이 의뢰는 준비 중입니다. 권총 또는 게틀링건 의뢰를 선택해 주세요."; }
         public void TakeInspectedBox()
         {
             if (screen != ScreenKind.Box || progress != Stage.Compare || !inspected || Time.timeScale <= 0) return;
@@ -375,11 +453,10 @@ namespace DeliveryService.Yun
         {
             lines = dialogue; line = 0; afterDialogue = completed;
             Show(ScreenKind.Dialogue);
-            bool merchantConversation = dialogue != null && Array.Exists(dialogue, text => text != null && (text.StartsWith("무기상:") || text.StartsWith("직원:")));
-            foreach (var barName in new[] { "Top letterbox", "Bottom letterbox" })
+            foreach (var barName in new[] { "Top letterbox", "Bottom letterbox", "Dialogue controls" })
             {
                 var bar = dialoguePanel.transform.Find(barName);
-                if (bar) bar.gameObject.SetActive(merchantConversation);
+                if (bar) bar.gameObject.SetActive(true);
             }
             if (lines == null || lines.Length == 0) FinishDialogue(); else subtitle.text = lines[0];
         }
@@ -459,10 +536,12 @@ namespace DeliveryService.Yun
                 progress == Stage.Purchase ? "바뀐 전표 · 의뢰 대금으로 권총 구매" :
                 progress == Stage.GatlingTravel ? "반송된 상자 · 서안골목 입구로 이동" :
                 progress == Stage.GatlingDelivery ? "반송된 상자 · 내려서 지정 배송지로 이동" :
-                progress == Stage.GatlingArrived ? "반송된 상자 · 배송지 도착\n상자 회수 단계는 준비 중입니다." : "바뀐 전표 완료 · 권총 확보";
+                progress == Stage.GatlingArrived ? $"반송된 상자 · 적재물 옮기기 ({clearedBlockers}/{gatlingBlockers.Length})" :
+                progress == Stage.GatlingReturn ? "반송된 상자 · 무기상에게 상자 반납" :
+                progress == Stage.GatlingComplete ? "반송된 상자 완료 · 게틀링건 확보" : "바뀐 전표 완료 · 권총 확보";
             prompt.text = "";
             if (player && (player.IsDown || PoliceControl.IsArrestInProgress) && (locked || handingOver))
-            { StopAllCoroutines(); RestoreShake(); handingOver = false; if (previewStage) previewStage.SetActive(false); ui.SetActive(false); if (dialoguePanel) dialoguePanel.SetActive(false); screen = ScreenKind.None; Unlock(); return; }
+            { StopAllCoroutines(); RestoreShake(); movingBlocker = false; handingOver = false; if (previewStage) previewStage.SetActive(false); ui.SetActive(false); if (dialoguePanel) dialoguePanel.SetActive(false); screen = ScreenKind.None; Unlock(); return; }
             if (Time.timeScale <= 0) return;
             if (ModalOpen)
             {
@@ -480,7 +559,7 @@ namespace DeliveryService.Yun
             else if (!handingOver && player && player.CanAct && player.View && Physics.Raycast(player.View.transform.position, player.View.transform.forward, out var hit, 3f))
             {
                 var point = hit.collider.GetComponentInParent<ChapterThreeArmsPoint>();
-                if (point && point.mission == this) prompt.text = point == slip ? "[F] 전표 작업대" : assembled ? "[F] 상자 돌려 보기" : "[F] 상자를 들어 흔들기";
+                if (point && point.mission == this) prompt.text = progress == Stage.GatlingArrived ? (point == gatlingCargo ? "[F] 반송 상자 회수" : "[F] 적재물 옮기기") : point == slip ? "[F] 전표 작업대" : assembled ? "[F] 상자 돌려 보기" : "[F] 상자를 들어 흔들기";
                 else if (hit.collider.GetComponentInParent<ChapterThreeArmsMission>() == this) prompt.text = "[F] 무기상과 이야기하기";
             }
         }
@@ -500,7 +579,11 @@ namespace DeliveryService.Yun
                 if (oldOrderVisibility) oldOrderVisibility.alpha = Available ? 0 : 1;
             }
             if (carried && !handingOver && player && player.View)
-                carried.transform.SetPositionAndRotation(player.View.transform.TransformPoint(new Vector3(0, -.42f, .9f)), Quaternion.Euler(0, player.View.transform.eulerAngles.y, 0));
+            {
+                var mount = progress == Stage.GatlingReturn && player.RiddenBike ? player.RiddenBike.transform : player.View.transform;
+                var offset = mount == player.View.transform ? new Vector3(0, -.42f, .9f) : new Vector3(0, .7f, -.7f);
+                carried.transform.SetPositionAndRotation(mount.TransformPoint(offset), Quaternion.Euler(0, mount.eulerAngles.y, 0));
+            }
         }
         void RestoreCarried()
         {
@@ -512,12 +595,13 @@ namespace DeliveryService.Yun
         void OnDisable()
         {
             ObserveIntroduction(); StopAllCoroutines(); handingOver = false; releasing = null;
+            movingBlocker = false;
             RestoreShake(); if (previewStage) previewStage.SetActive(false);
             if (ui) ui.SetActive(false); if (dialoguePanel) dialoguePanel.SetActive(false);
             if (objective) objective.gameObject.SetActive(false);
             if (objectivePanel) objectivePanel.SetActive(false);
             if (destinationMarker) destinationMarker.gameObject.SetActive(false);
-            if (missionNavigation && (missionNavigation.SelectedPlace == gatlingParking || missionNavigation.SelectedPlace == gatlingDestination)) missionNavigation.StopGuidance();
+            if (missionNavigation && (missionNavigation.SelectedPlace == gatlingParking || missionNavigation.SelectedPlace == gatlingDestination || missionNavigation.SelectedPlace == gatlingMerchant)) missionNavigation.StopGuidance();
             if (prompt) prompt.text = "";
             screen = ScreenKind.None; Unlock(); RestoreCarried();
             if (legacyMerchant) legacyMerchant.enabled = legacyEnabled;

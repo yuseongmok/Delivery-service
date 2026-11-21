@@ -1,5 +1,7 @@
 # Project collaboration preferences
 
+- Subtitle baseline (2026-11-22): all new or updated subtitle sequences, including player monologues, must show top/bottom black letterbox bars and a bottom-right `F [다음 대사] / Space [건너뛰기]` hint, with working next/skip input. Hide both together with subtitles when the sequence ends. Preserve the established story typography.
+
 - When creating or replacing models, apply them to the relevant scene or prefab and save them so the user can inspect them in Unity's Scene view before Play. Do not rely exclusively on runtime replacement for static scene objects. Preserve existing gameplay component references, interaction behavior, transforms and colliders where applicable; avoid duplicate runtime visuals.
 - Back up the current scene, including unsaved editor changes, before applying model replacements. Preserve the user's current edits.
 - Mok files may be edited freely within the requested task. Before changing another contributor's scripts, explain to the user which parts will change and how, so the contributor can understand the change.
