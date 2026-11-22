@@ -6,22 +6,37 @@ namespace DeliveryService.Mok
     {
         public bool isMissile;
         public bool fromPlayer;
-        public float speed = 130f;
-        public float damage = 12f;
-        public float lifeTime = 4f;
-        public float missileTurnRate = 48f;  
+        public float speed = 150f;
+        public float damage = 14f;
+        public float lifeTime = 5.5f;
+        public float missileTurnRate = 52f;
         public float hitRadius = 3.2f;
 
         private Transform target;
         private float spawnTime;
+        private float bulletHomingRate;
+        private Vector3 initialArcDir;
+        private float arcDuration;
 
-        public void Launch(Vector3 direction, bool byPlayer, bool missile, float dmg, float spd, Transform homingTarget = null)
+        public void Launch(
+            Vector3 direction,
+            bool byPlayer,
+            bool missile,
+            float dmg,
+            float spd,
+            Transform homingTarget = null,
+            float homingRate = 0f,
+            Vector3 arcDir = default,
+            float arcTime = 0f)
         {
             fromPlayer = byPlayer;
             isMissile = missile;
             damage = dmg;
             speed = spd;
             target = homingTarget;
+            bulletHomingRate = homingRate;
+            initialArcDir = arcDir.sqrMagnitude > 0.001f ? arcDir.normalized : Vector3.zero;
+            arcDuration = arcTime;
             spawnTime = Time.time;
 
             if (direction.sqrMagnitude > 0.001f)
@@ -32,24 +47,38 @@ namespace DeliveryService.Mok
 
         private void Update()
         {
-            if (Time.time - spawnTime >= lifeTime)
+            float elapsed = Time.time - spawnTime;
+            if (elapsed >= lifeTime)
             {
                 Destroy(gameObject);
                 return;
             }
 
-            // 미사일은 초반 1.8초 동안만 제한된 각속도로 유도되어 플레이어가 회피 기동으로 따돌릴 수 있음
-            if (isMissile && target != null && (Time.time - spawnTime) < 2.2f)
+            if (isMissile)
+            {
+                if (elapsed < arcDuration && initialArcDir.sqrMagnitude > 0.001f)
+                {
+                    Quaternion arcRot = Quaternion.LookRotation(initialArcDir);
+                    transform.rotation = Quaternion.RotateTowards(transform.rotation, arcRot, 140f * Time.deltaTime);
+                }
+                else if (target != null && elapsed < arcDuration + 2.6f)
+                {
+                    Vector3 toTarget = (target.position - transform.position).normalized;
+                    Quaternion desiredRot = Quaternion.LookRotation(toTarget);
+                    transform.rotation = Quaternion.RotateTowards(transform.rotation, desiredRot, missileTurnRate * Time.deltaTime);
+                }
+            }
+            else if (fromPlayer && bulletHomingRate > 0f && target != null && elapsed < 1.6f)
             {
                 Vector3 toTarget = (target.position - transform.position).normalized;
                 Quaternion desiredRot = Quaternion.LookRotation(toTarget);
-                transform.rotation = Quaternion.RotateTowards(transform.rotation, desiredRot, missileTurnRate * Time.deltaTime);
+                transform.rotation = Quaternion.RotateTowards(transform.rotation, desiredRot, bulletHomingRate * Time.deltaTime);
             }
 
             float step = speed * Time.deltaTime;
             Vector3 nextPos = transform.position + transform.forward * step;
 
-            if (Physics.SphereCast(transform.position, isMissile ? 1.2f : 0.45f, transform.forward, out RaycastHit hit, step + 0.5f, ~0, QueryTriggerInteraction.Ignore))
+            if (Physics.SphereCast(transform.position, isMissile ? 1.3f : 0.65f, transform.forward, out RaycastHit hit, step + 0.6f, ~0, QueryTriggerInteraction.Ignore))
             {
                 if (TryApplyHit(hit.collider))
                 {
@@ -58,12 +87,12 @@ namespace DeliveryService.Mok
                 }
             }
 
-            // 콜라이더가 작거나 빠진 프로토타입 모델링을 위한 거리 기반 보조 명중 판정
             if (fromPlayer && EnemyHelicopterAI.Current != null && !EnemyHelicopterAI.Current.IsDead)
             {
                 if (Vector3.Distance(nextPos, EnemyHelicopterAI.Current.transform.position) <= hitRadius)
                 {
                     EnemyHelicopterAI.Current.TakeDamage(damage, transform.position);
+                    PlayerHelicopterController.Current?.NotifyHitConfirmed();
                     Destroy(gameObject);
                     return;
                 }
@@ -90,6 +119,7 @@ namespace DeliveryService.Mok
                 if (enemy != null)
                 {
                     enemy.TakeDamage(damage, transform.position);
+                    PlayerHelicopterController.Current?.NotifyHitConfirmed();
                     return true;
                 }
                 if (col.GetComponentInParent<PlayerHelicopterController>() != null) return false;
@@ -108,26 +138,48 @@ namespace DeliveryService.Mok
             return !col.isTrigger;
         }
 
-        public static HelicopterCombatProjectile SpawnFallback(Vector3 pos, Vector3 dir, bool byPlayer, bool missile, float dmg, float spd, Transform homingTarget = null)
+        public static HelicopterCombatProjectile SpawnFallback(
+            Vector3 pos,
+            Vector3 dir,
+            bool byPlayer,
+            bool missile,
+            float dmg,
+            float spd,
+            Transform homingTarget = null,
+            float homingRate = 0f,
+            Vector3 arcDir = default,
+            float arcTime = 0f)
         {
             GameObject go = GameObject.CreatePrimitive(missile ? PrimitiveType.Capsule : PrimitiveType.Cube);
             go.name = missile ? "Heli_Missile" : "Heli_Tracer";
             Destroy(go.GetComponent<Collider>());
 
             go.transform.position = pos;
-            go.transform.localScale = missile ? new Vector3(0.45f, 0.45f, 1.8f) : new Vector3(0.14f, 0.14f, 2.6f);
+            go.transform.localScale = missile ? new Vector3(0.55f, 0.55f, 2.2f) : new Vector3(0.16f, 0.16f, 3.0f);
 
             var mr = go.GetComponent<MeshRenderer>();
             if (mr != null)
             {
                 Shader sh = Shader.Find("Unlit/Color") ?? Shader.Find("Standard");
                 Material mat = new Material(sh);
-                mat.color = missile ? new Color(1f, 0.25f, 0.15f) : (byPlayer ? new Color(1f, 0.9f, 0.25f) : new Color(1f, 0.45f, 0.1f));
+                mat.color = missile ? new Color(1f, 0.22f, 0.12f) : (byPlayer ? new Color(1f, 0.92f, 0.25f) : new Color(1f, 0.48f, 0.1f));
                 mr.sharedMaterial = mat;
             }
 
+            if (missile)
+            {
+                var trail = go.AddComponent<TrailRenderer>();
+                trail.time = 0.75f;
+                trail.startWidth = 0.55f;
+                trail.endWidth = 0.05f;
+                Shader sh = Shader.Find("Sprites/Default") ?? Shader.Find("Unlit/Color");
+                trail.material = new Material(sh);
+                trail.startColor = new Color(1f, 0.45f, 0.15f, 0.9f);
+                trail.endColor = new Color(0.9f, 0.9f, 0.9f, 0f);
+            }
+
             var proj = go.AddComponent<HelicopterCombatProjectile>();
-            proj.Launch(dir, byPlayer, missile, dmg, spd, homingTarget);
+            proj.Launch(dir, byPlayer, missile, dmg, spd, homingTarget, homingRate, arcDir, arcTime);
             return proj;
         }
     }
