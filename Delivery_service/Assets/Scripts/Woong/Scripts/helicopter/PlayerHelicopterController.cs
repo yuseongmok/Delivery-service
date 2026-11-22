@@ -8,59 +8,75 @@ namespace DeliveryService.Mok
     {
         public static PlayerHelicopterController Current { get; private set; }
 
-        [Header("모델링 및 프로펠러 연결")]
+        [Header("1. 모델링 및 프로펠러 연결")]
         public Transform visualBody;
         public Transform mainRotor;
         public Transform tailRotor;
         public Camera helicopterCamera;
         public Transform seatAnchor;
 
-        [Header("프로펠러 예열 설정")]
+        [Header("2. 프로펠러 예열 설정 (Space 길게 누르기)")]
         public float spoolUpDuration = 2.8f;
         public float liftoffRpmThreshold = 0.75f;
         public float maxMainRotorSpinSpeed = 1350f;
         public float maxTailRotorSpinSpeed = 2000f;
 
-        [Header("비행 속도 및 기울기")]
-        public float maxForwardSpeed = 38f;
-        public float maxReverseSpeed = 20f;
-        public float maxVerticalSpeed = 22f;
-        public float yawTurnSpeed = 75f;
-        public float moveAcceleration = 3.2f;
-        [Tooltip("W 전진 시 앞머리가 숙여지는 각도")]
-        public float forwardPitchAngle = 20f;
-        [Tooltip("S 후진 시 앞머리가 들리는 각도")]
-        public float backwardPitchAngle = -16f;
-        [Tooltip("A/D 선회 시 안쪽으로 눕는 뱅킹 각도")]
-        public float turnBankAngle = 18f;
-        public float tiltSmoothSpeed = 4.5f;
+        [Header("3. 묵직한 GTA 5 비행 속도 · 관성 · 반동")]
+        public float maxForwardSpeed = 26f;
+        public float maxReverseSpeed = 14f;
+        public float maxVerticalSpeed = 14f;
+        [Tooltip("가속 시 얼마나 묵직하게 속도가 붙는지 (낮을수록 무거움)")]
+        public float moveAcceleration = 1.25f;
+        [Tooltip("키를 뗐을 때 관성으로 미끄러지는 감속력 (낮을수록 오래 밀림)")]
+        public float moveDeceleration = 0.85f;
+        public float verticalResponsiveness = 1.8f;
 
-        [Header("경계 및 고도 제한")]
+        [Tooltip("A/D 최대 회전 속도 및 회전 관성")]
+        public float yawTurnSpeed = 62f;
+        public float yawAcceleration = 2.6f;
+
+        [Tooltip("W/S/A/D 입력 및 가감속 반동에 따른 최대 기울기 각도")]
+        public float forwardPitchAngle = 25f;
+        public float backwardPitchAngle = -20f;
+        public float turnBankAngle = 32f;
+        [Tooltip("급가속/급제동 시 기체가 추가로 출렁이는 반동 강도")]
+        public float accelRecoilStrength = 0.65f;
+        public float tiltSpringSpeed = 3.2f;
+
+        [Header("4. 마우스 자유 시점(둘러보기) 설정")]
+        public float mouseLookSensitivity = 0.18f;
+        public float cameraDistance = 16f;
+        public float cameraHeight = 5.4f;
+        public float minCamPitch = -18f;
+        public float maxCamPitch = 42f;
+        [Tooltip("마우스를 멈추면 잠시 뒤 카메라가 정면으로 자동 복귀할지 여부")]
+        public bool autoRecenterCamera = true;
+        public float recenterDelay = 2.2f;
+
+        [Header("5. 돔 경계 및 고도 제한")]
         public Transform domeCenter;
-        [Tooltip("돔 내부에서 비행 가능한 최대 수평 반경")]
         public float domeMaxRadius = 420f;
         public float minAltitude = 2f;
         public float maxAltitude = 195f;
 
-        [Header("좌우 교차 게틀링 건 설정")]
+        [Header("6. 좌우 교차 게틀링 건 & 사격 반동")]
         public Transform leftMuzzle;
         public Transform rightMuzzle;
         public GameObject bulletPrefab;
-        public float fireInterval = 0.08f;
+        public float fireInterval = 0.085f;
         public float gatlingDamage = 14f;
         public float bulletSpeed = 160f;
-        [Tooltip("좌우 총알이 교차하는 기본 거리 (m)")]
         public float convergenceDistance = 85f;
-        [Tooltip("적 헬기가 조준선 몇 도 이내일 때 소프트 짐벌 보정이 걸릴지")]
-        public float aimAssistAngle = 11f;
+        public float aimAssistAngle = 12f;
         public float aimAssistRange = 260f;
+        public float firingCameraShake = 0.12f;
 
-        [Header("플레이어 체력")]
+        [Header("7. 플레이어 헬기 체력 & 추격 대상")]
         public float maxHealth = 250f;
         public EnemyHelicopterAI enemyHelicopter;
 
         public bool IsPiloting { get; private set; }
-        public float CurrentRpm { get; private set; } // 0 ~ 1
+        public float CurrentRpm { get; private set; }
         public float CurrentHealth { get; private set; }
         public bool IsAirborne => CurrentRpm >= liftoffRpmThreshold;
         public bool HasTargetLock { get; private set; }
@@ -73,11 +89,25 @@ namespace DeliveryService.Mok
         private PlayerInteraction playerInteraction;
         private Camera playerViewCam;
 
+        // 비행 물리 & 관성 변수
         private float currentYaw;
+        private float currentYawVelocity;
         private float currentPitch;
         private float currentRoll;
         private Vector3 currentVelocity;
+        private Vector3 previousVelocity;
+        private Vector3 bodyBaseLocalPos;
+        private bool hasBodyBasePos;
+
+        // 마우스 둘러보기 카메라 변수
+        private float camOrbitYaw;
+        private float camOrbitPitch = 8f;
+        private float lastMouseMoveTime;
+
+        // 사격 및 피격 반동 변수
         private float nextFireTime;
+        private float recoilKickPitch;
+        private float cameraShakePower;
         private float damageFlashTimer;
         private float missileWarningTimer;
 
@@ -95,6 +125,11 @@ namespace DeliveryService.Mok
             CurrentHealth = maxHealth;
             currentYaw = transform.eulerAngles.y;
 
+            if (visualBody != null)
+            {
+                bodyBaseLocalPos = visualBody.localPosition;
+                hasBodyBasePos = true;
+            }
             if (helicopterCamera != null) helicopterCamera.enabled = false;
         }
 
@@ -107,6 +142,7 @@ namespace DeliveryService.Mok
         {
             if (enemyHelicopter == null) enemyHelicopter = FindFirstObjectByType<EnemyHelicopterAI>();
         }
+
         public void Interact(ToppingInventory inventory)
         {
             if (IsPiloting || inventory == null) return;
@@ -127,12 +163,15 @@ namespace DeliveryService.Mok
             var combat = playerRoot.GetComponent<PlayerCombat>();
             playerViewCam = combat != null ? combat.View : playerRoot.GetComponentInChildren<Camera>();
 
-            if (playerMove) playerMove.isControllable = false;
+            if (playerMove)
+            {
+                playerMove.isControllable = false;
+                playerMove.enabled = false;
+            }
             if (playerLook) playerLook.isControllable = false;
             if (playerInteraction) playerInteraction.enabled = false;
             if (playerCC) playerCC.enabled = false;
 
-            // 플레이어를 헬기 좌석에 고정하고 기존 카메라 끄기
             if (seatAnchor != null)
             {
                 playerRoot.SetParent(seatAnchor);
@@ -157,10 +196,11 @@ namespace DeliveryService.Mok
             var heliEars = helicopterCamera.GetComponent<AudioListener>();
             if (heliEars) heliEars.enabled = true;
 
+            camOrbitYaw = 0f;
+            camOrbitPitch = 8f;
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
 
-            //플레이어가 F키로 헬기에 탑승하는 순간 적 헬기가 먼저 이륙해 도망 시작
             if (enemyHelicopter != null)
             {
                 enemyHelicopter.StartEscapeSequence(this);
@@ -173,9 +213,9 @@ namespace DeliveryService.Mok
             GameObject camObj = new GameObject("PlayerHeliChaseCam");
             helicopterCamera = camObj.AddComponent<Camera>();
             camObj.AddComponent<AudioListener>();
-            helicopterCamera.fieldOfView = 65f;
+            helicopterCamera.fieldOfView = 66f;
             helicopterCamera.farClipPlane = 2000f;
-            helicopterCamera.transform.position = transform.position - transform.forward * 14f + Vector3.up * 5f;
+            helicopterCamera.transform.position = transform.position - transform.forward * cameraDistance + Vector3.up * cameraHeight;
             helicopterCamera.transform.LookAt(transform.position + transform.forward * 20f);
         }
 
@@ -189,10 +229,11 @@ namespace DeliveryService.Mok
             if (!IsPiloting) return;
             CurrentHealth = Mathf.Max(0f, CurrentHealth - dmg);
             damageFlashTimer = fromMissile ? 0.45f : 0.2f;
+            cameraShakePower = Mathf.Max(cameraShakePower, fromMissile ? 0.65f : 0.22f);
+            recoilKickPitch += fromMissile ? -7f : -2.2f;
 
             if (CurrentHealth <= 0f)
             {
-                // 플레이어 헬기 파괴 시 체력 복구 후 재도전 또는 실패 처리 연동 가능
                 CurrentHealth = maxHealth;
             }
         }
@@ -205,7 +246,10 @@ namespace DeliveryService.Mok
 
             if (damageFlashTimer > 0f) damageFlashTimer -= Time.deltaTime;
             if (missileWarningTimer > 0f) missileWarningTimer -= Time.deltaTime;
+            cameraShakePower = Mathf.Lerp(cameraShakePower, 0f, Time.deltaTime * 8f);
+            recoilKickPitch = Mathf.Lerp(recoilKickPitch, 0f, Time.deltaTime * 7f);
 
+            UpdateMouseFreeLook();
             UpdateSpoolAndFlightInputs();
             UpdateGatlingWeapons();
         }
@@ -223,22 +267,51 @@ namespace DeliveryService.Mok
         private void LateUpdate()
         {
             if (!IsPiloting || helicopterCamera == null) return;
-            Vector3 flatForward = Quaternion.Euler(0f, currentYaw, 0f) * Vector3.forward;
-            Vector3 desiredCamPos = transform.position - flatForward * 15.5f + Vector3.up * 5.2f;
-            helicopterCamera.transform.position = Vector3.Lerp(helicopterCamera.transform.position, desiredCamPos, Time.deltaTime * 8f);
 
-            Vector3 lookPoint = transform.position + flatForward * 45f + Vector3.up * 1.5f;
-            Quaternion desiredCamRot = Quaternion.LookRotation((lookPoint - helicopterCamera.transform.position).normalized, Vector3.up);
-            helicopterCamera.transform.rotation = Quaternion.Slerp(helicopterCamera.transform.rotation, desiredCamRot, Time.deltaTime * 10f);
+            // 헬기 진행 방향(currentYaw) + 마우스 둘러보기 오프셋(camOrbitYaw/Pitch) 조합
+            Quaternion orbitRot = Quaternion.Euler(camOrbitPitch, currentYaw + camOrbitYaw, 0f);
+            Vector3 pivot = transform.position + Vector3.up * 2.2f;
+            Vector3 desiredCamPos = pivot - (orbitRot * Vector3.forward) * cameraDistance + Vector3.up * (cameraHeight - 2.2f);
+
+            // 카메라 지연 추종으로 비행 가속감·속도감 강조
+            helicopterCamera.transform.position = Vector3.Lerp(helicopterCamera.transform.position, desiredCamPos, Time.deltaTime * 10f);
+
+            Vector3 shakeOffset = cameraShakePower > 0.005f ? Random.insideUnitSphere * cameraShakePower : Vector3.zero;
+            helicopterCamera.transform.position += shakeOffset;
+
+            Vector3 lookTarget = pivot + (orbitRot * Vector3.forward) * 35f;
+            Quaternion desiredLookRot = Quaternion.LookRotation((lookTarget - helicopterCamera.transform.position).normalized, Vector3.up);
+            helicopterCamera.transform.rotation = Quaternion.Slerp(helicopterCamera.transform.rotation, desiredLookRot, Time.deltaTime * 14f);
+        }
+
+        private void UpdateMouseFreeLook()
+        {
+            var mouse = Mouse.current;
+            if (mouse == null) return;
+
+            Vector2 delta = mouse.delta.ReadValue();
+            if (delta.sqrMagnitude > 0.04f)
+            {
+                camOrbitYaw += delta.x * mouseLookSensitivity;
+                camOrbitPitch = Mathf.Clamp(camOrbitPitch - delta.y * mouseLookSensitivity, minCamPitch, maxCamPitch);
+                lastMouseMoveTime = Time.time;
+            }
+            else if (autoRecenterCamera && IsAirborne && (Time.time - lastMouseMoveTime) > recenterDelay)
+            {
+                // 마우스를 안 움직이면 서서히 기체 정면 뒤쪽으로 복귀 (GTA 5 차량/헬기 카메라 방식)
+                camOrbitYaw = Mathf.LerpAngle(camOrbitYaw, 0f, Time.deltaTime * 2.2f);
+                camOrbitPitch = Mathf.Lerp(camOrbitPitch, 8f, Time.deltaTime * 2.2f);
+            }
         }
 
         private void SpinRotors()
         {
             if (CurrentRpm <= 0.001f) return;
+            Transform refAxis = visualBody != null ? visualBody : transform;
             if (mainRotor != null)
-                mainRotor.Rotate(Vector3.up, maxMainRotorSpinSpeed * CurrentRpm * Time.deltaTime, Space.Self);
+                mainRotor.Rotate(refAxis.up, maxMainRotorSpinSpeed * CurrentRpm * Time.deltaTime, Space.World);
             if (tailRotor != null)
-                tailRotor.Rotate(Vector3.right, maxTailRotorSpinSpeed * CurrentRpm * Time.deltaTime, Space.Self);
+                tailRotor.Rotate(refAxis.right, maxTailRotorSpinSpeed * CurrentRpm * Time.deltaTime, Space.World);
         }
 
         private void UpdateSpoolAndFlightInputs()
@@ -251,52 +324,83 @@ namespace DeliveryService.Mok
             float forwardInput = (kb.wKey.isPressed ? 1f : 0f) - (kb.sKey.isPressed ? 1f : 0f);
             float turnInput = (kb.dKey.isPressed ? 1f : 0f) - (kb.aKey.isPressed ? 1f : 0f);
 
+            // 1. 지면 예열
             if (pressUp)
             {
-                // 초반에는 묵직하게, 40% 이후엔 빠르게 가속되는 느낌
                 float accelFactor = Mathf.Lerp(0.55f, 1.35f, CurrentRpm);
                 CurrentRpm = Mathf.MoveTowards(CurrentRpm, 1f, (Time.deltaTime / spoolUpDuration) * accelFactor);
             }
             else if (!IsAirborne)
             {
-                // 이륙 전 지면에서 Space를 떼면 서서히 감속
                 CurrentRpm = Mathf.MoveTowards(CurrentRpm, 0f, Time.deltaTime * 0.25f);
             }
             else
             {
-                // 공중에 한 번 뜬 뒤에는 엔진 RPM을 안정적으로 유지
                 CurrentRpm = Mathf.MoveTowards(CurrentRpm, 0.95f, Time.deltaTime * 0.5f);
             }
 
             if (!IsAirborne)
             {
-                currentVelocity = Vector3.Lerp(currentVelocity, Vector3.zero, Time.deltaTime * 5f);
-                ApplyVisualTilt(0f, 0f);
+                currentVelocity = Vector3.Lerp(currentVelocity, Vector3.zero, Time.deltaTime * 3f);
+                currentYawVelocity = Mathf.Lerp(currentYawVelocity, 0f, Time.deltaTime * 3f);
+                ApplyDynamicVisualTilt(0f, 0f, Vector3.zero);
                 return;
             }
-            currentYaw += turnInput * yawTurnSpeed * Time.deltaTime;
+
+            // 2. 관성이 느껴지는 좌우 회전 (A/D)
+            float targetYawVel = turnInput * yawTurnSpeed;
+            currentYawVelocity = Mathf.Lerp(currentYawVelocity, targetYawVel, Time.deltaTime * yawAcceleration);
+            currentYaw += currentYawVelocity * Time.deltaTime;
+
             Vector3 flatForward = Quaternion.Euler(0f, currentYaw, 0f) * Vector3.forward;
 
+            // 3. 수평 가감속과 수직 상승·하강을 분리해 묵직한 비행 관성 구현
+            Vector3 horizVel = new Vector3(currentVelocity.x, 0f, currentVelocity.z);
             float targetHorizSpeed = forwardInput >= 0f ? forwardInput * maxForwardSpeed : forwardInput * maxReverseSpeed;
+            Vector3 targetHorizVel = flatForward * targetHorizSpeed;
+
+            float horizLerpRate = Mathf.Abs(forwardInput) > 0.05f ? moveAcceleration : moveDeceleration;
+            horizVel = Vector3.Lerp(horizVel, targetHorizVel, Time.deltaTime * horizLerpRate);
+
             float verticalInput = (pressUp ? 1f : 0f) - (pressDown ? 1f : 0f);
-            float targetVertSpeed = verticalInput * maxVerticalSpeed;
+            float targetVertVel = verticalInput * maxVerticalSpeed;
+            float newVertVel = Mathf.Lerp(currentVelocity.y, targetVertVel, Time.deltaTime * verticalResponsiveness);
 
-            Vector3 targetVel = flatForward * targetHorizSpeed + Vector3.up * targetVertSpeed;
-            currentVelocity = Vector3.Lerp(currentVelocity, targetVel, Time.deltaTime * moveAcceleration);
+            previousVelocity = currentVelocity;
+            currentVelocity = new Vector3(horizVel.x, newVertVel, horizVel.z);
 
-            float targetPitch = forwardInput > 0.05f ? forwardPitchAngle : (forwardInput < -0.05f ? backwardPitchAngle : 0f);
-            float targetRoll = -turnInput * turnBankAngle;
-            ApplyVisualTilt(targetPitch, targetRoll);
+            // 실제 가속도 벡터 계산 (급가속/급감속/드리프트 시 반동 쏠림용)
+            Vector3 worldAccel = (currentVelocity - previousVelocity) / Mathf.Max(0.001f, Time.deltaTime);
+            Vector3 localAccel = transform.InverseTransformDirection(worldAccel);
+
+            // 4. 입력 + 실제 관성 가속도 반동을 합친 역동적 기체 기울기
+            float inputPitch = forwardInput > 0.05f ? forwardPitchAngle : (forwardInput < -0.05f ? backwardPitchAngle : 0f);
+            float dynamicPitch = inputPitch + Mathf.Clamp(localAccel.z * accelRecoilStrength, -12f, 12f) + recoilKickPitch;
+
+            float yawRatio = currentYawVelocity / Mathf.Max(1f, yawTurnSpeed);
+            float dynamicRoll = (-yawRatio * turnBankAngle) + Mathf.Clamp(-localAccel.x * accelRecoilStrength * 1.1f, -14f, 14f);
+
+            ApplyDynamicVisualTilt(dynamicPitch, dynamicRoll, localAccel);
         }
 
-        private void ApplyVisualTilt(float targetPitch, float targetRoll)
+        private void ApplyDynamicVisualTilt(float targetPitch, float targetRoll, Vector3 localAccel)
         {
-            currentPitch = Mathf.Lerp(currentPitch, targetPitch, Time.deltaTime * tiltSmoothSpeed);
-            currentRoll = Mathf.Lerp(currentRoll, targetRoll, Time.deltaTime * tiltSmoothSpeed);
+            if (visualBody == null) return;
 
-            if (visualBody != null)
+            // 공중 호버링 시 자연스러운 바람 흔들림(Micro-turbulence)
+            float hoverPitch = IsAirborne ? Mathf.Sin(Time.time * 1.9f) * 1.4f : 0f;
+            float hoverRoll = IsAirborne ? Mathf.Cos(Time.time * 1.5f) * 1.8f : 0f;
+
+            currentPitch = Mathf.Lerp(currentPitch, Mathf.Clamp(targetPitch + hoverPitch, -34f, 34f), Time.deltaTime * tiltSpringSpeed);
+            currentRoll = Mathf.Lerp(currentRoll, Mathf.Clamp(targetRoll + hoverRoll, -42f, 42f), Time.deltaTime * tiltSpringSpeed);
+            visualBody.localRotation = Quaternion.Euler(currentPitch, 0f, currentRoll);
+
+            // 급상승/급하강 시 동체가 살짝 들리거나 눌리는 반동 위치 연출
+            if (hasBodyBasePos)
             {
-                visualBody.localRotation = Quaternion.Euler(currentPitch, 0f, currentRoll);
+                float verticalBounce = IsAirborne ? Mathf.Clamp(-localAccel.y * 0.015f, -0.18f, 0.18f) + Mathf.Sin(Time.time * 2.3f) * 0.05f : 0f;
+                Vector3 desiredPos = bodyBaseLocalPos + new Vector3(0f, verticalBounce, 0f);
+                visualBody.localPosition = Vector3.Lerp(visualBody.localPosition, desiredPos, Time.deltaTime * 5f);
             }
         }
 
@@ -304,7 +408,6 @@ namespace DeliveryService.Mok
         {
             Vector3 pos = rb.position;
 
-            // 고도 제한
             if (pos.y < minAltitude)
             {
                 pos.y = minAltitude;
@@ -316,7 +419,6 @@ namespace DeliveryService.Mok
                 if (currentVelocity.y > 0f) currentVelocity.y = 0f;
             }
 
-            // 파란 돔 내부 수평 반경 제한 
             if (domeCenter != null)
             {
                 Vector3 center = domeCenter.position;
@@ -352,6 +454,10 @@ namespace DeliveryService.Mok
                 nextFireTime = Time.time + fireInterval;
                 FireFromMuzzle(leftMuzzle, aimPoint);
                 FireFromMuzzle(rightMuzzle, aimPoint);
+
+                // 게틀링 발사 시 묵직한 사격 반동과 미세한 카메라 진동 추가
+                cameraShakePower = Mathf.Max(cameraShakePower, firingCameraShake);
+                recoilKickPitch = Mathf.Clamp(recoilKickPitch - 0.55f, -3.5f, 3.5f);
             }
         }
 
@@ -361,13 +467,19 @@ namespace DeliveryService.Mok
             Vector3 camPos = helicopterCamera.transform.position;
             Vector3 camFwd = helicopterCamera.transform.forward;
 
+            // 마우스로 옆이나 뒤를 보고 있을 때는 헬기 정면 35도 이내로 사격 각도를 제한해 꼬리를 뚫고 쏘지 않도록 보호
+            Vector3 heliFwd = transform.forward;
+            Vector3 fireAimDir = Vector3.Angle(heliFwd, camFwd) <= 35f
+                ? camFwd
+                : Vector3.RotateTowards(heliFwd, camFwd, 35f * Mathf.Deg2Rad, 0f);
+
             if (enemyHelicopter != null && !enemyHelicopter.IsDead)
             {
                 Vector3 enemyPos = enemyHelicopter.transform.position;
-                Vector3 toEnemy = enemyPos - camPos;
+                Vector3 toEnemy = enemyPos - transform.position;
                 float dist = toEnemy.magnitude;
 
-                if (dist <= aimAssistRange && Vector3.Angle(camFwd, toEnemy) <= aimAssistAngle)
+                if (dist <= aimAssistRange && Vector3.Angle(fireAimDir, toEnemy) <= aimAssistAngle)
                 {
                     lockedOn = true;
                     float travelTime = dist / Mathf.Max(10f, bulletSpeed);
@@ -375,7 +487,7 @@ namespace DeliveryService.Mok
                 }
             }
 
-            return camPos + camFwd * convergenceDistance;
+            return camPos + fireAimDir * convergenceDistance;
         }
 
         private void FireFromMuzzle(Transform muzzle, Vector3 targetPoint)
@@ -406,7 +518,6 @@ namespace DeliveryService.Mok
             styleWarn ??= new GUIStyle(GUI.skin.label) { fontSize = 36, alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold };
             styleSub ??= new GUIStyle(GUI.skin.label) { fontSize = 20, alignment = TextAnchor.MiddleLeft };
 
-            // 중앙 크로스헤어
             Color crossColor = HasTargetLock ? new Color(1f, 0.25f, 0.2f, 0.95f) : new Color(0.25f, 1f, 0.45f, 0.85f);
             GUI.color = crossColor;
             GUI.DrawTexture(new Rect(960f - 22f, 540f - 2f, 14f, 4f), Texture2D.whiteTexture);
@@ -420,18 +531,16 @@ namespace DeliveryService.Mok
                 GUI.Label(new Rect(960f - 100f, 565f, 200f, 32f), "[ LOCK-ON ]", styleHud);
             }
 
-            //좌측 하단 계기판
             GUI.color = new Color(0.04f, 0.08f, 0.12f, 0.88f);
-            GUI.DrawTexture(new Rect(40f, 830f, 420f, 210f), Texture2D.whiteTexture);
+            GUI.DrawTexture(new Rect(40f, 820f, 440f, 220f), Texture2D.whiteTexture);
             GUI.color = Color.white;
             styleSub.normal.textColor = Color.white;
-            GUI.Label(new Rect(60f, 845f, 380f, 30f), $"엔진 예열 RPM : {Mathf.RoundToInt(CurrentRpm * 100)}% {(IsAirborne ? "(비행 가능)" : "(Space 꾹 눌러 예열)")}", styleSub);
-            GUI.Label(new Rect(60f, 880f, 380f, 30f), $"현재 고도 (Y) : {transform.position.y:0} m", styleSub);
-            GUI.Label(new Rect(60f, 915f, 380f, 30f), $"헬기 내구도 : {CurrentHealth:0} / {maxHealth:0}", styleSub);
+            GUI.Label(new Rect(60f, 835f, 400f, 30f), $"엔진 예열 RPM : {Mathf.RoundToInt(CurrentRpm * 100)}% {(IsAirborne ? "(비행 가능)" : "(Space 꾹 눌러 예열)")}", styleSub);
+            GUI.Label(new Rect(60f, 870f, 400f, 30f), $"속도 : {currentVelocity.magnitude:0} m/s  |  고도 : {transform.position.y:0} m", styleSub);
+            GUI.Label(new Rect(60f, 905f, 400f, 30f), $"헬기 내구도 : {CurrentHealth:0} / {maxHealth:0}", styleSub);
             styleSub.normal.textColor = new Color(0.75f, 0.85f, 0.95f);
-            GUI.Label(new Rect(60f, 955f, 380f, 70f), "[Space/Shift] 상승·하강 | [W/S/A/D] 비행\n[좌클릭] 좌우 교차 게틀링 사격", styleSub);
+            GUI.Label(new Rect(60f, 945f, 400f, 80f), "[Space/Shift] 상승·하강 | [W/S/A/D] 비행\n[마우스 이동] 주변 둘러보기 | [좌클릭] 게틀링", styleSub);
 
-            //  상단 적 헬기 체력바 및 페이즈 안내
             if (enemyHelicopter != null && enemyHelicopter.State != EnemyHelicopterAI.AIState.IdleWaiting)
             {
                 GUI.color = new Color(0.05f, 0.07f, 0.10f, 0.9f);
@@ -458,7 +567,6 @@ namespace DeliveryService.Mok
                 GUI.DrawTexture(new Rect(hpBg.x, hpBg.y, hpBg.width * enemyHelicopter.HealthRatio, hpBg.height), Texture2D.whiteTexture);
             }
 
-            //미사일 접근 경고 & 피격 화면 플래시
             if (missileWarningTimer > 0f && Mathf.Sin(Time.time * 18f) > 0f)
             {
                 styleWarn.normal.textColor = new Color(1f, 0.2f, 0.2f);

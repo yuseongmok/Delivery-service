@@ -99,7 +99,7 @@ namespace DeliveryService.Mok
             if (Current == this) Current = null;
         }
 
-        // ★ 7번 요청: 플레이어가 F키로 탑승할 때만 호출되어 이륙 및 도주 시작!
+        //플레이어가 F키로 탑승할 때만 호출되어 이륙 및 도주 시작
         public void StartEscapeSequence(PlayerHelicopterController player)
         {
             if (State != AIState.IdleWaiting) return;
@@ -184,6 +184,7 @@ namespace DeliveryService.Mok
             float targetRpm = State == AIState.IdleWaiting ? 0.15f : (State == AIState.Destroyed ? 0f : 1f);
             rotorRpm = Mathf.MoveTowards(rotorRpm, targetRpm, Time.deltaTime * 0.8f);
 
+            Transform refAxis = visualBody != null ? visualBody : transform;
             if (mainRotor != null) mainRotor.Rotate(Vector3.up, 1300f * rotorRpm * Time.deltaTime, Space.Self);
             if (tailRotor != null) tailRotor.Rotate(Vector3.right, 1900f * rotorRpm * Time.deltaTime, Space.Self);
         }
