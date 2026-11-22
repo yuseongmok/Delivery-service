@@ -139834,6 +139834,27 @@ MonoBehaviour:
   gatlingCargo: {fileID: 0}
   blockerStart: []
   blockerEnd: []
+  thief: {fileID: 0}
+  thiefAgent: {fileID: 0}
+  thiefActor: {fileID: 0}
+  thiefCarry: {fileID: 0}
+  chaseRestart: {fileID: 0}
+  chaseRoute: []
+  chaseCamera: {fileID: 0}
+  thiefSpeed: 5.2
+  catchDistance: 2.7
+  escapeDistance: 38
+  escapeGrace: 4
+  chaseIntro:
+  - "\uD50C\uB808\uC774\uC5B4: \uC7A0\uAE50! \uADF8\uAC70 \uAC00\uC838\uAC00\uBA74
+    \uC548 \uB418\uB294\uB370!"
+  - "\uB3C4\uB451: \uBC8C\uC368 \uC8FC\uC778\uC774 \uC654\uB2E4\uACE0?"
+  chaseCaught:
+  - "\uB3C4\uB451: \uC54C\uC558\uC5B4! \uB193\uACE0 \uAC00\uBA74 \uB418\uC796\uC544!"
+  - "\uD50C\uB808\uC774\uC5B4: \uBC18\uC1A1 \uC0C1\uC790\uBD80\uD130 \uCC59\uAE30\uC790."
+  chaseLost:
+  - "\uD50C\uB808\uC774\uC5B4: \uB193\uCCE4\uC5B4. \uACE8\uBAA9 \uC785\uAD6C\uC5D0\uC11C
+    \uB2E4\uC2DC \uB530\uB77C\uBD99\uC790."
   cargoBriefing:
   - "\uD50C\uB808\uC774\uC5B4: \uBC18\uC1A1 \uC0C1\uC790\uB294 \uC548\uCABD\uC5D0
     \uC788\uB124. \uC55E\uC5D0 \uC313\uC778 \uC9D0\uBD80\uD130 \uC62E\uACA8\uC57C\uACA0\uC5B4."

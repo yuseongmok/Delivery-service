@@ -367,6 +367,100 @@ namespace DeliveryService.Yun
                 if (destinationMarker) destinationMarker.gameObject.SetActive(false);
             }
         }
+        public void BeginChaseIntro()
+        {
+            if (!Available || !player || chaseRoute == null || chaseRoute.Length < 2) return;
+            progress = Stage.GatlingArrived; RefreshAvailability(); fleeing = false;
+            thief.gameObject.SetActive(true); thiefAgent.enabled = true;
+            thiefAgent.Warp(chaseRoute[0].position); thiefAgent.isStopped = true;
+            thief.transform.rotation = Quaternion.LookRotation(chaseRoute[1].position - chaseRoute[0].position);
+            thiefActor.reach = 1; thiefActor.walkSpeed = 0;
+            foreach (var c in gatlingCargo.GetComponentsInChildren<Collider>()) c.enabled = false;
+            gatlingCargo.transform.SetPositionAndRotation(thiefCarry.position, thiefCarry.rotation);
+            if (chaseCamera) chaseCamera.enabled = true;
+            Talk(chaseIntro, StartThiefChase);
+        }
+        void StartThiefChase()
+        {
+            if (chaseCamera) chaseCamera.enabled = false;
+            progress = Stage.GatlingChase; chaseWaypoint = 1; farTime = stuckTime = 0;
+            var forward = thief.transform.position - player.transform.position; forward.y = 0;
+            if (forward.sqrMagnitude > .01f) player.transform.rotation = Quaternion.LookRotation(forward);
+            if (player.View) player.View.transform.LookAt(thief.transform.position + Vector3.up * 1.2f);
+            player.GetComponentInChildren<CameraMove>(true)?.SyncViewFromTransform();
+            Close();
+            thiefAgent.speed = thiefSpeed; thiefAgent.isStopped = false; thiefAgent.SetDestination(chaseRoute[1].position);
+        }
+        public bool TryCatchThief()
+        {
+            if (progress != Stage.GatlingChase || !CanInteract() || player.RiddenBike || Vector3.Distance(player.transform.position, thief.transform.position) > catchDistance) return false;
+            var start = player.View.transform.position;
+            if (Physics.Linecast(start, thief.transform.position + Vector3.up, out var hit, ~0, QueryTriggerInteraction.Ignore) && !hit.transform.IsChildOf(thief.transform) && !hit.transform.IsChildOf(player.transform)) return false;
+            progress = Stage.GatlingCargoReady; thiefAgent.isStopped = true; thiefActor.walkSpeed = 0;
+            StartCoroutine(DropStolenCargo()); return true;
+        }
+        IEnumerator DropStolenCargo()
+        {
+            handingOver = true; Lock();
+            Vector3 from = gatlingCargo.transform.position;
+            Vector3 end = thief.transform.position - thief.transform.forward * .65f;
+            if (NavMesh.SamplePosition(end, out var ground, 1.5f, NavMesh.AllAreas)) end = ground.position;
+            for (float t = 0; t < .65f; t += Time.deltaTime)
+            {
+                float blend = Mathf.Clamp01(t / .65f);
+                gatlingCargo.transform.position = Vector3.Lerp(from, end, blend);
+                thiefActor.reach = 1 - blend; yield return null;
+            }
+            gatlingCargo.transform.position = end;
+            foreach (var c in gatlingCargo.GetComponentsInChildren<Collider>()) c.enabled = true;
+            handingOver = false;
+            Talk(chaseCaught, () => { Close(); fleeing = true; thiefAgent.isStopped = false; thiefAgent.SetDestination(chaseRoute[chaseRoute.Length - 1].position); });
+        }
+        void TickChase()
+        {
+            if (!thiefAgent || !thiefAgent.isActiveAndEnabled || !thiefAgent.isOnNavMesh) return;
+            if (progress == Stage.GatlingRetry && !ModalOpen && !player.IsDown && !PoliceControl.IsArrestInProgress) ShowChaseRetry();
+            bool pause = Time.timeScale <= 0 || ModalOpen || locked || !Available;
+            thiefAgent.isStopped = pause || !(progress == Stage.GatlingChase || fleeing);
+            thiefActor.walkSpeed = thiefAgent.isStopped ? 0 : thiefAgent.velocity.magnitude;
+            thiefActor.animator.SetFloat("RunRate", Mathf.Clamp(thiefActor.walkSpeed / 4.2f, .8f, 1.3f));
+            if (pause) return;
+            if (fleeing)
+            {
+                if (!thiefAgent.pathPending && thiefAgent.remainingDistance < .7f) { fleeing = false; thief.gameObject.SetActive(false); }
+                return;
+            }
+            if (progress != Stage.GatlingChase) return;
+            if (PrologueKeyboard.Pressed(Key.F) && TryCatchThief()) return;
+            float distance = Vector3.Distance(player.transform.position, thief.transform.position);
+            farTime = distance > escapeDistance ? farTime + Time.deltaTime : 0;
+            stuckTime = thiefAgent.velocity.sqrMagnitude < .04f && !thiefAgent.pathPending ? stuckTime + Time.deltaTime : 0;
+            if (farTime >= escapeGrace || stuckTime > 6 || player.IsDown) { LoseThief(); return; }
+            if (!thiefAgent.pathPending && thiefAgent.remainingDistance < .65f)
+            {
+                chaseWaypoint++;
+                if (chaseWaypoint >= chaseRoute.Length) { LoseThief(); return; }
+                thiefAgent.SetDestination(chaseRoute[chaseWaypoint].position);
+            }
+        }
+        public void LoseThief()
+        {
+            if (progress != Stage.GatlingChase) return;
+            progress = Stage.GatlingRetry; thiefAgent.isStopped = true; thiefActor.walkSpeed = 0;
+            ShowChaseRetry();
+        }
+        void ShowChaseRetry()
+        {
+            Talk(chaseLost, () => {
+                var controller = player.GetComponent<CharacterController>();
+                bool wasEnabled = controller && controller.enabled;
+                if (controller) controller.enabled = false;
+                float feet = controller ? controller.height * .5f - controller.center.y + .1f : .1f;
+                player.transform.SetPositionAndRotation(chaseRestart.position + Vector3.up * feet, chaseRestart.rotation);
+                if (controller) controller.enabled = wasEnabled;
+                BeginChaseIntro();
+            });
+        }
         void AttachGatlingCargo()
         {
             if (!gatlingCargo || carried) return;
@@ -527,6 +621,7 @@ namespace DeliveryService.Yun
             if (!player) player = FindFirstObjectByType<PlayerCombat>();
             RefreshAvailability();
             UpdateGatlingTravel();
+            TickChase();
             if (!Available) return;
             if (progress == Stage.Carry && !carried && player) AttachCorrectBox();
             objective.text = progress == Stage.Meet || progress == Stage.Choose ? "대비 · 무기상과 이야기하기" :
@@ -536,12 +631,15 @@ namespace DeliveryService.Yun
                 progress == Stage.Purchase ? "바뀐 전표 · 의뢰 대금으로 권총 구매" :
                 progress == Stage.GatlingTravel ? "반송된 상자 · 서안골목 입구로 이동" :
                 progress == Stage.GatlingDelivery ? "반송된 상자 · 내려서 지정 배송지로 이동" :
-                progress == Stage.GatlingArrived ? $"반송된 상자 · 적재물 옮기기 ({clearedBlockers}/{gatlingBlockers.Length})" :
+                progress == Stage.GatlingArrived ? "반송된 상자 · 도둑 발견" :
+                progress == Stage.GatlingChase ? "반송된 상자 · 도둑 추격 (가까이서 F)" :
+                progress == Stage.GatlingRetry ? "반송된 상자 · 추격 다시 시작" :
+                progress == Stage.GatlingCargoReady ? "반송된 상자 · 떨어진 상자 회수" :
                 progress == Stage.GatlingReturn ? "반송된 상자 · 무기상에게 상자 반납" :
                 progress == Stage.GatlingComplete ? "반송된 상자 완료 · 게틀링건 확보" : "바뀐 전표 완료 · 권총 확보";
             prompt.text = "";
             if (player && (player.IsDown || PoliceControl.IsArrestInProgress) && (locked || handingOver))
-            { StopAllCoroutines(); RestoreShake(); movingBlocker = false; handingOver = false; if (previewStage) previewStage.SetActive(false); ui.SetActive(false); if (dialoguePanel) dialoguePanel.SetActive(false); screen = ScreenKind.None; Unlock(); return; }
+            { StopAllCoroutines(); RestoreShake(); movingBlocker = false; handingOver = false; if (previewStage) previewStage.SetActive(false); if (chaseCamera) chaseCamera.enabled = false; if (ChasePhase) progress = Stage.GatlingRetry; ui.SetActive(false); if (dialoguePanel) dialoguePanel.SetActive(false); screen = ScreenKind.None; Unlock(); return; }
             if (Time.timeScale <= 0) return;
             if (ModalOpen)
             {
@@ -559,12 +657,14 @@ namespace DeliveryService.Yun
             else if (!handingOver && player && player.CanAct && player.View && Physics.Raycast(player.View.transform.position, player.View.transform.forward, out var hit, 3f))
             {
                 var point = hit.collider.GetComponentInParent<ChapterThreeArmsPoint>();
-                if (point && point.mission == this) prompt.text = progress == Stage.GatlingArrived ? (point == gatlingCargo ? "[F] 반송 상자 회수" : "[F] 적재물 옮기기") : point == slip ? "[F] 전표 작업대" : assembled ? "[F] 상자 돌려 보기" : "[F] 상자를 들어 흔들기";
+                if (point && point.mission == this) prompt.text = ChasePhase ? (point == thief ? "[F] 도둑 붙잡기" : "[F] 반송 상자 회수") : point == slip ? "[F] 전표 작업대" : assembled ? "[F] 상자 돌려 보기" : "[F] 상자를 들어 흔들기";
                 else if (hit.collider.GetComponentInParent<ChapterThreeArmsMission>() == this) prompt.text = "[F] 무기상과 이야기하기";
             }
         }
         void LateUpdate()
         {
+            if (thiefCarry && gatlingCargo && (progress == Stage.GatlingArrived || progress == Stage.GatlingChase || progress == Stage.GatlingRetry))
+                gatlingCargo.transform.SetPositionAndRotation(thiefCarry.position, thiefCarry.rotation);
             if (screen == ScreenKind.Box && previewCode) RefreshPreviewFont(previewCode.font);
             if (!handoffOnly)
             {
@@ -596,6 +696,8 @@ namespace DeliveryService.Yun
         {
             ObserveIntroduction(); StopAllCoroutines(); handingOver = false; releasing = null;
             movingBlocker = false;
+            if (chaseCamera) chaseCamera.enabled = false;
+            if (thiefAgent && thiefAgent.isActiveAndEnabled && thiefAgent.isOnNavMesh) thiefAgent.isStopped = true;
             RestoreShake(); if (previewStage) previewStage.SetActive(false);
             if (ui) ui.SetActive(false); if (dialoguePanel) dialoguePanel.SetActive(false);
             if (objective) objective.gameObject.SetActive(false);

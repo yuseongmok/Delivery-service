@@ -11,6 +11,7 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using UnityEngine.AI;
 
 namespace DeliveryService.Yun.Editor
 {
@@ -62,6 +63,9 @@ namespace DeliveryService.Yun.Editor
         }
         static IEnumerator GatlingChecks()
         {
+            // Isolate the scripted route test from unrelated ambient NPC combat.
+            bool previousInvincibility = DeveloperCheats.Invincible;
+            DeveloperCheats.SetInvincible(true);
             var m = UnityEngine.Object.FindObjectsByType<ChapterThreeArmsMission>(FindObjectsSortMode.None).Single(v => !v.handoffOnly);
             var p = UnityEngine.Object.FindFirstObjectByType<PlayerCombat>();
             m.enableStandaloneTest = true;
@@ -82,32 +86,36 @@ namespace DeliveryService.Yun.Editor
             ScreenCapture.CaptureScreenshot(Path.Combine(BackupRoot, "gatling-parking.png")); yield return .8f;
             var rewardBefore = m.MissionCredit;
             StandNear(p, m.gatlingDestination.transform.position, Vector3.zero); yield return .6f;
-            Require(m.State == ChapterThreeArmsMission.Stage.GatlingArrived && m.ModalOpen, "Arrival introduces the cargo puzzle");
+            Require(m.State == ChapterThreeArmsMission.Stage.GatlingArrived && m.ModalOpen && m.chaseCamera.enabled, "Arrival shows the thief carrying the parcel before gameplay");
+            Require(m.gatlingBlockers.Length == 0 && m.thiefActor.animator.isHuman, "Old obstacle puzzle is removed and thief uses an existing humanoid rig");
+            ScreenCapture.CaptureScreenshot(Path.Combine(BackupRoot, "chase-introduction.png")); yield return .6f;
             m.Skip(); yield return .5f;
-            Require(m.MissionCredit == rewardBefore && !m.GatlingOwned, "Arrival does not grant the weapon reward");
-            var inventory = p.GetComponent<ToppingInventory>();
-            m.Inspect(m.gatlingCargo, inventory); yield return .3f;
-            Require(m.State == ChapterThreeArmsMission.Stage.GatlingArrived, "Cargo cannot be taken before clearing the pile");
-            Require(m.dialoguePanel.transform.Find("Top letterbox").gameObject.activeInHierarchy && m.dialoguePanel.transform.Find("Bottom letterbox").gameObject.activeInHierarchy && m.dialoguePanel.transform.Find("Dialogue controls").gameObject.activeInHierarchy, "Blocked pickup monologue includes both bars and next/skip controls");
-            ScreenCapture.CaptureScreenshot(Path.Combine(BackupRoot, "gatling-blocked-pickup.png")); yield return .5f;
-            var keyboard = UnityEngine.InputSystem.Keyboard.current;
-            UnityEngine.InputSystem.InputSystem.QueueStateEvent(keyboard, new UnityEngine.InputSystem.LowLevel.KeyboardState(UnityEngine.InputSystem.Key.F)); yield return .3f;
-            UnityEngine.InputSystem.InputSystem.QueueStateEvent(keyboard, new UnityEngine.InputSystem.LowLevel.KeyboardState()); yield return .5f;
-            Require(!m.ModalOpen && p.GetComponent<PlayerInteraction>().enabled && m.destinationMarker.text.StartsWith("적재물 1"), $"F closes blocked pickup and directs the player to the actual first obstacle (screen={m.CurrentScreen}, interaction={p.GetComponent<PlayerInteraction>().enabled}, marker={m.destinationMarker.text})");
-            m.Inspect(m.gatlingBlockers[2], inventory); yield return .3f;
-            Require(m.ClearedBlockers == 0, "Blocked move is rejected");
-            m.Skip(); yield return .5f;
-            for (int i = 0; i < m.gatlingBlockers.Length; i++)
+            Require(m.State == ChapterThreeArmsMission.Stage.GatlingChase && !m.chaseCamera.enabled && !m.ModalOpen, "Skipping intro hands off correctly to chase gameplay");
+            Require(!m.TryCatchThief(), "Cannot catch the thief remotely");
+            Time.timeScale = 0; yield return .2f; var pausedPosition = m.thief.transform.position; yield return .5f;
+            Require(Vector3.Distance(pausedPosition, m.thief.transform.position) < .02f && m.State == ChapterThreeArmsMission.Stage.GatlingChase, "Pause stops thief movement and chase progression");
+            Time.timeScale = 1;
+            int furthest = 0;
+            for (int i = 0; i < 200 && m.State == ChapterThreeArmsMission.Stage.GatlingChase; i++)
             {
-                StandNear(p, m.gatlingBlockers[i].transform.position, new Vector3(0, .1f, 1.3f));
-                UseWorldTarget(p, m.gatlingBlockers[i]); yield return 1.1f;
-                Require(m.ClearedBlockers == i + 1, "A reachable cargo obstacle moves into its saved clearance position");
-                Require(m.destinationMarker.text.StartsWith(i == 2 ? "반송 상자 회수" : "적재물 " + (i + 2)), "Marker advances to the next actionable cargo object");
+                // Follow the actual moving agent; never teleport it past a route segment.
+                var behind = m.thief.transform.position - m.thief.transform.forward * 5;
+                if (NavMesh.SamplePosition(behind, out var follow, 2f, NavMesh.AllAreas)) StandNear(p, follow.position, Vector3.zero);
+                furthest = Mathf.Max(furthest, m.ChaseWaypoint);
+                if (i == 10) ScreenCapture.CaptureScreenshot(Path.Combine(BackupRoot, "chase-running.png"));
+                yield return .4f;
             }
-            ScreenCapture.CaptureScreenshot(Path.Combine(BackupRoot, "gatling-arrived.png")); yield return .8f;
-            StandNear(p, m.gatlingCargo.transform.position, new Vector3(0, .1f, 1.3f));
+            Require(furthest >= m.chaseRoute.Length - 1 && m.State == ChapterThreeArmsMission.Stage.GatlingRetry, $"Thief traverses the full saved route and escaping triggers retry: furthest={furthest}, state={m.State}, position={m.thief.transform.position}, remaining={m.thiefAgent.remainingDistance}, path={m.thiefAgent.pathStatus}, down={p.IsDown}");
+            yield return .4f; m.Skip(); yield return .4f;
+            Require(Vector3.Distance(p.transform.position, m.chaseRestart.position) < 2 && m.State == ChapterThreeArmsMission.Stage.GatlingArrived, $"Retry returns to chase start without repeating delivery travel: {m.State}, distance={Vector3.Distance(p.transform.position, m.chaseRestart.position)}, down={p.IsDown}, screen={m.CurrentScreen}");
+            m.Skip(); yield return .5f;
+            StandNear(p, m.thief.transform.position - m.thief.transform.forward * 1.4f, Vector3.zero);
+            Require(m.TryCatchThief(), "Nearby unobstructed thief can be caught"); yield return 1f;
+            Require(m.State == ChapterThreeArmsMission.Stage.GatlingCargoReady && m.gatlingCargo.GetComponent<Collider>().enabled, "Catch drops a recoverable parcel");
+            m.Skip(); yield return .4f;
+            StandNear(p, m.gatlingCargo.transform.position, new Vector3(1, .1f, 0));
             UseWorldTarget(p, m.gatlingCargo); yield return .5f;
-            Require(m.State == ChapterThreeArmsMission.Stage.GatlingReturn && navigation.SelectedPlace == m.gatlingMerchant, "Recovered cargo enables return guidance");
+            Require(m.State == ChapterThreeArmsMission.Stage.GatlingReturn && navigation.SelectedPlace == m.gatlingMerchant, "Recovered parcel enables merchant return guidance");
             StandNear(p, m.transform.parent.TransformPoint(new Vector3(.5f, .1f, -1.9f)), Vector3.zero);
             UseWorldTarget(p, m); yield return 1.2f; m.Skip(); yield return .5f;
             Require(m.GatlingOwned && !m.gatlingCargoRoot.activeSelf && !m.ModalOpen, "Handover completes the draft and records the gatling reward");
@@ -115,6 +123,7 @@ namespace DeliveryService.Yun.Editor
             Require(m.State == ChapterThreeArmsMission.Stage.GatlingComplete, "Completed reward cannot be claimed by stale selection callbacks");
             ChapterThreeArmsMission.PrepareChapterRestart(); yield return .3f;
             Require(m.State == ChapterThreeArmsMission.Stage.Meet, "Chapter restart resets gatling travel");
+            DeveloperCheats.SetInvincible(previousInvincibility);
             Debug.Log("YUN_GATLING_MISSION_PASS");
         }
         static IEnumerator CheatChecks()
@@ -482,18 +491,10 @@ namespace DeliveryService.Yun.Editor
             m.gatlingParking = Place("서안골목 입구 주차장", parking, "yun-gatling-parking");
             m.gatlingDestination = Place("반송 배송지 · 서안골목 01", entrance, "yun-gatling-delivery");
             m.gatlingMerchant = Place("무기상", m.transform, "yun-gatling-return");
-            var cargo = new GameObject("Return cargo puzzle"); cargo.transform.SetParent(root.transform, false); cargo.transform.position = entrance.position + Vector3.forward * 4;
+            var cargo = new GameObject("Thief chase actors"); cargo.transform.SetParent(root.transform, false);
             m.gatlingCargoRoot = cargo;
-            m.gatlingBlockers = new ChapterThreeArmsPoint[3]; m.blockerStart = new Vector3[3]; m.blockerEnd = new Vector3[3];
-            for (int i = 0; i < 3; i++)
-            {
-                var start = new Vector3(0, 0, 1 - i);
-                m.gatlingBlockers[i] = Prop(cargo.transform, m, "옮길 적재물 " + (i + 1), "", "Assets/Synty/PolygonGeneric/Prefabs/Props/SM_Gen_Prop_Cardboard_Box_01.prefab", start, new Vector3(.7f + i * .15f, .5f + i * .1f, .65f));
-                m.gatlingBlockers[i].transform.Find("Label").GetComponent<TextMesh>().text = "옮길 짐 " + (i + 1);
-                m.blockerStart[i] = start; m.blockerEnd[i] = start + Vector3.right * (i % 2 == 0 ? 1.7f : -1.7f);
-            }
-            m.gatlingCargo = Prop(cargo.transform, m, "반송 상자", "RETURN", "Assets/Synty/PolygonGeneric/Prefabs/Props/SM_Gen_Prop_Cardboard_Box_01.prefab", new Vector3(0, 0, -2), new Vector3(.5f, .35f, .4f));
-            m.gatlingCargo.transform.Find("Label").GetComponent<TextMesh>().text = "반송";
+            m.gatlingBlockers = Array.Empty<ChapterThreeArmsPoint>(); m.blockerStart = m.blockerEnd = Array.Empty<Vector3>();
+            BuildThiefChase(m, root.transform, cargo.transform);
             cargo.SetActive(false);
             m.destinationMarker = Label("Gatling destination marker", m.objectivePanel.transform.parent, "", new Vector2(420, 40), Vector2.zero, 18, new Color(1, .97f, .9f));
             m.destinationMarker.font = AssetDatabase.LoadAssetAtPath<Font>("Assets/Fonts/NanumGothic-Regular.ttf");
@@ -501,6 +502,52 @@ namespace DeliveryService.Yun.Editor
             var diamondRect = Rect("Target diamond", m.destinationMarker.transform, new Vector2(22, 22), new Vector2(0, 36));
             var diamond = diamondRect.gameObject.AddComponent<StoryTargetDiamond>(); diamond.color = new Color(1, .43f, .05f); diamond.raycastTarget = false;
             m.destinationMarker.gameObject.SetActive(false);
+        }
+        static void BuildThiefChase(ChapterThreeArmsMission m, Transform root, Transform actors)
+        {
+            // The east edge and central market lane are open pedestrian corridors.
+            Vector3 Snap(Vector3 position)
+            {
+                if (!NavMesh.SamplePosition(position, out var hit, 3f, NavMesh.AllAreas)) throw new InvalidOperationException("No walkable chase position: " + position);
+                return hit.position;
+            }
+            Transform Anchor(string name, Vector3 position)
+            {
+                var go = new GameObject(name); go.transform.SetParent(root, false); go.transform.position = Snap(position); return go.transform;
+            }
+            var points = new[] { new Vector3(-199, 0, -48), new Vector3(-199, 0, -5), new Vector3(-256, 0, -5), new Vector3(-256, 0, 5), new Vector3(-294, 0, -5) };
+            m.chaseRoute = points.Select((p, i) => Anchor("Chase waypoint " + i, p)).ToArray();
+            m.chaseRestart = Anchor("Chase retry start", new Vector3(-199, 0, -56));
+            m.chaseRestart.rotation = Quaternion.LookRotation(m.chaseRoute[0].position - m.chaseRestart.position);
+            m.gatlingDestination.transform.position = m.chaseRestart.position;
+            float length = 0;
+            for (int i = 1; i < m.chaseRoute.Length; i++)
+            {
+                var path = new NavMeshPath();
+                if (!NavMesh.CalculatePath(m.chaseRoute[i - 1].position, m.chaseRoute[i].position, NavMesh.AllAreas, path) || path.status != NavMeshPathStatus.PathComplete) throw new InvalidOperationException("Disconnected chase segment " + i);
+                for (int j = 1; j < path.corners.Length; j++) length += Vector3.Distance(path.corners[j - 1], path.corners[j]);
+            }
+            Debug.Log("YUN_CHASE_ROUTE_METRES: " + length);
+            var thiefObject = new GameObject("Seoan cargo thief"); thiefObject.transform.SetParent(actors, false); thiefObject.transform.position = m.chaseRoute[0].position; thiefObject.layer = 13;
+            m.thief = thiefObject.AddComponent<ChapterThreeArmsPoint>(); m.thief.mission = m; m.thief.code = "THIEF";
+            var capsule = thiefObject.AddComponent<CapsuleCollider>(); capsule.center = Vector3.up * .9f; capsule.height = 1.8f; capsule.radius = .3f;
+            var visual = (GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Synty/PolygonCity/Prefabs/Characters/Character_BusinessMan_Shirt.prefab"));
+            visual.transform.SetParent(thiefObject.transform, false);
+            foreach (var c in visual.GetComponentsInChildren<Collider>()) UnityEngine.Object.DestroyImmediate(c);
+            foreach (var t in visual.GetComponentsInChildren<Transform>()) t.gameObject.layer = 13;
+            var animator = visual.GetComponentInChildren<Animator>();
+            if (!animator || !animator.avatar || !animator.avatar.isHuman) throw new InvalidOperationException("Thief needs an existing humanoid rig.");
+            animator.runtimeAnimatorController = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>("Assets/Scripts/Mok/Art/Robber/Robber.controller"); animator.applyRootMotion = false;
+            m.thiefActor = thiefObject.AddComponent<AftermathActor>(); m.thiefActor.animator = animator;
+            var mount = new GameObject("Carried parcel mount").transform; mount.SetParent(thiefObject.transform, false); mount.localPosition = new Vector3(0, 1.05f, .4f); m.thiefCarry = mount;
+            Transform Contact(string name, float side) { var t = new GameObject(name).transform; t.SetParent(mount, false); t.localPosition = new Vector3(side, .08f, 0); return t; }
+            m.thiefActor.leftContact = Contact("Left parcel grip", -.22f); m.thiefActor.rightContact = Contact("Right parcel grip", .22f); m.thiefActor.reach = 1;
+            m.thiefAgent = thiefObject.AddComponent<NavMeshAgent>(); m.thiefAgent.radius = .32f; m.thiefAgent.height = 1.8f; m.thiefAgent.speed = m.thiefSpeed; m.thiefAgent.acceleration = 16; m.thiefAgent.angularSpeed = 540; m.thiefAgent.stoppingDistance = .2f;
+            m.gatlingCargo = Prop(actors, m, "Stolen return parcel", "RETURN", "Assets/Synty/PolygonGeneric/Prefabs/Props/SM_Gen_Prop_Cardboard_Box_01.prefab", mount.position, new Vector3(.45f, .3f, .35f));
+            m.gatlingCargo.transform.Find("Label").gameObject.SetActive(false);
+            var camera = new GameObject("Chase introduction camera", typeof(Camera)); camera.transform.SetParent(root, false);
+            camera.transform.position = m.chaseRoute[0].position + new Vector3(2.2f, 1.7f, 3.2f); camera.transform.LookAt(m.chaseRoute[0].position + Vector3.up * 1.1f);
+            m.chaseCamera = camera.GetComponent<Camera>(); m.chaseCamera.depth = 100; m.chaseCamera.fieldOfView = 55; m.chaseCamera.enabled = false;
         }
         static void BuildStorySubtitle(ChapterThreeArmsMission m)
         {
