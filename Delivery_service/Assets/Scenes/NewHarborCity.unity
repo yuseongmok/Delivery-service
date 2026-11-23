@@ -173638,6 +173638,11 @@ MonoBehaviour:
   useFallbackCoordinates: 0
   fallbackPosition: {x: 0, y: 0, z: 0}
   fallbackEulerAngles: {x: 0, y: 0, z: 0}
+  bikeSpawnObjectName: HarborTunnelBikeSpawn
+  motorcyclePrefab: {fileID: 5621022810601441953, guid: 81d25a522820ace41a0074f256e0dd27, type: 3}
+  useBikeFallbackCoordinates: 0
+  bikeFallbackPosition: {x: 0, y: 0, z: 0}
+  bikeFallbackEulerAngles: {x: 0, y: 0, z: 0}
 --- !u!54 &1636899185
 Rigidbody:
   m_ObjectHideFlags: 0
