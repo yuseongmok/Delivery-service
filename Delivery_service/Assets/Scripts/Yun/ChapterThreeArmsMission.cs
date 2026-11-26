@@ -20,10 +20,14 @@ namespace DeliveryService.Yun
         static Stage progress;
         static int credit;
         static bool granted;
+        static WeaponKind? purchasedWeapon;
         static bool restartingChapter;
         static int searchedMask, fragmentMask, carriedIndex = -1;
         static bool assembled;
         public int FragmentCount => ((fragmentMask & 1) != 0 ? 1 : 0) + ((fragmentMask & 2) != 0 ? 1 : 0) + ((fragmentMask & 4) != 0 ? 1 : 0);
+        public static bool HasPurchasedWeapon => purchasedWeapon.HasValue;
+        public static WeaponKind? PurchasedWeapon => purchasedWeapon;
+        public static bool Owns(WeaponKind kind) => purchasedWeapon.HasValue && purchasedWeapon.Value == kind;
         public bool InvoiceAssembled => assembled;
         readonly List<int> assemblyOrder = new List<int>();
         public string[] fragmentTexts = { "318-", "B", "DS-" };
@@ -479,7 +483,8 @@ namespace DeliveryService.Yun
                 yield return null;
             }
             RestoreCarried(); progress = Stage.GatlingComplete; handingOver = false;
-            Talk(new[] { "무기상: 맞아. 잘못 배달됐던 물건이야.", "무기상: 일한 값이랑 게틀링건 값은 이걸로 정산하자.", "플레이어: 됐어. 가게 장부에 쓸 일도 아니고." }, Close);
+            Talk(new[] { "무기상: 맞아. 잘못 배달됐던 물건이야.", "무기상: 일한 값이랑 게틀링건 값은 이걸로 정산하자.", "플레이어: 됐어. 가게 장부에 쓸 일도 아니고." },
+                () => { Close(); SceneManager.LoadScene("YamajakiChapter"); });
         }
         public void PreviewSmg() { if (screen == ScreenKind.Candidates) notice.text = "기관단총 · 거래는 취소야\n이 의뢰는 준비 중입니다. 권총 또는 게틀링건 의뢰를 선택해 주세요."; }
         public void TakeInspectedBox()
@@ -541,7 +546,7 @@ namespace DeliveryService.Yun
             // Escrow: the earned fee pays for exactly one weapon, without touching daily sales.
             weapon.Equip(WeaponKind.Pistol);
             credit -= pistolPrice; granted = true; progress = Stage.Complete;
-            Talk(settlement, Close);
+            Talk(settlement, () => { Close(); SceneManager.LoadScene("YamajakiChapter"); });
         }
         void Talk(string[] dialogue, Action completed)
         {

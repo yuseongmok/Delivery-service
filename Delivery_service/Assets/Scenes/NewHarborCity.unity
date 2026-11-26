@@ -38628,7 +38628,7 @@ MonoBehaviour:
   - {fileID: 7148369656140871588, guid: 877228f043ca46e4b92ac05ed4146379, type: 3}
   - {fileID: 3202880121015669687, guid: cff81980807c15f438b059bcac0ea09f, type: 3}
   - {fileID: 2119448736634818676, guid: ee564708572247b4fb3772f98aa069a3, type: 3}
-  maxNPCCount: 150
+  maxNPCCount: 100
   racerNPCPrefab: {fileID: 0}
   spawnArea: {fileID: 210318449}
   npcParent: {fileID: 1781051695}

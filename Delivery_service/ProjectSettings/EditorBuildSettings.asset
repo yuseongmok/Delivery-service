@@ -23,6 +23,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/NewHarborCity.unity
     guid: f713778ff6eda4049a8b344d81f4e4ab
+  - enabled: 1
+    path: Assets/Scenes/YamajakiChapter.unity
+    guid: e5a7f30038693934fab28666bb45cdd4
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0

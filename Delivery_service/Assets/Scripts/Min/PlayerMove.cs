@@ -25,12 +25,14 @@ public class PlayerMove : MonoBehaviour
 
     private void Update()
     {
+        if (controller == null || !controller.enabled) return;
+
         if (!isControllable)
         {
             ApplyGravityOnly();
             return;
         }
-        if (GetComponent<CharacterController>() != null && !GetComponent<CharacterController>().enabled) return;
+        
         Move();
     }
 

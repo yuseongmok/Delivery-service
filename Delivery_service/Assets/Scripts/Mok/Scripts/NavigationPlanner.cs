@@ -36,7 +36,8 @@ namespace DeliveryService.Mok.Navigation
         readonly NavigationPlaceKind[] kinds = { NavigationPlaceKind.Other, NavigationPlaceKind.Pizza, NavigationPlaceKind.Repair, NavigationPlaceKind.Bike, NavigationPlaceKind.Weapon };
         void Start()
         {
-            phone = FindFirstObjectByType<PhoneController>(); if(PrisonMission.Current){names[0]="현재 임무";names[1]="주방";names[2]="의무실";names[3]="내 방";names[4]="배식카트";}
+            // 컷신 동안 Player가 꺼진 채 시작하는 챕터 씬에서도 휴대폰을 찾는다.
+            phone = FindFirstObjectByType<PhoneController>(FindObjectsInactive.Include); if(PrisonMission.Current){names[0]="현재 임무";names[1]="주방";names[2]="의무실";names[3]="내 방";names[4]="배식카트";}
             bikes = FindObjectsByType<MotorcycleController>(FindObjectsSortMode.None);
             if (manager == null) manager = FindFirstObjectByType<NavigationManager>();
             if (overviewCamera != null) overviewCamera.enabled = false;
@@ -249,7 +250,7 @@ namespace DeliveryService.Mok.Navigation
             reviews=DeliveryService.Mok.ReviewPhoneApp.Build(root.transform,font);
             loans=DeliveryService.Mok.LoanPhoneApp.Build(root.transform,font);
             ladderApp=DeliveryService.Mok.LadderPhoneApp.Build(root.transform,font);
-            recall=FindFirstObjectByType<BikeRecall>();recallPanel=Panel("Bike recall",root.transform,0,0,540,960,new Color(.055f,.12f,.19f));Label("오토바이 호출",recallPanel.transform,36,60,468,60,40);
+            recall=FindFirstObjectByType<BikeRecall>(FindObjectsInactive.Include);recallPanel=Panel("Bike recall",root.transform,0,0,540,960,new Color(.055f,.12f,.19f));Label("오토바이 호출",recallPanel.transform,36,60,468,60,40);
             var recallIcon=Rect("Recall icon",recallPanel.transform,175,205,190,190).AddComponent<PhoneAppIcon>();recallIcon.App=8;recallIcon.raycastTarget=false;
             recallMessage=Label("",recallPanel.transform,44,440,452,160,30);recallMessage.alignment=TextAnchor.MiddleCenter;
             var callButton=Panel("Call action",recallPanel.transform,44,690,452,82,new Color(.82f,.39f,.12f));Label("오토바이 부르기",callButton.transform,0,0,452,82,34).alignment=TextAnchor.MiddleCenter;recallPanel.SetActive(false);
