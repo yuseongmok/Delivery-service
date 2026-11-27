@@ -213,6 +213,7 @@ namespace DeliveryService.Mok
         private void Update()
         {
             if (Time.timeScale <= 0f) return;
+            SyncDeliveryNavigation();
 
             if (IsInCutscene)
             {
@@ -273,6 +274,28 @@ namespace DeliveryService.Mok
                     }
                 }
             }
+        }
+
+        // 피자 배달 단계에서는 휴대폰 내비 '배달지'를 배달 대상으로 맞추고, 단계가 끝나면 해제한다.
+        private NavigationManager navigation;
+        private Transform navigationTarget;
+
+        private void SyncDeliveryNavigation()
+        {
+            Transform target = currentState == MissionState.DeliverPizza && !GameModeSession.IsChallenge ? GetDeliveryTransform() : null;
+            if (target != null && !target.gameObject.activeInHierarchy) target = null;
+            if (target == navigationTarget) return;
+            if (navigation == null) navigation = FindFirstObjectByType<NavigationManager>(FindObjectsInactive.Include);
+            if (navigation == null) return;
+            if (navigationTarget != null) navigation.ClearStoryDelivery();
+            navigationTarget = target;
+            if (target != null) navigation.SetStoryDelivery(target, deliveryMarkerLabel);
+        }
+
+        private void OnDisable()
+        {
+            if (navigation != null && navigationTarget != null) navigation.ClearStoryDelivery();
+            navigationTarget = null;
         }
 
         private void OnTriggerEnter(Collider other)

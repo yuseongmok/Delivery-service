@@ -1142,14 +1142,15 @@ public class ChpaterYamajaki : MonoBehaviour
         markerLabel = stop.label;
         var place = stop.point.GetComponent<NavigationPlace>();
         foreach (var pins in FindObjectsByType<NavigationMapPins>(FindObjectsSortMode.None)) pins.Rebuild();
-        if (navigation != null && place != null) navigation.SelectPlace(place);
+        // 휴대폰 목적지 목록의 '배달지'도 이 배달지를 가리키게 한다.
+        if (navigation != null && place != null) navigation.SetStoryDelivery(place);
     }
 
     void ClearGuide()
     {
         markerTarget = null;
         if (marker) marker.gameObject.SetActive(false);
-        if (navigation != null) navigation.StopGuidance();
+        if (navigation != null) { navigation.ClearStoryDelivery(); navigation.StopGuidance(); }
         foreach (var pins in FindObjectsByType<NavigationMapPins>(FindObjectsSortMode.None)) pins.Rebuild();
     }
 

@@ -55799,6 +55799,8 @@ MonoBehaviour:
   wanderRadius: 100
   minWaitTime: 0.5
   maxWaitTime: 3
+  maxWanderDistance: 25
+  walkableAreaCost: 3
   isCrossing: 0
   mainBone: {fileID: 1680914648}
 --- !u!195 &88625019
@@ -169516,6 +169518,7 @@ MonoBehaviour:
   spawnArea: {fileID: 258534122}
   npcParent: {fileID: 258534121}
   minDistanceFromEdge: 1.2
+  minSpacing: 2.5
 --- !u!1001 &258538692
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -245576,6 +245579,7 @@ MonoBehaviour:
   spawnArea: {fileID: 285240921}
   npcParent: {fileID: 752666432}
   minDistanceFromEdge: 1.2
+  minSpacing: 2.5
 --- !u!4 &379537851
 Transform:
   m_ObjectHideFlags: 0
@@ -456403,6 +456407,8 @@ MonoBehaviour:
   wanderRadius: 100
   minWaitTime: 0.5
   maxWaitTime: 3
+  maxWanderDistance: 25
+  walkableAreaCost: 3
   isCrossing: 0
   mainBone: {fileID: 1173921605}
 --- !u!195 &700039033
@@ -591932,6 +591938,8 @@ MonoBehaviour:
   wanderRadius: 100
   minWaitTime: 0.5
   maxWaitTime: 3
+  maxWanderDistance: 25
+  walkableAreaCost: 3
   isCrossing: 0
   mainBone: {fileID: 69789790}
 --- !u!195 &897446737
@@ -684271,6 +684279,7 @@ MonoBehaviour:
   spawnArea: {fileID: 1042569559}
   npcParent: {fileID: 1042569558}
   minDistanceFromEdge: 1.2
+  minSpacing: 2.5
 --- !u!4 &1042611480
 Transform:
   m_ObjectHideFlags: 0
@@ -715058,6 +715067,7 @@ MonoBehaviour:
   mingi: {fileID: 1472389414}
   nearbyPanel: {fileID: 2035573093}
   nearbySubtitle: {fileID: 1420677718}
+  player: {fileID: 0}
   invitation: "\uB098 \uC2E4\uC7A5\uC774\uC57C. \uC6B0\uB9AC \uC870\uC9C1 \uC6C0\uC9C1\uC784\uC774
     \uC774\uC0C1\uD574. \uB188\uB4E4\uC774 \uB0A0 \uC5C6\uC560\uB824\uACE0 \uD574.\n\uC9C0\uAE08
     \uD45C\uC2DC\uD55C \uC7A5\uC18C\uB85C \uC640. \uBBFC\uAE30\uC640 \uB108 \uB9D0\uACE0\uB294
@@ -746769,6 +746779,7 @@ MonoBehaviour:
   spawnArea: {fileID: 1142509788}
   npcParent: {fileID: 1142509787}
   minDistanceFromEdge: 1.2
+  minSpacing: 2.5
 --- !u!114 &1142509790
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -791832,6 +791843,8 @@ MonoBehaviour:
   wanderRadius: 100
   minWaitTime: 0.5
   maxWaitTime: 3
+  maxWanderDistance: 25
+  walkableAreaCost: 3
   isCrossing: 0
   mainBone: {fileID: 1226545589}
 --- !u!195 &1214825244
@@ -824842,6 +824855,7 @@ MonoBehaviour:
   spawnArea: {fileID: 1266062649}
   npcParent: {fileID: 1266062648}
   minDistanceFromEdge: 1.2
+  minSpacing: 2.5
 --- !u!33 &1266160169
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -884285,7 +884299,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1360049626}
-  - component: {fileID: 1360049627}
   m_Layer: 0
   m_Name: West_Quarter
   m_TagString: Untagged
@@ -884486,20 +884499,6 @@ Transform:
   - {fileID: 855841733}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1360049627
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1360049625}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f2255ba32a5cf8a4fbd54326ad1547bf, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DeliveryService.Mok.RobberyDistrict
-  localCenter: {x: -280, y: 0, z: -5}
-  size: {x: 168, y: 30, z: 158}
 --- !u!1 &1360068718
 GameObject:
   m_ObjectHideFlags: 0
@@ -1226506,6 +1226505,7 @@ MonoBehaviour:
   spawnArea: {fileID: 1871970945}
   npcParent: {fileID: 1871970944}
   minDistanceFromEdge: 1.2
+  minSpacing: 2.5
 --- !u!33 &1871977159
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -1255644,6 +1255644,8 @@ MonoBehaviour:
   wanderRadius: 100
   minWaitTime: 0.5
   maxWaitTime: 3
+  maxWanderDistance: 25
+  walkableAreaCost: 3
   isCrossing: 0
   mainBone: {fileID: 610278551}
 --- !u!195 &1920770348
@@ -1262365,6 +1262367,7 @@ MonoBehaviour:
   spawnArea: {fileID: 1866948259}
   npcParent: {fileID: 1688455410}
   minDistanceFromEdge: 1.2
+  minSpacing: 2.5
 --- !u!4 &1929435103
 Transform:
   m_ObjectHideFlags: 0
@@ -1306620,6 +1306623,7 @@ MonoBehaviour:
   spawnArea: {fileID: 1993593551}
   npcParent: {fileID: 1993593550}
   minDistanceFromEdge: 1.2
+  minSpacing: 2.5
 --- !u!23 &1993735406
 MeshRenderer:
   m_ObjectHideFlags: 0

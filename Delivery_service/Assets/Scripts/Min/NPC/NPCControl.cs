@@ -14,6 +14,10 @@ public class NPCControl : MonoBehaviour
     [SerializeField] private float wanderRadius = 15f;
     [SerializeField] private float minWaitTime = 1f;
     [SerializeField] private float maxWaitTime = 3f;
+    [Tooltip("한 번에 걸어갈 최대 거리. wanderRadius가 커도 이 거리 안에서만 목적지를 고른다.")]
+    [SerializeField] private float maxWanderDistance = 25f;
+    [Tooltip("일반 바닥(차도 포함) 이동 비용. 클수록 인도로 돌아가고 차도는 짧게 건넌다.")]
+    [SerializeField] private float walkableAreaCost = 3f;
     public bool isCrossing = false;
 
     [Header("죽었을 때")]
@@ -112,6 +116,7 @@ public class NPCControl : MonoBehaviour
 
     private void Start()
     {
+        if (agent != null && agent.isActiveAndEnabled) agent.SetAreaCost(0, Mathf.Max(1f, walkableAreaCost));
         SetNewRandomDestination();
     }
 
@@ -141,6 +146,46 @@ public class NPCControl : MonoBehaviour
                     }
                 }
             }
+        }
+    }
+
+    // 순간이동 방지: 길찾기 결과가 엉뚱한 시작점(타일 경계·다른 구역)에서 오면 NavMeshAgent가
+    // 그 지점으로 NPC를 한 프레임에 옮긴다. 정상 걸음으로 갈 수 없는 거리면 직전 위치로 되돌리고 새 목적지를 고른다.
+    private Vector3 lastSafePosition;
+    private bool hasSafePosition;
+    public int TeleportCorrections { get; private set; }
+
+    private void LateUpdate()
+    {
+        if (isDead || IsKnockedDown || ExternalControl || agent == null || !agent.isActiveAndEnabled)
+        {
+            hasSafePosition = false;
+            return;
+        }
+
+        Vector3 current = transform.position;
+        if (hasSafePosition)
+        {
+            // 한 프레임이라도 NavMesh를 벗어나거나 걸음으로 갈 수 없는 거리를 움직이면 마지막 정상 위치로 되돌린다.
+            float allowed = Mathf.Max(1.5f, agent.speed * Time.deltaTime * 4f + .5f);
+            if (!agent.isOnNavMesh || (current - lastSafePosition).sqrMagnitude > allowed * allowed)
+            {
+                TeleportCorrections++;
+                agent.Warp(lastSafePosition);
+                if (agent.isOnNavMesh)
+                {
+                    agent.ResetPath();
+                    SetNewRandomDestination();
+                }
+                timer = 0f;
+                return; // 되돌린 위치는 이미 안전한 위치이므로 기준점을 바꾸지 않는다.
+            }
+        }
+        // 정상적으로 NavMesh 위에서 걸은 위치만 기준점으로 삼는다.
+        if (agent.isOnNavMesh)
+        {
+            lastSafePosition = current;
+            hasSafePosition = true;
         }
     }
 
@@ -198,13 +243,20 @@ public class NPCControl : MonoBehaviour
         Vector3 targetPoint = Vector3.zero;
         bool foundValidPoint = false;
         float minDistance = 3f;
+        float reach = Mathf.Max(minDistance + 1f, Mathf.Min(wanderRadius, maxWanderDistance));
+        int sideWalk = NavMesh.GetAreaFromName("SideWalk");
+        int sideWalkMask = sideWalk >= 0 ? 1 << sideWalk : 0;
 
+        // 가까운 범위에서만 목적지를 고르고, 뽑은 점 바로 근처(2.5m)의 NavMesh만 인정한다.
+        // 예전처럼 반경 전체로 스냅하면 바다·건물 안에서 뽑은 점이 맵 가장자리 몇 곳으로 몰려
+        // NPC들이 같은 길로 줄지어 맵을 가로질렀다. 앞의 절반은 인도만, 나머지는 걸을 수 있는 곳 전체.
         for (int i = 0; i < 30; i++)
         {
-            Vector2 randomCircle = UnityEngine.Random.insideUnitCircle * wanderRadius;
-            Vector3 randomDirection = transform.position + new Vector3(randomCircle.x, 0f, randomCircle.y);
+            Vector2 direction = UnityEngine.Random.insideUnitCircle.normalized;
+            Vector3 candidate = transform.position + new Vector3(direction.x, 0f, direction.y) * UnityEngine.Random.Range(minDistance, reach);
+            int mask = i < 15 && sideWalkMask != 0 ? sideWalkMask : agent.areaMask;
 
-            if (NavMesh.SamplePosition(randomDirection, out NavMeshHit hit, wanderRadius, NavMesh.AllAreas))
+            if (NavMesh.SamplePosition(candidate, out NavMeshHit hit, 2.5f, mask))
             {
                 if (Vector3.Distance(transform.position, hit.position) >= minDistance)
                 {

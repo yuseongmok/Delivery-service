@@ -30,7 +30,7 @@ namespace DeliveryService.Mok.Navigation
         Text[] apps, rows;
         PhoneAppIcon[] appIcons;
         Text notice, hint;
-        bool wasRiding, wasOpen;float nextListRefresh;
+        bool wasRiding, wasOpen;float nextListRefresh, nextBikeSearch;
         NavigationPlace[] places;
         readonly string[] names = { "배달지", "매장", "수리점", "탈것", "무기점" };
         readonly NavigationPlaceKind[] kinds = { NavigationPlaceKind.Other, NavigationPlaceKind.Pizza, NavigationPlaceKind.Repair, NavigationPlaceKind.Bike, NavigationPlaceKind.Weapon };
@@ -49,6 +49,8 @@ namespace DeliveryService.Mok.Navigation
         void LateUpdate()
         {using(DeliveryService.Mok.PerformanceMarkers.Planner.Auto()){
             if (home == null) return;
+            // 터널로 넘어온 씬은 오토바이를 나중에 생성하므로 주기적으로 다시 찾는다.
+            if (Time.unscaledTime >= nextBikeSearch) { nextBikeSearch = Time.unscaledTime + 1f; bikes = FindObjectsByType<MotorcycleController>(FindObjectsInactive.Include, FindObjectsSortMode.None); }
             home.transform.parent.SetAsLastSibling();
             bool riding = IsRiding;
             bool open = phone != null && phone.IsPhoneOpen();
@@ -147,7 +149,7 @@ namespace DeliveryService.Mok.Navigation
             if (Selection == 0)
             {
                 if(PrisonMission.Current){var current=PrisonMission.Current.GetComponent<NavigationPlace>();manager.SelectPlace(current);Show(Screen.Map);return;}
-                if (manager.CurrentDestination == null) { notice.text = "진행 중인 배달이 없습니다"; return; }
+                if (!manager.HasDelivery) { notice.text = "진행 중인 배달이 없습니다"; return; }
                 manager.ResumeDelivery();
             }
             else
@@ -196,7 +198,7 @@ namespace DeliveryService.Mok.Navigation
             for (int i = 0; i < apps.Length; i++) { appIcons[i].Selected=i==Selection; apps[i].color=i==Selection?new Color(.96f,.85f,.60f):Color.white; }
             for (int i = 0; i < rows.Length; i++)
             {
-                bool available = i == 0 ? manager != null && (PrisonMission.Current || manager.CurrentDestination != null) : SelectedPlace(i) != null && SelectedPlace(i).IsAvailable;
+                bool available = i == 0 ? manager != null && (PrisonMission.Current || manager.HasDelivery) : SelectedPlace(i) != null && SelectedPlace(i).IsAvailable;
                 rows[i].text = (i == Selection ? ">  " : "    ") + names[i] + (!available ? i == 3 && IsRiding ? "  (탑승 중)" : "  (없음)" : "");
                 rows[i].color = available ? Color.white : new Color(.6f,.66f,.7f);
                 rows[i].transform.parent.GetComponent<Image>().color = i == Selection ? new Color(.08f,.43f,.48f) : new Color(.12f,.18f,.23f);

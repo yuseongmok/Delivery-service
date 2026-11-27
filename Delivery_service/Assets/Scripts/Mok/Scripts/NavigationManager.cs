@@ -32,7 +32,20 @@ public class NavigationManager : MonoBehaviour {
  void Awake(){cycle=FindFirstObjectByType<DayNightCycle>();knownDay=cycle==null?1:cycle.currentDay;}
  public void SetNavigationTarget(Transform target){if(target==null)return;playerTransform=target;RefreshRoute();}
  public void SelectPlace(NavigationPlace place){if(place==null||!place.IsAvailable)return;selectedPlace=place;stopped=false;RefreshRoute();}
- public void ResumeDelivery(){selectedPlace=null;stopped=false;RefreshRoute();}
+ // 주문 시스템 밖의 스토리 배달 목적지. 휴대폰 목적지 목록의 '배달지' 줄이 이 장소를 가리킨다.
+ public NavigationPlace StoryDelivery {get;private set;}
+ NavigationPlace temporaryStoryPlace;
+ public bool HasDelivery=>CurrentDestination!=null||StoryDelivery!=null;
+ public void SetStoryDelivery(NavigationPlace place){if(place==null)return;if(StoryDelivery!=place&&temporaryStoryPlace!=place)DropTemporaryPlace();StoryDelivery=place;SelectPlace(place);}
+ // 배달 대상에 NavigationPlace가 없으면 안내하는 동안만 임시로 붙였다가 끝나면 지운다.
+ public void SetStoryDelivery(Transform target,string displayName){
+  if(target==null)return;var place=target.GetComponent<NavigationPlace>();
+  if(place==null){DropTemporaryPlace();place=target.gameObject.AddComponent<NavigationPlace>();place.placeId="story-delivery";place.displayName=displayName;place.kind=NavigationPlaceKind.Other;temporaryStoryPlace=place;}
+  SetStoryDelivery(place);
+ }
+ public void ClearStoryDelivery(){if(StoryDelivery==null)return;bool guiding=selectedPlace==StoryDelivery;StoryDelivery=null;DropTemporaryPlace();if(guiding)StopGuidance();}
+ void DropTemporaryPlace(){if(temporaryStoryPlace==null)return;if(selectedPlace==temporaryStoryPlace)selectedPlace=null;Destroy(temporaryStoryPlace);temporaryStoryPlace=null;}
+ public void ResumeDelivery(){if(CurrentDestination==null&&StoryDelivery!=null){SelectPlace(StoryDelivery);return;}selectedPlace=null;stopped=false;RefreshRoute();}
  public void StopGuidance(){selectedPlace=null;stopped=true;ClearNavigationPath();RouteStatus="안내를 종료했습니다";RouteRevision++;}
  // 일차 변경·주문 완료·시간 초과 시 호출하며 같은 날의 시설 안내 경로는 유지한다.
  public void ResetNavigationForNewDay(){int day=cycle==null?knownDay:cycle.currentDay;if(day!=knownDay){selectedPlace=null;stopped=false;knownDay=day;}ClearNavigationPath();lastDestination=null;nextUpdate=0;}
@@ -68,19 +81,29 @@ public class NavigationManager : MonoBehaviour {
   for(int i=1;i<corners.Length;i++)distance+=Vector3.Distance(corners[i-1],corners[i]);return true;
  }
  public static Vector3[] FindTravelRoute(Vector3 startPosition,Vector3 endPosition){
+  // 차도가 'Road' 영역으로 구워지지 않은 지역(신도시·야마자키)은 도로+인도만으로 이어지지 않는다.
+  // 기존 탐색이 실패할 때만 일반 바닥(비용 높게)을 더하고, 지붕처럼 높이가 크게 다른 기준점은 쓰지 않는다.
+  return FindTravelRoute(startPosition,endPosition,false)??FindTravelRoute(startPosition,endPosition,true);
+ }
+ static Vector3[] FindTravelRoute(Vector3 startPosition,Vector3 endPosition,bool anyWalkable){
  int road=NavMesh.GetAreaFromName("Road"),sidewalk=NavMesh.GetAreaFromName("SideWalk");
  if(road<0||sidewalk<0||NavMesh.GetSettingsCount()==0){return null;}
  int mask=(1<<road)|(1<<sidewalk);
  var filter=new NavMeshQueryFilter{agentTypeID=NavMesh.GetSettingsByIndex(0).agentTypeID,areaMask=mask};filter.SetAreaCost(road,1);filter.SetAreaCost(sidewalk,2);
+ int walkable=NavMesh.GetAreaFromName("Walkable");
+ if(anyWalkable){if(walkable<0)return null;filter.areaMask|=1<<walkable;filter.SetAreaCost(walkable,3);}
+ anchorHeightLimit=anyWalkable?2.5f:float.PositiveInfinity;
  // 가까운 보도 영역이 끊어진 입구나 위층일 수 있다.
  // 완전한 기존 경로를 유지하고 없으면 주변 도로 기준점을 탐색한다.
  // 건물을 가로지르는 직선이나 목적지에 닿지 않는 경로는 사용하지 않는다.
  var starts = new List<Vector3>(); var ends = new List<Vector3>();
  AddAnchor(startPosition, 30, filter, starts);
  AddAnchor(endPosition, 20, filter, ends);
- var roadFilter = filter; roadFilter.areaMask = 1 << road;
+ var roadFilter = filter; roadFilter.areaMask = anyWalkable ? filter.areaMask : 1 << road; // 2차 탐색은 고립된 입구 주변의 연결된 바닥까지 기준점으로 쓴다.
  AddAnchor(startPosition, 30, roadFilter, starts);
  AddAnchor(endPosition, 20, roadFilter, ends);
+ // 2차 탐색: 가장 가까운 면이 지붕처럼 높이가 달라 빠졌으면 주변 바닥에서 기준점을 찾는다.
+ if(anyWalkable){if(starts.Count==0)AddNearbyAnchors(startPosition,roadFilter,starts);if(ends.Count==0)AddNearbyAnchors(endPosition,roadFilter,ends);}
  if(starts.Count==0||ends.Count==0){return null;}
  var path=new NavMeshPath(); bool complete=false;
  for(int i=0;i<starts.Count&&!complete;i++)for(int j=0;j<ends.Count&&!complete;j++)
@@ -124,8 +147,10 @@ public class NavigationManager : MonoBehaviour {
    AddAnchor(probe,4,filter,anchors);
   }
  }
+ static float anchorHeightLimit=float.PositiveInfinity;
  static void AddAnchor(Vector3 position,float radius,NavMeshQueryFilter filter,List<Vector3> anchors){
   if(!NavMesh.SamplePosition(position,out var hit,radius,filter))return;
+  if(Mathf.Abs(hit.position.y-position.y)>anchorHeightLimit)return;
   foreach(var anchor in anchors)if((anchor-hit.position).sqrMagnitude<.01f)return;
   anchors.Add(hit.position);
  }
