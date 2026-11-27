@@ -329,6 +329,30 @@ namespace DeliveryService.Yun
             if (!gatlingParking || !gatlingDestination) { notice.text = "배송지 연결을 확인해 주세요."; return; }
             Talk(gatlingBriefing, () => { progress = Stage.GatlingTravel; Close(); RefreshAvailability(); });
         }
+        // Match NewHarborCity MissionManager: dynamically spawned bikes may not be
+        // present in PlayerCombat's initial bike snapshot, and riding disables the player.
+        MotorcycleController GetActiveMarkerBike()
+        {
+            if (player && player.RiddenBike) return player.RiddenBike;
+            foreach (var bike in FindObjectsByType<MotorcycleController>(FindObjectsSortMode.None))
+                if (bike && bike.isDriven) return bike;
+            return null;
+        }
+        Camera GetMarkerCamera(MotorcycleController bike)
+        {
+            if (bike && bike.bikeCamera)
+            {
+                var camera = bike.bikeCamera.GetComponentInChildren<Camera>();
+                if (camera && camera.isActiveAndEnabled) return camera;
+            }
+            if (player && player.View && player.View.isActiveAndEnabled) return player.View;
+            if (player)
+            {
+                var camera = player.GetComponentInChildren<Camera>();
+                if (camera && camera.isActiveAndEnabled) return camera;
+            }
+            return Camera.main;
+        }
         void UpdateGatlingTravel()
         {
             bool travelling = Available && (progress == Stage.GatlingTravel || progress == Stage.GatlingDelivery || progress == Stage.GatlingReturn || ChasePhase);
@@ -348,7 +372,10 @@ namespace DeliveryService.Yun
                 else missionNavigation.SelectPlace(target);
                 routedStage = progress;
             }
-            var observer = player.RiddenBike ? player.RiddenBike.transform.position : player.transform.position;
+            var activeBike = GetActiveMarkerBike();
+            var markerCamera = GetMarkerCamera(activeBike);
+            var observer = activeBike ? activeBike.transform.position : player.transform.position;
+            if (destinationMarker) destinationMarker.gameObject.SetActive(!ModalOpen && markerCamera && (activeBike || player.gameObject.activeInHierarchy));
             var markerPosition = target.Destination.position + Vector3.up;
             string markerTitle = target.displayName;
             if (ChasePhase)
@@ -357,14 +384,14 @@ namespace DeliveryService.Yun
                 markerPosition = ready ? gatlingCargo.transform.position + Vector3.up * .7f : thief.transform.position + Vector3.up * 2.1f;
                 markerTitle = ready ? "반송 상자 회수" : "도둑 추격 · 가까이서 F";
             }
-            if (destinationMarker && player.View) StoryTargetDiamond.Place(destinationMarker, player.View, markerPosition, observer, markerTitle);
+            if (destinationMarker && markerCamera) StoryTargetDiamond.Place(destinationMarker, markerCamera, markerPosition, observer, markerTitle);
             if (Time.timeScale <= 0 || ModalOpen || locked || player.IsDown || PoliceControl.IsArrestInProgress) return;
             if (progress == Stage.GatlingReturn || ChasePhase) return;
             var delta = observer - target.Destination.position;
             float height = Mathf.Abs(delta.y); delta.y = 0;
             if (height > 3 || delta.magnitude > (progress == Stage.GatlingTravel ? parkingArrivalRadius : deliveryArrivalRadius)) return;
             if (progress == Stage.GatlingTravel) progress = Stage.GatlingDelivery;
-            else if (!player.RiddenBike)
+            else if (!activeBike)
             {
                 BeginChaseIntro();
                 if (missionNavigation && missionNavigation.SelectedPlace == gatlingDestination) missionNavigation.StopGuidance();
@@ -393,7 +420,8 @@ namespace DeliveryService.Yun
             if (player.View) player.View.transform.LookAt(thief.transform.position + Vector3.up * 1.2f);
             player.GetComponentInChildren<CameraMove>(true)?.SyncViewFromTransform();
             Close();
-            thiefAgent.speed = thiefSpeed; thiefAgent.isStopped = false; thiefAgent.SetDestination(chaseRoute[1].position);
+            thiefAgent.speed = thiefSpeed;
+            SetChaseDestination(chaseRoute[1].position);
         }
         public bool TryCatchThief()
         {
@@ -418,20 +446,34 @@ namespace DeliveryService.Yun
             gatlingCargo.transform.position = end;
             foreach (var c in gatlingCargo.GetComponentsInChildren<Collider>()) c.enabled = true;
             handingOver = false;
-            Talk(chaseCaught, () => { Close(); fleeing = true; thiefAgent.isStopped = false; thiefAgent.SetDestination(chaseRoute[chaseRoute.Length - 1].position); });
+            Talk(chaseCaught, () => { Close(); fleeing = true; SetChaseDestination(chaseRoute[chaseRoute.Length - 1].position); });
+        }
+        bool SetChaseDestination(Vector3 destination)
+        {
+            // Compute now, instead of treating an asynchronous request's zero remaining
+            // distance as arrival. Retrying also discards the previous pursuit path.
+            var path = new NavMeshPath();
+            if (!thiefAgent.CalculatePath(destination, path) || path.status != NavMeshPathStatus.PathComplete)
+                return false;
+            thiefAgent.ResetPath();
+            thiefAgent.SetPath(path);
+            thiefAgent.isStopped = false;
+            return true;
         }
         void TickChase()
         {
             if (!thiefAgent || !thiefAgent.isActiveAndEnabled || !thiefAgent.isOnNavMesh) return;
             if (progress == Stage.GatlingRetry && !ModalOpen && !player.IsDown && !PoliceControl.IsArrestInProgress) ShowChaseRetry();
-            bool pause = Time.timeScale <= 0 || ModalOpen || locked || !Available;
+            // `locked` includes waiting for the dialogue key/mouse release. That is
+            // player input protection, not a reason to stop an already-started chase.
+            bool pause = Time.timeScale <= 0 || ModalOpen || handingOver || !Available;
             thiefAgent.isStopped = pause || !(progress == Stage.GatlingChase || fleeing);
             thiefActor.walkSpeed = thiefAgent.isStopped ? 0 : thiefAgent.velocity.magnitude;
             thiefActor.animator.SetFloat("RunRate", Mathf.Clamp(thiefActor.walkSpeed / 4.2f, .8f, 1.3f));
             if (pause) return;
             if (fleeing)
             {
-                if (!thiefAgent.pathPending && thiefAgent.remainingDistance < .7f) { fleeing = false; thief.gameObject.SetActive(false); }
+                if (!thiefAgent.pathPending && Vector3.Distance(thief.transform.position, chaseRoute[chaseRoute.Length - 1].position) < .7f) { fleeing = false; thief.gameObject.SetActive(false); }
                 return;
             }
             if (progress != Stage.GatlingChase) return;
@@ -440,11 +482,11 @@ namespace DeliveryService.Yun
             farTime = distance > escapeDistance ? farTime + Time.deltaTime : 0;
             stuckTime = thiefAgent.velocity.sqrMagnitude < .04f && !thiefAgent.pathPending ? stuckTime + Time.deltaTime : 0;
             if (farTime >= escapeGrace || stuckTime > 6 || player.IsDown) { LoseThief(); return; }
-            if (!thiefAgent.pathPending && thiefAgent.remainingDistance < .65f)
+            if (!thiefAgent.pathPending && Vector3.Distance(thief.transform.position, chaseRoute[chaseWaypoint].position) < .65f)
             {
                 chaseWaypoint++;
                 if (chaseWaypoint >= chaseRoute.Length) { LoseThief(); return; }
-                thiefAgent.SetDestination(chaseRoute[chaseWaypoint].position);
+                SetChaseDestination(chaseRoute[chaseWaypoint].position);
             }
         }
         public void LoseThief()
@@ -606,8 +648,14 @@ namespace DeliveryService.Yun
             if (releasing != null) { StopCoroutine(releasing); releasing = null; }
             if (locked || !player) return;
             locked = true; previousLock = Cursor.lockState; previousVisible = Cursor.visible;
+            gravityMove = player.GetComponent<PlayerMove>();
+            if (gravityMove)
+            {
+                previousControllable = gravityMove.isControllable;
+                gravityMove.isControllable = false;
+            }
             foreach (var b in player.GetComponentsInChildren<MonoBehaviour>(true))
-                if (b is PlayerMove || b is PlayerMovement || b is CameraMove || b is PlayerInteraction || b is PlayerInteract || b is PlayerWeapon)
+                if (b is PlayerMovement || b is CameraMove || b is PlayerInteraction || b is PlayerInteract || b is PlayerWeapon)
                 { suspended[b] = b.enabled; b.enabled = false; }
             var phone = FindFirstObjectByType<PhoneController>();
             if (phone) { suspended[phone] = phone.enabled; phone.enabled = false; }
@@ -616,14 +664,19 @@ namespace DeliveryService.Yun
         void Unlock()
         {
             if (!locked) return;
+            if (gravityMove) gravityMove.isControllable = previousControllable;
+            gravityMove = null;
             foreach (var pair in suspended) if (pair.Key) pair.Key.enabled = pair.Value;
             suspended.Clear(); locked = false;
             Cursor.lockState = previousLock; Cursor.visible = previousVisible;
         }
+        // Keep PlayerMove enabled so its gravity-only branch can land an airborne player.
+        PlayerMove gravityMove;
+        bool previousControllable;
         void Update()
         {
             if (handoffOnly) { ObserveIntroduction(); return; }
-            if (!player) player = FindFirstObjectByType<PlayerCombat>();
+            if (!player) player = FindFirstObjectByType<PlayerCombat>(FindObjectsInactive.Include);
             RefreshAvailability();
             UpdateGatlingTravel();
             TickChase();

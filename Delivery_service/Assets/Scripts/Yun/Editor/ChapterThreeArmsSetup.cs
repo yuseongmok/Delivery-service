@@ -46,6 +46,37 @@ namespace DeliveryService.Yun.Editor
             SessionState.SetBool("Yun.Arms.Check", true); SessionState.SetInt("Yun.Arms.Result", 1);
             EditorApplication.EnterPlaymode();
         }
+        public static void RunMarkerBatch()
+        {
+            try
+            {
+                EditorSceneManager.OpenScene("Assets/Scenes/JJinCity.unity");
+                var m = UnityEngine.Object.FindObjectsByType<ChapterThreeArmsMission>(FindObjectsInactive.Include, FindObjectsSortMode.None).Single(v => !v.handoffOnly);
+                var p = UnityEngine.Object.FindFirstObjectByType<PlayerCombat>(FindObjectsInactive.Include);
+                var bikes = UnityEngine.Object.FindObjectsByType<MotorcycleController>(FindObjectsSortMode.None);
+                var bike = bikes.First(b => b.bikeCamera && b.bikeCamera.GetComponentInChildren<Camera>(true));
+                foreach (var candidate in bikes) candidate.isDriven = false;
+                typeof(ChapterThreeArmsMission).GetField("player", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(m, p);
+                typeof(PlayerCombat).GetField("bikes", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(p, Array.Empty<MotorcycleController>());
+                var getBike = typeof(ChapterThreeArmsMission).GetMethod("GetActiveMarkerBike", BindingFlags.NonPublic | BindingFlags.Instance);
+                var getCamera = typeof(ChapterThreeArmsMission).GetMethod("GetMarkerCamera", BindingFlags.NonPublic | BindingFlags.Instance);
+                bike.isDriven = true; bike.bikeCamera.SetActive(true);
+                var camera = bike.bikeCamera.GetComponentInChildren<Camera>(true); camera.gameObject.SetActive(true); camera.enabled = true;
+                p.gameObject.SetActive(false);
+                Require((MotorcycleController)getBike.Invoke(m, null) == bike, "Mounted bike found with inactive player and stale PlayerCombat bike list");
+                Require((Camera)getCamera.Invoke(m, new object[] { bike }) == camera, "Marker projects through the mounted motorcycle camera");
+                m.enableStandaloneTest = true;
+                typeof(ChapterThreeArmsMission).GetField("progress", BindingFlags.Static | BindingFlags.NonPublic).SetValue(null, ChapterThreeArmsMission.Stage.GatlingTravel);
+                typeof(ChapterThreeArmsMission).GetMethod("UpdateGatlingTravel", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(m, null);
+                string expected = Vector3.Distance(bike.transform.position, m.gatlingParking.transform.position + Vector3.up).ToString("0") + "m";
+                Require(m.destinationMarker.gameObject.activeSelf && m.destinationMarker.text.EndsWith(expected), "Mounted marker remains visible and measures distance from the motorcycle");
+                bike.isDriven = false; bike.bikeCamera.SetActive(false); p.gameObject.SetActive(true);
+                var footCamera = p.GetComponentInChildren<Camera>(true); footCamera.gameObject.SetActive(true); footCamera.enabled = true;
+                Require(getBike.Invoke(m, null) == null && (Camera)getCamera.Invoke(m, new object[] { null }) == footCamera, "Dismount restores the player camera");
+                Debug.Log("YUN_MOTORCYCLE_MARKER_PASS"); EditorApplication.Exit(0);
+            }
+            catch (Exception ex) { Debug.LogException(ex); EditorApplication.Exit(1); }
+        }
         public static void RunCheatBatch()
         {
             SessionState.SetBool("Yun.Arms.GatlingCheck", false);
@@ -60,6 +91,21 @@ namespace DeliveryService.Yun.Editor
             SessionState.SetBool("Yun.Arms.GatlingCheck", true);
             SessionState.SetBool("Yun.Arms.Check", true); SessionState.SetInt("Yun.Arms.Result", 1);
             EditorApplication.EnterPlaymode();
+        }
+        public static void RunChaseRegressionBatch()
+        {
+            SessionState.SetBool("Yun.Arms.ChaseRegression", true);
+            RunGatlingBatch();
+        }
+        public static void RunChaseRouteBatch()
+        {
+            SessionState.SetBool("Yun.Arms.ChaseRoute", true);
+            RunGatlingBatch();
+        }
+        public static void RunCutsceneGravityBatch()
+        {
+            SessionState.SetBool("Yun.Arms.GravityCheck", true);
+            RunGatlingBatch();
         }
         static IEnumerator GatlingChecks()
         {
@@ -85,6 +131,31 @@ namespace DeliveryService.Yun.Editor
             Require(m.State == ChapterThreeArmsMission.Stage.GatlingDelivery && navigation.SelectedPlace == m.gatlingDestination, "Parking arrival changes guidance to the pedestrian delivery address");
             ScreenCapture.CaptureScreenshot(Path.Combine(BackupRoot, "gatling-parking.png")); yield return .8f;
             var rewardBefore = m.MissionCredit;
+            if (SessionState.GetBool("Yun.Arms.GravityCheck", false))
+            {
+                SessionState.SetBool("Yun.Arms.GravityCheck", false);
+                StandNear(p, m.gatlingDestination.transform.position + Vector3.up * 1.2f, Vector3.zero);
+                var move = p.GetComponent<PlayerMove>();
+                typeof(PlayerMove).GetField("verticalVelocity", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(move, 3f);
+                m.BeginChaseIntro();
+                Require(move.enabled && !move.isControllable, "Cutscene blocks controls but keeps gravity enabled");
+                var airborne = p.transform.position;
+                Time.timeScale = 0; yield return .4f;
+                Require(Vector3.Distance(airborne, p.transform.position) < .01f, "Explicit pause still freezes airborne player");
+                Time.timeScale = 1;
+                var worldTime = Time.time;
+                yield return 2f;
+                Require(Time.time > worldTime + .5f && m.ModalOpen, "World time continues during dialogue");
+                Require(p.GetComponent<CharacterController>().isGrounded && p.transform.position.y < airborne.y - .5f,
+                    "Player lands during cutscene instead of freezing in midair");
+                Require(Vector2.Distance(new Vector2(airborne.x, airborne.z), new Vector2(p.transform.position.x, p.transform.position.z)) < .05f,
+                    "Cutscene does not move player horizontally");
+                m.Skip(); yield return .5f;
+                Require(move.enabled && move.isControllable && !m.ModalOpen, "Dialogue exit restores original movement controls");
+                DeveloperCheats.SetInvincible(previousInvincibility);
+                Debug.Log("YUN_CUTSCENE_GRAVITY_PASS");
+                yield break;
+            }
             StandNear(p, m.gatlingDestination.transform.position, Vector3.zero); yield return .6f;
             Require(m.State == ChapterThreeArmsMission.Stage.GatlingArrived && m.ModalOpen && m.chaseCamera.enabled, "Arrival shows the thief carrying the parcel before gameplay");
             Require(m.gatlingBlockers.Length == 0 && m.thiefActor.animator.isHuman, "Old obstacle puzzle is removed and thief uses an existing humanoid rig");
@@ -92,6 +163,38 @@ namespace DeliveryService.Yun.Editor
             m.Skip(); yield return .5f;
             Require(m.State == ChapterThreeArmsMission.Stage.GatlingChase && !m.chaseCamera.enabled && !m.ModalOpen, "Skipping intro hands off correctly to chase gameplay");
             Require(!m.TryCatchThief(), "Cannot catch the thief remotely");
+            if (SessionState.GetBool("Yun.Arms.ChaseRegression", false))
+            {
+                SessionState.SetBool("Yun.Arms.ChaseRegression", false);
+                for (int attempt = 0; attempt < 10; attempt++)
+                {
+                    StandNear(p, m.chaseRestart.position, Vector3.zero);
+                    m.BeginChaseIntro(); yield return .4f;
+                    // Hold skip past dialogue close: input suppression must not stop AI.
+                    var keyboard = UnityEngine.InputSystem.Keyboard.current;
+                    UnityEngine.InputSystem.InputSystem.QueueStateEvent(keyboard,
+                        new UnityEngine.InputSystem.LowLevel.KeyboardState(UnityEngine.InputSystem.Key.Space));
+                    m.Skip(); // Invoke the same callback; injected keyboard events can be consumed by the editor.
+                    var start = m.thief.transform.position;
+                    yield return .6f;
+                    Require(m.State == ChapterThreeArmsMission.Stage.GatlingChase && Vector3.Distance(start, m.thief.transform.position) > .5f,
+                        $"Chase repetition {attempt}: starts immediately while skip is held; state={m.State}, moved={Vector3.Distance(start, m.thief.transform.position)}, stopped={m.thiefAgent.isStopped}, path={m.thiefAgent.pathStatus}, hasPath={m.thiefAgent.hasPath}, velocity={m.thiefAgent.velocity}, time={Time.timeScale}");
+                    UnityEngine.InputSystem.InputSystem.QueueStateEvent(keyboard, new UnityEngine.InputSystem.LowLevel.KeyboardState());
+                    yield return .2f;
+                    var offset = attempt % 2 == 0 ? m.thief.transform.forward : m.thief.transform.right;
+                    StandNear(p, m.thief.transform.position + offset * 1.3f, Vector3.zero);
+                    Require(m.TryCatchThief(), $"Chase repetition {attempt}: front/side interception succeeds");
+                    yield return 1f;
+                    m.Skip();
+                    var escapeStart = m.thief.transform.position;
+                    yield return .7f;
+                    Require(m.State == ChapterThreeArmsMission.Stage.GatlingCargoReady && Vector3.Distance(escapeStart, m.thief.transform.position) > .5f,
+                        $"Chase repetition {attempt}: thief leaves immediately after parcel drop dialogue");
+                }
+                DeveloperCheats.SetInvincible(previousInvincibility);
+                Debug.Log("YUN_CHASE_REGRESSION_PASS");
+                yield break;
+            }
             Time.timeScale = 0; yield return .2f; var pausedPosition = m.thief.transform.position; yield return .5f;
             Require(Vector3.Distance(pausedPosition, m.thief.transform.position) < .02f && m.State == ChapterThreeArmsMission.Stage.GatlingChase, "Pause stops thief movement and chase progression");
             Time.timeScale = 1;
@@ -116,6 +219,13 @@ namespace DeliveryService.Yun.Editor
             StandNear(p, m.gatlingCargo.transform.position, new Vector3(1, .1f, 0));
             UseWorldTarget(p, m.gatlingCargo); yield return .5f;
             Require(m.State == ChapterThreeArmsMission.Stage.GatlingReturn && navigation.SelectedPlace == m.gatlingMerchant, "Recovered parcel enables merchant return guidance");
+            if (SessionState.GetBool("Yun.Arms.ChaseRoute", false))
+            {
+                SessionState.SetBool("Yun.Arms.ChaseRoute", false);
+                DeveloperCheats.SetInvincible(previousInvincibility);
+                Debug.Log("YUN_CHASE_ROUTE_PASS");
+                yield break;
+            }
             StandNear(p, m.transform.parent.TransformPoint(new Vector3(.5f, .1f, -1.9f)), Vector3.zero);
             UseWorldTarget(p, m); yield return 1.2f; m.Skip(); yield return .5f;
             Require(m.GatlingOwned && !m.gatlingCargoRoot.activeSelf && !m.ModalOpen, "Handover completes the draft and records the gatling reward");
